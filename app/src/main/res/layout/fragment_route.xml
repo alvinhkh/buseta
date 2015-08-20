@@ -1,0 +1,35 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:id="@+id/route_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/activity_horizontal_margin"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin">
+
+        <TextView
+            android:id="@+id/route_no"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="44sp"
+            android:text="Route"/>
+
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/child_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/route_info">
+
+        <include layout="@layout/fragment_routestop"/>
+
+    </FrameLayout>
+
+</RelativeLayout>

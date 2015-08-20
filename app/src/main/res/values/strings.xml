@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">BusETA</string>
+    <string name="action_about">關於</string>
+    <string name="action_settings">設定</string>
+    <string name="action_search">搜尋</string>
+    <string name="action_refresh">更新</string>
+    <string name="action_clear_history">清除記錄</string>
+    <string name="action_yes">是</string>
+    <string name="action_no">否</string>
+    <string name="action_cancel">取消</string>
+
+    <string name="loading">載入中...</string>
+    <string name="orig">從</string>
+    <string name="origin">從%s</string>
+    <string name="dest">往</string>
+    <string name="destination">往%s</string>
+    <string name="start_search_route">開始搜尋路線</string>
+    <string name="search_route">搜尋路線</string>
+    <string name="hint_enter_route">輸入路線...</string>
+    <string name="hkd">$%s</string>
+    <string name="dots">...</string>
+    <string name="versioning">版本：%1$s (%2$s)</string>
+    <string name="dotcom">AlvinHKH.com</string>
+    <string name="open_source_license">開放原始碼授權</string>
+
+    <string name="message_database_updating">數據庫更新中</string>
+    <string name="message_database_updated">數據庫經已更新</string>
+    <string name="message_fail_to_request">未能載入，請再試一次</string>
+    <string name="message_please_click_once_again">請再按多一次</string>
+    <string name="message_route_not_support_eta">本站沒有抵站時間預報服務</string>
+    <string name="message_no_data">暫時沒有資料</string>
+    <string name="message_clear_history_success">成功清除歷史記錄</string>
+    <string name="message_clear_history_fail">沒有清除任何記錄</string>
+    <string name="message_confirm_delete_history">你確定要刪除此項目？</string>
+    <string name="message_author">by AlvinHKH (c) 2015</string>
+    <string name="message_notice_information">Notice:\nAll data comes from official website. No guarantee that the accuracy or timeliness of information provided.</string>
+</resources>
