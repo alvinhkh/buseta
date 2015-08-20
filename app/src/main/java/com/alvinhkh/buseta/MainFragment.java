@@ -1,6 +1,9 @@
 package com.alvinhkh.buseta;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -25,6 +28,7 @@ public class MainFragment extends Fragment {
     private ActionBar mActionBar = null;
     private RecyclerView mRecyclerView;
     private MenuItem mSearchMenuItem;
+    private UpdateViewReceiver mReceiver;
 
     public MainFragment() {
     }
@@ -75,6 +79,19 @@ public class MainFragment extends Fragment {
         if (mActionBar != null) {
             mActionBar.setSubtitle(null);
         }
+        if (null != mContext) {
+            IntentFilter mFilter = new IntentFilter(Constants.MESSAGE.HISTORY_UPDATED);
+            mReceiver = new UpdateViewReceiver();
+            mFilter.addAction(Constants.MESSAGE.HISTORY_UPDATED);
+            mContext.registerReceiver(mReceiver, mFilter);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        if (null != mContext && null != mReceiver)
+            mContext.unregisterReceiver(mReceiver);
+        super.onPause();
     }
 
     @Override
@@ -92,16 +109,18 @@ public class MainFragment extends Fragment {
         mSearchMenuItem = menu.findItem(R.id.action_search);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        super.onOptionsItemSelected(item);
-        int id = item.getItemId();
-        if (id == R.id.action_clear_history) {
-            Cursor mCursor = mDatabase.getHistory();
-            mAdapter.changeCursor(mCursor);
-            mAdapter.notifyDataSetChanged();
+    public class UpdateViewReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+            Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.HISTORY_UPDATED);
+            if (null != mAdapter && null != mDatabase && aBoolean == true) {
+                Cursor mCursor = mDatabase.getHistory();
+                mAdapter.changeCursor(mCursor);
+                mAdapter.notifyDataSetChanged();
+            }
         }
-        return true;
     }
 
 }

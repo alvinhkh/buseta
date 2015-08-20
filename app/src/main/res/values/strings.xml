@@ -34,6 +34,7 @@
     <string name="message_clear_history_success">成功清除歷史記錄</string>
     <string name="message_clear_history_fail">沒有清除任何記錄</string>
     <string name="message_confirm_delete_history">你確定要刪除此項目？</string>
+    <string name="message_confirm_clear_history">你確定要清除記錄？</string>
     <string name="message_author">by AlvinHKH (c) 2015</string>
     <string name="message_notice_information">Notice:\nAll data comes from official website. No guarantee that the accuracy or timeliness of information provided.</string>
 </resources>

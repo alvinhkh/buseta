@@ -24,4 +24,8 @@ public class Constants {
         Integer VERSION = 1;
     }
 
+    public interface MESSAGE {
+        String HISTORY_UPDATED = "HISTORY_UPDATED";
+    }
+
 }

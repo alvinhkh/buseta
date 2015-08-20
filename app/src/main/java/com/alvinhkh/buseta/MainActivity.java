@@ -234,15 +234,28 @@ public class MainActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_clear_history) {
-            Snackbar snackbar = Snackbar.make(findViewById(R.id.fragment_container),
-                    mDatabase.clearHistory() ?
-                            R.string.message_clear_history_success : R.string.message_clear_history_fail,
-                    Snackbar.LENGTH_SHORT);
-            snackbar.show();
-            TextView tv = (TextView)
-                    snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
-            tv.setTextColor(Color.WHITE);
-            return true;
+            new AlertDialog.Builder(this)
+                    .setTitle(this.getString(R.string.message_confirm_clear_history))
+                    .setNegativeButton(R.string.action_cancel, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialoginterface, int i) {
+                            dialoginterface.cancel();
+                        }})
+                    .setPositiveButton(R.string.action_yes, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialoginterface, int i) {
+                            Snackbar snackbar = Snackbar.make(findViewById(R.id.fragment_container),
+                                    mDatabase.clearHistory() ?
+                                            R.string.message_clear_history_success : R.string.message_clear_history_fail,
+                                    Snackbar.LENGTH_SHORT);
+                            Intent intent = new Intent(Constants.MESSAGE.HISTORY_UPDATED);
+                            intent.putExtra(Constants.MESSAGE.HISTORY_UPDATED, true);
+                            sendBroadcast(intent);
+                            TextView tv = (TextView)
+                                    snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
+                            tv.setTextColor(Color.WHITE);
+                            snackbar.show();
+                        }
+                    })
+                    .show();
         } else if (id == R.id.action_about) {
             // About Dialog
             int versionCode = BuildConfig.VERSION_CODE;
