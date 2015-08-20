@@ -226,7 +226,7 @@ public class RouteStopFragment extends Fragment
     private void getRouteStops(final String route_no, final String route_bound) {
 
         if (mEmptyText != null)
-            mEmptyText.setText(R.string.loading);
+            mEmptyText.setText(R.string.message_loading);
         if (mProgressBar != null)
             mProgressBar.setVisibility(View.VISIBLE);
 

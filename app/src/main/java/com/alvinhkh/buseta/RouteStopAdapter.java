@@ -53,7 +53,7 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
             viewHolder.stop_name.setText(object.name_tc);
             viewHolder.stop_code.setText(object.code);
             if (object.eta_loading != null && object.eta_loading == true) {
-                viewHolder.eta.setText(R.string.loading);
+                viewHolder.eta.setText(R.string.message_loading);
             } else if (object.eta_fail != null && object.eta_fail == true) {
                 viewHolder.eta.setText(R.string.message_fail_to_request);
             } else if (null != object.eta) {

@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -39,6 +40,7 @@ public class RouteBoundFragment extends Fragment
     private ListView mListView;
     private TextView mEmptyText;
     private ProgressBar mProgressBar;
+    private Button mButton_routeNews;
 
     private RouteBoundAdapter mAdapter;
     private String _route_no = null;
@@ -106,6 +108,9 @@ public class RouteBoundFragment extends Fragment
         mListView.setAdapter(mAdapter);
         mListView.setOnItemClickListener(this);
         //mListView.setOnItemLongClickListener(this);
+        // Button
+        mButton_routeNews = (Button) view.findViewById(R.id.button_news);
+        mButton_routeNews.setVisibility(View.GONE);
 
         return view;
     }
@@ -174,7 +179,7 @@ public class RouteBoundFragment extends Fragment
     private void getRouteBounds(final String _route_no) {
 
         if (mEmptyText != null)
-            mEmptyText.setText(R.string.loading);
+            mEmptyText.setText(R.string.message_loading);
         if (mProgressBar != null)
             mProgressBar.setVisibility(View.VISIBLE);
 

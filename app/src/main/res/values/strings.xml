@@ -9,7 +9,7 @@
     <string name="action_no">否</string>
     <string name="action_cancel">取消</string>
 
-    <string name="loading">載入中...</string>
+    <string name="open_source_license">開放原始碼授權</string>
     <string name="orig">從</string>
     <string name="origin">從%s</string>
     <string name="dest">往</string>
@@ -21,8 +21,10 @@
     <string name="dots">...</string>
     <string name="versioning">版本：%1$s (%2$s)</string>
     <string name="dotcom">AlvinHKH.com</string>
-    <string name="open_source_license">開放原始碼授權</string>
+    <string name="select_route_bound">選擇路線</string>
+    <string name="button_news">乘客通告</string>
 
+    <string name="message_loading">載入中...</string>
     <string name="message_database_updating">數據庫更新中</string>
     <string name="message_database_updated">數據庫經已更新</string>
     <string name="message_fail_to_request">未能載入，請再試一次</string>
