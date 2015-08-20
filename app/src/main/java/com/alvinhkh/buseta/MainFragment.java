@@ -78,6 +78,13 @@ public class MainFragment extends Fragment {
     }
 
     @Override
+    public void onDestroyView() {
+        if (null != mDatabase)
+            mDatabase.close();
+        super.onDestroyView();
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         menu.findItem(R.id.action_clear_history).setVisible(true);

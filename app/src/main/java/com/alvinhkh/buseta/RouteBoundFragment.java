@@ -132,6 +132,8 @@ public class RouteBoundFragment extends Fragment
 
     @Override
     public void onDestroyView() {
+        if (null != mDatabase)
+            mDatabase.close();
         if (null != mSwipeRefreshLayout)
             mSwipeRefreshLayout.setRefreshing(false);
         if (null != mListView)

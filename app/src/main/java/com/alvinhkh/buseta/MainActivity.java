@@ -206,6 +206,21 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onPause() {
+        // hide the keyboard in order to avoid getTextBeforeCursor on inactive InputConnection
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(new View(this).getWindowToken(), 0);
+        super.onPause();
+    }
+
+    @Override
+    public void onDestroy() {
+        if (null != mDatabase)
+            mDatabase.close();
+        super.onDestroy();
+    }
+
+    @Override
     public void onBackPressed() {
         Fragment f = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
         if (f instanceof RouteBoundFragment) {

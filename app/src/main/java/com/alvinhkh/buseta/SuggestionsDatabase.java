@@ -27,16 +27,21 @@ public class SuggestionsDatabase {
         db = mHelper.getWritableDatabase();
     }
 
+    public void close() {
+        if (null != db)
+            db.close();
+    }
+
     public long insert(ContentValues values) {
         return db.insert(TABLE_NAME, null, values);
     }
 
-    public void insertDefault(String text) {
+    public long insertDefault(String text) {
         ContentValues values = new ContentValues();
         values.put(COLUMN_TEXT, text);
         values.put(COLUMN_TYPE, TYPE_DEFAULT);
         values.put(COLUMN_DATE, "0");
-        db.insert(TABLE_NAME, null, values);
+        return db.insert(TABLE_NAME, null, values);
     }
 
     public long insertHistory(String text) {
