@@ -98,7 +98,7 @@ public class RouteStopFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              final Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_routestop, container, false);
+        View view = inflater.inflate(R.layout.fragment_listview, container, false);
         mContext = super.getActivity();
         // Get arguments
         _route_no = getArguments().getString("route_no");
@@ -109,6 +109,7 @@ public class RouteStopFragment extends Fragment
         mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         mActionBar.setTitle(_route_no);
         mActionBar.setSubtitle(getString(R.string.destination, _route_destination));
+        mActionBar.setDisplayHomeAsUpEnabled(false);
         setHasOptionsMenu(true);
         // Set List Adapter
         mAdapter = new RouteStopAdapter(mContext);

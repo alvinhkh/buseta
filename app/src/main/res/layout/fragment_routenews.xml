@@ -35,7 +35,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 style="@android:style/TextAppearance.Small"
-                android:text="@string/select_route_bound"/>
+                android:text="@string/passenger_notice"/>
 
         </LinearLayout>
 
@@ -46,13 +46,6 @@
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
             android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/button_news"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                style="@android:style/TextAppearance.Small"
-                android:text="@string/passenger_notice"/>
 
         </LinearLayout>
 

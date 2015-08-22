@@ -229,7 +229,10 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_clear_history) {
+        if (id == android.R.id.home) {
+            onBackPressed();
+            return true;
+        } else if (id == R.id.action_clear_history) {
             new AlertDialog.Builder(this)
                     .setTitle(this.getString(R.string.message_confirm_clear_search_history))
                     .setNegativeButton(R.string.action_cancel, new DialogInterface.OnClickListener() {
@@ -346,6 +349,24 @@ public class MainActivity extends AppCompatActivity
         RouteStopFragment f = RouteStopFragment.newInstance(_route_no, _route_bound,
                 _route_origin, _route_destination);
         t.replace(R.id.fragment_container, f, "RouteStop_" + _route_no + "_" + _route_bound);
+        t.addToBackStack(null);
+        t.commit();
+    }
+
+    public void showRouteNewsFragment(String _route_no){
+        if (null == _route_no) return;
+        _route_no = _route_no.trim().replace(" ", "").toUpperCase();
+        FragmentTransaction t = getSupportFragmentManager().beginTransaction();
+        RouteNewsFragment f = RouteNewsFragment.newInstance(_route_no);
+        t.replace(R.id.fragment_container, f, "RouteNews_" + _route_no);
+        t.addToBackStack(null);
+        t.commit();
+    }
+
+    public void showNoticeImageFragment(String notice_title, String notice_image){
+        FragmentTransaction t = getSupportFragmentManager().beginTransaction();
+        NoticeImageFragment f = NoticeImageFragment.newInstance(notice_title, notice_image);
+        t.replace(R.id.fragment_container, f, "Notice_" + notice_image);
         t.addToBackStack(null);
         t.commit();
     }

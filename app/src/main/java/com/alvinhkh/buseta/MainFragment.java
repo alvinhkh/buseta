@@ -50,6 +50,7 @@ public class MainFragment extends Fragment {
         mActionBar = ((AppCompatActivity) mContext).getSupportActionBar();
         mActionBar.setTitle(R.string.app_name);
         mActionBar.setSubtitle(null);
+        mActionBar.setDisplayHomeAsUpEnabled(false);
         setHasOptionsMenu(true);
 
         mRecyclerView = (RecyclerView) view.findViewById(R.id.cardList);

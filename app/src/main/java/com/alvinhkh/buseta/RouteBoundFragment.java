@@ -74,6 +74,7 @@ public class RouteBoundFragment extends Fragment
         mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         mActionBar.setTitle(R.string.app_name);
         mActionBar.setSubtitle(null);
+        mActionBar.setDisplayHomeAsUpEnabled(false);
         // Set List Adapter
         mAdapter = new RouteBoundAdapter(mContext);
         if (savedInstanceState != null) {
@@ -110,7 +111,12 @@ public class RouteBoundFragment extends Fragment
         //mListView.setOnItemLongClickListener(this);
         // Button
         mButton_routeNews = (Button) view.findViewById(R.id.button_news);
-        mButton_routeNews.setVisibility(View.GONE);
+        mButton_routeNews.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((MainActivity) getActivity()).showRouteNewsFragment(_route_no);
+            }
+        });
 
         return view;
     }
@@ -118,12 +124,13 @@ public class RouteBoundFragment extends Fragment
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
+        outState.putString("_route_no", _route_no);
+        outState.putString("_id", _id);
+        outState.putString("_token", _token);
         if (null != mAdapter) {
             mAdapter.onSaveInstanceState(outState);
             outState.putParcelable(KEY_LIST_VIEW_STATE, mListView.onSaveInstanceState());
         }
-        outState.putString("_id", _id);
-        outState.putString("_token", _token);
     }
 
     @Override
