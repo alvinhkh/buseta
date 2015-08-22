@@ -42,6 +42,7 @@ public class RouteStopFragment extends Fragment
 
     private Context mContext = super.getActivity();
     private ActionBar mActionBar = null;
+    private Menu mMenu = null;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private ListView mListView;
     private TextView mEmptyText;
@@ -69,7 +70,7 @@ public class RouteStopFragment extends Fragment
                 getETA(iEta, routeStop.code);
                 iEta++;
                 if (iEta < mAdapter.getCount()) {
-                    mEtaHandler.postDelayed(mEtaRunnable, 100);
+                    mEtaHandler.postDelayed(mEtaRunnable, 250);
                 } else {
                     if (mSwipeRefreshLayout != null)
                         mSwipeRefreshLayout.setRefreshing(false);
@@ -202,9 +203,10 @@ public class RouteStopFragment extends Fragment
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
+        mMenu = menu;
         menu.findItem(R.id.action_clear_history).setVisible(false);
         menu.findItem(R.id.action_about).setVisible(false);
-        menu.findItem(R.id.action_refresh).setVisible(true);
+        menu.findItem(R.id.action_refresh).setVisible(false);
     }
 
     @Override
@@ -274,6 +276,9 @@ public class RouteStopFragment extends Fragment
                                 getRouteFares(route_no, route_bound, "01");
                                 if (mEmptyText != null)
                                     mEmptyText.setText("");
+
+                                if (null != mMenu)
+                                    mMenu.findItem(R.id.action_refresh).setVisible(true);
 
                             } else if (result.get("valid").getAsBoolean() == false &&
                                     !result.get("message").getAsString().equals("")) {
