@@ -38,5 +38,5 @@
     <string name="message_remove_from_search_history">從搜尋記錄中移除</string>
     <string name="message_confirm_clear_search_history">你確定要清除搜尋記錄？</string>
     <string name="message_author">by AlvinHKH (c) 2015</string>
-    <string name="message_notice_information">Notice:\nAll data comes from official website. No guarantee that the accuracy or timeliness of information provided.</string>
+    <string name="message_notice_information">Notice:\nAll data come from official website. No guarantee that the accuracy or timeliness of information provided.</string>
 </resources>
