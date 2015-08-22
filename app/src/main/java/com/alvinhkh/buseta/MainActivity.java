@@ -20,7 +20,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
-import android.text.Html;
 import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
@@ -28,12 +27,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.FilterQueryProvider;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity
         implements SearchView.OnQueryTextListener,
-        SearchView.OnSuggestionListener {
+        SearchView.OnSuggestionListener,
+        FilterQueryProvider {
 
     private static final String TAG = "MainActivity";
 
@@ -171,9 +172,12 @@ public class MainActivity extends AppCompatActivity
             ((EditText) mSearchView.findViewById(android.support.v7.appcompat.R.id.search_src_text))
                     .setHintTextColor(getResources().getColor(R.color.hint_foreground_material_dark));
             mSearchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+            mSearchView.setIconified(false);
             mSearchView.onActionViewCollapsed();
             mSearchView.setInputType(InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS);
             mSearchView.setOnQueryTextListener(this);
+            mAdapter.setFilterQueryProvider(this);
+            mSearchView.setSuggestionsAdapter(mAdapter);
             mSearchView.setOnSuggestionListener(this);
             mSearchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
                 @Override
@@ -188,16 +192,7 @@ public class MainActivity extends AppCompatActivity
         mSearchMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                onQueryTextChange(null);
-                if (mSearchView != null) {
-                    // focus
-                    mSearchView.setIconified(false);
-                    mSearchView.setFocusable(true);
-                    mSearchView.requestFocus();
-                }
-                // show software keyboard
-                InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                inputMethodManager.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+                mSearchMenuItem.expandActionView();
                 return true;
             }
         });
@@ -208,7 +203,8 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onPause() {
         // hide the keyboard in order to avoid getTextBeforeCursor on inactive InputConnection
-        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        InputMethodManager inputMethodManager =
+                (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(new View(this).getWindowToken(), 0);
         super.onPause();
     }
@@ -235,16 +231,17 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
         if (id == R.id.action_clear_history) {
             new AlertDialog.Builder(this)
-                    .setTitle(this.getString(R.string.message_confirm_clear_history))
+                    .setTitle(this.getString(R.string.message_confirm_clear_search_history))
                     .setNegativeButton(R.string.action_cancel, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialoginterface, int i) {
                             dialoginterface.cancel();
                         }})
-                    .setPositiveButton(R.string.action_yes, new DialogInterface.OnClickListener() {
+                    .setPositiveButton(R.string.action_confirm, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialoginterface, int i) {
                             Snackbar snackbar = Snackbar.make(findViewById(R.id.fragment_container),
                                     mDatabase.clearHistory() ?
-                                            R.string.message_clear_history_success : R.string.message_clear_history_fail,
+                                            R.string.message_clear_search_history_success :
+                                            R.string.message_clear_search_history_fail,
                                     Snackbar.LENGTH_SHORT);
                             Intent intent = new Intent(Constants.MESSAGE.HISTORY_UPDATED);
                             intent.putExtra(Constants.MESSAGE.HISTORY_UPDATED, true);
@@ -294,50 +291,46 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onSuggestionClick(int position) {
+        collapseSearchView();
         SQLiteCursor cursor = (SQLiteCursor) mSearchView.getSuggestionsAdapter().getItem(position);
         int indexColumnSuggestion = cursor.getColumnIndex(SuggestionsDatabase.COLUMN_TEXT);
-        mSearchView.setQuery(cursor.getString(indexColumnSuggestion), false);
-        showRouteBoundFragment(mSearchView.getQuery().toString());
-        collapseSearchView();
+        showRouteBoundFragment(cursor.getString(indexColumnSuggestion));
+        cursor.close();
         return true;
     }
 
     @Override
     public boolean onQueryTextSubmit(String query) {
-        showRouteBoundFragment(query);
         collapseSearchView();
+        showRouteBoundFragment(query);
         return true;
     }
 
     @Override
     public boolean onQueryTextChange(String newText) {
-        if (newText == null || newText.isEmpty()) {
+        return false;
+    }
+
+    @Override
+    public Cursor runQuery(CharSequence constraint) {
+        if (null == constraint || constraint.length() < 1) {
             mCursor = mDatabase.getHistory("5"); // avoid show too many results, show history only
-            if (null != mAdapter)
-                mAdapter.swapCursor(mCursor);
         } else {
-            mCursor = mDatabase.get(newText.trim().replace(" ", ""));
-            if (null != mAdapter)
-                mAdapter.swapCursor(mCursor);
+            mCursor = mDatabase.get(constraint.toString().trim().replace(" ", ""));
         }
-        if (null != mSearchView && null != mAdapter)
-            mSearchView.setSuggestionsAdapter(mAdapter);
-        return true;
+        return mCursor;
     }
 
     private void collapseSearchView() {
-        if (mSearchMenuItem != null)
+        if (null != mSearchMenuItem)
             mSearchMenuItem.collapseActionView();
-        mSearchView.clearFocus();
-        mSearchView.setFocusable(false);
     }
 
     public void showRouteBoundFragment(String _route_no){
         if (null == _route_no) return;
-        _route_no = _route_no.trim().replace(" ", "");
+        _route_no = _route_no.trim().replace(" ", "").toUpperCase();
         FragmentTransaction t = getSupportFragmentManager().beginTransaction();
-        RouteBoundFragment f = null;
-        f = RouteBoundFragment.newInstance(_route_no.toUpperCase());
+        RouteBoundFragment f = RouteBoundFragment.newInstance(_route_no);
         t.replace(R.id.fragment_container, f, "RouteBound_" + _route_no);
         t.addToBackStack(null);
         t.commit();
@@ -348,10 +341,10 @@ public class MainActivity extends AppCompatActivity
                                       String _route_origin,
                                       String _route_destination){
         if (null == _route_no) return;
-        _route_no = _route_no.trim().replace(" ", "");
+        _route_no = _route_no.trim().replace(" ", "").toUpperCase();
         FragmentTransaction t = getSupportFragmentManager().beginTransaction();
-        RouteStopFragment f = null;
-        f = RouteStopFragment.newInstance(_route_no, _route_bound, _route_origin, _route_destination);
+        RouteStopFragment f = RouteStopFragment.newInstance(_route_no, _route_bound,
+                _route_origin, _route_destination);
         t.replace(R.id.fragment_container, f, "RouteStop_" + _route_no + "_" + _route_bound);
         t.addToBackStack(null);
         t.commit();

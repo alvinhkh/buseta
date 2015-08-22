@@ -7,6 +7,7 @@
     <string name="action_clear_history">清除記錄</string>
     <string name="action_yes">是</string>
     <string name="action_no">否</string>
+    <string name="action_confirm">確認</string>
     <string name="action_cancel">取消</string>
 
     <string name="open_source_license">開放原始碼授權</string>
@@ -31,10 +32,10 @@
     <string name="message_please_click_once_again">請再按多一次</string>
     <string name="message_route_not_support_eta">本站沒有抵站時間預報服務</string>
     <string name="message_no_data">暫時沒有資料</string>
-    <string name="message_clear_history_success">成功清除歷史記錄</string>
-    <string name="message_clear_history_fail">沒有清除任何記錄</string>
-    <string name="message_confirm_delete_history">你確定要刪除此項目？</string>
-    <string name="message_confirm_clear_history">你確定要清除記錄？</string>
+    <string name="message_clear_search_history_success">成功清除搜尋記錄</string>
+    <string name="message_clear_search_history_fail">沒有清除任何記錄</string>
+    <string name="message_remove_from_search_history">從搜尋記錄中移除</string>
+    <string name="message_confirm_clear_search_history">你確定要清除搜尋記錄？</string>
     <string name="message_author">by AlvinHKH (c) 2015</string>
     <string name="message_notice_information">Notice:\nAll data comes from official website. No guarantee that the accuracy or timeliness of information provided.</string>
 </resources>

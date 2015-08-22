@@ -92,12 +92,13 @@ public class SearchHistoryAdapter extends RecyclerView.Adapter<SearchHistoryAdap
                 TextView textView = (TextView) caller.findViewById(android.R.id.text1);
                 final String _route_no = textView.getText().toString();
                 new AlertDialog.Builder(mActivity)
-                        .setTitle(mActivity.getString(R.string.message_confirm_delete_history))
+                        .setTitle(_route_no + "?")
+                        .setMessage(mActivity.getString(R.string.message_remove_from_search_history))
                         .setNegativeButton(R.string.action_cancel, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialoginterface, int i) {
                                 dialoginterface.cancel();
                             }})
-                        .setPositiveButton(R.string.action_yes, new DialogInterface.OnClickListener() {
+                        .setPositiveButton(R.string.action_confirm, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialoginterface, int i) {
                                 SuggestionsDatabase mDatabase = new SuggestionsDatabase(mActivity.getApplicationContext());
                                 mDatabase.deleteHistory(_route_no);
