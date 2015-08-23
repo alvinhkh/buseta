@@ -14,6 +14,7 @@ public class Constants {
         String ROUTE_NOTICES_IMAGE = KMB + "/loadImage.php?page=";
         String HTML_ETA = KMB + "/tc/services/eta_enquiry.html";
         String HTML_SEARCH = KMB + "/tc/services/search.html";
+        String ETA_MOBILE_API = "http://etav2.kmb.hk";
         String REQUEST_REFERER = HTML_ETA;
         String REQUEST_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2478.0 Safari/537.36";
     }

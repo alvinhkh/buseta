@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -28,6 +29,12 @@ import com.google.gson.JsonParser;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -70,7 +77,7 @@ public class RouteStopFragment extends Fragment
                 RouteStop routeStop = mAdapter.getItem(iEta);
                 getETA(iEta, routeStop.code);
                 iEta++;
-                if (iEta < mAdapter.getCount()) {
+                if (iEta < mAdapter.getCount() - 1) {
                     mEtaHandler.postDelayed(mEtaRunnable, 250);
                 } else {
                     if (mSwipeRefreshLayout != null)
@@ -143,11 +150,11 @@ public class RouteStopFragment extends Fragment
         } else {
             // Get Route Stops
             getRouteStops(_route_no, _route_bound);
-            findEtaApiUrl();
+            //findEtaApiUrl();
         }
         mListView.setAdapter(mAdapter);
+        mListView.setOnItemLongClickListener(this);
         mListView.setOnItemClickListener(this);
-        //mListView.setOnItemLongClickListener(this);
 
         return view;
     }
@@ -203,7 +210,107 @@ public class RouteStopFragment extends Fragment
 
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-        return false;
+        if (view != null) {
+            TextView textView_name = (TextView) view.findViewById(R.id.stop_name);
+            RouteStop object = mAdapter.getItem(position);
+            if (null != object.eta) {
+                // Request Time
+                String server_time = "";
+                Date server_date = null;
+                if (null != object.eta.server_time && !object.eta.server_time.equals("")) {
+                    SimpleDateFormat display_format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                    if (object.eta.api_version == 2) {
+                        server_date = new Date(Long.parseLong(object.eta.server_time));
+                    } else if (object.eta.api_version == 1) {
+                        SimpleDateFormat date_format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                        try {
+                            server_date = date_format.parse(object.eta.server_time);
+                        } catch (ParseException ep) {
+                            ep.printStackTrace();
+                        }
+                    }
+                    server_time = (null != server_date) ?
+                            display_format.format(server_date) : object.eta.server_time;
+                }
+                // ETAs
+                RouteStopETA routeStopETA = object.eta;
+                String eta = Jsoup.parse(routeStopETA.etas).text();
+                String[] etas = eta.replaceAll("　", " ").split(", ?");
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < etas.length; i++) {
+                    sb.append(etas[i]);
+                    if (object.eta.api_version == 1) {
+                        // API v1 from Web, with minutes no time
+                        String minutes = etas[i].replaceAll("[^0123456789]", "");
+                        if (null != server_date && !minutes.equals("") &&
+                                etas[i].contains("分鐘")) {
+                            Long t = server_date.getTime();
+                            Date etaDate = new Date(t + (Integer.parseInt(minutes) * 60000));
+                            SimpleDateFormat eta_time_format = new SimpleDateFormat("HH:mm");
+                            String etaTime = eta_time_format.format(etaDate);
+                            sb.append(" (");
+                            sb.append(etaTime);
+                            sb.append(")");
+                        }
+                    } else if (object.eta.api_version == 2) {
+                        // API v2 from Mobile v2, with exact time
+                        if (etas[i].matches(".*\\d.*")) {
+                            // if text has digit
+                            String etaMinutes = "";
+                            long differences = new Date().getTime() - server_date.getTime(); // get device time and compare to server time
+                            try {
+                                SimpleDateFormat time_format =
+                                        new SimpleDateFormat("yyyy/MM/dd HH:mm");
+                                Date etaDateCompare = server_date;
+                                // first assume eta time and server time is on the same date
+                                Date etaDate = time_format.parse(
+                                        new SimpleDateFormat("yyyy").format(etaDateCompare) + "/" +
+                                                new SimpleDateFormat("MM").format(etaDateCompare) + "/" +
+                                                new SimpleDateFormat("dd").format(etaDateCompare) + " " +
+                                                etas[i]);
+                                // if not minutes will get negative integer
+                                int minutes = (int) ((etaDate.getTime() / 60000) -
+                                        ((server_date.getTime() + differences) / 60000));
+                                if (minutes < -12 * 60) {
+                                    // plus one day to get correct eta date
+                                    etaDateCompare = new Date(server_date.getTime() + 1 * 24 * 60 * 60 * 1000);
+                                    etaDate = time_format.parse(
+                                            new SimpleDateFormat("yyyy").format(etaDateCompare) + "/" +
+                                                    new SimpleDateFormat("MM").format(etaDateCompare) + "/" +
+                                                    new SimpleDateFormat("dd").format(etaDateCompare) + " " +
+                                                    etas[i]);
+                                    minutes = (int) ((etaDate.getTime() / 60000) -
+                                            ((server_date.getTime() + differences) / 60000));
+                                }
+                                // minutes should be 0 to within a day
+                                if (minutes >= 0 && minutes < 1 * 24 * 60 * 60 * 1000)
+                                    etaMinutes = String.valueOf(minutes);
+                            } catch (ParseException ep) {
+                                ep.printStackTrace();
+                            }
+                            if (!etaMinutes.equals("")) {
+                                sb.append(" (");
+                                if (etaMinutes.equals("0")) {
+                                    sb.append("現在");
+                                } else {
+                                    sb.append(etaMinutes);
+                                    sb.append("分鐘");
+                                }
+                                sb.append(")");
+                            }
+                        }
+                    }
+                    if (i < etas.length - 1)
+                        sb.append("\n");
+                }
+                sb.append("\n\n");
+                sb.append(server_time);
+                new AlertDialog.Builder(mContext)
+                        .setTitle(textView_name.getText())
+                        .setMessage(sb.toString()).show();
+            }
+        }
+        return true;
     }
 
     @Override
@@ -364,7 +471,79 @@ public class RouteStopFragment extends Fragment
 
     }
 
-    private void getETA(final int position, String bus_stop) {
+    private void getETA(final int position, final String stop_code) {
+        getETAv2(position, stop_code);
+    }
+
+    private void getETAv2(final int position, final String stop_code) {
+        RouteStop routeStop = mAdapter.getItem(position);
+        routeStop.eta_loading = true;
+        mAdapter.notifyDataSetChanged();
+        final String stopCode = stop_code.replaceAll("-", "");
+        final String stopSeq = String.valueOf(position);
+
+        Uri routeEtaUri = Uri.parse(Constants.URL.ETA_MOBILE_API)
+                .buildUpon()
+                .appendQueryParameter("action", "geteta")
+                .appendQueryParameter("lang", "tc")
+                .appendQueryParameter("route", _route_no)
+                .appendQueryParameter("bound", _route_bound)
+                .appendQueryParameter("stop", stopCode)
+                .appendQueryParameter("stop_seq", stopSeq)
+                .build();
+
+        Ion.with(mContext)
+                .load(routeEtaUri.toString())
+                .setHeader("X-Requested-With", "XMLHttpRequest")
+                .asJsonObject()
+                .setCallback(new FutureCallback<JsonObject>() {
+                    @Override
+                    public void onCompleted(Exception e, JsonObject result) {
+                        // do stuff with the result or error
+                        if (e != null) {
+                            Log.e(TAG, e.toString());
+                        }
+                        RouteStop routeStop = mAdapter.getItem(position);
+                        routeStop.eta_loading = true;
+                        routeStop.eta_fail = false;
+                        if (result != null) {
+                            //Log.d(TAG, result);
+                            if (!result.has("response")) {
+                                routeStop.eta_loading = false;
+                                routeStop.eta_fail = true;
+                                mAdapter.notifyDataSetChanged();
+                                getETAv1(position, stopCode);
+                                return;
+                            }
+
+                            RouteStopETA routeStopETA = new RouteStopETA();
+                            JsonArray jsonArray = result.get("response").getAsJsonArray();
+                            routeStopETA = new RouteStopETA();
+                            routeStopETA.api_version = 2;
+                            routeStopETA.seq = stopSeq;
+                            routeStopETA.server_time = result.get("generated").getAsString();
+                            StringBuilder etas = new StringBuilder();
+                            StringBuilder expires = new StringBuilder();
+                            for (int i = 0; i < jsonArray.size(); i++) {
+                                JsonObject object = jsonArray.get(i).getAsJsonObject();
+                                etas.append(object.get("t").getAsString());
+                                expires.append(object.get("ex").getAsString());
+                                if (i < jsonArray.size() - 1) {
+                                    etas.append(", ");
+                                    expires.append(", ");
+                                }
+                            }
+                            routeStopETA.etas = etas.toString();
+                            routeStopETA.expires = expires.toString();
+                            routeStop.eta = routeStopETA;
+                        }
+                        routeStop.eta_loading = false;
+                        mAdapter.notifyDataSetChanged();
+                    }
+                });
+    }
+
+    private void getETAv1(final int position, String bus_stop) {
         RouteStop routeStop = mAdapter.getItem(position);
         routeStop.eta_loading = true;
         mAdapter.notifyDataSetChanged();
@@ -419,6 +598,7 @@ public class RouteStopFragment extends Fragment
                             JsonArray jsonArray = jsonParser.parse(result).getAsJsonArray();
                             for (final JsonElement element : jsonArray) {
                                 routeStopETA = new Gson().fromJson(element.getAsJsonObject(), RouteStopETA.class);
+                                routeStopETA.api_version = 1;
                             }
                             routeStop.eta = routeStopETA;
                         }

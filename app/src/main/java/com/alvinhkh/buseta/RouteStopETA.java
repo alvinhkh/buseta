@@ -10,11 +10,10 @@ public class RouteStopETA implements Parcelable {
     public RouteStopETA() {
     }
 
+    public int api_version = 1;
+
     @SerializedName("STOP_SEQ")
     public String seq;
-
-    //@SerializedName("STOP_NAME_CHI")
-    //public String name_tc;
 
     @SerializedName("ETA_TIME")
     public String etas;
@@ -31,6 +30,7 @@ public class RouteStopETA implements Parcelable {
      * @param p Source Parcel
      */
     public RouteStopETA(Parcel p) {
+        this.api_version = p.readInt();
         this.seq = p.readString();
         this.etas = p.readString();
         this.expires = p.readString();
@@ -45,6 +45,7 @@ public class RouteStopETA implements Parcelable {
     // Required method to write to Parcel
     @Override
     public void writeToParcel(Parcel p, int flags) {
+        p.writeInt(this.api_version);
         p.writeString(this.seq);
         p.writeString(this.etas);
         p.writeString(this.expires);
