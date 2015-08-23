@@ -322,27 +322,32 @@ public class RouteStopFragment extends Fragment
                         if (e != null) {
                             Log.e(TAG, e.toString());
                         }
+                        List<RouteStop> routeStopList = mAdapter.getAllItems();
                         if (null != jsonArray) {
-                            //Log.d(TAG, result.toString());
                             for (int i = 0; i < jsonArray.size(); i++) {
                                 JsonObject object = jsonArray.get(i).getAsJsonObject();
                                 if (null != object) {
-                                    //Log.d(TAG, object.toString());
                                     Gson gson = new Gson();
                                     RouteStopMap routeStopMap = gson.fromJson(object, RouteStopMap.class);
                                     if (null != routeStopMap.subarea) {
-                                        List<RouteStop> routeStopList = mAdapter.getAllItems();
                                         for (int j = 0; j < routeStopList.size(); j++) {
                                             RouteStop routeStop = routeStopList.get(j);
                                             String stopCode = routeStop.code;
                                             if (stopCode.equals(routeStopMap.subarea)) {
                                                 if (null != routeStopMap.air_cond_fare &&
-                                                        !routeStopMap.air_cond_fare.equals(""))
+                                                        !routeStopMap.air_cond_fare.equals("") &&
+                                                        !routeStopMap.air_cond_fare.equals("0.00"))
                                                 routeStop.fare = mContext.getString(R.string.hkd, routeStopMap.air_cond_fare);
                                             }
                                         }
                                     }
                                 }
+                            }
+                            for (int j = 0; j < routeStopList.size(); j++) {
+                                RouteStop routeStop = routeStopList.get(j);
+                                if (null != routeStop.fare &&
+                                        routeStop.fare.equals(mContext.getString(R.string.dots)))
+                                    routeStop.fare = "";
                             }
                             mAdapter.notifyDataSetChanged();
                             if (mSwipeRefreshLayout != null)
