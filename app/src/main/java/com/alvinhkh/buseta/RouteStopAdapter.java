@@ -120,7 +120,7 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
                 viewHolder.eta.setText("");
                 viewHolder.server_time.setText("");
             }
-            if (null != object.fare) {
+            if (null != object.fare && !object.fare.equals("$0.00")) {
                 viewHolder.fare.setText(object.fare);
             } else {
                 viewHolder.fare.setText("");
