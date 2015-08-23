@@ -47,7 +47,8 @@
                 android:layout_height="0dp"
                 android:layout_weight="1"
                 android:singleLine="true"
-                android:text="ETA" />
+                android:text="ETA"
+                android:textColor="@color/highlighted_text" />
 
         </LinearLayout>
 
