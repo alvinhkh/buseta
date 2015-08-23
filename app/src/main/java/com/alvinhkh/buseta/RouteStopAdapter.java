@@ -63,6 +63,20 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
                     //viewHolder.eta.setText(R.string.message_route_not_support_eta);
                     viewHolder.server_time.setText("");
                 } else {
+                    SimpleDateFormat date_format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                    SimpleDateFormat display_format = new SimpleDateFormat("HH:mm:ss");
+                    String server_time = "";
+                    Date server_date = null;
+                    try {
+                        server_date = date_format.parse(object.eta.server_time);
+                        server_time = display_format.format(server_date);
+                    } catch (ParseException ep) {
+                        ep.printStackTrace();
+                        server_time = object.eta.server_time;
+                        server_date = null;
+                    }
+                    viewHolder.server_time.setText(server_time);
+
                     if (object.eta.etas.equals("")) {
                         // eta not available
                         viewHolder.eta.setText(R.string.message_no_data);
@@ -81,21 +95,26 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
                             // more than one and all same, more likely error
                             viewHolder.eta.setText(R.string.message_please_click_once_again);
                         } else {
-                            viewHolder.eta.setText(text);
+                            StringBuilder sb = new StringBuilder();
+                            for (int i = 0; i < texts.length; i++) {
+                                sb.append(texts[i]); //
+                                String minutes = texts[i].replaceAll("[^\\.0123456789]", "");
+                                if (null != server_date && !minutes.equals("") &&
+                                        texts[i].contains("分鐘")) {
+                                    Long t = server_date.getTime();
+                                    Date etaDate = new Date(t + (Integer.parseInt(minutes) * 60000));
+                                    SimpleDateFormat eta_time_format = new SimpleDateFormat("HH:mm");
+                                    String etaTime = eta_time_format.format(etaDate);
+                                    sb.append(" (");
+                                    sb.append(etaTime);
+                                    sb.append(")");
+                                }
+                                if (i < texts.length - 1)
+                                    sb.append(" ");
+                            }
+                            viewHolder.eta.setText(sb.toString());
                         }
                     }
-
-                    SimpleDateFormat date_format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-                    SimpleDateFormat display_format = new SimpleDateFormat("HH:mm:ss");
-                    String server_time = "";
-                    try {
-                        Date date = date_format.parse(object.eta.server_time);
-                        server_time = display_format.format(date);
-                    } catch (ParseException ep) {
-                        ep.printStackTrace();
-                        server_time = object.eta.server_time;
-                    }
-                    viewHolder.server_time.setText(server_time);
                 }
             } else {
                 viewHolder.eta.setText("");
