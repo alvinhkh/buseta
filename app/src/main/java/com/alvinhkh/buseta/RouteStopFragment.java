@@ -481,13 +481,6 @@ public class RouteStopFragment extends Fragment
                                     Log.d(TAG, "etaApi: found " + etaApi);
                                 } else {
                                     Log.d(TAG, "etaApi: fail " + etaApi);
-                                    /*
-                                    String code = jsBeautify(result, 0);
-                                    m = p.matcher(code);
-                                    if (m.find()) {
-                                        etaApi = Constants.URL.KMB + m.group(1);
-                                        Log.i(TAG, "etaApi: found with decode.");
-                                    }*/
                                 }
                             }
                         }
@@ -496,59 +489,5 @@ public class RouteStopFragment extends Fragment
                     }
                 });
     }
-
-    /*
-    private String jsBeautify(String jsCode, int indentSize) {
-        String returnString = "";
-        String js_beautify = loadAssetTextAsString(getActivity(), "beautify.js");
-        org.mozilla.javascript.Context cx = org.mozilla.javascript.Context.enter();
-        cx.setOptimizationLevel(-1);
-        try {
-            ScriptableObject scope = cx.initStandardObjects();
-            //Object out =  org.mozilla.javascript.Context.javaToJS(System.out, scope);
-            //ScriptableObject.putProperty(scope, "out", out);
-            scope.put("jsCode", scope, jsCode);
-            cx.evaluateString(scope, js_beautify, "<1>", 1, null);
-            returnString = (String) cx.evaluateString(scope,
-                    "js_beautify(jsCode, {indent_size:" + indentSize + "})", "<2>", 1, null);
-        } finally {
-            org.mozilla.javascript.Context.exit();
-        }
-        Log.d(TAG, returnString);
-        return returnString;
-    }
-
-    private String loadAssetTextAsString(Context context, String name) {
-        // http://stackoverflow.com/a/23952928/2411672
-        BufferedReader in = null;
-        try {
-            StringBuilder buf = new StringBuilder();
-            InputStream is = context.getAssets().open(name);
-            in = new BufferedReader(new InputStreamReader(is));
-
-            String str;
-            boolean isFirst = true;
-            while ( (str = in.readLine()) != null ) {
-                if (isFirst)
-                    isFirst = false;
-                else
-                    buf.append('\n');
-                buf.append(str);
-            }
-            return buf.toString();
-        } catch (IOException e) {
-            Log.e(TAG, "Error opening asset " + name);
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    Log.e(TAG, "Error closing asset " + name);
-                }
-            }
-        }
-
-        return null;
-    }*/
 
 }
