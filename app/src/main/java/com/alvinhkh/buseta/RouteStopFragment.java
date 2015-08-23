@@ -179,6 +179,10 @@ public class RouteStopFragment extends Fragment
             mSwipeRefreshLayout.setRefreshing(false);
         if (null != mListView)
             mListView.setAdapter(null);
+        if (null != mProgressBar)
+            mProgressBar.setVisibility(View.GONE);
+        if (null != mEmptyText)
+            mEmptyText.setVisibility(View.GONE);
         View view = getView();
         if (null != view)
             view.setVisibility(View.GONE);
