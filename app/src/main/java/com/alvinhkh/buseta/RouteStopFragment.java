@@ -55,8 +55,9 @@ public class RouteStopFragment extends Fragment
     private String _route_destination = null;
     private String _id = null;
     private String _token = null;
-
     private String etaApi = "";
+    private Boolean savedState = false;
+
     // Runnable to get all stops eta
     int iEta = 0;
     Handler mEtaHandler = new Handler();
@@ -138,6 +139,7 @@ public class RouteStopFragment extends Fragment
                 && savedInstanceState.containsKey(KEY_LIST_VIEW_STATE)) {
             mListView.onRestoreInstanceState(savedInstanceState
                     .getParcelable(KEY_LIST_VIEW_STATE));
+            savedState = true;
         } else {
             // Get Route Stops
             getRouteStops(_route_no, _route_bound);
@@ -206,7 +208,7 @@ public class RouteStopFragment extends Fragment
         mMenu = menu;
         menu.findItem(R.id.action_clear_history).setVisible(false);
         menu.findItem(R.id.action_about).setVisible(false);
-        menu.findItem(R.id.action_refresh).setVisible(false);
+        menu.findItem(R.id.action_refresh).setVisible(savedState);
     }
 
     @Override
