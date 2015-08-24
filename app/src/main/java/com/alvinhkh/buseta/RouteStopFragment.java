@@ -381,9 +381,10 @@ public class RouteStopFragment extends Fragment
                             if (mEmptyText != null)
                                 mEmptyText.setText(R.string.message_fail_to_request);
                         }
-                        JsonObject result = response.getResult();
-                        if (response.getHeaders().code() == 200 && null != result) {
+                        if (null != response && response.getHeaders().code() == 200) {
+                            JsonObject result = response.getResult();
                             //Log.d(TAG, result.toString());
+                            if (null != result)
                             if (result.get("valid").getAsBoolean() == true) {
                                 //  Got Bus Line Stops
                                 JsonArray _bus_arr = result.getAsJsonArray("bus_arr");
