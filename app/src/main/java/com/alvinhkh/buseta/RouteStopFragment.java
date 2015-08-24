@@ -28,6 +28,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
+import com.koushikdutta.ion.Response;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -63,6 +64,7 @@ public class RouteStopFragment extends Fragment
     private String _id = null;
     private String _token = null;
     private String etaApi = "";
+    private String getRouteInfoApi = "";
     private Boolean savedState = false;
 
     // Runnable to get all stops eta
@@ -127,7 +129,7 @@ public class RouteStopFragment extends Fragment
             _id = savedInstanceState.getString("_id");
             _token = savedInstanceState.getString("_token");
             etaApi = savedInstanceState.getString("etaApi");
-            Log.d(TAG, "See: " + etaApi);
+            getRouteInfoApi = savedInstanceState.getString("getRouteInfoApi");
         }
         //
         mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh_route);
@@ -148,6 +150,7 @@ public class RouteStopFragment extends Fragment
                     .getParcelable(KEY_LIST_VIEW_STATE));
             savedState = true;
         } else {
+            getRouteInfoApi = Constants.URL.ROUTE_INFO;
             // Get Route Stops
             getRouteStops(_route_no, _route_bound);
             //findEtaApiUrl();
@@ -169,6 +172,7 @@ public class RouteStopFragment extends Fragment
         outState.putString("_id", _id);
         outState.putString("_token", _token);
         outState.putString("etaApi", etaApi);
+        outState.putString("getRouteInfoApi", getRouteInfoApi);
     }
 
     @Override
@@ -348,7 +352,7 @@ public class RouteStopFragment extends Fragment
 
         String _random_t = ((Double) Math.random()).toString();
 
-        Uri routeStopUri = Uri.parse(Constants.URL.ROUTE_INFO)
+        Uri routeStopUri = Uri.parse(getRouteInfoApi)
                 .buildUpon()
                 .appendQueryParameter("t", _random_t)
                 .appendQueryParameter("chkroutebound", "true")
@@ -365,16 +369,18 @@ public class RouteStopFragment extends Fragment
                 .setHeader("Pragma", "no-cache")
                 .setHeader("User-Agent", Constants.URL.REQUEST_UA)
                 .asJsonObject()
-                .setCallback(new FutureCallback<JsonObject>() {
+                .withResponse()
+                .setCallback(new FutureCallback<Response<JsonObject>>() {
                     @Override
-                    public void onCompleted(Exception e, JsonObject result) {
+                    public void onCompleted(Exception e, Response<JsonObject> response) {
                         // do stuff with the result or error
                         if (e != null) {
                             Log.e(TAG, e.toString());
                             if (mEmptyText != null)
                                 mEmptyText.setText(R.string.message_fail_to_request);
                         }
-                        if (result != null) {
+                        JsonObject result = response.getResult();
+                        if (response.getHeaders().code() == 200 && null != result) {
                             //Log.d(TAG, result.toString());
                             if (result.get("valid").getAsBoolean() == true) {
                                 //  Got Bus Line Stops
@@ -399,12 +405,24 @@ public class RouteStopFragment extends Fragment
                                 if (mEmptyText != null)
                                     mEmptyText.setText(result.get("message").getAsString());
                             }
+                        } else {
+                            Log.d(TAG, "Response: " + response.getHeaders().code() + " ");
+                            switchGetRouteInfoApi();
+                            getRouteStops(route_no, route_bound);
                         }
                         if (mProgressBar != null)
                             mProgressBar.setVisibility(View.GONE);
                     }
                 });
 
+    }
+
+    private void switchGetRouteInfoApi() {
+        if (getRouteInfoApi.equals(Constants.URL.ROUTE_INFO)) {
+            getRouteInfoApi = Constants.URL.ROUTE_INFO_V1;
+        } else {
+            getRouteInfoApi = Constants.URL.ROUTE_INFO;
+        }
     }
 
     private void getRouteFares(final String route_no, final String route_bound, final String route_st) {

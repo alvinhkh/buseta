@@ -7,7 +7,8 @@ public class Constants {
         String KMB = "http://www.kmb.hk";
         String PATH_ETA_API = "/ajax/eta_api/prod/";
         String PATH_ETA_JS = "/js/services/eta/";
-        String ROUTE_INFO = KMB + "/ajax/getRoute_info.php";
+        String ROUTE_INFO = KMB + "/ajax/getRouteInfo.php";
+        String ROUTE_INFO_V1 = KMB + "/ajax/getRoute_info.php";
         String ROUTE_MAP = KMB + "/ajax/getRouteMapByBusno.php";
         String ROUTE_NEWS = KMB + "/ajax/getnews.php";
         String ROUTE_NOTICES = KMB + "/tc/news/realtimenews.html?page=";

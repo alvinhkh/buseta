@@ -23,6 +23,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
+import com.koushikdutta.ion.Response;
 
 
 public class RouteBoundFragment extends Fragment
@@ -47,6 +48,7 @@ public class RouteBoundFragment extends Fragment
     private String _route_bound = null;
     private String _id = null;
     private String _token = null;
+    private String getRouteInfoApi = "";
 
     private SuggestionsDatabase mDatabase;
 
@@ -81,6 +83,7 @@ public class RouteBoundFragment extends Fragment
             mAdapter.onRestoreInstanceState(savedInstanceState);
             _id = savedInstanceState.getString("_id");
             _token = savedInstanceState.getString("_token");
+            getRouteInfoApi = savedInstanceState.getString("getRouteInfoApi");
         }
         //
         mTextView_routeNo = (TextView) view.findViewById(R.id.route_no);
@@ -103,6 +106,7 @@ public class RouteBoundFragment extends Fragment
             mListView.onRestoreInstanceState(savedInstanceState
                     .getParcelable(KEY_LIST_VIEW_STATE));
         } else {
+            getRouteInfoApi = Constants.URL.ROUTE_INFO;
             // Get Route Bounds
             getRouteBounds(_route_no);
         }
@@ -127,6 +131,7 @@ public class RouteBoundFragment extends Fragment
         outState.putString("_route_no", _route_no);
         outState.putString("_id", _id);
         outState.putString("_token", _token);
+        outState.putString("getRouteInfoApi", getRouteInfoApi);
         if (null != mAdapter) {
             mAdapter.onSaveInstanceState(outState);
             outState.putParcelable(KEY_LIST_VIEW_STATE, mListView.onSaveInstanceState());
@@ -187,6 +192,8 @@ public class RouteBoundFragment extends Fragment
         getRouteBounds(_route_no);
     }
 
+
+
     private void getRouteBounds(final String _route_no) {
 
         if (mEmptyText != null)
@@ -196,7 +203,7 @@ public class RouteBoundFragment extends Fragment
 
         String _random_t = ((Double) Math.random()).toString();
 
-        Uri routeInfoUri = Uri.parse(Constants.URL.ROUTE_INFO)
+        Uri routeInfoUri = Uri.parse(getRouteInfoApi)
                 .buildUpon()
                 .appendQueryParameter("t", _random_t)
                 .appendQueryParameter("field9", _route_no)
@@ -211,16 +218,18 @@ public class RouteBoundFragment extends Fragment
                 .setHeader("Pragma", "no-cache")
                 .setHeader("User-Agent", Constants.URL.REQUEST_UA)
                 .asJsonObject()
-                .setCallback(new FutureCallback<JsonObject>() {
+                .withResponse()
+                .setCallback(new FutureCallback<Response<JsonObject>>() {
                     @Override
-                    public void onCompleted(Exception e, JsonObject result) {
+                    public void onCompleted(Exception e, Response<JsonObject> response) {
                         // do stuff with the result or error
                         if (e != null) {
                             Log.d(TAG, e.toString());
                             if (mEmptyText != null)
                                 mEmptyText.setText(R.string.message_fail_to_request);
                         }
-                        if (result != null) {
+                        JsonObject result = response.getResult();
+                        if (response.getHeaders().code() == 200 && null != result) {
                             //Log.d(TAG, result.toString());
                             if (result.get("valid").getAsBoolean() == true) {
                                 //  Got Bus Routes
@@ -244,6 +253,10 @@ public class RouteBoundFragment extends Fragment
                                 if (mEmptyText != null)
                                     mEmptyText.setText(result.get("message").getAsString());
                             }
+                        } else {
+                            Log.d(TAG, "Response: " + response.getHeaders().code() + " ");
+                            switchGetRouteInfoApi();
+                            getRouteBounds(_route_no);
                         }
                         if (mProgressBar != null)
                             mProgressBar.setVisibility(View.GONE);
@@ -251,6 +264,14 @@ public class RouteBoundFragment extends Fragment
                             mSwipeRefreshLayout.setRefreshing(false);
                     }
                 });
+    }
+
+    private void switchGetRouteInfoApi() {
+        if (getRouteInfoApi.equals(Constants.URL.ROUTE_INFO)) {
+            getRouteInfoApi = Constants.URL.ROUTE_INFO_V1;
+        } else {
+            getRouteInfoApi = Constants.URL.ROUTE_INFO;
+        }
     }
 
 }
