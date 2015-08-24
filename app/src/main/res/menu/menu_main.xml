@@ -21,14 +21,8 @@
         app:actionViewClass="android.support.v7.widget.SearchView" />
 
     <item
-        android:id="@+id/action_clear_history"
-        android:title="@string/action_clear_history"
-        android:orderInCategory="999"
-        app:showAsAction="never" />
-
-    <item
-        android:id="@+id/action_about"
-        android:title="@string/action_about"
+        android:id="@+id/action_settings"
+        android:title="@string/action_settings"
         android:orderInCategory="1000"
         app:showAsAction="never" />
 

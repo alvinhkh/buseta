@@ -57,8 +57,7 @@ public class MainFragment extends Fragment {
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new GridLayoutManager(mContext, 2));
 
-        Cursor mCursor = mDatabase.getHistory();
-        mAdapter = new SearchHistoryAdapter(getActivity(), mCursor);
+        mAdapter = new SearchHistoryAdapter(getActivity(), mDatabase.getHistory());
         mRecyclerView.setAdapter(mAdapter);
 
         Button mButton = (Button) view.findViewById(R.id.buttonSearch);
@@ -78,7 +77,11 @@ public class MainFragment extends Fragment {
     public void onResume() {
         super.onResume();
         if (mActionBar != null) {
+            mActionBar.setTitle(R.string.app_name);
             mActionBar.setSubtitle(null);
+        }
+        if (null != mAdapter) {
+            mAdapter.swapCursor(mDatabase.getHistory());
         }
         if (null != mContext) {
             IntentFilter mFilter = new IntentFilter(Constants.MESSAGE.HISTORY_UPDATED);
@@ -105,8 +108,7 @@ public class MainFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        menu.findItem(R.id.action_clear_history).setVisible(true);
-        menu.findItem(R.id.action_about).setVisible(true);
+        menu.findItem(R.id.action_settings).setVisible(true);
         mSearchMenuItem = menu.findItem(R.id.action_search);
     }
 
@@ -117,9 +119,7 @@ public class MainFragment extends Fragment {
             Bundle bundle = intent.getExtras();
             Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.HISTORY_UPDATED);
             if (null != mAdapter && null != mDatabase && aBoolean == true) {
-                Cursor mCursor = mDatabase.getHistory();
-                mAdapter.changeCursor(mCursor);
-                mAdapter.notifyDataSetChanged();
+                mAdapter.swapCursor(mDatabase.getHistory());
             }
         }
     }

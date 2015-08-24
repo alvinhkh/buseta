@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta;
+package com.alvinhkh.buseta.preference;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -6,6 +6,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.webkit.WebView;
+
+import com.alvinhkh.buseta.R;
 
 public class OpenSourceLicensesActivity extends AppCompatActivity {
     private WebView mWebView;

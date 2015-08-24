@@ -26,8 +26,13 @@
                 android:resource="@xml/searchable"/>
         </activity>
 
+        <!-- Preferences -->
         <activity
-            android:name="com.alvinhkh.buseta.OpenSourceLicensesActivity"
+            android:name=".preference.SettingsActivity"
+            android:label="@string/title_settings" >
+        </activity>
+        <activity
+            android:name=".preference.OpenSourceLicensesActivity"
             android:label="@string/open_source_license" >
             <intent-filter>
                 <action android:name="com.alvinhkh.buseta.OpenSourceLicenses.OPEN"/>

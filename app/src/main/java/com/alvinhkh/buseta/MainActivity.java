@@ -2,13 +2,11 @@ package com.alvinhkh.buseta;
 
 import android.app.SearchManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
 import android.graphics.Color;
-import android.net.Uri;
 import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -16,7 +14,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v4.widget.SimpleCursorAdapter;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
@@ -30,6 +27,8 @@ import android.widget.EditText;
 import android.widget.FilterQueryProvider;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.alvinhkh.buseta.preference.SettingsActivity;
 
 public class MainActivity extends AppCompatActivity
         implements SearchView.OnQueryTextListener,
@@ -232,57 +231,9 @@ public class MainActivity extends AppCompatActivity
         if (id == android.R.id.home) {
             onBackPressed();
             return true;
-        } else if (id == R.id.action_clear_history) {
-            new AlertDialog.Builder(this)
-                    .setTitle(this.getString(R.string.message_confirm_clear_search_history))
-                    .setNegativeButton(R.string.action_cancel, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialoginterface, int i) {
-                            dialoginterface.cancel();
-                        }})
-                    .setPositiveButton(R.string.action_confirm, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialoginterface, int i) {
-                            Snackbar snackbar = Snackbar.make(findViewById(R.id.fragment_container),
-                                    mDatabase.clearHistory() ?
-                                            R.string.message_clear_search_history_success :
-                                            R.string.message_clear_search_history_fail,
-                                    Snackbar.LENGTH_SHORT);
-                            Intent intent = new Intent(Constants.MESSAGE.HISTORY_UPDATED);
-                            intent.putExtra(Constants.MESSAGE.HISTORY_UPDATED, true);
-                            sendBroadcast(intent);
-                            TextView tv = (TextView)
-                                    snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
-                            tv.setTextColor(Color.WHITE);
-                            snackbar.show();
-                        }
-                    })
-                    .show();
-        } else if (id == R.id.action_about) {
-            // About Dialog
-            int versionCode = BuildConfig.VERSION_CODE;
-            String versionName = BuildConfig.VERSION_NAME;
-            new AlertDialog.Builder(this)
-                    .setTitle(R.string.app_name)
-                    .setIcon(R.mipmap.ic_launcher)
-                    .setMessage(getString(R.string.versioning, versionName, versionCode) + "\n" +
-                                    getString(R.string.message_author) + "\n\n\n" +
-                                    getString(R.string.message_notice_information)
-                    )
-                    .setPositiveButton(R.string.dotcom, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            Intent i = new Intent(Intent.ACTION_VIEW);
-                            i.setData(Uri.parse(Constants.URL.ALVINHKH));
-                            startActivity(i);
-                        }
-                    })
-                    .setNegativeButton(R.string.open_source_license, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            Intent i = new Intent("com.alvinhkh.buseta.OpenSourceLicenses.OPEN");
-                            startActivity(i);
-                        }
-                    })
-                    .show();
+        } else if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
         }
         return super.onOptionsItemSelected(item);
     }

@@ -21,6 +21,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.alvinhkh.buseta.preference.SettingsHelper;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -31,7 +32,6 @@ import com.koushikdutta.ion.Ion;
 import com.koushikdutta.ion.Response;
 
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -55,8 +55,8 @@ public class RouteStopFragment extends Fragment
     private ListView mListView;
     private TextView mEmptyText;
     private ProgressBar mProgressBar;
-
     private RouteStopAdapter mAdapter;
+
     private String _route_no = null;
     private String _route_bound = null;
     private String _route_origin = null;
@@ -66,6 +66,7 @@ public class RouteStopFragment extends Fragment
     private String etaApi = "";
     private String getRouteInfoApi = "";
     private Boolean savedState = false;
+    private SettingsHelper settingsHelper = null;
 
     // Runnable to get all stops eta
     int iEta = 0;
@@ -111,6 +112,7 @@ public class RouteStopFragment extends Fragment
                              final Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_listview, container, false);
         mContext = super.getActivity();
+        settingsHelper = new SettingsHelper().parse(mContext.getApplicationContext());
         // Get arguments
         _route_no = getArguments().getString("route_no");
         _route_bound = getArguments().getString("route_bound");
@@ -153,7 +155,8 @@ public class RouteStopFragment extends Fragment
             getRouteInfoApi = Constants.URL.ROUTE_INFO;
             // Get Route Stops
             getRouteStops(_route_no, _route_bound);
-            //findEtaApiUrl();
+            if (settingsHelper.getEtaApi() == 1)
+                findEtaApiUrl();
         }
         mListView.setAdapter(mAdapter);
         mListView.setOnItemLongClickListener(this);
@@ -321,8 +324,7 @@ public class RouteStopFragment extends Fragment
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         mMenu = menu;
-        menu.findItem(R.id.action_clear_history).setVisible(false);
-        menu.findItem(R.id.action_about).setVisible(false);
+        menu.findItem(R.id.action_settings).setVisible(false);
         menu.findItem(R.id.action_refresh).setVisible(savedState);
     }
 
@@ -490,7 +492,15 @@ public class RouteStopFragment extends Fragment
     }
 
     private void getETA(final int position, final String stop_code) {
-        getETAv2(position, stop_code);
+        switch (settingsHelper.getEtaApi()) {
+            case 2:
+                getETAv2(position, stop_code);
+                break;
+            case 1:
+            default:
+                getETAv1(position, stop_code);
+                break;
+        }
     }
 
     private void getETAv2(final int position, final String stop_code) {
@@ -583,6 +593,7 @@ public class RouteStopFragment extends Fragment
                 .setHeader("Pragma", "no-cache")
                 .setHeader("User-Agent", Constants.URL.REQUEST_UA)
                 .setBodyParameter("route", _route_no)
+                .setBodyParameter("route_no", _route_no)
                 .setBodyParameter("bound", _route_bound)
                 .setBodyParameter("busstop", bus_stop)
                 .setBodyParameter("lang", "tc")
@@ -687,10 +698,22 @@ public class RouteStopFragment extends Fragment
                                 if (m2.find() && m2.groupCount() == 2) {
                                     etaApi = Constants.URL.KMB + Constants.URL.PATH_ETA_API
                                             + m2.group(1) + ".php?" + m2.group(2);
-                                    Log.d(TAG, "etaApi: found " + etaApi);
+                                    Log.d(TAG, "etaApi: found-nd " + etaApi);
                                 } else {
-                                    Log.d(TAG, "etaApi: fail " + etaApi);
+
+                                    Pattern p3 = Pattern.compile("\\|([^\\|]*)\\|(t[a-zA-Z0-9_.]*)\\|eq");
+                                    Matcher m3 = p3.matcher(result);
+
+                                    if (m3.find() && m3.groupCount() == 2) {
+                                        etaApi = Constants.URL.KMB + Constants.URL.PATH_ETA_API
+                                                + m3.group(1) + ".php?" + m3.group(2);
+                                        Log.d(TAG, "etaApi: found-rd " + etaApi);
+                                    } else {
+                                        Log.d(TAG, "etaApi: fail " + etaApi);
+                                    }
+
                                 }
+
                             }
                         }
                         if (mSwipeRefreshLayout != null)
