@@ -222,10 +222,10 @@ public class RouteStopFragment extends Fragment
             RouteStop object = mAdapter.getItem(position);
             if (null != object.eta) {
                 // Request Time
+                SimpleDateFormat display_format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
                 String server_time = "";
                 Date server_date = null;
                 if (null != object.eta.server_time && !object.eta.server_time.equals("")) {
-                    SimpleDateFormat display_format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
                     if (object.eta.api_version == 2) {
                         server_date = new Date(Long.parseLong(object.eta.server_time));
                     } else if (object.eta.api_version == 1) {
@@ -238,6 +238,16 @@ public class RouteStopFragment extends Fragment
                     }
                     server_time = (null != server_date) ?
                             display_format.format(server_date) : object.eta.server_time;
+                }
+                // last updated
+                String updated_time = "";
+                Date updated_date = null;
+                if (null != object.eta.updated && !object.eta.updated.equals("")) {
+                    if (object.eta.api_version == 2) {
+                        updated_date = new Date(Long.parseLong(object.eta.updated));
+                    }
+                    updated_time = (null != updated_date) ?
+                            display_format.format(updated_date) : object.eta.updated;
                 }
                 // ETAs
                 RouteStopETA routeStopETA = object.eta;
@@ -311,7 +321,14 @@ public class RouteStopFragment extends Fragment
                         sb.append("\n");
                 }
                 sb.append("\n\n");
-                sb.append(server_time);
+                if (null != server_time && !server_time.equals("")) {
+                    sb.append("\n");
+                    sb.append(getString(R.string.message_server_time, server_time));
+                }
+                if (null != updated_time && !updated_time.equals("")) {
+                    sb.append("\n");
+                    sb.append(getString(R.string.message_last_updated, updated_time));
+                }
                 new AlertDialog.Builder(mContext)
                         .setTitle(textView_name.getText())
                         .setMessage(sb.toString()).show();
@@ -549,6 +566,7 @@ public class RouteStopFragment extends Fragment
                             routeStopETA = new RouteStopETA();
                             routeStopETA.api_version = 2;
                             routeStopETA.seq = stopSeq;
+                            routeStopETA.updated = result.get("updated").getAsString();
                             routeStopETA.server_time = result.get("generated").getAsString();
                             StringBuilder etas = new StringBuilder();
                             StringBuilder expires = new StringBuilder();

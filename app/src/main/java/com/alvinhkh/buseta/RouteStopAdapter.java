@@ -22,7 +22,7 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
         TextView stop_name;
         TextView stop_code;
         TextView eta;
-        TextView server_time;
+        TextView updated_time;
         TextView fare;
     }
 
@@ -43,7 +43,7 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
             viewHolder.stop_name = (TextView) convertView.findViewById(R.id.stop_name);
             viewHolder.stop_code = (TextView) convertView.findViewById(R.id.stop_code);
             viewHolder.eta = (TextView) convertView.findViewById(R.id.eta);
-            viewHolder.server_time = (TextView) convertView.findViewById(R.id.server_time);
+            viewHolder.updated_time = (TextView) convertView.findViewById(R.id.updated_time);
             viewHolder.fare = (TextView) convertView.findViewById(R.id.fare);
             convertView.setTag(viewHolder);
         } else {
@@ -62,7 +62,7 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
                     // route does not support eta
                     viewHolder.eta.setText(R.string.message_no_data);
                     //viewHolder.eta.setText(R.string.message_route_not_support_eta);
-                    viewHolder.server_time.setText("");
+                    viewHolder.updated_time.setText("");
                 } else {
                     // Request Time
                     String server_time = "";
@@ -82,7 +82,8 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
                         server_time = (null != server_date) ?
                                 display_format.format(server_date) : object.eta.server_time;
                     }
-                    viewHolder.server_time.setText(server_time);
+                    viewHolder.updated_time.setText(server_time);
+                    viewHolder.updated_time.setVisibility(View.GONE);
                     // ETAs
                     if (object.eta.etas.equals("")) {
                         // eta not available
@@ -175,7 +176,7 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
                 }
             } else {
                 viewHolder.eta.setText("");
-                viewHolder.server_time.setText("");
+                viewHolder.updated_time.setText("");
             }
             if (null != object.fare && !object.fare.equals("$0.00")) {
                 viewHolder.fare.setText(object.fare);

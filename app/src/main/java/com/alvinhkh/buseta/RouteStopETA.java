@@ -24,6 +24,8 @@ public class RouteStopETA implements Parcelable {
     @SerializedName("server_time")
     public String server_time;
 
+    public String updated;
+
     // Parcelling
     /**
      * Constructs a RouteStopETA from a Parcel
@@ -35,6 +37,7 @@ public class RouteStopETA implements Parcelable {
         this.etas = p.readString();
         this.expires = p.readString();
         this.server_time = p.readString();
+        this.updated = p.readString();
     }
 
     @Override
@@ -50,6 +53,7 @@ public class RouteStopETA implements Parcelable {
         p.writeString(this.etas);
         p.writeString(this.expires);
         p.writeString(this.server_time);
+        p.writeString(this.updated);
     }
     // Method to recreate a RouteStopETA from a Parcel
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {

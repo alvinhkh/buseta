@@ -13,69 +13,70 @@
         android:layout_weight="1"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
-        android:orientation="horizontal">
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/stop_code"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Stop Code" />
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:orientation="vertical">
+            android:orientation="horizontal"
+            android:layout_gravity="left">
 
             <TextView
                 android:id="@+id/stop_name"
                 style="@android:style/TextAppearance.Medium"
+                android:layout_gravity="center_vertical"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:singleLine="true"
-                android:text="Name" />
-
-            <TextView
-                android:id="@+id/stop_code"
-                android:visibility="gone"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:singleLine="true"
-                android:text="Stop Code" />
-
-            <TextView
-                android:id="@+id/eta"
-                style="@android:style/TextAppearance.Small"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:singleLine="true"
-                android:text="ETA"
-                android:textColor="@color/highlighted_text" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_centerVertical="true"
-            android:orientation="vertical"
-            android:layout_gravity="right"
-            android:layout_marginLeft="8dp">
+                android:text="@string/stop_name" />
 
             <TextView
                 android:id="@+id/fare"
                 style="@android:style/TextAppearance.Small"
                 android:layout_width="wrap_content"
-                android:layout_height="0dp"
-                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_gravity="right|top"
+                android:layout_marginLeft="8dp"
                 android:singleLine="true"
-                android:layout_gravity="right"
-                android:text="..." />
+                android:text="@string/dots" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerVertical="true"
+            android:orientation="horizontal"
+            android:layout_gravity="left">
 
             <TextView
-                android:id="@+id/server_time"
+                android:id="@+id/eta"
+                style="@android:style/TextAppearance.Small"
+                android:textColor="@color/highlighted_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_gravity="center_vertical"
+                android:singleLine="true"
+                android:text="@string/eta" />
+
+            <TextView
+                android:id="@+id/updated_time"
                 style="@style/TextAppearance.XSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="right"
+                android:layout_gravity="bottom|right"
+                android:layout_marginLeft="8dp"
                 android:singleLine="true"
                 android:text="-" />
 
