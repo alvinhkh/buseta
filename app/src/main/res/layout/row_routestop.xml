@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:text="Stop Code" />
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_weight="1"
             android:layout_height="wrap_content"
@@ -32,25 +32,27 @@
 
             <TextView
                 android:id="@+id/stop_name"
-                style="@android:style/TextAppearance.Medium"
-                android:layout_gravity="center_vertical"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:layout_toLeftOf="@+id/eta"
                 android:singleLine="true"
+                style="@android:style/TextAppearance.Medium"
                 android:text="@string/stop_name" />
 
             <TextView
-                android:id="@+id/fare"
-                style="@android:style/TextAppearance.Small"
+                android:id="@+id/eta"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="right|top"
-                android:layout_marginLeft="8dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
                 android:singleLine="true"
-                android:text="@string/dots" />
+                style="@android:style/TextAppearance.Medium"
+                android:textColor="@color/highlighted_text"
+                android:text="@string/eta" />
 
-        </LinearLayout>
+        </RelativeLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -60,25 +62,34 @@
             android:layout_gravity="left">
 
             <TextView
-                android:id="@+id/eta"
+                android:id="@+id/fare"
                 style="@android:style/TextAppearance.Small"
-                android:textColor="@color/highlighted_text"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_gravity="center_vertical"
                 android:singleLine="true"
-                android:text="@string/eta" />
+                android:text="@string/dots"
+                android:layout_gravity="bottom|left" />
 
             <TextView
                 android:id="@+id/updated_time"
                 style="@style/TextAppearance.XSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="bottom|right"
+                android:layout_gravity="bottom"
                 android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
                 android:singleLine="true"
                 android:text="-" />
+
+            <TextView
+                android:id="@+id/eta_more"
+                style="@android:style/TextAppearance.Small"
+                android:textColor="@color/primary_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:gravity="bottom|right|end"
+                android:text="@string/eta" />
 
         </LinearLayout>
 

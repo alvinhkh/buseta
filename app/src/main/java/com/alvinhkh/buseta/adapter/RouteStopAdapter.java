@@ -1,6 +1,7 @@
 package com.alvinhkh.buseta.adapter;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,17 +21,22 @@ import java.util.regex.Pattern;
 
 public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
 
+    private Context mContext;
+    private int greyOutMinutes = 3;
+
     // View lookup cache
     private static class ViewHolder {
         TextView stop_name;
         TextView stop_code;
         TextView eta;
-        TextView updated_time;
+        TextView eta_more;
         TextView fare;
+        TextView updated_time;
     }
 
     public RouteStopAdapter(Context context) {
         super(context, R.layout.row_routestop);
+        mContext = context;
     }
 
     @Override
@@ -46,8 +52,9 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
             viewHolder.stop_name = (TextView) convertView.findViewById(R.id.stop_name);
             viewHolder.stop_code = (TextView) convertView.findViewById(R.id.stop_code);
             viewHolder.eta = (TextView) convertView.findViewById(R.id.eta);
-            viewHolder.updated_time = (TextView) convertView.findViewById(R.id.updated_time);
+            viewHolder.eta_more = (TextView) convertView.findViewById(R.id.eta_more);
             viewHolder.fare = (TextView) convertView.findViewById(R.id.fare);
+            viewHolder.updated_time = (TextView) convertView.findViewById(R.id.updated_time);
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
@@ -56,15 +63,19 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
         if (object != null) {
             viewHolder.stop_name.setText(object.name_tc);
             viewHolder.stop_code.setText(object.code);
+            viewHolder.eta.setText("");
+            viewHolder.eta.setTextColor(ContextCompat.getColor(mContext, R.color.highlighted_text));
+            viewHolder.eta_more.setText("");
+            viewHolder.eta_more.setTextColor(ContextCompat.getColor(mContext, R.color.primary_text));
+            viewHolder.updated_time.setText("");
+            viewHolder.fare.setText("");
             if (object.eta_loading != null && object.eta_loading == true) {
-                viewHolder.eta.setText(R.string.message_loading);
+                viewHolder.eta_more.setText(R.string.message_loading);
             } else if (object.eta_fail != null && object.eta_fail == true) {
-                viewHolder.eta.setText(R.string.message_fail_to_request);
+                viewHolder.eta_more.setText(R.string.message_fail_to_request);
             } else if (null != object.eta) {
                 if (object.eta.etas.equals("") && object.eta.expires.equals("")) {
-                    // route does not support eta
-                    viewHolder.eta.setText(R.string.message_no_data);
-                    //viewHolder.eta.setText(R.string.message_route_not_support_eta);
+                    viewHolder.eta_more.setText(R.string.message_no_data); // route does not support eta
                     viewHolder.updated_time.setText("");
                 } else {
                     // Request Time
@@ -121,6 +132,16 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
                                         sb.append(" (");
                                         sb.append(etaTime);
                                         sb.append(")");
+                                        // grey out
+                                        if (i == 0)
+                                        viewHolder.eta.setTextColor((Integer.parseInt(minutes) <= -greyOutMinutes) ?
+                                                        mContext.getColor(R.color.diminish_text) :
+                                                        mContext.getColor(R.color.highlighted_text));
+                                        else
+                                            viewHolder.eta_more.setTextColor(
+                                                    (Integer.parseInt(minutes) <= -greyOutMinutes && i == etas.length - 1) ?
+                                                            mContext.getColor(R.color.diminish_text) :
+                                                            mContext.getColor(R.color.primary_text));
                                     }
                                 } else if (object.eta.api_version == 2) {
                                     // API v2 from Mobile v2, with exact time
@@ -152,9 +173,20 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
                                                 minutes = (int) ((etaDate.getTime() / 60000) -
                                                         ((server_date.getTime() + differences) / 60000));
                                             }
-                                            // minutes should be 0 to within a day
-                                            if (minutes >= 0 && minutes < 1 * 24 * 60 * 60 * 1000)
+                                            if (minutes >= 0 && minutes < 24 * 60) {
+                                                // minutes should be 0 to within a day
                                                 etaMinutes = String.valueOf(minutes);
+                                            }
+                                            // grey out
+                                            if (i == 0)
+                                                viewHolder.eta.setTextColor((minutes <= -greyOutMinutes) ?
+                                                        ContextCompat.getColor(mContext, R.color.diminish_text) :
+                                                        ContextCompat.getColor(mContext, R.color.highlighted_text));
+                                            else
+                                                viewHolder.eta_more.setTextColor(
+                                                        (minutes <= -greyOutMinutes && i == etas.length - 1) ?
+                                                                ContextCompat.getColor(mContext, R.color.diminish_text) :
+                                                                ContextCompat.getColor(mContext, R.color.primary_text));
                                         } catch (ParseException ep) {
                                             ep.printStackTrace();
                                         }
@@ -170,21 +202,21 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
                                         }
                                     }
                                 }
-                                if (i < etas.length - 1)
-                                    sb.append(" ");
+                                if (i == 0) {
+                                    viewHolder.eta.setText(sb.toString());
+                                    sb = new StringBuilder();
+                                } else {
+                                    if (i < etas.length - 1)
+                                        sb.append(" ");
+                                }
                             }
-                            viewHolder.eta.setText(sb.toString());
+                            viewHolder.eta_more.setText(sb.toString());
                         }
                     }
                 }
-            } else {
-                viewHolder.eta.setText("");
-                viewHolder.updated_time.setText("");
             }
             if (null != object.fare && !object.fare.equals("$0.00")) {
                 viewHolder.fare.setText(object.fare);
-            } else {
-                viewHolder.fare.setText("");
             }
         }
         // Return the completed view to render on screen

@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 def versionMajor = 0
 def versionMinor = 0
 def versionPatch = 3
-def versionBuild = 1 // bump for dogfood builds, public betas, etc.
+def versionBuild = 2 // bump for dogfood builds, public betas, etc.
 
 android {
     compileSdkVersion 23
