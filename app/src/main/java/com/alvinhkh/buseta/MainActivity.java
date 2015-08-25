@@ -29,6 +29,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.alvinhkh.buseta.preference.SettingsActivity;
+import com.koushikdutta.ion.Ion;
 
 public class MainActivity extends AppCompatActivity
         implements SearchView.OnQueryTextListener,
@@ -212,6 +213,9 @@ public class MainActivity extends AppCompatActivity
     public void onDestroy() {
         if (null != mDatabase)
             mDatabase.close();
+        Ion.getDefault(getBaseContext()).cancelAll(getBaseContext());
+        Ion.getDefault(getBaseContext()).getCache().clear();
+        Ion.getDefault(getBaseContext()).getBitmapCache().clear();
         super.onDestroy();
     }
 
