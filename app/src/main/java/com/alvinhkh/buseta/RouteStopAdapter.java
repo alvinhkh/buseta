@@ -1,7 +1,6 @@
 package com.alvinhkh.buseta;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
+
     // View lookup cache
     private static class ViewHolder {
         TextView stop_name;

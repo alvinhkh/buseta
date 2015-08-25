@@ -8,9 +8,9 @@ public class RouteNews implements Parcelable {
     public RouteNews() {
     }
 
-    public String title;
+    public String title = null;
 
-    public String link;
+    public String link = null;
 
     // Parcelling
     /**

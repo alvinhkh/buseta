@@ -215,7 +215,6 @@ public class RouteNewsFragment extends Fragment
                             Elements li = doc.select("li");
                             if (li.size() > 0) {
                                 //  Got Bus Route News
-
                                 for (int i = 0; i < li.size(); i++) {
                                     RouteNews routeNews = new RouteNews();
                                     routeNews.title = li.get(i).text();
@@ -226,14 +225,13 @@ public class RouteNewsFragment extends Fragment
                                         routeNews.link = matcher.group(1);
                                     mAdapter.add(routeNews);
                                 }
-
-                                if (mEmptyText != null)
-                                    mEmptyText.setText("");
-
                             } else {
-                                if (mEmptyText != null)
-                                    mEmptyText.setText(R.string.message_no_passenger_notice);
+                                RouteNews routeNews = new RouteNews();
+                                routeNews.title = getString(R.string.message_no_passenger_notice);
+                                mAdapter.add(routeNews);
                             }
+                            if (mEmptyText != null)
+                                mEmptyText.setText("");
                         }
                         if (mProgressBar != null)
                             mProgressBar.setVisibility(View.GONE);

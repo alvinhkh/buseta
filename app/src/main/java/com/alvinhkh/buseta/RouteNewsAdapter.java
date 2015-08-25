@@ -34,8 +34,8 @@ public class RouteNewsAdapter extends StateSavingArrayAdapter<RouteNews> {
             viewHolder = (ViewHolder) convertView.getTag();
         }
         // Populate the data into the template view using the data object
-        viewHolder.title.setText(object.title);
-        viewHolder.image_link.setText(object.link);
+        viewHolder.title.setText(null != object.title ? object.title : "");
+        viewHolder.image_link.setText(null != object.link ? object.link : "");
         viewHolder.image_link.setVisibility(View.GONE);
         // Return the completed view to render on screen
         return convertView;

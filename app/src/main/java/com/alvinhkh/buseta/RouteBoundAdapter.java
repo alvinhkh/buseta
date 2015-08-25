@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 public class RouteBoundAdapter extends StateSavingArrayAdapter<RouteBound> {
+
     // View lookup cache
     private static class ViewHolder {
         TextView origin;
