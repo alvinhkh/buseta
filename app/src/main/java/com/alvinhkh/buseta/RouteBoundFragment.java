@@ -255,7 +255,6 @@ public class RouteBoundFragment extends Fragment
                                     mEmptyText.setText(result.get("message").getAsString());
                             }
                         } else {
-                            Log.d(TAG, "Response: " + response.getHeaders().code() + " ");
                             switchGetRouteInfoApi();
                             getRouteBounds(_route_no);
                         }

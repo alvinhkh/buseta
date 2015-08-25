@@ -28,12 +28,14 @@ public class SuggestionsDatabase {
     }
 
     public void close() {
-        if (null != db)
+        if (null != db && db.isOpen())
             db.close();
     }
 
     public long insert(ContentValues values) {
-        return db.insert(TABLE_NAME, null, values);
+        return (db.isOpen()) ?
+                db.insert(TABLE_NAME, null, values)
+                : -1;
     }
 
     public long insertDefault(String text) {
@@ -41,7 +43,9 @@ public class SuggestionsDatabase {
         values.put(COLUMN_TEXT, text);
         values.put(COLUMN_TYPE, TYPE_DEFAULT);
         values.put(COLUMN_DATE, "0");
-        return db.insert(TABLE_NAME, null, values);
+        return (db.isOpen()) ?
+                db.insert(TABLE_NAME, null, values)
+                : -1;
     }
 
     public long insertHistory(String text) {
@@ -49,11 +53,14 @@ public class SuggestionsDatabase {
         values.put(COLUMN_TEXT, text);
         values.put(COLUMN_TYPE, TYPE_HISTORY);
         values.put(COLUMN_DATE, String.valueOf(System.currentTimeMillis() / 1000L));
-        return db.insert(TABLE_NAME, null, values);
+        return (db.isOpen()) ?
+                db.insert(TABLE_NAME, null, values)
+                : -1;
     }
 
     public Cursor get(String text) {
-        return db.rawQuery("SELECT * FROM (" +
+        return (db.isOpen()) ?
+                db.rawQuery("SELECT * FROM (" +
                 // 3 history
                 " SELECT * " + " FROM " + TABLE_NAME +
                 " WHERE " + COLUMN_TEXT + " LIKE '" + text + "%'" +
@@ -76,7 +83,8 @@ public class SuggestionsDatabase {
                 " ORDER BY " + COLUMN_TEXT + " ASC" +
                 " )" +
                 " ORDER BY " + COLUMN_DATE + " DESC"
-                , null);
+                , null)
+        : null;
     }
 
     public Cursor getByType(String text, String type) {
@@ -87,7 +95,7 @@ public class SuggestionsDatabase {
         if (type.equals(TYPE_HISTORY)) {
             orderBy = COLUMN_DATE + " DESC";
         }
-        return db.query(TABLE_NAME,
+        return (db.isOpen()) ? db.query(TABLE_NAME,
                 new String[]{
                         COLUMN_ID,
                         COLUMN_TEXT,
@@ -96,7 +104,7 @@ public class SuggestionsDatabase {
                 },
                 COLUMN_TEXT + " LIKE '" + text + "%'"
                         + " AND " + COLUMN_TYPE + " = '" + type + "'"
-                , null, null, null, orderBy, limit);
+                , null, null, null, orderBy, limit) : null;
     }
 
     public Cursor getHistory() {
@@ -107,18 +115,23 @@ public class SuggestionsDatabase {
     }
 
     public boolean clearHistory() {
-        return db.delete(TABLE_NAME, COLUMN_TYPE + "=?",
-                new String[]{TYPE_HISTORY}) > 0;
+        return (db.isOpen()) ?
+                db.delete(TABLE_NAME, COLUMN_TYPE + "=?",
+                new String[]{TYPE_HISTORY}) > 0 : false;
     }
 
     public boolean deleteHistory(String text) {
-        return db.delete(TABLE_NAME, COLUMN_TYPE + "=? AND " + COLUMN_TEXT + "=?",
-                new String[]{TYPE_HISTORY, text}) > 0;
+        return (db.isOpen()) ?
+                db.delete(TABLE_NAME, COLUMN_TYPE + "=? AND " + COLUMN_TEXT + "=?",
+                new String[]{TYPE_HISTORY, text}) > 0
+                : false;
     }
 
     public boolean clearDefault() {
-        return db.delete(TABLE_NAME, COLUMN_TYPE + "=?",
-                new String[]{TYPE_DEFAULT}) > 0;
+        return (db.isOpen()) ?
+                db.delete(TABLE_NAME, COLUMN_TYPE + "=?",
+                new String[]{TYPE_DEFAULT}) > 0
+                : false;
     }
 
     private class Helper extends SQLiteOpenHelper {

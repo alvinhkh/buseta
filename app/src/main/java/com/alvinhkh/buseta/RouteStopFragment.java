@@ -409,7 +409,6 @@ public class RouteStopFragment extends Fragment
                                     mEmptyText.setText(result.get("message").getAsString());
                             }
                         } else {
-                            Log.d(TAG, "Response: " + response.getHeaders().code() + " ");
                             switchGetRouteInfoApi();
                             getRouteStops(route_no, route_bound);
                         }
