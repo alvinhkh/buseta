@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta;
+package com.alvinhkh.buseta.holder;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;

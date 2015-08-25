@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta;
+package com.alvinhkh.buseta.fragment;
 
 import android.content.Context;
 import android.net.Uri;
@@ -21,6 +21,12 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.alvinhkh.buseta.Constants;
+import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.holder.RouteStop;
+import com.alvinhkh.buseta.adapter.RouteStopAdapter;
+import com.alvinhkh.buseta.holder.RouteStopETA;
+import com.alvinhkh.buseta.holder.RouteStopMap;
 import com.alvinhkh.buseta.preference.SettingsHelper;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;

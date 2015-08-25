@@ -28,6 +28,13 @@ import android.widget.FilterQueryProvider;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.alvinhkh.buseta.adapter.SuggestionSimpleCursorAdapter;
+import com.alvinhkh.buseta.database.SuggestionsDatabase;
+import com.alvinhkh.buseta.fragment.MainFragment;
+import com.alvinhkh.buseta.fragment.NoticeImageFragment;
+import com.alvinhkh.buseta.fragment.RouteBoundFragment;
+import com.alvinhkh.buseta.fragment.RouteNewsFragment;
+import com.alvinhkh.buseta.fragment.RouteStopFragment;
 import com.alvinhkh.buseta.preference.SettingsActivity;
 import com.koushikdutta.ion.Ion;
 

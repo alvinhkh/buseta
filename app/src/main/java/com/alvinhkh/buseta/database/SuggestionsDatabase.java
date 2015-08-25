@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta;
+package com.alvinhkh.buseta.database;
 
 import android.content.ContentValues;
 import android.content.Context;

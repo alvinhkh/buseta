@@ -1,10 +1,13 @@
-package com.alvinhkh.buseta;
+package com.alvinhkh.buseta.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.holder.RouteNews;
 
 public class RouteNewsAdapter extends StateSavingArrayAdapter<RouteNews> {
     // View lookup cache

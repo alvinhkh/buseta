@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta;
+package com.alvinhkh.buseta.holder;
 
 import android.os.Parcel;
 import android.os.Parcelable;

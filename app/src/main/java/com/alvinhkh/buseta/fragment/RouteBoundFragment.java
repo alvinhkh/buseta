@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta;
+package com.alvinhkh.buseta.fragment;
 
 import android.content.Context;
 import android.net.Uri;
@@ -17,6 +17,12 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.alvinhkh.buseta.Constants;
+import com.alvinhkh.buseta.MainActivity;
+import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.holder.RouteBound;
+import com.alvinhkh.buseta.adapter.RouteBoundAdapter;
+import com.alvinhkh.buseta.database.SuggestionsDatabase;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

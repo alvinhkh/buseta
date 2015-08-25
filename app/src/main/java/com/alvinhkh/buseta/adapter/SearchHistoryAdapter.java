@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta;
+package com.alvinhkh.buseta.adapter;
 
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -10,6 +10,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.alvinhkh.buseta.MainActivity;
+import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.holder.RecyclerViewHolder;
+import com.alvinhkh.buseta.holder.SearchHistory;
+import com.alvinhkh.buseta.database.SuggestionsDatabase;
 
 public class SearchHistoryAdapter extends RecyclerView.Adapter<SearchHistoryAdapter.ViewHolder> {
 
@@ -81,7 +87,7 @@ public class SearchHistoryAdapter extends RecyclerView.Adapter<SearchHistoryAdap
         View v = LayoutInflater.
                 from(viewGroup.getContext()).
                 inflate(R.layout.card_route, viewGroup, false);
-        SearchHistoryAdapter.ViewHolder vh = new ViewHolder(v, new ViewHolder.ViewHolderClicks() {
+        SearchHistoryAdapter.ViewHolder vh = new ViewHolder(v, new RecyclerViewHolder.ViewHolderClicks() {
             public void onClickView(View caller) {
                 TextView textView = (TextView) caller.findViewById(android.R.id.text1);
                 String _route_no = textView.getText().toString();

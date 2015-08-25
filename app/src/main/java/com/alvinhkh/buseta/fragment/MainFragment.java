@@ -1,10 +1,9 @@
-package com.alvinhkh.buseta;
+package com.alvinhkh.buseta.fragment;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.Cursor;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
@@ -18,6 +17,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+
+import com.alvinhkh.buseta.Constants;
+import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.adapter.SearchHistoryAdapter;
+import com.alvinhkh.buseta.database.SuggestionsDatabase;
 
 public class MainFragment extends Fragment {
 

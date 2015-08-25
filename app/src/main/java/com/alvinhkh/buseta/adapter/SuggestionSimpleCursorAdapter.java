@@ -1,8 +1,10 @@
-package com.alvinhkh.buseta;
+package com.alvinhkh.buseta.adapter;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.support.v4.widget.SimpleCursorAdapter;
+
+import com.alvinhkh.buseta.database.SuggestionsDatabase;
 
 public class SuggestionSimpleCursorAdapter extends SimpleCursorAdapter {
 

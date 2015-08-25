@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta;
+package com.alvinhkh.buseta.fragment;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -20,6 +20,11 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.alvinhkh.buseta.Constants;
+import com.alvinhkh.buseta.MainActivity;
+import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.holder.RouteNews;
+import com.alvinhkh.buseta.adapter.RouteNewsAdapter;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
 
