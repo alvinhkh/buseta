@@ -134,14 +134,14 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
                                         sb.append(")");
                                         // grey out
                                         if (i == 0)
-                                        viewHolder.eta.setTextColor((Integer.parseInt(minutes) <= -greyOutMinutes) ?
-                                                        mContext.getColor(R.color.diminish_text) :
-                                                        mContext.getColor(R.color.highlighted_text));
+                                            viewHolder.eta.setTextColor((Integer.parseInt(minutes) <= -greyOutMinutes) ?
+                                                    ContextCompat.getColor(mContext, R.color.diminish_text) :
+                                                    ContextCompat.getColor(mContext, R.color.highlighted_text));
                                         else
                                             viewHolder.eta_more.setTextColor(
                                                     (Integer.parseInt(minutes) <= -greyOutMinutes && i == etas.length - 1) ?
-                                                            mContext.getColor(R.color.diminish_text) :
-                                                            mContext.getColor(R.color.primary_text));
+                                                            ContextCompat.getColor(mContext, R.color.diminish_text) :
+                                                            ContextCompat.getColor(mContext, R.color.primary_text));
                                     }
                                 } else if (object.eta.api_version == 2) {
                                     // API v2 from Mobile v2, with exact time
