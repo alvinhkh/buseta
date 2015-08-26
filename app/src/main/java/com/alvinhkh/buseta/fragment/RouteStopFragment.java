@@ -96,6 +96,17 @@ public class RouteStopFragment extends Fragment
         }
     };
 
+    Handler mAutoRefreshHandler = new Handler();
+    Runnable mAutoRefreshRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (null != mAdapter)
+                mAdapter.notifyDataSetChanged();
+            mAutoRefreshHandler.postDelayed(mAutoRefreshRunnable, 30 * 1000); // every half minute
+        }
+    };
+
+
     public RouteStopFragment() {
     }
 
@@ -191,6 +202,15 @@ public class RouteStopFragment extends Fragment
             mActionBar.setTitle(_route_no);
             mActionBar.setSubtitle(getString(R.string.destination, _route_destination));
         }
+        if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
+            mAutoRefreshHandler.post(mAutoRefreshRunnable);
+    }
+
+    @Override
+    public void onPause() {
+        if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
+            mAutoRefreshHandler.removeCallbacks(mAutoRefreshRunnable);
+        super.onPause();
     }
 
     @Override
@@ -208,6 +228,8 @@ public class RouteStopFragment extends Fragment
             view.setVisibility(View.GONE);
         if (null != mEtaHandler && null != mEtaRunnable)
             mEtaHandler.removeCallbacks(mEtaRunnable);
+        if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
+            mAutoRefreshHandler.removeCallbacks(mAutoRefreshRunnable);
         Ion.getDefault(mContext).cancelAll(mContext);
         super.onDestroyView();
     }
