@@ -6,7 +6,7 @@ import android.preference.PreferenceManager;
 
 public class SettingsHelper {
 
-    private Integer etaApi = 1;
+    private Integer etaApi = 2;
 
     public SettingsHelper() {
     }
@@ -22,13 +22,13 @@ public class SettingsHelper {
     public SettingsHelper parse(Context ctx) {
         SharedPreferences sPref = PreferenceManager.getDefaultSharedPreferences(ctx);
         try {
-            setEtaApi(Integer.valueOf(sPref.getString("eta_version", "1")));
+            setEtaApi(Integer.valueOf(sPref.getString("eta_version", "2")));
         } catch (ClassCastException e) {
             e.printStackTrace();
-            setEtaApi(1);
+            setEtaApi(2);
         } catch (NumberFormatException e) {
             e.printStackTrace();
-            setEtaApi(1);
+            setEtaApi(2);
         }
         return this;
     }

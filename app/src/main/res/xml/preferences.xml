@@ -19,7 +19,7 @@
         <ListPreference
             android:key="eta_version"
             android:title="@string/title_eta_version"
-            android:defaultValue="1"
+            android:defaultValue="2"
             android:entries="@array/eta_version_entries"
             android:entryValues="@array/eta_version_values"
             android:negativeButtonText="@string/action_cancel"

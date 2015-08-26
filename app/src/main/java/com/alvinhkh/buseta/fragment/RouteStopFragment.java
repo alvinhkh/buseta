@@ -538,12 +538,12 @@ public class RouteStopFragment extends Fragment
 
     private void getETA(final int position, final String stop_code) {
         switch (settingsHelper.getEtaApi()) {
-            case 2:
-                getETAv2(position, stop_code);
-                break;
             case 1:
-            default:
                 getETAv1(position, stop_code);
+                break;
+            case 2:
+            default:
+                getETAv2(position, stop_code);
                 break;
         }
     }
