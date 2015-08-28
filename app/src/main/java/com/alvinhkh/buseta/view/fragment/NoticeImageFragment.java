@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.fragment;
+package com.alvinhkh.buseta.view.fragment;
 
 import android.content.Context;
 import android.graphics.Bitmap;

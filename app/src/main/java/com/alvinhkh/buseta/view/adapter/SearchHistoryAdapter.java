@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.adapter;
+package com.alvinhkh.buseta.view.adapter;
 
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.alvinhkh.buseta.MainActivity;
+import com.alvinhkh.buseta.view.MainActivity;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RecyclerViewHolder;
 import com.alvinhkh.buseta.holder.SearchHistory;

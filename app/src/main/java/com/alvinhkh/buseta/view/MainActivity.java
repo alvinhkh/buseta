@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta;
+package com.alvinhkh.buseta.view;
 
 import android.app.SearchManager;
 import android.content.Context;
@@ -28,13 +28,15 @@ import android.widget.FilterQueryProvider;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.alvinhkh.buseta.adapter.SuggestionSimpleCursorAdapter;
+import com.alvinhkh.buseta.Constants;
+import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.view.adapter.SuggestionSimpleCursorAdapter;
 import com.alvinhkh.buseta.database.SuggestionsDatabase;
-import com.alvinhkh.buseta.fragment.MainFragment;
-import com.alvinhkh.buseta.fragment.NoticeImageFragment;
-import com.alvinhkh.buseta.fragment.RouteBoundFragment;
-import com.alvinhkh.buseta.fragment.RouteNewsFragment;
-import com.alvinhkh.buseta.fragment.RouteStopFragment;
+import com.alvinhkh.buseta.view.fragment.MainFragment;
+import com.alvinhkh.buseta.view.fragment.NoticeImageFragment;
+import com.alvinhkh.buseta.view.fragment.RouteBoundFragment;
+import com.alvinhkh.buseta.view.fragment.RouteNewsFragment;
+import com.alvinhkh.buseta.view.fragment.RouteStopFragment;
 import com.alvinhkh.buseta.preference.SettingsActivity;
 import com.koushikdutta.ion.Ion;
 

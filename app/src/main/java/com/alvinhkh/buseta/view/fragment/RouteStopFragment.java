@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.fragment;
+package com.alvinhkh.buseta.view.fragment;
 
 import android.content.Context;
 import android.net.Uri;
@@ -24,7 +24,7 @@ import android.widget.TextView;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RouteStop;
-import com.alvinhkh.buseta.adapter.RouteStopAdapter;
+import com.alvinhkh.buseta.view.adapter.RouteStopAdapter;
 import com.alvinhkh.buseta.holder.RouteStopETA;
 import com.alvinhkh.buseta.holder.RouteStopMap;
 import com.alvinhkh.buseta.preference.SettingsHelper;

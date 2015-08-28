@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.fragment;
+package com.alvinhkh.buseta.view.fragment;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -20,7 +20,7 @@ import android.widget.Button;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.adapter.SearchHistoryAdapter;
+import com.alvinhkh.buseta.view.adapter.SearchHistoryAdapter;
 import com.alvinhkh.buseta.database.SuggestionsDatabase;
 
 public class MainFragment extends Fragment {
