@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
@@ -25,9 +26,13 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
 
     private Context mContext;
     private ImageView iStar;
+    private ImageView iRefresh;
+    private ProgressBar progressBar;
     private TextView tStopName;
     private TextView tEta;
+    private TextView lServerTime;
     private TextView tServerTime;
+    private TextView lLastUpdated;
     private TextView tLastUpdated;
 
     RouteStop object = null;
@@ -45,10 +50,16 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
         mContext = RouteEtaDialog.this;
         // get widgets
         iStar = (ImageView) findViewById(R.id.star);
+        iRefresh = (ImageView) findViewById(R.id.refresh);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
         tStopName = (TextView) findViewById(R.id.stop_name);
         tEta = (TextView) findViewById(android.R.id.text1);
+        lServerTime = (TextView) findViewById(R.id.label_serverTime);
         tServerTime = (TextView) findViewById(R.id.textView_serverTime);
+        lLastUpdated = (TextView) findViewById(R.id.label_updated);
         tLastUpdated = (TextView) findViewById(R.id.textView_updated);
+        //
+        iRefresh.setOnClickListener(this);
 
         Bundle extras = getIntent().getExtras();
         // check from the saved Instance
@@ -173,13 +184,22 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
             tServerTime.setText(server_time);
         }
         if (null != updated_time && !updated_time.equals("")) {
+            lLastUpdated.setVisibility(View.VISIBLE);
+            tLastUpdated.setVisibility(View.VISIBLE);
             tLastUpdated.setText(updated_time);
+        } else {
+            lLastUpdated.setVisibility(View.GONE);
+            tLastUpdated.setVisibility(View.GONE);
         }
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
+            case R.id.refresh:
+                iRefresh.setVisibility(View.GONE);
+                progressBar.setVisibility(View.VISIBLE);
+                break;
             default:
                 break;
         }
