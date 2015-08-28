@@ -26,6 +26,14 @@
                 android:resource="@xml/searchable"/>
         </activity>
 
+        <!-- Solve Sync Conflict -->
+        <activity
+            android:name=".view.dialog.RouteEtaDialog"
+            android:excludeFromRecents="true"
+            android:label="@string/eta"
+            android:theme="@style/AppTheme.Dialog" >
+        </activity>
+
         <!-- Preferences -->
         <activity
             android:name=".preference.SettingsActivity"

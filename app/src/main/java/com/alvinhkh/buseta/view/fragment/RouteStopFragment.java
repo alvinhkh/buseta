@@ -1,6 +1,7 @@
 package com.alvinhkh.buseta.view.fragment;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,6 +29,7 @@ import com.alvinhkh.buseta.view.adapter.RouteStopAdapter;
 import com.alvinhkh.buseta.holder.RouteStopETA;
 import com.alvinhkh.buseta.holder.RouteStopMap;
 import com.alvinhkh.buseta.preference.SettingsHelper;
+import com.alvinhkh.buseta.view.dialog.RouteEtaDialog;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -245,122 +247,13 @@ public class RouteStopFragment extends Fragment
 
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-        if (view != null) {
-            TextView textView_name = (TextView) view.findViewById(R.id.stop_name);
-            RouteStop object = mAdapter.getItem(position);
-            if (null != object.eta) {
-                // Request Time
-                SimpleDateFormat display_format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-                String server_time = "";
-                Date server_date = null;
-                if (null != object.eta.server_time && !object.eta.server_time.equals("")) {
-                    if (object.eta.api_version == 2) {
-                        server_date = new Date(Long.parseLong(object.eta.server_time));
-                    } else if (object.eta.api_version == 1) {
-                        SimpleDateFormat date_format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-                        try {
-                            server_date = date_format.parse(object.eta.server_time);
-                        } catch (ParseException ep) {
-                            ep.printStackTrace();
-                        }
-                    }
-                    server_time = (null != server_date) ?
-                            display_format.format(server_date) : object.eta.server_time;
-                }
-                // last updated
-                String updated_time = "";
-                Date updated_date = null;
-                if (null != object.eta.updated && !object.eta.updated.equals("")) {
-                    if (object.eta.api_version == 2) {
-                        updated_date = new Date(Long.parseLong(object.eta.updated));
-                    }
-                    updated_time = (null != updated_date) ?
-                            display_format.format(updated_date) : object.eta.updated;
-                }
-                // ETAs
-                RouteStopETA routeStopETA = object.eta;
-                String eta = Jsoup.parse(routeStopETA.etas).text();
-                String[] etas = eta.replaceAll("　", " ").split(", ?");
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < etas.length; i++) {
-                    sb.append(etas[i]);
-                    if (object.eta.api_version == 1) {
-                        // API v1 from Web, with minutes no time
-                        String minutes = etas[i].replaceAll("[^0123456789]", "");
-                        if (null != server_date && !minutes.equals("") &&
-                                etas[i].contains("分鐘")) {
-                            Long t = server_date.getTime();
-                            Date etaDate = new Date(t + (Integer.parseInt(minutes) * 60000));
-                            SimpleDateFormat eta_time_format = new SimpleDateFormat("HH:mm");
-                            String etaTime = eta_time_format.format(etaDate);
-                            sb.append(" (");
-                            sb.append(etaTime);
-                            sb.append(")");
-                        }
-                    } else if (object.eta.api_version == 2) {
-                        // API v2 from Mobile v2, with exact time
-                        if (etas[i].matches(".*\\d.*")) {
-                            // if text has digit
-                            String etaMinutes = "";
-                            long differences = new Date().getTime() - server_date.getTime(); // get device time and compare to server time
-                            try {
-                                SimpleDateFormat time_format =
-                                        new SimpleDateFormat("yyyy/MM/dd HH:mm");
-                                Date etaDateCompare = server_date;
-                                // first assume eta time and server time is on the same date
-                                Date etaDate = time_format.parse(
-                                        new SimpleDateFormat("yyyy").format(etaDateCompare) + "/" +
-                                                new SimpleDateFormat("MM").format(etaDateCompare) + "/" +
-                                                new SimpleDateFormat("dd").format(etaDateCompare) + " " +
-                                                etas[i]);
-                                // if not minutes will get negative integer
-                                int minutes = (int) ((etaDate.getTime() / 60000) -
-                                        ((server_date.getTime() + differences) / 60000));
-                                if (minutes < -12 * 60) {
-                                    // plus one day to get correct eta date
-                                    etaDateCompare = new Date(server_date.getTime() + 1 * 24 * 60 * 60 * 1000);
-                                    etaDate = time_format.parse(
-                                            new SimpleDateFormat("yyyy").format(etaDateCompare) + "/" +
-                                                    new SimpleDateFormat("MM").format(etaDateCompare) + "/" +
-                                                    new SimpleDateFormat("dd").format(etaDateCompare) + " " +
-                                                    etas[i]);
-                                    minutes = (int) ((etaDate.getTime() / 60000) -
-                                            ((server_date.getTime() + differences) / 60000));
-                                }
-                                // minutes should be 0 to within a day
-                                if (minutes >= 0 && minutes < 1 * 24 * 60 * 60 * 1000)
-                                    etaMinutes = String.valueOf(minutes);
-                            } catch (ParseException ep) {
-                                ep.printStackTrace();
-                            }
-                            if (!etaMinutes.equals("")) {
-                                sb.append(" (");
-                                if (etaMinutes.equals("0")) {
-                                    sb.append("現在");
-                                } else {
-                                    sb.append(etaMinutes);
-                                    sb.append("分鐘");
-                                }
-                                sb.append(")");
-                            }
-                        }
-                    }
-                    if (i < etas.length - 1)
-                        sb.append("\n");
-                }
-                sb.append("\n\n");
-                if (null != server_time && !server_time.equals("")) {
-                    sb.append("\n");
-                    sb.append(getString(R.string.message_server_time, server_time));
-                }
-                if (null != updated_time && !updated_time.equals("")) {
-                    sb.append("\n");
-                    sb.append(getString(R.string.message_last_updated, updated_time));
-                }
-                new AlertDialog.Builder(mContext)
-                        .setTitle(textView_name.getText())
-                        .setMessage(sb.toString()).show();
-            }
+        RouteStop object = mAdapter.getItem(position);
+        if (null != object || null != object.eta) {
+            Intent intent = new Intent(mContext.getApplicationContext(), RouteEtaDialog.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.putExtra(Constants.BUNDLE.ITEM_POSITION, position);
+            intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
+            mContext.startActivity(intent);
         }
         return true;
     }

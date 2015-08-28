@@ -26,6 +26,16 @@
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
     </style>
 
+    <!-- Dialog theme. -->
+    <style name="AppTheme.Dialog" parent="Theme.AppCompat.Light.Dialog">
+        <!-- All customizations that are NOT specific to a particular API-level can go here. -->
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="windowNoTitle">true</item>
+        <item name="windowActionBar">false</item>
+    </style>
+
     <style name="Widget.AppTheme.ActionBar" parent="Widget.AppCompat.ActionBar">
         <item name="android:background">@color/primary</item>
         <item name="theme">@style/ThemeOverlay.AppTheme.ActionBar</item>

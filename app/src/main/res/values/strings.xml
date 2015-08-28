@@ -28,6 +28,9 @@
     <string name="start_search_route">開始搜尋路線</string>
     <string name="stop_name">站名</string>
 
+    <string name="label_last_updated">數據最後更新：</string>
+    <string name="label_server_time">獲取數據（伺服器時間）：</string>
+
     <string name="title_settings">設定</string>
     <string name="category_general">一般</string>
     <string name="title_clear_history">清除搜尋記錄</string>
@@ -52,14 +55,12 @@
     <string name="message_database_updating">數據庫更新中</string>
     <string name="message_database_updated">數據庫經已更新</string>
     <string name="message_fail_to_request">未能載入，請再試一次</string>
-    <string name="message_last_updated">數據最後更新：\n%s</string>
     <string name="message_loading">載入中...</string>
     <string name="message_no_passenger_notice">暫時沒有任何通告</string>
     <string name="message_no_data">暫時沒有資料</string>
     <string name="message_please_click_once_again">請再按多一次</string>
     <string name="message_remove_from_search_history">從搜尋記錄中移除</string>
     <string name="message_route_not_support_eta">本站沒有抵站時間預報服務</string>
-    <string name="message_server_time">獲取數據（伺服器時間）：\n%s</string>
 
     <string name="url_app">http://buseta.alvinhkh.com</string>
     <string name="url_developer">http://www.alvinhkh.com</string>

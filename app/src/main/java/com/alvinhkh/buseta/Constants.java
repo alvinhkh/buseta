@@ -33,4 +33,9 @@ public class Constants {
         String HISTORY_UPDATED = "HISTORY_UPDATED";
     }
 
+    public interface BUNDLE {
+        String ITEM_POSITION = "com.alvinhkh.buseta.ITEM_POSITION";
+        String STOP_OBJECT = "com.alvinhkh.buseta.STOP_OBJECT";
+    }
+
 }
