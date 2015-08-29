@@ -5,6 +5,7 @@ import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.alvinhkh.buseta.R;
@@ -32,6 +33,7 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
         TextView eta_more;
         TextView fare;
         TextView updated_time;
+        ImageView favourite;
     }
 
     public RouteStopAdapter(Context context) {
@@ -55,6 +57,7 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
             viewHolder.eta_more = (TextView) convertView.findViewById(R.id.eta_more);
             viewHolder.fare = (TextView) convertView.findViewById(R.id.fare);
             viewHolder.updated_time = (TextView) convertView.findViewById(R.id.updated_time);
+            viewHolder.favourite = (ImageView) convertView.findViewById(R.id.favourite);
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
@@ -63,6 +66,7 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
         if (object != null) {
             viewHolder.stop_name.setText(object.name_tc);
             viewHolder.stop_code.setText(object.code);
+            viewHolder.favourite.setVisibility(object.favourite ? View.VISIBLE : View.GONE);
             viewHolder.eta.setText("");
             viewHolder.eta.setTextColor(ContextCompat.getColor(mContext, R.color.highlighted_text));
             viewHolder.eta_more.setText("");

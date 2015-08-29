@@ -30,16 +30,30 @@
             android:orientation="horizontal"
             android:layout_gravity="left">
 
-            <TextView
-                android:id="@+id/stop_name"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_alignParentLeft="true"
-                android:layout_toLeftOf="@+id/eta"
-                android:singleLine="true"
-                style="@android:style/TextAppearance.Medium"
-                android:text="@string/stop_name" />
+                android:layout_toLeftOf="@+id/eta">
+
+                <ImageView
+                    android:id="@+id/favourite"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="2dp"
+                    android:src="@drawable/ic_stars_black_24dp" />
+
+                <TextView
+                    android:id="@+id/stop_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    style="@android:style/TextAppearance.Medium"
+                    android:text="@string/stop_name" />
+
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/eta"
@@ -66,9 +80,9 @@
                 style="@android:style/TextAppearance.Small"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="bottom|left"
                 android:singleLine="true"
-                android:text="@string/dots"
-                android:layout_gravity="bottom|left" />
+                android:text="@string/dots" />
 
             <TextView
                 android:id="@+id/updated_time"
@@ -95,14 +109,13 @@
 
     </LinearLayout>
 
-    <ImageView
-        android:id="@+id/star"
+    <View
+        android:id="@+id/popup"
         android:layout_width="36dp"
         android:layout_height="match_parent"
         android:layout_centerVertical="true"
         android:layout_marginLeft="16dp"
         android:gravity="center_vertical|center_horizontal"
-        android:src="@drawable/ic_star_border_black_48dp"
         android:visibility="gone" />
 
 </LinearLayout>

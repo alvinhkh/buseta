@@ -156,16 +156,15 @@ public class RouteNewsFragment extends Fragment
         if (view != null) {
             TextView textView_title = (TextView) view.findViewById(android.R.id.text1);
             TextView textView_link= (TextView) view.findViewById(R.id.notice_link);
-            String noticeTitle = textView_title.getText().toString();
-            String noticeLink = textView_link.getText().toString();
-            if (noticeLink.contains(".jpg")) {
-                ((MainActivity) getActivity()).showNoticeImageFragment(
-                        noticeTitle,
-                        noticeLink);
-            } else if (noticeLink.contains(".htm")) {
-                getNoticeText(noticeTitle, noticeLink);
+            RouteNews routeNews = new RouteNews();
+            routeNews.title = textView_title.getText().toString();
+            routeNews.link = textView_link.getText().toString();
+            if (routeNews.link.contains(".jpg")) {
+                ((MainActivity) getActivity()).showNoticeImageFragment(routeNews);
+            } else if (routeNews.link.contains(".htm")) {
+                getNoticeText(routeNews);
             } else {
-                Log.d(TAG, noticeTitle + "\n" + noticeLink);
+                Log.d(TAG, routeNews.title + "\n" + routeNews.link);
             }
         }
     }
@@ -246,7 +245,9 @@ public class RouteNewsFragment extends Fragment
                 });
     }
 
-    private void getNoticeText(final String title, final String link) {
+    private void getNoticeText(RouteNews routeNews) {
+        final String title = routeNews.title;
+        final String link = routeNews.link;
 
         if (mSwipeRefreshLayout != null)
             mSwipeRefreshLayout.setRefreshing(true);

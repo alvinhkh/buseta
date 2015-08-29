@@ -30,6 +30,8 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.holder.RouteBound;
+import com.alvinhkh.buseta.holder.RouteNews;
 import com.alvinhkh.buseta.view.adapter.SuggestionSimpleCursorAdapter;
 import com.alvinhkh.buseta.database.SuggestionsDatabase;
 import com.alvinhkh.buseta.view.fragment.MainFragment;
@@ -223,6 +225,7 @@ public class MainActivity extends AppCompatActivity
         if (null != mDatabase)
             mDatabase.close();
         Ion.getDefault(getBaseContext()).cancelAll(getBaseContext());
+        // Clear Ion Image Cache
         Ion.getDefault(getBaseContext()).getCache().clear();
         Ion.getDefault(getBaseContext()).getBitmapCache().clear();
         super.onDestroy();
@@ -303,16 +306,12 @@ public class MainActivity extends AppCompatActivity
         t.commit();
     }
 
-    public void showRouteStopFragment(String _route_no,
-                                      String _route_bound,
-                                      String _route_origin,
-                                      String _route_destination){
-        if (null == _route_no) return;
-        _route_no = _route_no.trim().replace(" ", "").toUpperCase();
+    public void showRouteStopFragment(RouteBound routeBound){
+        if (null == routeBound || null == routeBound.route_no || null == routeBound.route_bound)
+            return;
         FragmentTransaction t = getSupportFragmentManager().beginTransaction();
-        RouteStopFragment f = RouteStopFragment.newInstance(_route_no, _route_bound,
-                _route_origin, _route_destination);
-        t.replace(R.id.fragment_container, f, "RouteStop_" + _route_no + "_" + _route_bound);
+        RouteStopFragment f = RouteStopFragment.newInstance(routeBound);
+        t.replace(R.id.fragment_container, f, "RouteStop_" + routeBound.route_no + "_" + routeBound.route_bound);
         t.addToBackStack(null);
         t.commit();
     }
@@ -327,10 +326,11 @@ public class MainActivity extends AppCompatActivity
         t.commit();
     }
 
-    public void showNoticeImageFragment(String notice_title, String notice_image){
+    public void showNoticeImageFragment(RouteNews notice){
+        if (null == notice || null == notice.link) return;
         FragmentTransaction t = getSupportFragmentManager().beginTransaction();
-        NoticeImageFragment f = NoticeImageFragment.newInstance(notice_title, notice_image);
-        t.replace(R.id.fragment_container, f, "Notice_" + notice_image);
+        NoticeImageFragment f = NoticeImageFragment.newInstance(notice);
+        t.replace(R.id.fragment_container, f, "Notice_" + notice.link);
         t.addToBackStack(null);
         t.commit();
     }

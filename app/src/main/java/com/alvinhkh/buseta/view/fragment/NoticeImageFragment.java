@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.holder.RouteNews;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
 
@@ -32,17 +33,17 @@ public class NoticeImageFragment extends Fragment {
     private TextView mTextView;
     private Bitmap mBitmap = null;
 
+    private RouteNews _notice = null;
     private String _notice_title = null;
     private String _notice_image = null;
 
     public NoticeImageFragment() {
     }
 
-    public static NoticeImageFragment newInstance(String notice_title, String notice_image) {
+    public static NoticeImageFragment newInstance(RouteNews routeNews) {
         NoticeImageFragment f = new NoticeImageFragment();
         Bundle args = new Bundle();
-        args.putString("notice_title", notice_title);
-        args.putString("notice_image", notice_image);
+        args.putParcelable("notice", routeNews);
         f.setArguments(args);
         return f;
     }
@@ -53,8 +54,11 @@ public class NoticeImageFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_imageview, container, false);
         mContext = super.getActivity();
         // Get arguments
-        _notice_title = getArguments().getString("notice_title");
-        _notice_image = getArguments().getString("notice_image");
+        _notice = getArguments().getParcelable("notice");
+        if (null != _notice) {
+            _notice_title = _notice.title;
+            _notice_image = _notice.link;
+        }
         // Set Toolbar
         mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         mActionBar.setTitle(R.string.app_name);
@@ -94,8 +98,7 @@ public class NoticeImageFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString("notice_title", _notice_title);
-        outState.putString("notice_image", _notice_image);
+        outState.putParcelable("notice", _notice);
         mBitmap = Ion.with(mPhotoView).getBitmap();
         outState.putParcelable("notice_image_bitmap", mBitmap);
     }

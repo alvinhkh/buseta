@@ -30,7 +30,9 @@ public class Constants {
     }
 
     public interface MESSAGE {
-        String HISTORY_UPDATED = "HISTORY_UPDATED";
+        String HISTORY_UPDATED = "com.alvinhkh.buseta.HISTORY_UPDATED";
+        String STOP_UPDATED = "com.alvinhkh.buseta.STOP_UPDATED";
+        String CANCEL = "com.alvinhkh.buseta.CANCEL";
     }
 
     public interface BUNDLE {

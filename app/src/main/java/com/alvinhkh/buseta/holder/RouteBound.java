@@ -10,6 +10,10 @@ public class RouteBound implements Parcelable {
     public RouteBound() {
     }
 
+    public String route_no;
+
+    public String route_bound;
+
     @SerializedName("destination_chi")
     public String destination_tc;
 
@@ -28,6 +32,8 @@ public class RouteBound implements Parcelable {
      * @param p Source Parcel
      */
     public RouteBound(Parcel p) {
+        this.route_no = p.readString();
+        this.route_bound = p.readString();
         this.destination_tc = p.readString();
         this.destination_en = p.readString();
         this.origin_tc = p.readString();
@@ -42,6 +48,8 @@ public class RouteBound implements Parcelable {
     // Required method to write to Parcel
     @Override
     public void writeToParcel(Parcel p, int flags) {
+        p.writeString(this.route_no);
+        p.writeString(this.route_bound);
         p.writeString(this.destination_tc);
         p.writeString(this.destination_en);
         p.writeString(this.origin_tc);

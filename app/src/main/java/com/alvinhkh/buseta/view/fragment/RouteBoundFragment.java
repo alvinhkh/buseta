@@ -177,10 +177,12 @@ public class RouteBoundFragment extends Fragment
         if (view != null) {
             TextView textView_origin_tc = (TextView) view.findViewById(R.id.origin);
             TextView textView_destination_tc = (TextView) view.findViewById(R.id.destination);
-            ((MainActivity) getActivity()).showRouteStopFragment(_route_no,
-                    String.valueOf(position + 1),
-                    textView_origin_tc.getText().toString(),
-                    textView_destination_tc.getText().toString());
+            RouteBound routeBound = new RouteBound();
+            routeBound.route_no = _route_no;
+            routeBound.route_bound = String.valueOf(position + 1);
+            routeBound.origin_tc = textView_origin_tc.getText().toString();
+            routeBound.destination_tc = textView_destination_tc.getText().toString();
+            ((MainActivity) getActivity()).showRouteStopFragment(routeBound);
         }
     }
 
@@ -197,7 +199,6 @@ public class RouteBoundFragment extends Fragment
             mAdapter.clear();
         getRouteBounds(_route_no);
     }
-
 
 
     private void getRouteBounds(final String _route_no) {

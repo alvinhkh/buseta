@@ -1,17 +1,29 @@
 package com.alvinhkh.buseta.view.dialog;
 
+import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.database.FavouriteDatabase;
+import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
+import com.koushikdutta.ion.Ion;
 
 import org.jsoup.Jsoup;
 
@@ -34,9 +46,14 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
     private TextView tServerTime;
     private TextView lLastUpdated;
     private TextView tLastUpdated;
+    private Animation animationRotate;
 
-    RouteStop object = null;
-    Integer position = null;
+    private RouteStop _routeStop = null;
+    private Integer position = null;
+    private Boolean favourite = false;
+
+    private Cursor mCursor;
+    private FavouriteDatabase mDatabase;
 
     @Override
     protected void onCreate(Bundle bundle) {
@@ -48,6 +65,8 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
         setFinishOnTouchOutside(true);
         // get context
         mContext = RouteEtaDialog.this;
+        // set database
+        mDatabase = new FavouriteDatabase(mContext);
         // get widgets
         iStar = (ImageView) findViewById(R.id.star);
         iRefresh = (ImageView) findViewById(R.id.refresh);
@@ -58,64 +77,156 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
         tServerTime = (TextView) findViewById(R.id.textView_serverTime);
         lLastUpdated = (TextView) findViewById(R.id.label_updated);
         tLastUpdated = (TextView) findViewById(R.id.textView_updated);
+        animationRotate = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.rotate_once);
+        animationRotate.setAnimationListener(new Animation.AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {
+
+            }
+        });
         //
+        iStar.setOnClickListener(this);
         iRefresh.setOnClickListener(this);
-
-        Bundle extras = getIntent().getExtras();
         // check from the saved Instance
-
+        Bundle extras = getIntent().getExtras();
         // Or passed from the other activity
         if (extras != null) {
-            object = extras.getParcelable(Constants.BUNDLE.STOP_OBJECT);
+            _routeStop = extras.getParcelable(Constants.BUNDLE.STOP_OBJECT);
             parse();
         } else {
-            setResult(RESULT_CANCELED);
             finish();
         }
+        //
+        mCursor = mDatabase.getExist(_routeStop);
+        favourite = (null != mCursor && mCursor.getCount() > 0);
+        iStar.setImageResource(favourite == true ?
+                R.drawable.ic_star_black_48dp : R.drawable.ic_star_border_black_48dp);
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.refresh:
+                onRefresh();
+                final Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content),
+                        R.string.message_default_auto_refresh, Snackbar.LENGTH_LONG);
+                TextView tv = (TextView)
+                        snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
+                tv.setTextColor(Color.WHITE);
+                snackbar.show();
+                break;
+            case R.id.star:
+                if (null == mDatabase || null == _routeStop || null == _routeStop.route_bound) break;
+                mCursor = mDatabase.getExist(_routeStop);
+                Boolean org = favourite;
+                if (null != mCursor && mCursor.getCount() > 0) {
+                    // record exist
+                    org = true;
+                    favourite = mDatabase.delete(_routeStop) ? false : true;
+                } else {
+                    org = false;
+                    favourite = mDatabase.insertStop(_routeStop) > 0 ? true : false;
+                }
+                if (org != favourite)
+                    iStar.startAnimation(animationRotate);
+                iStar.setImageResource(favourite == true ?
+                        R.drawable.ic_star_black_48dp : R.drawable.ic_star_border_black_48dp);
+                _routeStop.favourite = favourite;
+                sendUpdate();
+                break;
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        if (null != mCursor)
+            mCursor.close();
+        if (null != mDatabase)
+            mDatabase.close();
+        Ion.getDefault(mContext).cancelAll(mContext);
+        super.onDestroy();
+    }
+
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (null != _routeStop)
+            outState.putParcelable(Constants.BUNDLE.STOP_OBJECT, _routeStop);
+        if (null != position)
+            outState.putInt(Constants.BUNDLE.ITEM_POSITION, position);
+    }
+
+    private void sendUpdate() {
+        Intent intent = new Intent(Constants.MESSAGE.STOP_UPDATED);
+        intent.putExtra(Constants.MESSAGE.STOP_UPDATED, true);
+        intent.putExtra(Constants.BUNDLE.STOP_OBJECT, _routeStop);
+        sendBroadcast(intent);
     }
     
     private void parse() {
-        if (null == object || null == object.eta) {
-            setResult(RESULT_CANCELED);
+        if (null == _routeStop) {
             finish();
             return;
         }
-        tStopName.setText(object.name_tc);
+        tStopName.setText(_routeStop.name_tc);
+        if (null == _routeStop.eta) {
+            tEta.setVisibility(View.GONE);
+            lServerTime.setVisibility(View.GONE);
+            tServerTime.setVisibility(View.GONE);
+            lLastUpdated.setVisibility(View.GONE);
+            tLastUpdated.setVisibility(View.GONE);
+            return;
+        } else {
+            tEta.setVisibility(View.VISIBLE);
+            lServerTime.setVisibility(View.VISIBLE);
+            tServerTime.setVisibility(View.VISIBLE);
+            lLastUpdated.setVisibility(View.VISIBLE);
+            tLastUpdated.setVisibility(View.VISIBLE);
+        }
         // Request Time
         SimpleDateFormat display_format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         String server_time = "";
         Date server_date = null;
-        if (null != object.eta.server_time && !object.eta.server_time.equals("")) {
-            if (object.eta.api_version == 2) {
-                server_date = new Date(Long.parseLong(object.eta.server_time));
-            } else if (object.eta.api_version == 1) {
+        if (null != _routeStop.eta.server_time && !_routeStop.eta.server_time.equals("")) {
+            if (_routeStop.eta.api_version == 2) {
+                server_date = new Date(Long.parseLong(_routeStop.eta.server_time));
+            } else if (_routeStop.eta.api_version == 1) {
                 SimpleDateFormat date_format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
                 try {
-                    server_date = date_format.parse(object.eta.server_time);
+                    server_date = date_format.parse(_routeStop.eta.server_time);
                 } catch (ParseException ep) {
                     ep.printStackTrace();
                 }
             }
             server_time = (null != server_date) ?
-                    display_format.format(server_date) : object.eta.server_time;
+                    display_format.format(server_date) : _routeStop.eta.server_time;
         }
         // last updated
         String updated_time = "";
         Date updated_date = null;
-        if (null != object.eta.updated && !object.eta.updated.equals("")) {
-            if (object.eta.api_version == 2) {
-                updated_date = new Date(Long.parseLong(object.eta.updated));
+        if (null != _routeStop.eta.updated && !_routeStop.eta.updated.equals("")) {
+            if (_routeStop.eta.api_version == 2) {
+                updated_date = new Date(Long.parseLong(_routeStop.eta.updated));
             }
             updated_time = (null != updated_date) ?
-                    display_format.format(updated_date) : object.eta.updated;
+                    display_format.format(updated_date) : _routeStop.eta.updated;
         }
         // ETAs
-        String eta = Jsoup.parse(object.eta.etas).text();
+        String eta = Jsoup.parse(_routeStop.eta.etas).text();
         String[] etas = eta.replaceAll("　", " ").split(", ?");
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < etas.length; i++) {
             sb.append(etas[i]);
-            if (object.eta.api_version == 1) {
+            if (_routeStop.eta.api_version == 1) {
                 // API v1 from Web, with minutes no time
                 String minutes = etas[i].replaceAll("[^0123456789]", "");
                 if (null != server_date && !minutes.equals("") &&
@@ -128,7 +239,7 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
                     sb.append(etaTime);
                     sb.append(")");
                 }
-            } else if (object.eta.api_version == 2) {
+            } else if (_routeStop.eta.api_version == 2) {
                 // API v2 from Mobile v2, with exact time
                 if (etas[i].matches(".*\\d.*")) {
                     // if text has digit
@@ -167,10 +278,10 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
                     if (!etaMinutes.equals("")) {
                         sb.append(" (");
                         if (etaMinutes.equals("0")) {
-                            sb.append("現在");
+                            sb.append(getString(R.string.now));
                         } else {
                             sb.append(etaMinutes);
-                            sb.append("分鐘");
+                            sb.append(getString(R.string.minutes));
                         }
                         sb.append(")");
                     }
@@ -193,24 +304,13 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    @Override
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.refresh:
-                iRefresh.setVisibility(View.GONE);
-                progressBar.setVisibility(View.VISIBLE);
-                break;
-            default:
-                break;
-        }
-    }
-
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        if (null != object)
-            outState.putParcelable(Constants.BUNDLE.STOP_OBJECT, object);
-        if (null != position)
-            outState.putInt(Constants.BUNDLE.ITEM_POSITION, position);
+    private void onRefresh() {
+        iRefresh.setVisibility(View.GONE);
+        progressBar.setVisibility(View.VISIBLE);
+        // TODO: get data from service
+        // iRefresh.setVisibility(View.VISIBLE);
+        // progressBar.setVisibility(View.GONE);
+        sendUpdate();
     }
 
 }

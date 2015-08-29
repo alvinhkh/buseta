@@ -41,7 +41,7 @@
             android:layout_gravity="top"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
             android:src="@drawable/ic_star_border_black_48dp"
-            android:visibility="invisible" />
+            android:visibility="visible" />
 
         <ProgressBar
             android:id="@+id/progressBar"
@@ -60,7 +60,7 @@
             android:layout_gravity="top"
             android:layout_marginLeft="8dp"
             android:src="@drawable/ic_refresh_black_48dp"
-            android:visibility="invisible" />
+            android:visibility="gone" />
 
     </LinearLayout>
 

@@ -1,7 +1,11 @@
 package com.alvinhkh.buseta.view.fragment;
 
+import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,6 +27,8 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.database.FavouriteDatabase;
+import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.view.adapter.RouteStopAdapter;
 import com.alvinhkh.buseta.holder.RouteStopETA;
@@ -58,7 +64,9 @@ public class RouteStopFragment extends Fragment
     private TextView mEmptyText;
     private ProgressBar mProgressBar;
     private RouteStopAdapter mAdapter;
+    private UpdateViewReceiver mReceiver;
 
+    private RouteBound _routeBound;
     private String _route_no = null;
     private String _route_bound = null;
     private String _route_origin = null;
@@ -69,6 +77,7 @@ public class RouteStopFragment extends Fragment
     private String getRouteInfoApi = "";
     private Boolean savedState = false;
     private SettingsHelper settingsHelper = null;
+    private FavouriteDatabase mDatabase;
 
     // Runnable to get all stops eta
     int iEta = 0;
@@ -106,16 +115,10 @@ public class RouteStopFragment extends Fragment
     public RouteStopFragment() {
     }
 
-    public static RouteStopFragment newInstance(String _route_no,
-                                                   String _route_bound,
-                                                   String _route_origin,
-                                                   String _route_destination) {
+    public static RouteStopFragment newInstance(RouteBound routeBound) {
         RouteStopFragment f = new RouteStopFragment();
         Bundle args = new Bundle();
-        args.putString("route_no", _route_no);
-        args.putString("route_bound", _route_bound);
-        args.putString("route_origin", _route_origin);
-        args.putString("route_destination", _route_destination);
+        args.putParcelable("route", routeBound);
         f.setArguments(args);
         return f;
     }
@@ -126,11 +129,16 @@ public class RouteStopFragment extends Fragment
         View view = inflater.inflate(R.layout.fragment_routestop, container, false);
         mContext = super.getActivity();
         settingsHelper = new SettingsHelper().parse(mContext.getApplicationContext());
+        // set database
+        mDatabase = new FavouriteDatabase(mContext);
         // Get arguments
-        _route_no = getArguments().getString("route_no");
-        _route_bound = getArguments().getString("route_bound");
-        _route_origin = getArguments().getString("route_origin");
-        _route_destination = getArguments().getString("route_destination");
+        _routeBound = getArguments().getParcelable("route");
+        if (null != _routeBound) {
+            _route_no = _routeBound.route_no.trim().replace(" ", "").toUpperCase();
+            _route_bound = _routeBound.route_bound;
+            _route_origin = _routeBound.origin_tc;
+            _route_destination = _routeBound.destination_tc;
+        }
         // Set Toolbar
         mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         mActionBar.setTitle(_route_no);
@@ -174,6 +182,13 @@ public class RouteStopFragment extends Fragment
         mListView.setAdapter(mAdapter);
         mListView.setOnItemLongClickListener(this);
         mListView.setOnItemClickListener(this);
+        // Broadcast Receiver
+        if (null != mContext) {
+            IntentFilter mFilter = new IntentFilter(Constants.MESSAGE.STOP_UPDATED);
+            mReceiver = new UpdateViewReceiver();
+            mFilter.addAction(Constants.MESSAGE.STOP_UPDATED);
+            mContext.registerReceiver(mReceiver, mFilter);
+        }
 
         return view;
     }
@@ -185,6 +200,7 @@ public class RouteStopFragment extends Fragment
             mAdapter.onSaveInstanceState(outState);
             outState.putParcelable(KEY_LIST_VIEW_STATE, mListView.onSaveInstanceState());
         }
+        outState.putParcelable("route", _routeBound);
         outState.putString("_id", _id);
         outState.putString("_token", _token);
         outState.putString("etaApi", etaApi);
@@ -211,6 +227,8 @@ public class RouteStopFragment extends Fragment
 
     @Override
     public void onDestroyView() {
+        if (null != mContext && null != mReceiver)
+            mContext.unregisterReceiver(mReceiver);
         if (null != mSwipeRefreshLayout)
             mSwipeRefreshLayout.setRefreshing(false);
         if (null != mListView)
@@ -219,6 +237,8 @@ public class RouteStopFragment extends Fragment
             mProgressBar.setVisibility(View.GONE);
         if (null != mEmptyText)
             mEmptyText.setVisibility(View.GONE);
+        if (null != mDatabase)
+            mDatabase.close();
         View view = getView();
         if (null != view)
             view.setVisibility(View.GONE);
@@ -242,13 +262,14 @@ public class RouteStopFragment extends Fragment
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
         RouteStop object = mAdapter.getItem(position);
-        if (null != object || null != object.eta) {
-            Intent intent = new Intent(mContext.getApplicationContext(), RouteEtaDialog.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.putExtra(Constants.BUNDLE.ITEM_POSITION, position);
-            intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
-            mContext.startActivity(intent);
-        }
+        if (null == object)
+            return false;
+        Intent intent = new Intent(mContext, RouteEtaDialog.class);
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra(Constants.BUNDLE.ITEM_POSITION, position);
+        intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
+        startActivity(intent);
         return true;
     }
 
@@ -320,10 +341,16 @@ public class RouteStopFragment extends Fragment
                             if (result.get("valid").getAsBoolean() == true) {
                                 //  Got Bus Line Stops
                                 JsonArray _bus_arr = result.getAsJsonArray("bus_arr");
+                                int seq = 0;
                                 for (JsonElement element : _bus_arr) {
                                     Gson gson = new Gson();
                                     RouteStop routeStop = gson.fromJson(element.getAsJsonObject(), RouteStop.class);
+                                    routeStop.route_bound = _routeBound;
+                                    routeStop.stop_seq = String.valueOf(seq);
+                                    Cursor cursor = mDatabase.getExist(routeStop);
+                                    routeStop.favourite = (null != cursor && cursor.getCount() > 0);
                                     mAdapter.add(routeStop);
+                                    seq++;
                                 }
                                 _id = result.get("id").getAsString();
                                 _token = result.get("token").getAsString();
@@ -653,6 +680,24 @@ public class RouteStopFragment extends Fragment
                             mSwipeRefreshLayout.setRefreshing(false);
                     }
                 });
+    }
+
+    public class UpdateViewReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+            Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.STOP_UPDATED);
+            if (null != mAdapter && aBoolean == true) {
+                RouteStop newObject = bundle.getParcelable(Constants.BUNDLE.STOP_OBJECT);
+                if (null != newObject) {
+                    RouteStop oldObject = mAdapter.getItem(Integer.parseInt(newObject.stop_seq));
+                    oldObject.favourite = newObject.favourite;
+                    oldObject.eta = newObject.eta;
+                    mAdapter.notifyDataSetChanged();
+                }
+            }
+        }
     }
 
 }

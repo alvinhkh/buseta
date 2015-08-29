@@ -19,6 +19,8 @@
     <string name="eta">到站時間預報</string>
     <string name="hint_enter_route">輸入路線...</string>
     <string name="hkd">$%s</string>
+    <string name="minutes">分鐘</string>
+    <string name="now">現在</string>
     <string name="open_source_license">開放原始碼授權</string>
     <string name="orig">從</string>
     <string name="origin">從%s</string>
@@ -54,12 +56,14 @@
     <string name="message_clear_search_history_success">成功清除搜尋記錄</string>
     <string name="message_database_updating">數據庫更新中</string>
     <string name="message_database_updated">數據庫經已更新</string>
+    <string name="message_default_auto_refresh">提示：預設每分鐘會自動更新</string>
     <string name="message_fail_to_request">未能載入，請再試一次</string>
     <string name="message_loading">載入中...</string>
     <string name="message_no_passenger_notice">暫時沒有任何通告</string>
     <string name="message_no_data">暫時沒有資料</string>
     <string name="message_please_click_once_again">請再按多一次</string>
     <string name="message_remove_from_search_history">從搜尋記錄中移除</string>
+    <string name="message_remove_from_favourite">從記錄中移除</string>
     <string name="message_route_not_support_eta">本站沒有抵站時間預報服務</string>
 
     <string name="url_app">http://buseta.alvinhkh.com</string>
