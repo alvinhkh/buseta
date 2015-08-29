@@ -13,6 +13,7 @@ public class Constants {
         String ROUTE_NEWS = KMB + "/ajax/getnews.php";
         String ROUTE_NOTICES = KMB + "/tc/news/realtimenews.html?page=";
         String ROUTE_NOTICES_IMAGE = KMB + "/loadImage.php?page=";
+        String ROUTE_STOP_IMAGE = KMB + "/chi/img.php?file=";
         String HTML_ETA = KMB + "/tc/services/eta_enquiry.html";
         String HTML_SEARCH = KMB + "/tc/services/search.html";
         String ETA_MOBILE_API = "http://etav2.kmb.hk";

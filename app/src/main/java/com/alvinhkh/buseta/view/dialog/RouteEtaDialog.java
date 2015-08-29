@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -21,8 +22,8 @@ import android.widget.TextView;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.database.FavouriteDatabase;
-import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
+import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
 
 import org.jsoup.Jsoup;
@@ -37,6 +38,7 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
     private static final String TAG = "RouteEtaDialog";
 
     private Context mContext;
+    private ImageView iStop;
     private ImageView iStar;
     private ImageView iRefresh;
     private ProgressBar progressBar;
@@ -54,6 +56,7 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
 
     private Cursor mCursor;
     private FavouriteDatabase mDatabase;
+    private Bitmap mBitmap = null;
 
     @Override
     protected void onCreate(Bundle bundle) {
@@ -68,6 +71,7 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
         // set database
         mDatabase = new FavouriteDatabase(mContext);
         // get widgets
+        iStop = (ImageView) findViewById(R.id.imageView);
         iStar = (ImageView) findViewById(R.id.star);
         iRefresh = (ImageView) findViewById(R.id.refresh);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
@@ -95,6 +99,7 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
             }
         });
         //
+        tStopName.setOnClickListener(this);
         iStar.setOnClickListener(this);
         iRefresh.setOnClickListener(this);
         // check from the saved Instance
@@ -144,6 +149,9 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
                 _routeStop.favourite = favourite;
                 sendUpdate();
                 break;
+            case R.id.stop_name:
+                getStopImage();
+                break;
         }
     }
 
@@ -163,6 +171,29 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
             outState.putParcelable(Constants.BUNDLE.STOP_OBJECT, _routeStop);
         if (null != position)
             outState.putInt(Constants.BUNDLE.ITEM_POSITION, position);
+        mBitmap = Ion.with(iStop).getBitmap();
+        outState.putParcelable("stop_image_bitmap", mBitmap);
+    }
+
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if (null == savedInstanceState) return;
+        mBitmap = savedInstanceState.getParcelable("stop_image_bitmap");
+        if (null != mBitmap) {
+            iStop.setImageBitmap(mBitmap);
+            iStop.setVisibility(View.VISIBLE);
+            View container = findViewById(R.id.imageContainer);
+            container.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void onRefresh() {
+        iRefresh.setVisibility(View.GONE);
+        progressBar.setVisibility(View.VISIBLE);
+        // TODO: get data from service
+        // iRefresh.setVisibility(View.VISIBLE);
+        // progressBar.setVisibility(View.GONE);
+        sendUpdate();
     }
 
     private void sendUpdate() {
@@ -304,13 +335,30 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
         }
     }
 
-    private void onRefresh() {
-        iRefresh.setVisibility(View.GONE);
+    private void getStopImage() {
+        if (null == _routeStop) return;
         progressBar.setVisibility(View.VISIBLE);
-        // TODO: get data from service
-        // iRefresh.setVisibility(View.VISIBLE);
-        // progressBar.setVisibility(View.GONE);
-        sendUpdate();
+        iStop.setVisibility(View.VISIBLE);
+        View container = findViewById(R.id.imageContainer);
+        container.setVisibility(View.VISIBLE);
+        Ion.with(mContext)
+                .load(Constants.URL.ROUTE_STOP_IMAGE + _routeStop.code)
+                .progressBar(progressBar)
+                .withBitmap()
+                .error(R.drawable.ic_error_outline_black_48dp)
+                .resize(340, 255)
+                .centerCrop()
+                .animateLoad(R.anim.fade_in)
+                .intoImageView(iStop)
+                .setCallback(new FutureCallback<ImageView>() {
+                    @Override
+                    public void onCompleted(Exception e, ImageView result) {
+                        mBitmap = Ion.with(iStop).getBitmap();
+                        iStop.setVisibility(View.VISIBLE);
+                        if (null != progressBar)
+                            progressBar.setVisibility(View.GONE);
+                    }
+                });
     }
 
 }

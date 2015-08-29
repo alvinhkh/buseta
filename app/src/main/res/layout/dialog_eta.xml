@@ -26,22 +26,11 @@
                 android:textAppearance="?android:attr/textAppearanceLarge"
                 android:text="@string/stop_name" />
 
-            <View
-                android:id="@+id/dividerTitle"
-                android:layout_width="match_parent"
-                android:layout_height="24dp"/>
-
         </LinearLayout>
 
-        <ImageView
-            android:id="@+id/star"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_centerVertical="true"
-            android:layout_gravity="top"
-            android:layout_marginLeft="@dimen/activity_horizontal_margin"
-            android:src="@drawable/ic_star_border_black_48dp"
-            android:visibility="visible" />
+        <View
+            android:layout_width="8dp"
+            android:layout_height="match_parent" />
 
         <ProgressBar
             android:id="@+id/progressBar"
@@ -62,6 +51,16 @@
             android:src="@drawable/ic_refresh_black_48dp"
             android:visibility="gone" />
 
+        <ImageView
+            android:id="@+id/star"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_centerVertical="true"
+            android:layout_gravity="top"
+            android:layout_marginLeft="8dp"
+            android:src="@drawable/ic_star_border_black_48dp"
+            android:visibility="visible" />
+
     </LinearLayout>
 
     <ScrollView
@@ -70,9 +69,14 @@
         android:id="@+id/scrollView">
 
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
+
+            <View
+                android:id="@+id/dividerTitle"
+                android:layout_width="match_parent"
+                android:layout_height="16dp"/>
 
             <TextView
                 android:id="@android:id/text1"
@@ -83,7 +87,7 @@
                 android:text="00:00 ()\n00:00 ()\n00:00 ()" />
 
             <View
-                android:id="@+id/divider1"
+                android:id="@+id/dividerContent"
                 android:layout_width="match_parent"
                 android:layout_height="24dp"/>
 
@@ -141,6 +145,28 @@
                     android:text="-" />
 
             </RelativeLayout>
+
+            <LinearLayout
+                android:id="@+id/imageContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <View
+                    android:id="@+id/dividerImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="16dp"/>
+
+                <ImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center|bottom"
+                    android:adjustViewBounds="true"
+                    android:scaleType="centerCrop" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
