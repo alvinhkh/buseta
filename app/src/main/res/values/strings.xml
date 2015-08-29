@@ -37,6 +37,8 @@
     <string name="category_general">一般</string>
     <string name="title_clear_history">清除搜尋記錄</string>
     <string name="summary_clear_history"></string>
+    <string name="title_home_search_button">在主畫面顯示搜尋按鈕</string>
+    <string name="summary_home_search_button">需要重新啟動應用程式</string>
     <string name="category_debug">測試</string>
     <string name="title_eta_version">到站時間預報系統</string>
     <string name="category_about">關於</string>

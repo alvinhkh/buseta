@@ -8,6 +8,8 @@ public class SettingsHelper {
 
     private Integer etaApi = 2;
 
+    private Boolean homeScreenSearchButton = true;
+
     public SettingsHelper() {
     }
 
@@ -17,6 +19,14 @@ public class SettingsHelper {
 
     public void setEtaApi(Integer etaApi) {
         this.etaApi = etaApi;
+    }
+
+    public Boolean getHomeScreenSearchButton() {
+        return homeScreenSearchButton;
+    }
+
+    public void setHomeScreenSearchButton(Boolean homeScreenSearchButton) {
+        this.homeScreenSearchButton = homeScreenSearchButton;
     }
 
     public SettingsHelper parse(Context ctx) {
@@ -30,6 +40,7 @@ public class SettingsHelper {
             e.printStackTrace();
             setEtaApi(2);
         }
+        setHomeScreenSearchButton(sPref.getBoolean("home_search_button", true));
         return this;
     }
 

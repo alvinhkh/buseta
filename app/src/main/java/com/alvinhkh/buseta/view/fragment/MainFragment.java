@@ -21,6 +21,7 @@ import android.widget.Button;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.database.FavouriteDatabase;
+import com.alvinhkh.buseta.preference.SettingsHelper;
 import com.alvinhkh.buseta.view.adapter.FeatureAdapter;
 import com.alvinhkh.buseta.database.SuggestionsDatabase;
 
@@ -35,6 +36,7 @@ public class MainFragment extends Fragment {
     private RecyclerView mRecyclerView;
     private MenuItem mSearchMenuItem;
     private UpdateHistoryReceiver mReceiver;
+    private SettingsHelper settingsHelper = null;
 
     public MainFragment() {
     }
@@ -51,6 +53,7 @@ public class MainFragment extends Fragment {
                              Bundle savedInstanceState) {
         mContext = super.getActivity();
         View view = inflater.inflate(R.layout.fragment_main, container, false);
+        settingsHelper = new SettingsHelper().parse(mContext.getApplicationContext());
         mDatabase_suggestion = new SuggestionsDatabase(getActivity().getApplicationContext());
         mDatabase_favourite = new FavouriteDatabase(getActivity().getApplicationContext());
         // Toolbar
@@ -69,6 +72,9 @@ public class MainFragment extends Fragment {
                 }
             }
         });
+        if (settingsHelper.getHomeScreenSearchButton() == false) {
+            mButton.setVisibility(View.GONE);
+        }
 
         mRecyclerView = (RecyclerView) view.findViewById(R.id.cardList);
         mRecyclerView.setHasFixedSize(true);

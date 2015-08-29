@@ -11,6 +11,12 @@
             android:summary="@string/summary_clear_history"
             android:persistent="false" />
 
+        <SwitchPreference
+            android:key="home_search_button"
+            android:title="@string/title_home_search_button"
+            android:summary="@string/summary_home_search_button"
+            android:defaultValue="true" />
+
     </PreferenceCategory>
 
     <PreferenceCategory

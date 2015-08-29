@@ -149,9 +149,13 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             }
             if (p instanceof SwitchPreference) {
                 SwitchPreference switchPref = (SwitchPreference) p;
-                p.setSummary(switchPref.isChecked() ?
-                        getString(R.string.enabled) :
-                        getString(R.string.disabled));
+                if (p.getKey().equals("home_search_button")) {
+
+                } else {
+                    p.setSummary(switchPref.isChecked() ?
+                            getString(R.string.enabled) :
+                            getString(R.string.disabled));
+                }
             }
             if (p instanceof CheckBoxPreference) {
                 CheckBoxPreference checkBoxPref = (CheckBoxPreference) p;
