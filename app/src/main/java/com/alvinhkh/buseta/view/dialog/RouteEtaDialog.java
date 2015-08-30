@@ -23,6 +23,7 @@ import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.database.FavouriteDatabase;
 import com.alvinhkh.buseta.holder.RouteStop;
+import com.alvinhkh.buseta.preference.SettingsHelper;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
 
@@ -49,6 +50,7 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
     private TextView lLastUpdated;
     private TextView tLastUpdated;
     private Animation animationRotate;
+    private Bitmap mBitmap = null;
 
     private RouteStop _routeStop = null;
     private Integer position = null;
@@ -56,7 +58,7 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
 
     private Cursor mCursor;
     private FavouriteDatabase mDatabase;
-    private Bitmap mBitmap = null;
+    private SettingsHelper settingsHelper = null;
 
     @Override
     protected void onCreate(Bundle bundle) {
@@ -69,6 +71,7 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
         // get context
         mContext = RouteEtaDialog.this;
         // set database
+        settingsHelper = new SettingsHelper().parse(mContext.getApplicationContext());
         mDatabase = new FavouriteDatabase(mContext);
         // get widgets
         iStop = (ImageView) findViewById(R.id.imageView);
@@ -116,6 +119,9 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
         favourite = (null != mCursor && mCursor.getCount() > 0);
         iStar.setImageResource(favourite == true ?
                 R.drawable.ic_star_black_48dp : R.drawable.ic_star_border_black_48dp);
+        if (settingsHelper.getLoadStopImage() == true) {
+            getStopImage();
+        }
     }
 
     @Override

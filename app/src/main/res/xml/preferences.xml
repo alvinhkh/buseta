@@ -17,6 +17,13 @@
             android:summary="@string/summary_home_search_button"
             android:defaultValue="true" />
 
+        <SwitchPreference
+            android:key="load_stop_image"
+            android:title="@string/title_load_stop_image"
+            android:summaryOn="@string/summary_on_load_stop_image"
+            android:summaryOff="@string/summary_off_load_stop_image"
+            android:defaultValue="false" />
+
     </PreferenceCategory>
 
     <PreferenceCategory

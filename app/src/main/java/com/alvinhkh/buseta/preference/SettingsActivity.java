@@ -147,16 +147,13 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 EditTextPreference editTextPref = (EditTextPreference) p;
                 p.setSummary(editTextPref.getText());
             }
+            /*
             if (p instanceof SwitchPreference) {
                 SwitchPreference switchPref = (SwitchPreference) p;
-                if (p.getKey().equals("home_search_button")) {
-
-                } else {
-                    p.setSummary(switchPref.isChecked() ?
-                            getString(R.string.enabled) :
-                            getString(R.string.disabled));
-                }
-            }
+                p.setSummary(switchPref.isChecked() ?
+                        getString(R.string.enabled) :
+                        getString(R.string.disabled));
+            }*/
             if (p instanceof CheckBoxPreference) {
                 CheckBoxPreference checkBoxPref = (CheckBoxPreference) p;
                 p.setSummary(checkBoxPref.isChecked() ?

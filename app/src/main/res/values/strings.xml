@@ -39,6 +39,9 @@
     <string name="summary_clear_history"></string>
     <string name="title_home_search_button">在主畫面顯示搜尋按鈕</string>
     <string name="summary_home_search_button">需要重新啟動應用程式</string>
+    <string name="title_load_stop_image">顯示車站圖片</string>
+    <string name="summary_on_load_stop_image">自動載入車站圖片</string>
+    <string name="summary_off_load_stop_image">手動點擊站名載入圖片</string>
     <string name="category_debug">測試</string>
     <string name="title_eta_version">到站時間預報系統</string>
     <string name="category_about">關於</string>

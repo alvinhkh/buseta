@@ -10,6 +10,8 @@ public class SettingsHelper {
 
     private Boolean homeScreenSearchButton = true;
 
+    private Boolean loadStopImage = false;
+
     public SettingsHelper() {
     }
 
@@ -29,6 +31,14 @@ public class SettingsHelper {
         this.homeScreenSearchButton = homeScreenSearchButton;
     }
 
+    public Boolean getLoadStopImage(){
+        return loadStopImage;
+    }
+
+    public void setLoadStopImage(Boolean loadStopImage){
+        this.loadStopImage = loadStopImage;
+    }
+
     public SettingsHelper parse(Context ctx) {
         SharedPreferences sPref = PreferenceManager.getDefaultSharedPreferences(ctx);
         try {
@@ -41,6 +51,7 @@ public class SettingsHelper {
             setEtaApi(2);
         }
         setHomeScreenSearchButton(sPref.getBoolean("home_search_button", true));
+        setLoadStopImage(sPref.getBoolean("load_stop_image", false));
         return this;
     }
 
