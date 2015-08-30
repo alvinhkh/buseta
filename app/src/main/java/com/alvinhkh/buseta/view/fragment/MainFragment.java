@@ -4,6 +4,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
@@ -25,18 +27,20 @@ import com.alvinhkh.buseta.preference.SettingsHelper;
 import com.alvinhkh.buseta.view.adapter.FeatureAdapter;
 import com.alvinhkh.buseta.database.SuggestionsDatabase;
 
-public class MainFragment extends Fragment {
+public class MainFragment extends Fragment
+        implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String TAG = "MainFragment";
     private Context mContext = super.getActivity();
+    private SettingsHelper settingsHelper = null;
     private SuggestionsDatabase mDatabase_suggestion;
     private FavouriteDatabase mDatabase_favourite;
     private FeatureAdapter mAdapter;
     private ActionBar mActionBar = null;
     private RecyclerView mRecyclerView;
     private MenuItem mSearchMenuItem;
+    private Button mButton;
     private UpdateHistoryReceiver mReceiver;
-    private SettingsHelper settingsHelper = null;
 
     public MainFragment() {
     }
@@ -63,7 +67,7 @@ public class MainFragment extends Fragment {
         mActionBar.setDisplayHomeAsUpEnabled(false);
         setHasOptionsMenu(true);
 
-        Button mButton = (Button) view.findViewById(R.id.buttonSearch);
+        mButton = (Button) view.findViewById(R.id.buttonSearch);
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -72,9 +76,8 @@ public class MainFragment extends Fragment {
                 }
             }
         });
-        if (settingsHelper.getHomeScreenSearchButton() == false) {
-            mButton.setVisibility(View.GONE);
-        }
+        mButton.setVisibility(
+                (settingsHelper.getHomeScreenSearchButton() == false) ? View.GONE : View.VISIBLE);
 
         mRecyclerView = (RecyclerView) view.findViewById(R.id.cardList);
         mRecyclerView.setHasFixedSize(true);
@@ -90,6 +93,8 @@ public class MainFragment extends Fragment {
                 return position < mAdapter.getFavouriteCount() ? manager.getSpanCount() : 1;
             }
         });
+        // Set up a listener whenever a key changes
+        PreferenceManager.getDefaultSharedPreferences(mContext).registerOnSharedPreferenceChangeListener(this);
 
         return view;
     }
@@ -121,6 +126,8 @@ public class MainFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
+        // Unregister the listener whenever a key changes
+        PreferenceManager.getDefaultSharedPreferences(mContext).unregisterOnSharedPreferenceChangeListener(this);
         if (null != mDatabase_suggestion)
             mDatabase_suggestion.close();
         super.onDestroyView();
@@ -131,6 +138,16 @@ public class MainFragment extends Fragment {
         super.onCreateOptionsMenu(menu, inflater);
         menu.findItem(R.id.action_settings).setVisible(true);
         mSearchMenuItem = menu.findItem(R.id.action_search);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sp, String key) {
+        settingsHelper = new SettingsHelper().parse(sp);
+        if (key.matches("home_search_button")) {
+            mButton.setVisibility(
+                    (settingsHelper.getHomeScreenSearchButton() == false)
+                            ? View.GONE : View.VISIBLE);
+        }
     }
 
     public class UpdateHistoryReceiver extends BroadcastReceiver {

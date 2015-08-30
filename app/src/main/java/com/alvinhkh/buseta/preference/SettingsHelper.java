@@ -41,6 +41,10 @@ public class SettingsHelper {
 
     public SettingsHelper parse(Context ctx) {
         SharedPreferences sPref = PreferenceManager.getDefaultSharedPreferences(ctx);
+        return parse(sPref);
+    }
+
+    public SettingsHelper parse(SharedPreferences sPref) {
         try {
             setEtaApi(Integer.valueOf(sPref.getString("eta_version", "2")));
         } catch (ClassCastException e) {
