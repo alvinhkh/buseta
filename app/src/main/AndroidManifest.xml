@@ -48,6 +48,11 @@
             </intent-filter>
         </activity>
 
+        <!-- Services -->
+        <service
+            android:name=".service.EtaCheckService"
+            android:enabled="true" />
+
     </application>
 
 </manifest>

@@ -111,7 +111,6 @@ public class RouteStopFragment extends Fragment
         }
     };
 
-
     public RouteStopFragment() {
     }
 
@@ -494,18 +493,18 @@ public class RouteStopFragment extends Fragment
                         routeStop.eta_loading = true;
                         routeStop.eta_fail = false;
                         if (result != null) {
-                            //Log.d(TAG, result);
+                            // Log.d(TAG, result.toString());
                             if (!result.has("response")) {
                                 routeStop.eta_loading = false;
                                 routeStop.eta_fail = true;
+                                // routeStop.eta_fail = result.has("generated") ? false : true;
                                 mAdapter.notifyDataSetChanged();
                                 getETAv1(position, stopCode);
                                 return;
                             }
 
-                            RouteStopETA routeStopETA = new RouteStopETA();
                             JsonArray jsonArray = result.get("response").getAsJsonArray();
-                            routeStopETA = new RouteStopETA();
+                            RouteStopETA routeStopETA = new RouteStopETA();
                             routeStopETA.api_version = 2;
                             routeStopETA.seq = stopSeq;
                             routeStopETA.updated = result.get("updated").getAsString();
@@ -683,7 +682,6 @@ public class RouteStopFragment extends Fragment
     }
 
     public class UpdateViewReceiver extends BroadcastReceiver {
-
         @Override
         public void onReceive(Context context, Intent intent) {
             Bundle bundle = intent.getExtras();
@@ -691,10 +689,13 @@ public class RouteStopFragment extends Fragment
             if (null != mAdapter && aBoolean == true) {
                 RouteStop newObject = bundle.getParcelable(Constants.BUNDLE.STOP_OBJECT);
                 if (null != newObject) {
-                    RouteStop oldObject = mAdapter.getItem(Integer.parseInt(newObject.stop_seq));
-                    oldObject.favourite = newObject.favourite;
-                    oldObject.eta = newObject.eta;
-                    mAdapter.notifyDataSetChanged();
+                    int position = Integer.parseInt(newObject.stop_seq);
+                    if (position < mAdapter.getCount()) {
+                        RouteStop oldObject = mAdapter.getItem(position);
+                        oldObject.favourite = newObject.favourite;
+                        oldObject.eta = newObject.eta;
+                        mAdapter.notifyDataSetChanged();
+                    }
                 }
             }
         }

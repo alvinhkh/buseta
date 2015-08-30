@@ -5,9 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -23,12 +26,18 @@ import android.widget.Button;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.database.FavouriteDatabase;
+import com.alvinhkh.buseta.holder.RouteStop;
+import com.alvinhkh.buseta.holder.RouteStopContainer;
 import com.alvinhkh.buseta.preference.SettingsHelper;
+import com.alvinhkh.buseta.service.EtaCheckService;
 import com.alvinhkh.buseta.view.adapter.FeatureAdapter;
 import com.alvinhkh.buseta.database.SuggestionsDatabase;
 
+import java.util.ArrayList;
+
 public class MainFragment extends Fragment
-        implements SharedPreferences.OnSharedPreferenceChangeListener {
+        implements SharedPreferences.OnSharedPreferenceChangeListener,
+        SwipeRefreshLayout.OnRefreshListener {
 
     private static final String TAG = "MainFragment";
     private Context mContext = super.getActivity();
@@ -37,10 +46,13 @@ public class MainFragment extends Fragment
     private FavouriteDatabase mDatabase_favourite;
     private FeatureAdapter mAdapter;
     private ActionBar mActionBar = null;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
     private RecyclerView mRecyclerView;
     private MenuItem mSearchMenuItem;
     private Button mButton;
-    private UpdateHistoryReceiver mReceiver;
+    private UpdateHistoryReceiver mReceiver_history;
+    private UpdateEtaReceiver mReceiver_eta;
+    private ArrayList<RouteStopContainer> routeStopList = null;
 
     public MainFragment() {
     }
@@ -60,6 +72,16 @@ public class MainFragment extends Fragment
         settingsHelper = new SettingsHelper().parse(mContext.getApplicationContext());
         mDatabase_suggestion = new SuggestionsDatabase(getActivity().getApplicationContext());
         mDatabase_favourite = new FavouriteDatabase(getActivity().getApplicationContext());
+        Cursor cursor_fav = mDatabase_favourite.get();
+        if (savedInstanceState != null) {
+            routeStopList = savedInstanceState.getParcelableArrayList(Constants.BUNDLE.STOP_OBJECTS);
+            Bundle bundle = new Bundle();
+            bundle.putBoolean(Constants.MESSAGE.STATE_UPDATED, true);
+            bundle.putParcelableArrayList(Constants.BUNDLE.STOP_OBJECTS, routeStopList);
+            cursor_fav.setExtras(bundle);
+        }
+        if (null == routeStopList)
+            routeStopList = new ArrayList<RouteStopContainer>();
         // Toolbar
         mActionBar = ((AppCompatActivity) mContext).getSupportActionBar();
         mActionBar.setTitle(R.string.app_name);
@@ -67,6 +89,10 @@ public class MainFragment extends Fragment
         mActionBar.setDisplayHomeAsUpEnabled(false);
         setHasOptionsMenu(true);
 
+        mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
+        mSwipeRefreshLayout.setEnabled(false);
+        mSwipeRefreshLayout.setRefreshing(false);
         mButton = (Button) view.findViewById(R.id.buttonSearch);
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -85,7 +111,7 @@ public class MainFragment extends Fragment
         mRecyclerView.setLayoutManager(manager);
         mAdapter = new FeatureAdapter(getActivity(),
                 mDatabase_suggestion.getHistory(),
-                mDatabase_favourite.get());
+                cursor_fav);
         mRecyclerView.setAdapter(mAdapter);
         manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
@@ -95,6 +121,19 @@ public class MainFragment extends Fragment
         });
         // Set up a listener whenever a key changes
         PreferenceManager.getDefaultSharedPreferences(mContext).registerOnSharedPreferenceChangeListener(this);
+        // broadcast receiver
+        if (null != mContext) {
+            IntentFilter mFilter_history = new IntentFilter(Constants.MESSAGE.HISTORY_UPDATED);
+            mReceiver_history = new UpdateHistoryReceiver();
+            mFilter_history.addAction(Constants.MESSAGE.HISTORY_UPDATED);
+            mContext.registerReceiver(mReceiver_history, mFilter_history);
+            IntentFilter mFilter_eta = new IntentFilter(Constants.MESSAGE.ETA_UPDATED);
+            mReceiver_eta = new UpdateEtaReceiver();
+            mFilter_eta.addAction(Constants.MESSAGE.ETA_UPDATED);
+            mContext.registerReceiver(mReceiver_eta, mFilter_eta);
+        }
+        if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
+            mAutoRefreshHandler.post(mAutoRefreshRunnable);
 
         return view;
     }
@@ -106,30 +145,33 @@ public class MainFragment extends Fragment
             mActionBar.setTitle(R.string.app_name);
             mActionBar.setSubtitle(null);
         }
-        if (null != mAdapter) {
+        if (null != mAdapter)
             mAdapter.swapHistoryCursor(mDatabase_suggestion.getHistory());
-        }
-        if (null != mContext) {
-            IntentFilter mFilter = new IntentFilter(Constants.MESSAGE.HISTORY_UPDATED);
-            mReceiver = new UpdateHistoryReceiver();
-            mFilter.addAction(Constants.MESSAGE.HISTORY_UPDATED);
-            mContext.registerReceiver(mReceiver, mFilter);
-        }
     }
 
     @Override
-    public void onPause() {
-        if (null != mContext && null != mReceiver)
-            mContext.unregisterReceiver(mReceiver);
-        super.onPause();
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (null != routeStopList)
+            outState.putParcelableArrayList(Constants.BUNDLE.STOP_OBJECTS, routeStopList);
     }
 
     @Override
     public void onDestroyView() {
+        if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
+            mAutoRefreshHandler.removeCallbacks(mAutoRefreshRunnable);
+        if (null != mContext) {
+            if (null != mReceiver_history)
+                mContext.unregisterReceiver(mReceiver_history);
+            if (null != mReceiver_eta)
+                mContext.unregisterReceiver(mReceiver_eta);
+        }
         // Unregister the listener whenever a key changes
         PreferenceManager.getDefaultSharedPreferences(mContext).unregisterOnSharedPreferenceChangeListener(this);
         if (null != mDatabase_suggestion)
             mDatabase_suggestion.close();
+        if (null != mDatabase_favourite)
+            mDatabase_favourite.close();
         super.onDestroyView();
     }
 
@@ -137,7 +179,18 @@ public class MainFragment extends Fragment
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         menu.findItem(R.id.action_settings).setVisible(true);
+        menu.findItem(R.id.action_reload).setVisible(true);
         mSearchMenuItem = menu.findItem(R.id.action_search);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_reload) {
+            onRefresh();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -150,6 +203,28 @@ public class MainFragment extends Fragment
         }
     }
 
+    public void onRefresh() {
+        if (null != mAdapter && null != mContext)
+            for (int i = 0; i < mAdapter.getFavouriteCount(); i++) {
+                RouteStop object = mAdapter.getFavouriteItem(i);
+                Intent intent = new Intent(mContext, EtaCheckService.class);
+                intent.putExtra(Constants.BUNDLE.ITEM_POSITION, i);
+                intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
+                intent.putParcelableArrayListExtra(Constants.BUNDLE.STOP_OBJECTS, routeStopList);
+                mContext.startService(intent);
+            }
+        mSwipeRefreshLayout.setRefreshing(false);
+    }
+
+    Handler mAutoRefreshHandler = new Handler();
+    Runnable mAutoRefreshRunnable = new Runnable() {
+        @Override
+        public void run() {
+            onRefresh();
+            mAutoRefreshHandler.postDelayed(mAutoRefreshRunnable, 60 * 1000); // every minute
+        }
+    };
+
     public class UpdateHistoryReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -157,6 +232,34 @@ public class MainFragment extends Fragment
             Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.HISTORY_UPDATED);
             if (null != mAdapter && null != mDatabase_suggestion && aBoolean == true) {
                 mAdapter.swapHistoryCursor(mDatabase_suggestion.getHistory());
+            }
+        }
+    }
+
+    public class UpdateEtaReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+            Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.ETA_UPDATED);
+            if (null != mAdapter && null != mDatabase_favourite && aBoolean == true) {
+                routeStopList = bundle.getParcelableArrayList(Constants.BUNDLE.STOP_OBJECTS);
+                int position = bundle.getInt(Constants.BUNDLE.ITEM_POSITION, -1);
+                RouteStop newObject = bundle.getParcelable(Constants.BUNDLE.STOP_OBJECT);
+                if (null != newObject) {
+                    for (int i = 0; i < routeStopList.size(); i++) {
+                        RouteStop oldObject = routeStopList.get(i).routeStop;
+                        int listPosition = routeStopList.get(i).position;
+                        if (null != oldObject && position == listPosition) {
+                            oldObject.eta = newObject.eta;
+                            oldObject.eta_loading = newObject.eta_loading;
+                            oldObject.eta_fail = newObject.eta_fail;
+                            oldObject.favourite = newObject.favourite;
+                        }
+                    }
+                }
+                Cursor cursor = mDatabase_favourite.get();
+                cursor.setExtras(bundle);
+                mAdapter.swapFavouriteCursor(cursor);
             }
         }
     }

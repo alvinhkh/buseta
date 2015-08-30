@@ -49,7 +49,7 @@
             android:layout_gravity="top"
             android:layout_marginLeft="8dp"
             android:src="@drawable/ic_refresh_black_48dp"
-            android:visibility="gone" />
+            android:visibility="visible" />
 
         <ImageView
             android:id="@+id/star"

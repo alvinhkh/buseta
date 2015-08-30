@@ -62,7 +62,7 @@
     <string name="message_clear_search_history_success">成功清除搜尋記錄</string>
     <string name="message_database_updating">數據庫更新中</string>
     <string name="message_database_updated">數據庫經已更新</string>
-    <string name="message_default_auto_refresh">提示：預設每分鐘會自動更新</string>
+    <string name="message_reminder_auto_refresh">提示：每分鐘會自動更新</string>
     <string name="message_fail_to_request">未能載入，請再試一次</string>
     <string name="message_loading">載入中...</string>
     <string name="message_no_passenger_notice">暫時沒有任何通告</string>

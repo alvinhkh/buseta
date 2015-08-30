@@ -1,13 +1,14 @@
 package com.alvinhkh.buseta.view.dialog;
 
-import android.app.Activity;
-import android.content.ContentValues;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -22,15 +23,17 @@ import android.widget.TextView;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.database.FavouriteDatabase;
+import com.alvinhkh.buseta.holder.EtaAdapterHelper;
 import com.alvinhkh.buseta.holder.RouteStop;
+import com.alvinhkh.buseta.holder.RouteStopContainer;
 import com.alvinhkh.buseta.preference.SettingsHelper;
+import com.alvinhkh.buseta.service.EtaCheckService;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
 
 import org.jsoup.Jsoup;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 
@@ -52,13 +55,25 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
     private Animation animationRotate;
     private Bitmap mBitmap = null;
 
-    private RouteStop _routeStop = null;
+    private ArrayList<RouteStopContainer> list = null;
+    private RouteStop object = null;
     private Integer position = null;
     private Boolean favourite = false;
+    private Boolean hideStar = false;
 
     private Cursor mCursor;
     private FavouriteDatabase mDatabase;
     private SettingsHelper settingsHelper = null;
+    private UpdateEtaReceiver mReceiver;
+
+    Handler mAutoRefreshHandler = new Handler();
+    Runnable mAutoRefreshRunnable = new Runnable() {
+        @Override
+        public void run() {
+            onRefresh();
+            mAutoRefreshHandler.postDelayed(mAutoRefreshRunnable, 30 * 1000); // every half minute
+        }
+    };
 
     @Override
     protected void onCreate(Bundle bundle) {
@@ -109,19 +124,21 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
         Bundle extras = getIntent().getExtras();
         // Or passed from the other activity
         if (extras != null) {
-            _routeStop = extras.getParcelable(Constants.BUNDLE.STOP_OBJECT);
+            hideStar = extras.getBoolean(Constants.MESSAGE.HIDE_STAR);
+            position = extras.getInt(Constants.BUNDLE.ITEM_POSITION, -1);
+            object = extras.getParcelable(Constants.BUNDLE.STOP_OBJECT);
+            list = extras.getParcelableArrayList(Constants.BUNDLE.STOP_OBJECTS);
             parse();
         } else {
             finish();
         }
         //
-        mCursor = mDatabase.getExist(_routeStop);
+        mCursor = mDatabase.getExist(object);
         favourite = (null != mCursor && mCursor.getCount() > 0);
         iStar.setImageResource(favourite == true ?
                 R.drawable.ic_star_black_48dp : R.drawable.ic_star_border_black_48dp);
-        if (settingsHelper.getLoadStopImage() == true) {
+        if (settingsHelper.getLoadStopImage() == true)
             getStopImage();
-        }
     }
 
     @Override
@@ -130,29 +147,29 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
             case R.id.refresh:
                 onRefresh();
                 final Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content),
-                        R.string.message_default_auto_refresh, Snackbar.LENGTH_LONG);
+                        R.string.message_reminder_auto_refresh, Snackbar.LENGTH_LONG);
                 TextView tv = (TextView)
                         snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
                 tv.setTextColor(Color.WHITE);
                 snackbar.show();
                 break;
             case R.id.star:
-                if (null == mDatabase || null == _routeStop || null == _routeStop.route_bound) break;
-                mCursor = mDatabase.getExist(_routeStop);
+                if (null == mDatabase || null == object || null == object.route_bound) break;
+                mCursor = mDatabase.getExist(object);
                 Boolean org = favourite;
                 if (null != mCursor && mCursor.getCount() > 0) {
                     // record exist
                     org = true;
-                    favourite = mDatabase.delete(_routeStop) ? false : true;
+                    favourite = mDatabase.delete(object) ? false : true;
                 } else {
                     org = false;
-                    favourite = mDatabase.insertStop(_routeStop) > 0 ? true : false;
+                    favourite = mDatabase.insertStop(object) > 0 ? true : false;
                 }
                 if (org != favourite)
                     iStar.startAnimation(animationRotate);
                 iStar.setImageResource(favourite == true ?
                         R.drawable.ic_star_black_48dp : R.drawable.ic_star_border_black_48dp);
-                _routeStop.favourite = favourite;
+                object.favourite = favourite;
                 sendUpdate();
                 break;
             case R.id.stop_name:
@@ -162,7 +179,33 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
+            mAutoRefreshHandler.post(mAutoRefreshRunnable);
+        if (null != mContext) {
+            IntentFilter mFilter_eta = new IntentFilter(Constants.MESSAGE.ETA_UPDATED);
+            mReceiver = new UpdateEtaReceiver();
+            mFilter_eta.addAction(Constants.MESSAGE.ETA_UPDATED);
+            mContext.registerReceiver(mReceiver, mFilter_eta);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
+            mAutoRefreshHandler.removeCallbacks(mAutoRefreshRunnable);
+        if (null != mContext) {
+            if (null != mReceiver)
+                mContext.unregisterReceiver(mReceiver);
+        }
+        super.onPause();
+    }
+
+    @Override
     public void onDestroy() {
+        if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
+            mAutoRefreshHandler.removeCallbacks(mAutoRefreshRunnable);
         if (null != mCursor)
             mCursor.close();
         if (null != mDatabase)
@@ -173,10 +216,12 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
 
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (null != _routeStop)
-            outState.putParcelable(Constants.BUNDLE.STOP_OBJECT, _routeStop);
+        if (null != object)
+            outState.putParcelable(Constants.BUNDLE.STOP_OBJECT, object);
         if (null != position)
             outState.putInt(Constants.BUNDLE.ITEM_POSITION, position);
+        if (null != list)
+            outState.putParcelableArrayList(Constants.BUNDLE.STOP_OBJECTS, list);
         mBitmap = Ion.with(iStop).getBitmap();
         outState.putParcelable("stop_image_bitmap", mBitmap);
     }
@@ -196,134 +241,75 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
     private void onRefresh() {
         iRefresh.setVisibility(View.GONE);
         progressBar.setVisibility(View.VISIBLE);
-        // TODO: get data from service
-        // iRefresh.setVisibility(View.VISIBLE);
-        // progressBar.setVisibility(View.GONE);
-        sendUpdate();
+
+        Intent intent = new Intent(this, EtaCheckService.class);
+        intent.putExtra(Constants.BUNDLE.ITEM_POSITION, position);
+        intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
+        intent.putParcelableArrayListExtra(Constants.BUNDLE.STOP_OBJECTS, list);
+        startService(intent);
     }
 
     private void sendUpdate() {
         Intent intent = new Intent(Constants.MESSAGE.STOP_UPDATED);
         intent.putExtra(Constants.MESSAGE.STOP_UPDATED, true);
-        intent.putExtra(Constants.BUNDLE.STOP_OBJECT, _routeStop);
-        sendBroadcast(intent);
+        intent.putExtra(Constants.BUNDLE.ITEM_POSITION, position);
+        intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
+        intent.putParcelableArrayListExtra(Constants.BUNDLE.STOP_OBJECTS, list);
+        getApplication().sendBroadcast(intent);
     }
     
     private void parse() {
-        if (null == _routeStop) {
+        if (null == object) {
             finish();
             return;
         }
-        tStopName.setText(_routeStop.name_tc);
-        if (null == _routeStop.eta) {
-            tEta.setVisibility(View.GONE);
+        iStar.setVisibility(hideStar == true ? View.GONE : View.VISIBLE);
+        tStopName.setText(object.name_tc);
+        tEta.setVisibility(View.VISIBLE);
+        if (object.eta_loading != null && object.eta_loading == true) {
+            if (tEta.getText().equals(""))
+                tEta.setText(R.string.message_loading);
+        } else if (object.eta_fail != null && object.eta_fail == true) {
+            tEta.setText(R.string.message_fail_to_request);
+        } else if (null == object.eta) {
+            tEta.setText(R.string.message_no_data);
+        }
+        if (null == object.eta) {
             lServerTime.setVisibility(View.GONE);
             tServerTime.setVisibility(View.GONE);
             lLastUpdated.setVisibility(View.GONE);
             tLastUpdated.setVisibility(View.GONE);
             return;
         } else {
-            tEta.setVisibility(View.VISIBLE);
             lServerTime.setVisibility(View.VISIBLE);
             tServerTime.setVisibility(View.VISIBLE);
             lLastUpdated.setVisibility(View.VISIBLE);
             tLastUpdated.setVisibility(View.VISIBLE);
         }
         // Request Time
-        SimpleDateFormat display_format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         String server_time = "";
         Date server_date = null;
-        if (null != _routeStop.eta.server_time && !_routeStop.eta.server_time.equals("")) {
-            if (_routeStop.eta.api_version == 2) {
-                server_date = new Date(Long.parseLong(_routeStop.eta.server_time));
-            } else if (_routeStop.eta.api_version == 1) {
-                SimpleDateFormat date_format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-                try {
-                    server_date = date_format.parse(_routeStop.eta.server_time);
-                } catch (ParseException ep) {
-                    ep.printStackTrace();
-                }
-            }
+        if (null != object.eta.server_time && !object.eta.server_time.equals("")) {
+            server_date = EtaAdapterHelper.serverDate(object);
             server_time = (null != server_date) ?
-                    display_format.format(server_date) : _routeStop.eta.server_time;
+                    EtaAdapterHelper.display_format.format(server_date) : object.eta.server_time;
         }
         // last updated
         String updated_time = "";
         Date updated_date = null;
-        if (null != _routeStop.eta.updated && !_routeStop.eta.updated.equals("")) {
-            if (_routeStop.eta.api_version == 2) {
-                updated_date = new Date(Long.parseLong(_routeStop.eta.updated));
-            }
+        if (null != object.eta.updated && !object.eta.updated.equals("")) {
+            updated_date = EtaAdapterHelper.updatedDate(object);
             updated_time = (null != updated_date) ?
-                    display_format.format(updated_date) : _routeStop.eta.updated;
+                    EtaAdapterHelper.display_format.format(updated_date) : object.eta.updated;
         }
         // ETAs
-        String eta = Jsoup.parse(_routeStop.eta.etas).text();
+        String eta = Jsoup.parse(object.eta.etas).text();
         String[] etas = eta.replaceAll("　", " ").split(", ?");
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < etas.length; i++) {
             sb.append(etas[i]);
-            if (_routeStop.eta.api_version == 1) {
-                // API v1 from Web, with minutes no time
-                String minutes = etas[i].replaceAll("[^0123456789]", "");
-                if (null != server_date && !minutes.equals("") &&
-                        etas[i].contains("分鐘")) {
-                    Long t = server_date.getTime();
-                    Date etaDate = new Date(t + (Integer.parseInt(minutes) * 60000));
-                    SimpleDateFormat eta_time_format = new SimpleDateFormat("HH:mm");
-                    String etaTime = eta_time_format.format(etaDate);
-                    sb.append(" (");
-                    sb.append(etaTime);
-                    sb.append(")");
-                }
-            } else if (_routeStop.eta.api_version == 2) {
-                // API v2 from Mobile v2, with exact time
-                if (etas[i].matches(".*\\d.*")) {
-                    // if text has digit
-                    String etaMinutes = "";
-                    long differences = new Date().getTime() - server_date.getTime(); // get device time and compare to server time
-                    try {
-                        SimpleDateFormat time_format =
-                                new SimpleDateFormat("yyyy/MM/dd HH:mm");
-                        Date etaDateCompare = server_date;
-                        // first assume eta time and server time is on the same date
-                        Date etaDate = time_format.parse(
-                                new SimpleDateFormat("yyyy").format(etaDateCompare) + "/" +
-                                        new SimpleDateFormat("MM").format(etaDateCompare) + "/" +
-                                        new SimpleDateFormat("dd").format(etaDateCompare) + " " +
-                                        etas[i]);
-                        // if not minutes will get negative integer
-                        int minutes = (int) ((etaDate.getTime() / 60000) -
-                                ((server_date.getTime() + differences) / 60000));
-                        if (minutes < -12 * 60) {
-                            // plus one day to get correct eta date
-                            etaDateCompare = new Date(server_date.getTime() + 1 * 24 * 60 * 60 * 1000);
-                            etaDate = time_format.parse(
-                                    new SimpleDateFormat("yyyy").format(etaDateCompare) + "/" +
-                                            new SimpleDateFormat("MM").format(etaDateCompare) + "/" +
-                                            new SimpleDateFormat("dd").format(etaDateCompare) + " " +
-                                            etas[i]);
-                            minutes = (int) ((etaDate.getTime() / 60000) -
-                                    ((server_date.getTime() + differences) / 60000));
-                        }
-                        // minutes should be 0 to within a day
-                        if (minutes >= 0 && minutes < 1 * 24 * 60 * 60 * 1000)
-                            etaMinutes = String.valueOf(minutes);
-                    } catch (ParseException ep) {
-                        ep.printStackTrace();
-                    }
-                    if (!etaMinutes.equals("")) {
-                        sb.append(" (");
-                        if (etaMinutes.equals("0")) {
-                            sb.append(getString(R.string.now));
-                        } else {
-                            sb.append(etaMinutes);
-                            sb.append(getString(R.string.minutes));
-                        }
-                        sb.append(")");
-                    }
-                }
-            }
+            String estimate = EtaAdapterHelper.etaEstimate(object, etas, i, server_date, null, null, null);
+            sb.append(estimate);
             if (i < etas.length - 1)
                 sb.append("\n");
         }
@@ -342,13 +328,13 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
     }
 
     private void getStopImage() {
-        if (null == _routeStop) return;
+        if (null == object) return;
         progressBar.setVisibility(View.VISIBLE);
         iStop.setVisibility(View.VISIBLE);
         View container = findViewById(R.id.imageContainer);
         container.setVisibility(View.VISIBLE);
         Ion.with(mContext)
-                .load(Constants.URL.ROUTE_STOP_IMAGE + _routeStop.code)
+                .load(Constants.URL.ROUTE_STOP_IMAGE + object.code)
                 .progressBar(progressBar)
                 .withBitmap()
                 .error(R.drawable.ic_error_outline_black_48dp)
@@ -365,6 +351,26 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
                             progressBar.setVisibility(View.GONE);
                     }
                 });
+    }
+
+    public class UpdateEtaReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+            Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.ETA_UPDATED);
+            if (aBoolean == true) {
+                RouteStop routeStop = bundle.getParcelable(Constants.BUNDLE.STOP_OBJECT);
+                if (null != routeStop) {
+                    object.eta = routeStop.eta;
+                    object.eta_loading = routeStop.eta_loading;
+                    object.eta_fail = routeStop.eta_fail;
+                    parse();
+                }
+                iRefresh.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.GONE);
+                sendUpdate();
+            }
+        }
     }
 
 }
