@@ -44,6 +44,7 @@ public class RouteNewsFragment extends Fragment
 
     private static final String TAG = "RouteNewsFragment";
     private static final String KEY_LIST_VIEW_STATE = "KEY_LIST_VIEW_STATE_ROUTE_BOUND";
+    private static final String ROUTE_NEWS_TEXT = "ROUTE_NEWS_TEXT";
 
     private Context mContext = super.getActivity();
     private ActionBar mActionBar = null;
@@ -52,9 +53,11 @@ public class RouteNewsFragment extends Fragment
     private ListView mListView;
     private TextView mEmptyText;
     private ProgressBar mProgressBar;
+    private AlertDialog mAlertDialog;
 
     private RouteNewsAdapter mAdapter;
     private String _route_no = null;
+    private RouteNews _routeNews = null;
 
     public RouteNewsFragment() {
     }
@@ -108,6 +111,11 @@ public class RouteNewsFragment extends Fragment
             // Get Route Bounds
             getNotices(_route_no);
         }
+        if (savedInstanceState != null
+                && savedInstanceState.containsKey(ROUTE_NEWS_TEXT)) {
+            _routeNews = savedInstanceState.getParcelable(ROUTE_NEWS_TEXT);
+            showDialog();
+        }
         mListView.setAdapter(mAdapter);
         mListView.setOnItemClickListener(this);
         //mListView.setOnItemLongClickListener(this);
@@ -122,6 +130,7 @@ public class RouteNewsFragment extends Fragment
         if (null != mAdapter) {
             mAdapter.onSaveInstanceState(outState);
             outState.putParcelable(KEY_LIST_VIEW_STATE, mListView.onSaveInstanceState());
+            outState.putParcelable(ROUTE_NEWS_TEXT, _routeNews);
         }
     }
 
@@ -144,6 +153,8 @@ public class RouteNewsFragment extends Fragment
             mProgressBar.setVisibility(View.GONE);
         if (null != mEmptyText)
             mEmptyText.setVisibility(View.GONE);
+        if (null != mAlertDialog)
+            mAlertDialog.dismiss();
         View view = getView();
         if (null != view)
             view.setVisibility(View.GONE);
@@ -154,6 +165,7 @@ public class RouteNewsFragment extends Fragment
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (view != null) {
+            _routeNews = null;
             TextView textView_title = (TextView) view.findViewById(android.R.id.text1);
             TextView textView_link= (TextView) view.findViewById(R.id.notice_link);
             RouteNews routeNews = new RouteNews();
@@ -181,6 +193,19 @@ public class RouteNewsFragment extends Fragment
         if (null != mAdapter)
             mAdapter.clear();
         getNotices(_route_no);
+    }
+
+    private void showDialog() {
+        if (null == _routeNews || null == _routeNews.title || null == _routeNews.text) return;
+        mAlertDialog = new AlertDialog.Builder(mContext)
+                .setTitle(_routeNews.title)
+                .setMessage(_routeNews.text)
+                .setPositiveButton(R.string.action_confirm, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialoginterface, int i) {
+                        _routeNews = null;
+                        dialoginterface.cancel();
+                    }
+                }).show();
     }
 
     private void getNotices(final String _route_no) {
@@ -245,16 +270,13 @@ public class RouteNewsFragment extends Fragment
                 });
     }
 
-    private void getNoticeText(RouteNews routeNews) {
-        final String title = routeNews.title;
-        final String link = routeNews.link;
+    private void getNoticeText(final RouteNews routeNews) {
+        if (null == routeNews || null == routeNews.title || null == routeNews.link) return;
 
         if (mSwipeRefreshLayout != null)
             mSwipeRefreshLayout.setRefreshing(true);
-
         Ion.with(mContext)
-                .load(Constants.URL.ROUTE_NOTICES + link)
-                        //.setLogging("Ion", Log.DEBUG)
+                .load(Constants.URL.ROUTE_NOTICES + routeNews.link)
                 .setHeader("Referer", Constants.URL.ROUTE_NEWS + "?lang=chi&routeno=" + _route_no)
                 .setHeader("Pragma", "no-cache")
                 .setHeader("User-Agent", Constants.URL.REQUEST_UA)
@@ -264,9 +286,8 @@ public class RouteNewsFragment extends Fragment
                     public void onCompleted(Exception e, String result) {
                         // do stuff with the result or error
                         Boolean shown = false;
-                        if (e != null) {
+                        if (e != null)
                             Log.d(TAG, e.toString());
-                        }
                         if (result != null) {
                             Document doc = Jsoup.parse(result);
                             Element body = doc.select("div.itemContent").first();
@@ -280,15 +301,9 @@ public class RouteNewsFragment extends Fragment
                                 }
                                 if (!sb.toString().equals("")) {
                                     shown = true;
-                                    new AlertDialog.Builder(mContext)
-                                            .setTitle(title)
-                                            .setMessage(sb.toString())
-                                            .setPositiveButton(R.string.action_confirm, new DialogInterface.OnClickListener() {
-                                                public void onClick(DialogInterface dialoginterface, int i) {
-                                                    dialoginterface.cancel();
-                                                }
-                                            })
-                                            .show();
+                                    routeNews.text = sb.toString();
+                                    _routeNews = routeNews;
+                                    showDialog();
                                 }
                             }
                         }

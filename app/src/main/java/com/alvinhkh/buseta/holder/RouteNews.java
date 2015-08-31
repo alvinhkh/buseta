@@ -12,6 +12,8 @@ public class RouteNews implements Parcelable {
 
     public String link = null;
 
+    public String text = null;
+
     // Parcelling
     /**
      * Constructs a RouteNews from a Parcel
@@ -20,6 +22,7 @@ public class RouteNews implements Parcelable {
     public RouteNews(Parcel p) {
         this.title = p.readString();
         this.link = p.readString();
+        this.text = p.readString();
     }
 
     @Override
@@ -32,6 +35,7 @@ public class RouteNews implements Parcelable {
     public void writeToParcel(Parcel p, int flags) {
         p.writeString(this.title);
         p.writeString(this.link);
+        p.writeString(this.text);
     }
     // Method to recreate a RouteNews from a Parcel
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
