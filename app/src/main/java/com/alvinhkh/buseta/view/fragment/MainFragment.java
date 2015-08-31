@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.database.AbstractCursor;
 import android.database.Cursor;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -258,7 +259,7 @@ public class MainFragment extends Fragment
                     }
                 }
                 Cursor cursor = mDatabase_favourite.get();
-                cursor.setExtras(bundle);
+                ((AbstractCursor) cursor).setExtras(bundle);
                 mAdapter.swapFavouriteCursor(cursor);
             }
         }
