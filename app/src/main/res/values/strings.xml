@@ -44,6 +44,8 @@
     <string name="summary_on_load_stop_image">自動載入車站圖片</string>
     <string name="summary_off_load_stop_image">手動點擊站名載入圖片</string>
     <string name="category_debug">測試</string>
+    <string name="title_update_route_suggestion">更新建議路線</string>
+    <string name="summary_update_route_suggestion">手動更新有提供到站時間預報的路線資料</string>
     <string name="title_eta_version">到站時間預報系統</string>
     <string name="category_about">關於</string>
     <string name="title_app_name">%s \u00A9 2015</string>
@@ -62,15 +64,16 @@
     <string name="message_clear_search_history_success">成功清除搜尋記錄</string>
     <string name="message_database_updating">數據庫更新中</string>
     <string name="message_database_updated">數據庫經已更新</string>
-    <string name="message_reminder_auto_refresh">提示：每分鐘會自動更新</string>
     <string name="message_fail_to_request">未能載入，請再試一次</string>
     <string name="message_loading">載入中...</string>
     <string name="message_no_passenger_notice">暫時沒有任何通告</string>
     <string name="message_no_data">暫時沒有資料</string>
     <string name="message_please_click_once_again">請再按多一次</string>
+    <string name="message_reminder_auto_refresh">提示：每分鐘會自動更新</string>
     <string name="message_remove_from_search_history">從搜尋記錄中移除</string>
     <string name="message_remove_from_favourite">從記錄中移除</string>
     <string name="message_route_not_support_eta">本站沒有抵站時間預報服務</string>
+    <string name="message_total_routes">(共 %s 條路線)</string>
 
     <string name="url_app">http://buseta.alvinhkh.com</string>
     <string name="url_developer">http://www.alvinhkh.com</string>

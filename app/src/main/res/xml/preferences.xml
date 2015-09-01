@@ -30,6 +30,12 @@
     <PreferenceCategory
         android:title="@string/category_debug">
 
+        <Preference
+            android:key="update_route_suggestion"
+            android:title="@string/title_update_route_suggestion"
+            android:summary="@string/summary_update_route_suggestion"
+            android:persistent="false" />
+
         <ListPreference
             android:key="eta_version"
             android:title="@string/title_eta_version"

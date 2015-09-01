@@ -1,13 +1,15 @@
 package com.alvinhkh.buseta.view;
 
 import android.app.SearchManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
 import android.graphics.Color;
-import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -18,7 +20,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -32,6 +33,7 @@ import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteNews;
+import com.alvinhkh.buseta.service.UpdateSuggestionService;
 import com.alvinhkh.buseta.view.adapter.SuggestionSimpleCursorAdapter;
 import com.alvinhkh.buseta.database.SuggestionsDatabase;
 import com.alvinhkh.buseta.view.fragment.MainFragment;
@@ -57,6 +59,7 @@ public class MainActivity extends AppCompatActivity
     private SearchView mSearchView;
     private SuggestionSimpleCursorAdapter mAdapter;
     private Cursor mCursor;
+    private UpdateSuggestionReceiver mReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,11 +67,17 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         mDatabase = new SuggestionsDatabase(getApplicationContext());
-        mPrefs = getPreferences(Context.MODE_PRIVATE);
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         // Set Toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        // Broadcast Receiver
+        IntentFilter mFilter = new IntentFilter(Constants.ROUTES.SUGGESTION_UPDATE);
+        mReceiver = new UpdateSuggestionReceiver();
+        mFilter.addAction(Constants.ROUTES.SUGGESTION_UPDATE);
+        registerReceiver(mReceiver, mFilter);
 
         // Set Suggestion Adapter
         String[] columns = new String[] {
@@ -128,44 +137,11 @@ public class MainActivity extends AppCompatActivity
                     .add(R.id.fragment_container, mainFragment, "Home").commit();
         }
 
-        // Add available route records
-        final Snackbar snackbar = Snackbar.make(findViewById(R.id.main_content),
-                    R.string.message_database_updating, Snackbar.LENGTH_INDEFINITE);
-        TextView tv = (TextView)
-                snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
-        tv.setTextColor(Color.WHITE);
-        Handler handler = new Handler();
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                if (null != mDatabase) {
-                    mDatabase.clearDefault();
-                    String[] arr = Constants.ROUTES.AVAILABLE;
-                    for (int i = 0; i < arr.length; i++) {
-                        mDatabase.insertDefault(arr[i]);
-                    }
-                    if (null != mPrefs) {
-                        SharedPreferences.Editor editor = mPrefs.edit();
-                        editor.putInt(Constants.ROUTES.VERSION_RECORD, Constants.ROUTES.VERSION);
-                        editor.commit();
-                    }
-                    if (null != snackbar) {
-                        snackbar.setText(R.string.message_database_updated);
-                    }
-                    Log.d(TAG, "updated default available routes");
-                }
-                if (null != snackbar) {
-                    snackbar.setDuration(Snackbar.LENGTH_LONG);
-                    snackbar.show();
-                }
-            }
-        };
+        // update available route records
         int routeVersion = mPrefs.getInt(Constants.ROUTES.VERSION_RECORD, 0);
         if (Constants.ROUTES.VERSION > routeVersion) {
-            if (null != snackbar) {
-                snackbar.show();
-            }
-            handler.postDelayed(runnable, 1000);
+            Intent intent = new Intent(this, UpdateSuggestionService.class);
+            startService(intent);
         }
 
     }
@@ -222,6 +198,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onDestroy() {
+        if (null != mReceiver)
+            unregisterReceiver(mReceiver);
         if (null != mDatabase)
             mDatabase.close();
         Ion.getDefault(getBaseContext()).cancelAll(getBaseContext());
@@ -333,6 +311,35 @@ public class MainActivity extends AppCompatActivity
         t.replace(R.id.fragment_container, f, "Notice_" + notice.link);
         t.addToBackStack(null);
         t.commit();
+    }
+
+    public class UpdateSuggestionReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+            Boolean aBoolean = bundle.getBoolean(Constants.ROUTES.SUGGESTION_UPDATE);
+            if (aBoolean == true) {
+                int resourceId = bundle.getInt(Constants.ROUTES.MESSAGE_ID);
+                String name = getResources().getResourceName(resourceId);
+                if (name != null && name.startsWith(getPackageName())) {
+                    final Snackbar snackbar = Snackbar.make(findViewById(R.id.main_content),
+                            resourceId, Snackbar.LENGTH_LONG);
+                    TextView tv = (TextView)
+                            snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
+                    tv.setTextColor(Color.WHITE);
+                    if (resourceId == R.string.message_database_updating)
+                        snackbar.setDuration(Snackbar.LENGTH_INDEFINITE);
+                    else if (resourceId == R.string.message_database_updated) {
+                        Cursor cursor = mDatabase.getByType("%", SuggestionsDatabase.TYPE_DEFAULT);
+                        snackbar.setText(getString(resourceId) + " " +
+                                getString(R.string.message_total_routes, cursor == null ? 0 : cursor.getCount()));
+                        if (cursor != null)
+                            cursor.close();
+                    }
+                    snackbar.show();
+                }
+            }
+        }
     }
 
 }

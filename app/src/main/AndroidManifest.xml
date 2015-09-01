@@ -52,6 +52,9 @@
         <service
             android:name=".service.EtaCheckService"
             android:enabled="true" />
+        <service
+            android:name=".service.UpdateSuggestionService"
+            android:enabled="true" />
 
     </application>
 

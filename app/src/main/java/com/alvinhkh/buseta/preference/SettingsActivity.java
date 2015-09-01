@@ -1,8 +1,13 @@
 package com.alvinhkh.buseta.preference;
 
+import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
@@ -20,6 +25,7 @@ import android.preference.SwitchPreference;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.TextView;
 
@@ -27,6 +33,7 @@ import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.database.SuggestionsDatabase;
+import com.alvinhkh.buseta.service.UpdateSuggestionService;
 
 public class SettingsActivity extends AppCompatPreferenceActivity {
 
@@ -47,25 +54,33 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     public static class SettingsFragment extends PreferenceFragment implements
             OnSharedPreferenceChangeListener {
 
+        private Activity mActivity;
         private SuggestionsDatabase mDatabase;
+        private UpdateSuggestionReceiver mReceiver;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
 
-            mDatabase = new SuggestionsDatabase(getActivity().getApplicationContext());
+            mActivity = super.getActivity();
+            mDatabase = new SuggestionsDatabase(mActivity.getApplicationContext());
             // Load the preferences from an XML resource
             addPreferencesFromResource(R.xml.preferences);
             // Set Default values from XML attribute
-            PreferenceManager.setDefaultValues(getActivity(), R.xml.preferences, false);
+            PreferenceManager.setDefaultValues(mActivity, R.xml.preferences, false);
             // Set Summary
             initSummary(getPreferenceScreen());
+            // Broadcast Receiver
+            IntentFilter mFilter = new IntentFilter(Constants.ROUTES.SUGGESTION_UPDATE);
+            mReceiver = new UpdateSuggestionReceiver();
+            mFilter.addAction(Constants.ROUTES.SUGGESTION_UPDATE);
+            mActivity.registerReceiver(mReceiver, mFilter);
             // Clear History
             Preference clearHistory = (Preference) getPreferenceScreen().findPreference("clear_history");
             clearHistory.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 public boolean onPreferenceClick(Preference preference) {
-                    new AlertDialog.Builder(getActivity())
-                            .setTitle(getActivity().getString(R.string.message_confirm_clear_search_history))
+                    new AlertDialog.Builder(mActivity)
+                            .setTitle(mActivity.getString(R.string.message_confirm_clear_search_history))
                             .setNegativeButton(R.string.action_cancel, new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialoginterface, int i) {
                                     dialoginterface.cancel();
@@ -75,9 +90,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                                 public void onClick(DialogInterface dialoginterface, int i) {
                                     Intent intent = new Intent(Constants.MESSAGE.HISTORY_UPDATED);
                                     intent.putExtra(Constants.MESSAGE.HISTORY_UPDATED, true);
-                                    getActivity().sendBroadcast(intent);
+                                    mActivity.sendBroadcast(intent);
                                     Snackbar snackbar = Snackbar.make(
-                                            getActivity().findViewById(R.id.fragment_container),
+                                            mActivity.findViewById(R.id.fragment_container),
                                             mDatabase.clearHistory() ?
                                                     R.string.message_clear_search_history_success :
                                                     R.string.message_clear_search_history_fail,
@@ -89,6 +104,16 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                                 }
                             })
                             .show();
+                    return true;
+                }
+            });
+            // update suggestions
+            Preference updateSuggestion = (Preference) getPreferenceScreen().findPreference("update_route_suggestion");
+            updateSuggestion.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    Intent intent = new Intent(mActivity, UpdateSuggestionService.class);
+                    mActivity.startService(intent);
                     return true;
                 }
             });
@@ -109,18 +134,20 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         public void onResume() {
             super.onResume();
             // Set up a listener whenever a key changes
-            PreferenceManager.getDefaultSharedPreferences(getActivity()).registerOnSharedPreferenceChangeListener(this);
+            PreferenceManager.getDefaultSharedPreferences(mActivity).registerOnSharedPreferenceChangeListener(this);
         }
 
         @Override
         public void onPause() {
             super.onPause();
             // Unregister the listener whenever a key changes
-            PreferenceManager.getDefaultSharedPreferences(getActivity()).unregisterOnSharedPreferenceChangeListener(this);
+            PreferenceManager.getDefaultSharedPreferences(mActivity).unregisterOnSharedPreferenceChangeListener(this);
         }
 
         @Override
         public void onDestroy() {
+            if (null != mReceiver)
+                mActivity.unregisterReceiver(mReceiver);
             if (null != mDatabase)
                 mDatabase.close();
             super.onDestroy();
@@ -167,6 +194,35 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             if (p instanceof MultiSelectListPreference) {
                 EditTextPreference editTextPref = (EditTextPreference) p;
                 p.setSummary(editTextPref.getText());
+            }
+        }
+
+        public class UpdateSuggestionReceiver extends BroadcastReceiver {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Bundle bundle = intent.getExtras();
+                Boolean aBoolean = bundle.getBoolean(Constants.ROUTES.SUGGESTION_UPDATE);
+                if (aBoolean == true) {
+                    int resourceId = bundle.getInt(Constants.ROUTES.MESSAGE_ID);
+                    String name = getResources().getResourceName(resourceId);
+                    if (name != null && name.startsWith(mActivity.getPackageName())) {
+                        final Snackbar snackbar = Snackbar.make(mActivity.findViewById(android.R.id.content),
+                                resourceId, Snackbar.LENGTH_LONG);
+                        TextView tv = (TextView)
+                                snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
+                        tv.setTextColor(Color.WHITE);
+                        if (resourceId == R.string.message_database_updating)
+                            snackbar.setDuration(Snackbar.LENGTH_INDEFINITE);
+                        else if (resourceId == R.string.message_database_updated) {
+                            Cursor cursor = mDatabase.getByType("%", SuggestionsDatabase.TYPE_DEFAULT);
+                            snackbar.setText(getString(resourceId) + " " +
+                                    getString(R.string.message_total_routes, cursor == null ? 0 : cursor.getCount()));
+                            if (cursor != null)
+                                cursor.close();
+                        }
+                        snackbar.show();
+                    }
+                }
             }
         }
 

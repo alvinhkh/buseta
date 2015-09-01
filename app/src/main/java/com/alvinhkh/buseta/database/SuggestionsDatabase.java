@@ -33,12 +33,15 @@ public class SuggestionsDatabase {
     }
 
     public long insert(ContentValues values) {
+        db = mHelper.getWritableDatabase();
         return (db.isOpen()) ?
                 db.insert(TABLE_NAME, null, values)
                 : -1;
     }
 
     public long insertDefault(String text) {
+        if (!db.isOpen())
+            db = mHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_TEXT, text);
         values.put(COLUMN_TYPE, TYPE_DEFAULT);
@@ -48,7 +51,22 @@ public class SuggestionsDatabase {
                 : -1;
     }
 
+    public boolean insertDefaults(String[] texts) {
+        db = mHelper.getWritableDatabase();
+        if (!db.isOpen()) return false;
+        db.beginTransaction();
+        boolean success = true;
+        for (int i = 0; i < texts.length; i++) {
+            if (insertDefault(texts[i]) < 0)
+                success = false;
+        }
+        db.setTransactionSuccessful();
+        db.endTransaction();
+        return success;
+    }
+
     public long insertHistory(String text) {
+        db = mHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(COLUMN_TEXT, text);
         values.put(COLUMN_TYPE, TYPE_HISTORY);
