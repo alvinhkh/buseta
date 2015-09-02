@@ -66,7 +66,7 @@ public class UpdateSuggestionService extends IntentService {
                                     // update record version number
                                     // this number is to trigger update automatically
                                     SharedPreferences.Editor editor = mPrefs.edit();
-                                    editor.putInt(Constants.ROUTES.VERSION_RECORD, Constants.ROUTES.VERSION);
+                                    editor.putInt(Constants.PREF.VERSION_RECORD, Constants.ROUTES.VERSION);
                                     editor.commit();
                                 }
                                 if (success) {

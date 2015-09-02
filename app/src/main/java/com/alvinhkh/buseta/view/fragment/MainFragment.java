@@ -202,9 +202,13 @@ public class MainFragment extends Fragment
                     (settingsHelper.getHomeScreenSearchButton() == false)
                             ? View.GONE : View.VISIBLE);
         }
+        if (key.matches("eta_version")) {
+            onRefresh();
+        }
     }
 
     public void onRefresh() {
+        mSwipeRefreshLayout.setRefreshing(true);
         if (null != mAdapter && null != mContext)
             for (int i = 0; i < mAdapter.getFavouriteCount(); i++) {
                 RouteStop object = mAdapter.getFavouriteItem(i);

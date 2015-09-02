@@ -37,7 +37,7 @@
     <string name="category_general">一般</string>
     <string name="title_clear_history">清除搜尋記錄</string>
     <string name="summary_clear_history"></string>
-    <string name="title_home_search_button">在主畫面顯示搜尋按鈕</string>
+    <string name="title_home_search_button">主畫面搜尋按鈕</string>
     <string name="summary_on_home_search_button">顯示</string>
     <string name="summary_off_home_search_button">隱藏</string>
     <string name="title_load_stop_image">顯示車站圖片</string>

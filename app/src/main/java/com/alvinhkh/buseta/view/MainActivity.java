@@ -138,7 +138,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         // update available route records
-        int routeVersion = mPrefs.getInt(Constants.ROUTES.VERSION_RECORD, 0);
+        int routeVersion = mPrefs.getInt(Constants.PREF.VERSION_RECORD, 0);
         if (Constants.ROUTES.VERSION > routeVersion) {
             Intent intent = new Intent(this, UpdateSuggestionService.class);
             startService(intent);

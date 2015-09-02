@@ -23,7 +23,6 @@ public class Constants {
     }
 
     public interface ROUTES {
-        String VERSION_RECORD = "com.alvinhkh.buseta.VERSION_RECORD";
         Integer VERSION = 1;
         String SUGGESTION_UPDATE = "com.alvinhkh.buseta.ROUTES.SUGGESTION_UPDATE";
         String MESSAGE_ID = "com.alvinhkh.buseta.ROUTES.MESSAGE_ID";
@@ -41,6 +40,14 @@ public class Constants {
         String ITEM_POSITION = "com.alvinhkh.buseta.ITEM_POSITION";
         String STOP_OBJECT = "com.alvinhkh.buseta.STOP_OBJECT";
         String STOP_OBJECTS = "com.alvinhkh.buseta.STOP_OBJECTS";
+    }
+
+    public interface PREF {
+        String VERSION_RECORD = "com.alvinhkh.buseta.VERSION_RECORD";
+        String REQUEST_ID = "com.alvinhkh.buseta.REQUEST_ID";
+        String REQUEST_TOKEN = "com.alvinhkh.buseta.REQUEST_TOKEN";
+        String REQUEST_API_ETA = "com.alvinhkh.buseta.REQUEST_API_ETA";
+        String REQUEST_API_INFO = "com.alvinhkh.buseta.REQUEST_API_INFO";
     }
 
 }
