@@ -71,8 +71,8 @@ public class MainFragment extends Fragment
         mContext = super.getActivity();
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         settingsHelper = new SettingsHelper().parse(mContext.getApplicationContext());
-        mDatabase_suggestion = new SuggestionsDatabase(getActivity().getApplicationContext());
-        mDatabase_favourite = new FavouriteDatabase(getActivity().getApplicationContext());
+        mDatabase_suggestion = new SuggestionsDatabase(mContext.getApplicationContext());
+        mDatabase_favourite = new FavouriteDatabase(mContext.getApplicationContext());
         Cursor cursor_fav = mDatabase_favourite.get();
         if (savedInstanceState != null) {
             routeStopList = savedInstanceState.getParcelableArrayList(Constants.BUNDLE.STOP_OBJECTS);
@@ -262,8 +262,9 @@ public class MainFragment extends Fragment
                         }
                     }
                 }
-                Cursor cursor = mDatabase_favourite.get();
-                ((AbstractCursor) cursor).setExtras(bundle);
+                AbstractCursor cursor = (AbstractCursor) mDatabase_favourite.get();
+                if (null != cursor)
+                    ((AbstractCursor) cursor).setExtras(bundle);
                 mAdapter.swapFavouriteCursor(cursor);
             }
         }
