@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -64,6 +65,7 @@ public class NoticeImageFragment extends Fragment {
         mActionBar.setTitle(R.string.app_name);
         mActionBar.setSubtitle(null);
         mActionBar.setDisplayHomeAsUpEnabled(true);
+        setHasOptionsMenu(true);
         //
         mProgressBar = (ProgressBar) view.findViewById(R.id.progressBar);
         mProgressBar.setVisibility(View.GONE);
@@ -123,6 +125,16 @@ public class NoticeImageFragment extends Fragment {
             view.setVisibility(View.GONE);
         Ion.getDefault(mContext).cancelAll(mContext);
         super.onDestroyView();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_refresh) {
+            showNoticeImage(_notice_image);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void showNoticeImage(final String notice_image) {

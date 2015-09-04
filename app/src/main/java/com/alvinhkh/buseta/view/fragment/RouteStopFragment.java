@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
@@ -59,6 +60,7 @@ public class RouteStopFragment extends Fragment
     private ActionBar mActionBar = null;
     private Menu mMenu = null;
     private SwipeRefreshLayout mSwipeRefreshLayout;
+    private FloatingActionButton mFab;
     private ListView mListView;
     private TextView mEmptyText;
     private ProgressBar mProgressBar;
@@ -157,6 +159,14 @@ public class RouteStopFragment extends Fragment
         mSwipeRefreshLayout.setOnRefreshListener(this);
         mSwipeRefreshLayout.setEnabled(false); // disable pull-to-refresh
         mSwipeRefreshLayout.setRefreshing(false);
+        mFab = (FloatingActionButton) view.findViewById(R.id.fab);
+        mFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onRefresh();
+            }
+        });
+        mFab.hide();
         mProgressBar = (ProgressBar) view.findViewById(R.id.progressBar);
         mProgressBar.setVisibility(View.GONE);
         // Set Listview
@@ -170,6 +180,8 @@ public class RouteStopFragment extends Fragment
             mListView.onRestoreInstanceState(savedInstanceState
                     .getParcelable(KEY_LIST_VIEW_STATE));
             savedState = true;
+            if (null != mFab)
+                mFab.show();
         } else {
             getRouteInfoApi = Constants.URL.ROUTE_INFO;
             // Get Route Stops
@@ -229,6 +241,8 @@ public class RouteStopFragment extends Fragment
             mContext.unregisterReceiver(mReceiver);
         if (null != mSwipeRefreshLayout)
             mSwipeRefreshLayout.setRefreshing(false);
+        if (null != mFab)
+            mFab.hide();
         if (null != mListView)
             mListView.setAdapter(null);
         if (null != mProgressBar)
@@ -276,14 +290,13 @@ public class RouteStopFragment extends Fragment
         super.onCreateOptionsMenu(menu, inflater);
         mMenu = menu;
         menu.findItem(R.id.action_settings).setVisible(false);
-        menu.findItem(R.id.action_refresh).setVisible(savedState);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            onRefresh();
+            getRouteStops(_route_no, _route_bound);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -302,9 +315,14 @@ public class RouteStopFragment extends Fragment
             mEmptyText.setText(R.string.message_loading);
         if (mProgressBar != null)
             mProgressBar.setVisibility(View.VISIBLE);
+        if (null != mEtaHandler && null != mEtaRunnable)
+            mEtaHandler.removeCallbacks(mEtaRunnable);
+        if (null != mAdapter) {
+            mAdapter.clear();
+            mAdapter.notifyDataSetChanged();
+        }
 
         String _random_t = ((Double) Math.random()).toString();
-
         Uri routeStopUri = Uri.parse(getRouteInfoApi)
                 .buildUpon()
                 .appendQueryParameter("t", _random_t)
@@ -335,6 +353,7 @@ public class RouteStopFragment extends Fragment
                         if (null != response && response.getHeaders().code() == 200) {
                             JsonObject result = response.getResult();
                             //Log.d(TAG, result.toString());
+                            mAdapter.clear();
                             if (null != result)
                             if (result.get("valid").getAsBoolean() == true) {
                                 //  Got Bus Line Stops
@@ -356,8 +375,8 @@ public class RouteStopFragment extends Fragment
                                 if (mEmptyText != null)
                                     mEmptyText.setText("");
 
-                                if (null != mMenu)
-                                    mMenu.findItem(R.id.action_refresh).setVisible(true);
+                                if (null != mFab)
+                                    mFab.show();
 
                             } else if (result.get("valid").getAsBoolean() == false &&
                                     !result.get("message").getAsString().equals("")) {
@@ -371,6 +390,8 @@ public class RouteStopFragment extends Fragment
                         }
                         if (mProgressBar != null)
                             mProgressBar.setVisibility(View.GONE);
+                        if (null != mSwipeRefreshLayout)
+                            mSwipeRefreshLayout.setRefreshing(false);
                     }
                 });
 
@@ -485,9 +506,9 @@ public class RouteStopFragment extends Fragment
                     @Override
                     public void onCompleted(Exception e, JsonObject result) {
                         // do stuff with the result or error
-                        if (e != null) {
+                        if (e != null)
                             Log.e(TAG, e.toString());
-                        }
+                        if (null == mAdapter || mAdapter.getCount() <= position) return;
                         RouteStop routeStop = mAdapter.getItem(position);
                         routeStop.eta_loading = true;
                         routeStop.eta_fail = false;
@@ -563,9 +584,9 @@ public class RouteStopFragment extends Fragment
                     @Override
                     public void onCompleted(Exception e, String result) {
                         // do stuff with the result or error
-                        if (e != null) {
+                        if (e != null)
                             Log.e(TAG, e.toString());
-                        }
+                        if (null == mAdapter || mAdapter.getCount() <= position) return;
                         RouteStop routeStop = mAdapter.getItem(position);
                         routeStop.eta_loading = true;
                         routeStop.eta_fail = false;

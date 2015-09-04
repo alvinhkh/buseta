@@ -180,14 +180,13 @@ public class MainFragment extends Fragment
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         menu.findItem(R.id.action_settings).setVisible(true);
-        menu.findItem(R.id.action_reload).setVisible(true);
         mSearchMenuItem = menu.findItem(R.id.action_search);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_reload) {
+        if (id == R.id.action_refresh) {
             onRefresh();
             return true;
         }

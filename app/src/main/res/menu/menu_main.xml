@@ -4,14 +4,6 @@
     tools:context=".MainActivity">
 
     <item
-        android:id="@+id/action_refresh"
-        android:title="@string/action_refresh"
-        android:icon="@drawable/ic_refresh_white_24dp"
-        android:orderInCategory="0"
-        android:visible="false"
-        app:showAsAction="ifRoom" />
-
-    <item
         android:id="@+id/action_search"
         android:title="@string/action_search"
         android:orderInCategory="100"
@@ -21,11 +13,10 @@
         app:actionViewClass="android.support.v7.widget.SearchView" />
 
     <item
-        android:id="@+id/action_reload"
+        android:id="@+id/action_refresh"
         android:title="@string/action_refresh"
         android:icon="@drawable/ic_refresh_white_24dp"
         android:orderInCategory="101"
-        android:visible="false"
         app:showAsAction="never" />
 
     <item

@@ -9,6 +9,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -83,6 +84,7 @@ public class RouteBoundFragment extends Fragment
         mActionBar.setTitle(R.string.app_name);
         mActionBar.setSubtitle(null);
         mActionBar.setDisplayHomeAsUpEnabled(false);
+        setHasOptionsMenu(true);
         // Set List Adapter
         mAdapter = new RouteBoundAdapter(mContext);
         if (savedInstanceState != null) {
@@ -97,7 +99,7 @@ public class RouteBoundFragment extends Fragment
         //
         mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh_route);
         mSwipeRefreshLayout.setOnRefreshListener(this);
-        mSwipeRefreshLayout.setEnabled(true);
+        mSwipeRefreshLayout.setEnabled(false);
         mSwipeRefreshLayout.setRefreshing(false);
         mProgressBar = (ProgressBar) view.findViewById(R.id.progressBar);
         mProgressBar.setVisibility(View.GONE);
@@ -173,6 +175,16 @@ public class RouteBoundFragment extends Fragment
     }
 
     @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_refresh) {
+            onRefresh();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if (view != null) {
             TextView textView_origin_tc = (TextView) view.findViewById(R.id.origin);
@@ -195,11 +207,8 @@ public class RouteBoundFragment extends Fragment
     public void onRefresh() {
         if (null != mSwipeRefreshLayout)
             mSwipeRefreshLayout.setRefreshing(true);
-        if (null != mAdapter)
-            mAdapter.clear();
         getRouteBounds(_route_no);
     }
-
 
     private void getRouteBounds(final String _route_no) {
 
@@ -207,6 +216,10 @@ public class RouteBoundFragment extends Fragment
             mEmptyText.setText(R.string.message_loading);
         if (mProgressBar != null)
             mProgressBar.setVisibility(View.VISIBLE);
+        if (null != mAdapter) {
+            mAdapter.clear();
+            mAdapter.notifyDataSetChanged();
+        }
 
         String _random_t = ((Double) Math.random()).toString();
 

@@ -4,7 +4,7 @@
     <string name="app_name">BusETA</string>
     <string name="action_settings">設定</string>
     <string name="action_search">搜尋</string>
-    <string name="action_refresh">更新</string>
+    <string name="action_refresh">重新載入</string>
     <string name="action_yes">是</string>
     <string name="action_no">否</string>
     <string name="action_confirm">確認</string>
