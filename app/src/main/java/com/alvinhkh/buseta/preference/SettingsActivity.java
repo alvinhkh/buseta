@@ -76,7 +76,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             mFilter.addAction(Constants.ROUTES.SUGGESTION_UPDATE);
             mActivity.registerReceiver(mReceiver, mFilter);
             // Clear History
-            Preference clearHistory = (Preference) getPreferenceScreen().findPreference("clear_history");
+            Preference clearHistory = getPreferenceScreen().findPreference("clear_history");
             clearHistory.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 public boolean onPreferenceClick(Preference preference) {
                     new AlertDialog.Builder(mActivity)
@@ -108,7 +108,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 }
             });
             // update suggestions
-            Preference updateSuggestion = (Preference) getPreferenceScreen().findPreference("update_route_suggestion");
+            Preference updateSuggestion = getPreferenceScreen().findPreference("update_route_suggestion");
             updateSuggestion.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
@@ -118,15 +118,15 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 }
             });
             // App Name
-            Preference appName = (Preference) getPreferenceScreen().findPreference("app_name");
+            Preference appName = getPreferenceScreen().findPreference("app_name");
             appName.setTitle(getString(R.string.title_app_name, getString(R.string.app_name)));
             // App Version
-            Preference appVersion = (Preference) getPreferenceScreen().findPreference("app_version");
+            Preference appVersion = getPreferenceScreen().findPreference("app_version");
             int versionCode = BuildConfig.VERSION_CODE;
             String versionName = BuildConfig.VERSION_NAME;
             appVersion.setSummary(getString(R.string.summary_app_version, versionName, versionCode));
             // Developer
-            Preference developer = (Preference) getPreferenceScreen().findPreference("developer");
+            Preference developer = getPreferenceScreen().findPreference("developer");
             developer.setSummary(getString(R.string.summary_developer) + " (" + getString(R.string.url_developer) + ")");
         }
 

@@ -15,8 +15,6 @@ import com.alvinhkh.buseta.holder.RouteStop;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,7 +22,6 @@ import java.util.regex.Pattern;
 public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
 
     private Context mContext;
-    private int greyOutMinutes = 3;
 
     // View lookup cache
     private static class ViewHolder {
