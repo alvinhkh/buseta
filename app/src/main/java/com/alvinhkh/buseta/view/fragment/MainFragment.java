@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.AbstractCursor;
-import android.database.Cursor;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -73,13 +72,14 @@ public class MainFragment extends Fragment
         settingsHelper = new SettingsHelper().parse(mContext.getApplicationContext());
         mDatabase_suggestion = new SuggestionsDatabase(mContext.getApplicationContext());
         mDatabase_favourite = new FavouriteDatabase(mContext.getApplicationContext());
-        Cursor cursor_fav = mDatabase_favourite.get();
+        AbstractCursor cursor_fav = (AbstractCursor) mDatabase_favourite.get();
         if (savedInstanceState != null) {
             routeStopList = savedInstanceState.getParcelableArrayList(Constants.BUNDLE.STOP_OBJECTS);
             Bundle bundle = new Bundle();
             bundle.putBoolean(Constants.MESSAGE.STATE_UPDATED, true);
             bundle.putParcelableArrayList(Constants.BUNDLE.STOP_OBJECTS, routeStopList);
-            cursor_fav.setExtras(bundle);
+            if (null != cursor_fav)
+                cursor_fav.setExtras(bundle);
         }
         if (null == routeStopList)
             routeStopList = new ArrayList<RouteStopContainer>();
@@ -264,7 +264,7 @@ public class MainFragment extends Fragment
                 }
                 AbstractCursor cursor = (AbstractCursor) mDatabase_favourite.get();
                 if (null != cursor)
-                    ((AbstractCursor) cursor).setExtras(bundle);
+                    cursor.setExtras(bundle);
                 mAdapter.swapFavouriteCursor(cursor);
             }
         }
