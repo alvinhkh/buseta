@@ -137,6 +137,7 @@ public class EtaCheckService extends IntentService {
                             if (!result.has("response")) {
                                 routeStop.eta_loading = false;
                                 routeStop.eta_fail = result.has("generated") ? false : true;
+                                routeStop.eta = result.has("generated") ? new RouteStopETA() : null;
                                 sendUpdate(position, routeStop);
                                 return;
                             }

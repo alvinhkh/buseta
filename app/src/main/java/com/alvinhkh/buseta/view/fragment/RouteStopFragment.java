@@ -516,10 +516,9 @@ public class RouteStopFragment extends Fragment
                             // Log.d(TAG, result.toString());
                             if (!result.has("response")) {
                                 routeStop.eta_loading = false;
-                                routeStop.eta_fail = true;
-                                // routeStop.eta_fail = result.has("generated") ? false : true;
+                                routeStop.eta_fail = result.has("generated") ? false : true;
+                                routeStop.eta = result.has("generated") ? new RouteStopETA() : null;
                                 mAdapter.notifyDataSetChanged();
-                                getETAv1(position, stopCode);
                                 return;
                             }
 

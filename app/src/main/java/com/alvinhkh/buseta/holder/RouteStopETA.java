@@ -13,18 +13,18 @@ public class RouteStopETA implements Parcelable {
     public int api_version = 1;
 
     @SerializedName("STOP_SEQ")
-    public String seq;
+    public String seq = "";
 
     @SerializedName("ETA_TIME")
-    public String etas;
+    public String etas = "";
 
     @SerializedName("ETA_EXPIRE")
-    public String expires;
+    public String expires = "";
 
     @SerializedName("server_time")
-    public String server_time;
+    public String server_time = "";
 
-    public String updated;
+    public String updated = "";
 
     // Parcelling
     /**
