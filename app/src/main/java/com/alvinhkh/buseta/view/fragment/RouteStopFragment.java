@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta.view.fragment;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -318,7 +317,7 @@ public class RouteStopFragment extends Fragment
                 .load(routeStopUri.toString())
                 //.setLogging("Ion", Log.DEBUG)
                 .progressBar(mProgressBar)
-                .setHeader("Referer", Constants.URL.REQUEST_REFERER)
+                .setHeader("Referer", Constants.URL.REQUEST_REFERRER)
                 .setHeader("X-Requested-With", "XMLHttpRequest")
                 .setHeader("Pragma", "no-cache")
                 .setHeader("User-Agent", Constants.URL.REQUEST_UA)
@@ -547,7 +546,7 @@ public class RouteStopFragment extends Fragment
         Ion.with(mContext)
                 .load(etaApi + _random_t)
                 //.setLogging("Ion", Log.DEBUG)
-                .setHeader("Referer", Constants.URL.REQUEST_REFERER)
+                .setHeader("Referer", Constants.URL.REQUEST_REFERRER)
                 .setHeader("X-Requested-With", "XMLHttpRequest")
                 .setHeader("Pragma", "no-cache")
                 .setHeader("User-Agent", Constants.URL.REQUEST_UA)
@@ -633,7 +632,7 @@ public class RouteStopFragment extends Fragment
             mSwipeRefreshLayout.setRefreshing(true);
         Ion.with(mContext)
                 .load(JS_ETA)
-                .setHeader("Referer", Constants.URL.REQUEST_REFERER)
+                .setHeader("Referer", Constants.URL.REQUEST_REFERRER)
                 .setHeader("User-Agent", Constants.URL.REQUEST_UA)
                 .asString()
                 .setCallback(new FutureCallback<String>() {

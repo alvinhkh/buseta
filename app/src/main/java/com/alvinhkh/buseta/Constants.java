@@ -3,7 +3,6 @@ package com.alvinhkh.buseta;
 public class Constants {
 
     public interface URL {
-        String ALVINHKH = "http://www.alvinhkh.com";
         String KMB = "http://www.kmb.hk";
         String PATH_ETA_API = "/ajax/eta_api/prod/";
         String PATH_ETA_JS = "/js/services/eta/";
@@ -18,12 +17,12 @@ public class Constants {
         String HTML_ETA = KMB + "/tc/services/eta_enquiry.html";
         String HTML_SEARCH = KMB + "/tc/services/search.html";
         String ETA_MOBILE_API = "http://etav2.kmb.hk";
-        String REQUEST_REFERER = HTML_ETA;
+        String REQUEST_REFERRER = HTML_ETA;
         String REQUEST_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2478.0 Safari/537.36";
     }
 
     public interface ROUTES {
-        Integer VERSION = 1;
+        Integer VERSION = 2;
         String SUGGESTION_UPDATE = "com.alvinhkh.buseta.ROUTES.SUGGESTION_UPDATE";
         String MESSAGE_ID = "com.alvinhkh.buseta.ROUTES.MESSAGE_ID";
     }

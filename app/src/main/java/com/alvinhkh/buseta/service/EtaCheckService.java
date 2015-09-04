@@ -190,7 +190,7 @@ public class EtaCheckService extends IntentService {
             etaApi = findEtaApi();
         Response<String> response = Ion.with(getApplicationContext())
                 .load(etaApi + _random_t)
-                .setHeader("Referer", Constants.URL.REQUEST_REFERER)
+                .setHeader("Referer", Constants.URL.REQUEST_REFERRER)
                 .setHeader("X-Requested-With", "XMLHttpRequest")
                 .setHeader("Pragma", "no-cache")
                 .setHeader("User-Agent", Constants.URL.REQUEST_UA)
@@ -298,7 +298,7 @@ public class EtaCheckService extends IntentService {
         // Find ETA API Url in found JS file
         Response<String> response2 = Ion.with(getApplicationContext())
                 .load(etaJs)
-                .setHeader("Referer", Constants.URL.REQUEST_REFERER)
+                .setHeader("Referer", Constants.URL.REQUEST_REFERRER)
                 .setHeader("User-Agent", Constants.URL.REQUEST_UA)
                 .asString()
                 .withResponse()
@@ -359,7 +359,7 @@ public class EtaCheckService extends IntentService {
 
         Response<JsonObject> response = Ion.with(getApplicationContext())
                 .load(routeStopUri.toString())
-                .setHeader("Referer", Constants.URL.REQUEST_REFERER)
+                .setHeader("Referer", Constants.URL.REQUEST_REFERRER)
                 .setHeader("X-Requested-With", "XMLHttpRequest")
                 .setHeader("Pragma", "no-cache")
                 .setHeader("User-Agent", Constants.URL.REQUEST_UA)

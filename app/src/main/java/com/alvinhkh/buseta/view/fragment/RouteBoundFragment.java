@@ -220,7 +220,7 @@ public class RouteBoundFragment extends Fragment
                 .load(routeInfoUri.toString())
                 //.setLogging("Ion", Log.DEBUG)
                 .progressBar(mProgressBar)
-                .setHeader("Referer", Constants.URL.REQUEST_REFERER)
+                .setHeader("Referer", Constants.URL.REQUEST_REFERRER)
                 .setHeader("X-Requested-With", "XMLHttpRequest")
                 .setHeader("Pragma", "no-cache")
                 .setHeader("User-Agent", Constants.URL.REQUEST_UA)
