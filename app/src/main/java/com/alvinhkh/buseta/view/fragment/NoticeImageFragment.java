@@ -116,6 +116,7 @@ public class NoticeImageFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
+        Ion.getDefault(mContext).cancelAll(mContext);
         if (null != mPhotoView) {
             mPhotoView.setImageBitmap(null);
             mPhotoView.destroyDrawingCache();

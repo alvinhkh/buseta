@@ -75,8 +75,8 @@ public class MainActivity extends AppCompatActivity
         toolbar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (null != mSearchMenuItem)
-                    mSearchMenuItem.expandActionView();
+                if (null == mSearchMenuItem) return;
+                mSearchMenuItem.expandActionView();
             }
         });
         // Broadcast Receiver

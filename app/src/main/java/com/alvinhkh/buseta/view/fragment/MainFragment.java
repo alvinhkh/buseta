@@ -16,6 +16,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -31,6 +32,7 @@ import com.alvinhkh.buseta.holder.RouteStopContainer;
 import com.alvinhkh.buseta.service.CheckEtaService;
 import com.alvinhkh.buseta.view.adapter.FeatureAdapter;
 import com.alvinhkh.buseta.database.SuggestionsDatabase;
+import com.koushikdutta.ion.Ion;
 
 import java.util.ArrayList;
 
@@ -115,8 +117,13 @@ public class MainFragment extends Fragment
         mFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (null != mSearchMenuItem)
+                if (null == mSearchMenuItem) return;
+                SearchView mSearchView = (SearchView) mSearchMenuItem.getActionView();
+                if (mSearchMenuItem.isActionViewExpanded() && null != mSearchView) {
+                    mSearchView.requestFocus();
+                } else {
                     mSearchMenuItem.expandActionView();
+                }
             }
         });
         // Set up a listener whenever a key changes
@@ -160,6 +167,7 @@ public class MainFragment extends Fragment
 
     @Override
     public void onDestroyView() {
+        Ion.getDefault(mContext).cancelAll(mContext);
         if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
             mAutoRefreshHandler.removeCallbacks(mAutoRefreshRunnable);
         if (null != mContext) {
@@ -174,6 +182,10 @@ public class MainFragment extends Fragment
             mDatabase_suggestion.close();
         if (null != mDatabase_favourite)
             mDatabase_favourite.close();
+        View view = getView();
+        if (null != view)
+            view.setVisibility(View.GONE);
+        Ion.getDefault(mContext).cancelAll(mContext);
         super.onDestroyView();
     }
 

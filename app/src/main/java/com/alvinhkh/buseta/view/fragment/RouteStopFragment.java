@@ -298,6 +298,7 @@ public class RouteStopFragment extends Fragment
 
     @Override
     public void onDestroyView() {
+        Ion.getDefault(mContext).cancelAll(mContext);
         if (null != mContext && null != mReceiver)
             mContext.unregisterReceiver(mReceiver);
         if (null != mSwipeRefreshLayout)
@@ -312,13 +313,13 @@ public class RouteStopFragment extends Fragment
             mEmptyText.setVisibility(View.GONE);
         if (null != mDatabase)
             mDatabase.close();
-        View view = getView();
-        if (null != view)
-            view.setVisibility(View.GONE);
         if (null != mEtaHandler && null != mEtaRunnable)
             mEtaHandler.removeCallbacks(mEtaRunnable);
         if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
             mAutoRefreshHandler.removeCallbacks(mAutoRefreshRunnable);
+        View view = getView();
+        if (null != view)
+            view.setVisibility(View.GONE);
         Ion.getDefault(mContext).cancelAll(mContext);
         super.onDestroyView();
     }

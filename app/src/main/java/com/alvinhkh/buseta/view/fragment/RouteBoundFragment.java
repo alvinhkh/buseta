@@ -164,6 +164,7 @@ public class RouteBoundFragment extends Fragment
 
     @Override
     public void onDestroyView() {
+        Ion.getDefault(mContext).cancelAll(mContext);
         if (null != mDatabase)
             mDatabase.close();
         if (null != mSwipeRefreshLayout)

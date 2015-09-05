@@ -150,6 +150,7 @@ public class RouteNewsFragment extends Fragment
 
     @Override
     public void onDestroyView() {
+        Ion.getDefault(mContext).cancelAll(mContext);
         if (null != mSwipeRefreshLayout)
             mSwipeRefreshLayout.setRefreshing(false);
         if (null != mListView)
