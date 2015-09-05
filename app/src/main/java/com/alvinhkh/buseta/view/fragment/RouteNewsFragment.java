@@ -109,6 +109,7 @@ public class RouteNewsFragment extends Fragment
                 && savedInstanceState.containsKey(KEY_LIST_VIEW_STATE)) {
             mListView.onRestoreInstanceState(savedInstanceState
                     .getParcelable(KEY_LIST_VIEW_STATE));
+            mEmptyText.setText(savedInstanceState.getString("EmptyText", ""));
         } else {
             // Get Route Bounds
             getNotices(_route_no);
@@ -134,6 +135,8 @@ public class RouteNewsFragment extends Fragment
             outState.putParcelable(KEY_LIST_VIEW_STATE, mListView.onSaveInstanceState());
             outState.putParcelable(ROUTE_NEWS_TEXT, _routeNews);
         }
+        if (null != mEmptyText)
+            outState.putString("EmptyText", mEmptyText.getText().toString());
     }
 
     @Override

@@ -117,6 +117,7 @@ public class RouteBoundFragment extends Fragment
             mListView.onRestoreInstanceState(savedInstanceState
                     .getParcelable(KEY_LIST_VIEW_STATE));
             getRouteInfoApi = savedInstanceState.getString("getRouteInfoApi");
+            mEmptyText.setText(savedInstanceState.getString("EmptyText", ""));
         } else {
             getRouteInfoApi = Constants.URL.ROUTE_INFO;
             // Get Route Bounds
@@ -148,6 +149,8 @@ public class RouteBoundFragment extends Fragment
             mAdapter.onSaveInstanceState(outState);
             outState.putParcelable(KEY_LIST_VIEW_STATE, mListView.onSaveInstanceState());
         }
+        if (null != mEmptyText)
+            outState.putString("EmptyText", mEmptyText.getText().toString());
     }
 
     @Override

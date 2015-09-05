@@ -184,6 +184,7 @@ public class RouteStopFragment extends Fragment
                 && savedInstanceState.containsKey(KEY_LIST_VIEW_STATE)) {
             mListView.onRestoreInstanceState(savedInstanceState
                     .getParcelable(KEY_LIST_VIEW_STATE));
+            mEmptyText.setText(savedInstanceState.getString("EmptyText", ""));
             fabHidden = false;
         } else {
             getRouteInfoApi = Constants.URL.ROUTE_INFO;
@@ -266,6 +267,8 @@ public class RouteStopFragment extends Fragment
             mAdapter.onSaveInstanceState(outState);
             outState.putParcelable(KEY_LIST_VIEW_STATE, mListView.onSaveInstanceState());
         }
+        if (null != mEmptyText)
+            outState.putString("EmptyText", mEmptyText.getText().toString());
         if (null != routeStopList)
             outState.putParcelableArrayList(Constants.BUNDLE.STOP_OBJECTS, routeStopList);
         outState.putParcelable("route", _routeBound);
