@@ -72,6 +72,13 @@ public class MainActivity extends AppCompatActivity
         // Set Toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        toolbar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (null != mSearchMenuItem)
+                    mSearchMenuItem.expandActionView();
+            }
+        });
         // Broadcast Receiver
         IntentFilter mFilter = new IntentFilter(Constants.ROUTES.SUGGESTION_UPDATE);
         mReceiver = new UpdateSuggestionReceiver();
