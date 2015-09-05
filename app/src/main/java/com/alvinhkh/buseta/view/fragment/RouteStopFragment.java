@@ -4,10 +4,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.database.AbstractCursor;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -21,6 +24,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -30,6 +34,8 @@ import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.database.FavouriteDatabase;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
+import com.alvinhkh.buseta.holder.RouteStopContainer;
+import com.alvinhkh.buseta.service.EtaCheckService;
 import com.alvinhkh.buseta.view.adapter.RouteStopAdapter;
 import com.alvinhkh.buseta.holder.RouteStopETA;
 import com.alvinhkh.buseta.holder.RouteStopMap;
@@ -44,6 +50,7 @@ import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
 import com.koushikdutta.ion.Response;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,7 +65,6 @@ public class RouteStopFragment extends Fragment
 
     private Context mContext = super.getActivity();
     private ActionBar mActionBar = null;
-    private Menu mMenu = null;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private FloatingActionButton mFab;
     private ListView mListView;
@@ -67,6 +73,7 @@ public class RouteStopFragment extends Fragment
     private RouteStopAdapter mAdapter;
     private UpdateViewReceiver mReceiver;
 
+    private ArrayList<RouteStopContainer> routeStopList = null;
     private RouteBound _routeBound;
     private String _route_no = null;
     private String _route_bound = null;
@@ -76,9 +83,9 @@ public class RouteStopFragment extends Fragment
     private String _token = null;
     private String etaApi = "";
     private String getRouteInfoApi = "";
-    private Boolean savedState = false;
-    private SettingsHelper settingsHelper = null;
     private FavouriteDatabase mDatabase;
+    private SettingsHelper settingsHelper = null;
+    private SharedPreferences mPrefs;
 
     // Runnable to get all stops eta
     int iEta = 0;
@@ -90,10 +97,17 @@ public class RouteStopFragment extends Fragment
                 mSwipeRefreshLayout.setRefreshing(true);
             if (null != mAdapter && iEta < mAdapter.getCount()) {
                 RouteStop routeStop = mAdapter.getItem(iEta);
-                getETA(iEta, routeStop.code);
+                Intent intent = new Intent(mContext, EtaCheckService.class);
+                intent.putExtra(Constants.BUNDLE.ITEM_POSITION, iEta);
+                intent.putExtra(Constants.BUNDLE.STOP_OBJECT, routeStop);
+                intent.putParcelableArrayListExtra(Constants.BUNDLE.STOP_OBJECTS, routeStopList);
+                mContext.startService(intent);
                 iEta++;
                 if (iEta < mAdapter.getCount() - 1) {
-                    mEtaHandler.postDelayed(mEtaRunnable, 250);
+                    int interval = 800;
+                    if (null != settingsHelper && settingsHelper.getEtaApi() == 2)
+                        interval = 150;
+                    mEtaHandler.postDelayed(mEtaRunnable, interval);
                 } else {
                     if (mSwipeRefreshLayout != null)
                         mSwipeRefreshLayout.setRefreshing(false);
@@ -128,9 +142,10 @@ public class RouteStopFragment extends Fragment
                              final Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_routestop, container, false);
         mContext = super.getActivity();
-        settingsHelper = new SettingsHelper().parse(mContext.getApplicationContext());
         // set database
         mDatabase = new FavouriteDatabase(mContext);
+        settingsHelper = new SettingsHelper().parse(mContext.getApplicationContext());
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext.getApplicationContext());
         // Get arguments
         _routeBound = getArguments().getParcelable("route");
         if (null != _routeBound) {
@@ -149,11 +164,14 @@ public class RouteStopFragment extends Fragment
         mAdapter = new RouteStopAdapter(mContext);
         if (savedInstanceState != null) {
             mAdapter.onRestoreInstanceState(savedInstanceState);
+            routeStopList = savedInstanceState.getParcelableArrayList(Constants.BUNDLE.STOP_OBJECTS);
             _id = savedInstanceState.getString("_id");
             _token = savedInstanceState.getString("_token");
             etaApi = savedInstanceState.getString("etaApi");
             getRouteInfoApi = savedInstanceState.getString("getRouteInfoApi");
         }
+        if (null == routeStopList)
+            routeStopList = new ArrayList<RouteStopContainer>();
         //
         mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh_route);
         mSwipeRefreshLayout.setOnRefreshListener(this);
@@ -179,25 +197,25 @@ public class RouteStopFragment extends Fragment
                 && savedInstanceState.containsKey(KEY_LIST_VIEW_STATE)) {
             mListView.onRestoreInstanceState(savedInstanceState
                     .getParcelable(KEY_LIST_VIEW_STATE));
-            savedState = true;
             if (null != mFab)
                 mFab.show();
         } else {
             getRouteInfoApi = Constants.URL.ROUTE_INFO;
             // Get Route Stops
             getRouteStops(_route_no, _route_bound);
-            if (settingsHelper.getEtaApi() == 1)
-                findEtaApiUrl();
         }
         mListView.setAdapter(mAdapter);
         mListView.setOnItemLongClickListener(this);
         mListView.setOnItemClickListener(this);
         // Broadcast Receiver
         if (null != mContext) {
-            IntentFilter mFilter = new IntentFilter(Constants.MESSAGE.STOP_UPDATED);
             mReceiver = new UpdateViewReceiver();
+            IntentFilter mFilter = new IntentFilter(Constants.MESSAGE.STOP_UPDATED);
             mFilter.addAction(Constants.MESSAGE.STOP_UPDATED);
+            IntentFilter mFilter_eta = new IntentFilter(Constants.MESSAGE.ETA_UPDATED);
+            mFilter_eta.addAction(Constants.MESSAGE.ETA_UPDATED);
             mContext.registerReceiver(mReceiver, mFilter);
+            mContext.registerReceiver(mReceiver, mFilter_eta);
         }
 
         return view;
@@ -210,6 +228,8 @@ public class RouteStopFragment extends Fragment
             mAdapter.onSaveInstanceState(outState);
             outState.putParcelable(KEY_LIST_VIEW_STATE, mListView.onSaveInstanceState());
         }
+        if (null != routeStopList)
+            outState.putParcelableArrayList(Constants.BUNDLE.STOP_OBJECTS, routeStopList);
         outState.putParcelable("route", _routeBound);
         outState.putString("_id", _id);
         outState.putString("_token", _token);
@@ -266,8 +286,12 @@ public class RouteStopFragment extends Fragment
     public void onItemClick(AdapterView<?> parent, final View view,
                             final int position, long id) {
         if (view != null) {
-            TextView textView_code = (TextView) view.findViewById(R.id.stop_code);
-            getETA(position, textView_code.getText().toString());
+            RouteStop routeStop = mAdapter.getItem(position);
+            Intent intent = new Intent(mContext, EtaCheckService.class);
+            intent.putExtra(Constants.BUNDLE.ITEM_POSITION, position);
+            intent.putExtra(Constants.BUNDLE.STOP_OBJECT, routeStop);
+            intent.putParcelableArrayListExtra(Constants.BUNDLE.STOP_OBJECTS, routeStopList);
+            mContext.startService(intent);
         }
     }
 
@@ -288,8 +312,6 @@ public class RouteStopFragment extends Fragment
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        mMenu = menu;
-        menu.findItem(R.id.action_settings).setVisible(false);
     }
 
     @Override
@@ -403,6 +425,11 @@ public class RouteStopFragment extends Fragment
         } else {
             getRouteInfoApi = Constants.URL.ROUTE_INFO;
         }
+        SharedPreferences.Editor editor = mPrefs.edit();
+        editor.putString(Constants.PREF.REQUEST_API_INFO, getRouteInfoApi);
+        editor.putString(Constants.PREF.REQUEST_ID, _id);
+        editor.putString(Constants.PREF.REQUEST_TOKEN, _token);
+        editor.commit();
     }
 
     private void getRouteFares(final String route_no, final String route_bound, final String route_st) {
@@ -469,243 +496,13 @@ public class RouteStopFragment extends Fragment
 
     }
 
-    private void getETA(final int position, final String stop_code) {
-        switch (settingsHelper.getEtaApi()) {
-            case 1:
-                getETAv1(position, stop_code);
-                break;
-            case 2:
-            default:
-                getETAv2(position, stop_code);
-                break;
-        }
-    }
-
-    private void getETAv2(final int position, final String stop_code) {
-        RouteStop routeStop = mAdapter.getItem(position);
-        routeStop.eta_loading = true;
-        mAdapter.notifyDataSetChanged();
-        final String stopCode = stop_code.replaceAll("-", "");
-        final String stopSeq = String.valueOf(position);
-
-        Uri routeEtaUri = Uri.parse(Constants.URL.ETA_MOBILE_API)
-                .buildUpon()
-                .appendQueryParameter("action", "geteta")
-                .appendQueryParameter("lang", "tc")
-                .appendQueryParameter("route", _route_no)
-                .appendQueryParameter("bound", _route_bound)
-                .appendQueryParameter("stop", stopCode)
-                .appendQueryParameter("stop_seq", stopSeq)
-                .build();
-
-        Ion.with(mContext)
-                .load(routeEtaUri.toString())
-                .setHeader("X-Requested-With", "XMLHttpRequest")
-                .asJsonObject()
-                .setCallback(new FutureCallback<JsonObject>() {
-                    @Override
-                    public void onCompleted(Exception e, JsonObject result) {
-                        // do stuff with the result or error
-                        if (e != null)
-                            Log.e(TAG, e.toString());
-                        if (null == mAdapter || mAdapter.getCount() <= position) return;
-                        RouteStop routeStop = mAdapter.getItem(position);
-                        routeStop.eta_loading = true;
-                        routeStop.eta_fail = false;
-                        if (result != null) {
-                            // Log.d(TAG, result.toString());
-                            if (!result.has("response")) {
-                                routeStop.eta_loading = false;
-                                routeStop.eta_fail = result.has("generated") ? false : true;
-                                routeStop.eta = result.has("generated") ? new RouteStopETA() : null;
-                                mAdapter.notifyDataSetChanged();
-                                return;
-                            }
-
-                            JsonArray jsonArray = result.get("response").getAsJsonArray();
-                            RouteStopETA routeStopETA = new RouteStopETA();
-                            routeStopETA.api_version = 2;
-                            routeStopETA.seq = stopSeq;
-                            routeStopETA.updated = result.get("updated").getAsString();
-                            routeStopETA.server_time = result.get("generated").getAsString();
-                            StringBuilder etas = new StringBuilder();
-                            StringBuilder expires = new StringBuilder();
-                            for (int i = 0; i < jsonArray.size(); i++) {
-                                JsonObject object = jsonArray.get(i).getAsJsonObject();
-                                etas.append(object.get("t").getAsString());
-                                expires.append(object.get("ex").getAsString());
-                                if (i < jsonArray.size() - 1) {
-                                    etas.append(", ");
-                                    expires.append(", ");
-                                }
-                            }
-                            routeStopETA.etas = etas.toString();
-                            routeStopETA.expires = expires.toString();
-                            routeStop.eta = routeStopETA;
-                        }
-                        routeStop.eta_loading = false;
-                        mAdapter.notifyDataSetChanged();
-                    }
-                });
-    }
-
-    private void getETAv1(final int position, String bus_stop) {
-        RouteStop routeStop = mAdapter.getItem(position);
-        routeStop.eta_loading = true;
-        mAdapter.notifyDataSetChanged();
-
-        String stop_seq = String.valueOf(position);
-        String _random_t = ((Double) Math.random()).toString();
-
-        if (etaApi.equals("")) {
-            findEtaApiUrl();
-            routeStop.eta_loading = false;
-            routeStop.eta_fail = true;
-            mAdapter.notifyDataSetChanged();
-        } else
-        Ion.with(mContext)
-                .load(etaApi + _random_t)
-                //.setLogging("Ion", Log.DEBUG)
-                .setHeader("Referer", Constants.URL.REQUEST_REFERRER)
-                .setHeader("X-Requested-With", "XMLHttpRequest")
-                .setHeader("Pragma", "no-cache")
-                .setHeader("User-Agent", Constants.URL.REQUEST_UA)
-                .setBodyParameter("route", _route_no)
-                .setBodyParameter("route_no", _route_no)
-                .setBodyParameter("bound", _route_bound)
-                .setBodyParameter("busstop", bus_stop)
-                .setBodyParameter("lang", "tc")
-                .setBodyParameter("stopseq", stop_seq)
-                .setBodyParameter("id", _id)
-                .setBodyParameter("token", _token)
-                .asString()
-                .setCallback(new FutureCallback<String>() {
-                    @Override
-                    public void onCompleted(Exception e, String result) {
-                        // do stuff with the result or error
-                        if (e != null)
-                            Log.e(TAG, e.toString());
-                        if (null == mAdapter || mAdapter.getCount() <= position) return;
-                        RouteStop routeStop = mAdapter.getItem(position);
-                        routeStop.eta_loading = true;
-                        routeStop.eta_fail = false;
-                        if (result != null) {
-                            //Log.d(TAG, result);
-                            if (!result.contains("ETA_TIME")) {
-                                findEtaApiUrl();
-                                routeStop.eta_loading = false;
-                                routeStop.eta_fail = true;
-                                mAdapter.notifyDataSetChanged();
-                                return;
-                            }
-
-                            RouteStopETA routeStopETA = new RouteStopETA();
-                            // TODO: parse result [], ignore php error
-                            JsonParser jsonParser = new JsonParser();
-                            JsonArray jsonArray = jsonParser.parse(result).getAsJsonArray();
-                            for (final JsonElement element : jsonArray) {
-                                routeStopETA = new Gson().fromJson(element.getAsJsonObject(), RouteStopETA.class);
-                                routeStopETA.api_version = 1;
-                            }
-                            routeStop.eta = routeStopETA;
-                        }
-                        routeStop.eta_loading = false;
-                        mAdapter.notifyDataSetChanged();
-                    }
-                });
-    }
-
-    private void findEtaApiUrl() {
-        // Find ETA API URL, by first finding the js file use to call eta api on web
-        if (mSwipeRefreshLayout != null)
-            mSwipeRefreshLayout.setRefreshing(true);
-        Ion.with(mContext)
-                .load(Constants.URL.HTML_ETA)
-                .setHeader("Referer", Constants.URL.KMB)
-                .setHeader("User-Agent", Constants.URL.REQUEST_UA)
-                .asString()
-                .setCallback(new FutureCallback<String>() {
-                    @Override
-                    public void onCompleted(Exception e, String result) {
-                        // do stuff with the result or error
-                        if (e != null) {
-                            Log.e(TAG, e.toString());
-                        }
-                        if (result != null && !result.equals("")) {
-                            Pattern p = Pattern.compile("\"(" + Constants.URL.PATH_ETA_JS + "[a-zA-Z0-9_.]*\\.js\\?[a-zA-Z0-9]*)\"");
-                            Matcher m = p.matcher(result);
-                            if (m.find()) {
-                                String etaJs = Constants.URL.KMB + m.group(1);
-                                findEtaApi(etaJs);
-                                Log.d(TAG, "etaJs: " + etaJs);
-                            }
-                        }
-                        if (mSwipeRefreshLayout != null)
-                            mSwipeRefreshLayout.setRefreshing(false);
-                    }
-                });
-    }
-
-    private void findEtaApi(String JS_ETA) {
-        // Find ETA API Url in found JS file
-        if (mSwipeRefreshLayout != null)
-            mSwipeRefreshLayout.setRefreshing(true);
-        Ion.with(mContext)
-                .load(JS_ETA)
-                .setHeader("Referer", Constants.URL.REQUEST_REFERRER)
-                .setHeader("User-Agent", Constants.URL.REQUEST_UA)
-                .asString()
-                .setCallback(new FutureCallback<String>() {
-                    @Override
-                    public void onCompleted(Exception e, String result) {
-                        // do stuff with the result or error
-                        if (e != null) {
-                            Log.e(TAG, e.toString());
-                        }
-                        if (result != null && !result.equals("")) {
-                            Pattern p = Pattern.compile("\"(" + Constants.URL.PATH_ETA_API + "[a-zA-Z0-9_.]*\\.php\\?[a-zA-Z0-9]*=)\"");
-                            Matcher m = p.matcher(result);
-                            if (m.find()) {
-                                etaApi = Constants.URL.KMB + m.group(1);
-                                Log.d(TAG, "etaApi: easy found " + etaApi);
-                            } else {
-
-                                Pattern p2 = Pattern.compile("\\|([^\\|]*)\\|\\|(t[a-zA-Z0-9_.]*)\\|prod");
-                                Matcher m2 = p2.matcher(result);
-
-                                if (m2.find() && m2.groupCount() == 2) {
-                                    etaApi = Constants.URL.KMB + Constants.URL.PATH_ETA_API
-                                            + m2.group(1) + ".php?" + m2.group(2);
-                                    Log.d(TAG, "etaApi: found-nd " + etaApi);
-                                } else {
-
-                                    Pattern p3 = Pattern.compile("\\|([^\\|]*)\\|(t[a-zA-Z0-9_.]*)\\|eq");
-                                    Matcher m3 = p3.matcher(result);
-
-                                    if (m3.find() && m3.groupCount() == 2) {
-                                        etaApi = Constants.URL.KMB + Constants.URL.PATH_ETA_API
-                                                + m3.group(1) + ".php?" + m3.group(2);
-                                        Log.d(TAG, "etaApi: found-rd " + etaApi);
-                                    } else {
-                                        Log.d(TAG, "etaApi: fail " + etaApi);
-                                    }
-
-                                }
-
-                            }
-                        }
-                        if (mSwipeRefreshLayout != null)
-                            mSwipeRefreshLayout.setRefreshing(false);
-                    }
-                });
-    }
-
     public class UpdateViewReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             Bundle bundle = intent.getExtras();
-            Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.STOP_UPDATED);
-            if (null != mAdapter && aBoolean == true) {
+            Boolean aBoolean_stop = bundle.getBoolean(Constants.MESSAGE.STOP_UPDATED);
+            Boolean aBoolean_eta = bundle.getBoolean(Constants.MESSAGE.ETA_UPDATED);
+            if (null != mAdapter && (aBoolean_stop ==  true || aBoolean_eta == true)) {
                 RouteStop newObject = bundle.getParcelable(Constants.BUNDLE.STOP_OBJECT);
                 if (null != newObject) {
                     int position = Integer.parseInt(newObject.stop_seq);
@@ -713,6 +510,8 @@ public class RouteStopFragment extends Fragment
                         RouteStop oldObject = mAdapter.getItem(position);
                         oldObject.favourite = newObject.favourite;
                         oldObject.eta = newObject.eta;
+                        oldObject.eta_loading = newObject.eta_loading;
+                        oldObject.eta_fail = newObject.eta_fail;
                         mAdapter.notifyDataSetChanged();
                     }
                 }

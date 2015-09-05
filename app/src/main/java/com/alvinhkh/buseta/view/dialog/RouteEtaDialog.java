@@ -368,7 +368,6 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
                 }
                 iRefresh.setVisibility(View.VISIBLE);
                 progressBar.setVisibility(View.GONE);
-                sendUpdate();
             }
         }
     }

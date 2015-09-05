@@ -1,8 +1,10 @@
 package com.alvinhkh.buseta.view.fragment;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
@@ -52,12 +54,12 @@ public class RouteBoundFragment extends Fragment
 
     private RouteBoundAdapter mAdapter;
     private String _route_no = null;
-    private String _route_bound = null;
     private String _id = null;
     private String _token = null;
     private String getRouteInfoApi = "";
 
     private SuggestionsDatabase mDatabase;
+    private SharedPreferences mPrefs;
 
     public RouteBoundFragment() {
     }
@@ -78,7 +80,8 @@ public class RouteBoundFragment extends Fragment
         // Get arguments
         _route_no = getArguments().getString("route_no");
         // Set Database for inserting search history
-        mDatabase = new SuggestionsDatabase(getActivity().getApplicationContext());
+        mDatabase = new SuggestionsDatabase(mContext);
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext.getApplicationContext());
         // Set Toolbar
         mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         mActionBar.setTitle(R.string.app_name);
@@ -113,6 +116,7 @@ public class RouteBoundFragment extends Fragment
                 && savedInstanceState.containsKey(KEY_LIST_VIEW_STATE)) {
             mListView.onRestoreInstanceState(savedInstanceState
                     .getParcelable(KEY_LIST_VIEW_STATE));
+            getRouteInfoApi = savedInstanceState.getString("getRouteInfoApi");
         } else {
             getRouteInfoApi = Constants.URL.ROUTE_INFO;
             // Get Route Bounds
@@ -120,7 +124,7 @@ public class RouteBoundFragment extends Fragment
         }
         mListView.setAdapter(mAdapter);
         mListView.setOnItemClickListener(this);
-        //mListView.setOnItemLongClickListener(this);
+        // mListView.setOnItemLongClickListener(this);
         // Button
         mButton_routeNews = (Button) view.findViewById(R.id.button_news);
         mButton_routeNews.setOnClickListener(new View.OnClickListener() {
@@ -292,6 +296,11 @@ public class RouteBoundFragment extends Fragment
         } else {
             getRouteInfoApi = Constants.URL.ROUTE_INFO;
         }
+        SharedPreferences.Editor editor = mPrefs.edit();
+        editor.putString(Constants.PREF.REQUEST_API_INFO, getRouteInfoApi);
+        editor.putString(Constants.PREF.REQUEST_ID, _id);
+        editor.putString(Constants.PREF.REQUEST_TOKEN, _token);
+        editor.commit();
     }
 
 }
