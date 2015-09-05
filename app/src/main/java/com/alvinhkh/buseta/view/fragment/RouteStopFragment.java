@@ -21,7 +21,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -71,10 +70,6 @@ public class RouteStopFragment extends Fragment
 
     private ArrayList<RouteStopContainer> routeStopList = null;
     private RouteBound _routeBound;
-    private String _route_no = null;
-    private String _route_bound = null;
-    private String _route_origin = null;
-    private String _route_destination = null;
     private String _id = null;
     private String _token = null;
     private String etaApi = "";
@@ -144,16 +139,17 @@ public class RouteStopFragment extends Fragment
         // Get arguments
         _routeBound = getArguments().getParcelable("route");
         if (null != _routeBound) {
-            _route_no = _routeBound.route_no.trim().replace(" ", "").toUpperCase();
-            _route_bound = _routeBound.route_bound;
-            _route_origin = _routeBound.origin_tc;
-            _route_destination = _routeBound.destination_tc;
+            _routeBound.route_no = _routeBound.route_no.trim().replace(" ", "").toUpperCase();
+        } else {
+            _routeBound = new RouteBound();
         }
         // Set Toolbar
         mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        mActionBar.setTitle(_route_no);
-        mActionBar.setSubtitle(getString(R.string.destination, _route_destination));
-        mActionBar.setDisplayHomeAsUpEnabled(false);
+        if (null != mActionBar) {
+            mActionBar.setTitle(_routeBound.route_no);
+            mActionBar.setSubtitle(getString(R.string.destination, _routeBound.destination_tc));
+            mActionBar.setDisplayHomeAsUpEnabled(false);
+        }
         setHasOptionsMenu(true);
         // Set List Adapter
         mAdapter = new RouteStopAdapter(mContext);
@@ -189,7 +185,7 @@ public class RouteStopFragment extends Fragment
         } else {
             getRouteInfoApi = Constants.URL.ROUTE_INFO;
             // Get Route Stops
-            getRouteStops(_route_no, _route_bound);
+            getRouteStops(_routeBound);
         }
         mListView.setAdapter(mAdapter);
         mListView.setOnItemLongClickListener(this);
@@ -206,7 +202,7 @@ public class RouteStopFragment extends Fragment
         mFab.attachToListView(mListView, new ScrollDirectionListener() {
             @Override
             public void onScrollDown() {
-                if (fabHidden == false)
+                if (!fabHidden)
                     mFab.show();
             }
 
@@ -214,7 +210,7 @@ public class RouteStopFragment extends Fragment
             public void onScrollUp() {
                 mFab.hide();
             }
-        }, new AbsListView.OnScrollListener() {
+        }, null/*new AbsListView.OnScrollListener() {
 
             int mLastFirstVisibleItem = 0;
 
@@ -245,7 +241,7 @@ public class RouteStopFragment extends Fragment
                 // mSwipeRefreshLayout.setEnabled(enable);
             }
 
-        });
+        }*/);
         // Broadcast Receiver
         if (null != mContext) {
             mReceiver = new UpdateViewReceiver();
@@ -282,8 +278,8 @@ public class RouteStopFragment extends Fragment
     public void onResume() {
         super.onResume();
         if (null != mActionBar) {
-            mActionBar.setTitle(_route_no);
-            mActionBar.setSubtitle(getString(R.string.destination, _route_destination));
+            mActionBar.setTitle(_routeBound.route_no);
+            mActionBar.setSubtitle(getString(R.string.destination, _routeBound.destination_tc));
         }
         if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
             mAutoRefreshHandler.post(mAutoRefreshRunnable);
@@ -360,7 +356,7 @@ public class RouteStopFragment extends Fragment
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            getRouteStops(_route_no, _route_bound);
+            getRouteStops(_routeBound);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -375,7 +371,9 @@ public class RouteStopFragment extends Fragment
             mEtaHandler.post(mEtaRunnable);
     }
 
-    private void getRouteStops(final String route_no, final String route_bound) {
+    private void getRouteStops(final RouteBound routeBound) {
+        final String route_no = routeBound.route_no;
+        final String route_bound = routeBound.route_bound;
 
         if (mEmptyText != null)
             mEmptyText.setText(R.string.message_loading);
@@ -421,7 +419,7 @@ public class RouteStopFragment extends Fragment
                             //Log.d(TAG, result.toString());
                             mAdapter.clear();
                             if (null != result)
-                            if (result.get("valid").getAsBoolean() == true) {
+                            if (result.get("valid").getAsBoolean()) {
                                 //  Got Bus Line Stops
                                 JsonArray _bus_arr = result.getAsJsonArray("bus_arr");
                                 int seq = 0;
@@ -443,7 +441,7 @@ public class RouteStopFragment extends Fragment
 
                                 fabHidden = false;
 
-                            } else if (result.get("valid").getAsBoolean() == false &&
+                            } else if (!result.get("valid").getAsBoolean() &&
                                     !result.get("message").getAsString().equals("")) {
                                 // Invalid request with output message
                                 if (mEmptyText != null)
@@ -451,7 +449,7 @@ public class RouteStopFragment extends Fragment
                             }
                         } else {
                             switchGetRouteInfoApi();
-                            getRouteStops(route_no, route_bound);
+                            getRouteStops(routeBound);
                         }
                         if (mProgressBar != null)
                             mProgressBar.setVisibility(View.GONE);
@@ -472,7 +470,7 @@ public class RouteStopFragment extends Fragment
         editor.putString(Constants.PREF.REQUEST_API_INFO, getRouteInfoApi);
         editor.putString(Constants.PREF.REQUEST_ID, _id);
         editor.putString(Constants.PREF.REQUEST_TOKEN, _token);
-        editor.commit();
+        editor.apply();
     }
 
     private void getRouteFares(final String route_no, final String route_bound, final String route_st) {
@@ -545,7 +543,7 @@ public class RouteStopFragment extends Fragment
             Bundle bundle = intent.getExtras();
             Boolean aBoolean_stop = bundle.getBoolean(Constants.MESSAGE.STOP_UPDATED);
             Boolean aBoolean_eta = bundle.getBoolean(Constants.MESSAGE.ETA_UPDATED);
-            if (null != mAdapter && (aBoolean_stop ==  true || aBoolean_eta == true)) {
+            if (null != mAdapter && (aBoolean_stop || aBoolean_eta)) {
                 RouteStop newObject = bundle.getParcelable(Constants.BUNDLE.STOP_OBJECT);
                 if (null != newObject) {
                     int position = Integer.parseInt(newObject.stop_seq);

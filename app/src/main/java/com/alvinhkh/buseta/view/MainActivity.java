@@ -15,6 +15,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
@@ -160,7 +161,7 @@ public class MainActivity extends AppCompatActivity
         mSearchView = (SearchView) mSearchMenuItem.getActionView();
         if (mSearchView != null) {
             ((EditText) mSearchView.findViewById(android.support.v7.appcompat.R.id.search_src_text))
-                    .setHintTextColor(getResources().getColor(R.color.hint_foreground_material_dark));
+                    .setHintTextColor(ContextCompat.getColor(this, R.color.hint_foreground_material_dark));
             mSearchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
             mSearchView.setIconified(false);
             mSearchView.onActionViewCollapsed();
@@ -321,7 +322,7 @@ public class MainActivity extends AppCompatActivity
         public void onReceive(Context context, Intent intent) {
             Bundle bundle = intent.getExtras();
             Boolean aBoolean = bundle.getBoolean(Constants.ROUTES.SUGGESTION_UPDATE);
-            if (aBoolean == true) {
+            if (aBoolean) {
                 int resourceId = bundle.getInt(Constants.ROUTES.MESSAGE_ID);
                 String name = getResources().getResourceName(resourceId);
                 if (name != null && name.startsWith(getPackageName())) {

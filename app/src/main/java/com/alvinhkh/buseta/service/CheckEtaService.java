@@ -54,12 +54,11 @@ public class CheckEtaService extends IntentService {
         settingsHelper = new SettingsHelper().parse(getApplicationContext());
         SharedPreferences.Editor editor = mPrefs.edit();
         String routeInfoApi = mPrefs.getString(Constants.PREF.REQUEST_API_INFO, "");
-        if (null == routeInfoApi || routeInfoApi.equals("")) {
+        if (routeInfoApi.equals(""))
             editor.putString(Constants.PREF.REQUEST_API_INFO, Constants.URL.ROUTE_INFO);
-        }
         editor.putString(Constants.PREF.REQUEST_ID, null);
         editor.putString(Constants.PREF.REQUEST_TOKEN, null);
-        editor.commit();
+        editor.apply();
     }
 
     @Override
@@ -136,7 +135,7 @@ public class CheckEtaService extends IntentService {
                             // Log.d(TAG, result.toString());
                             if (!result.has("response")) {
                                 routeStop.eta_loading = false;
-                                routeStop.eta_fail = result.has("generated") ? false : true;
+                                routeStop.eta_fail = !result.has("generated");
                                 routeStop.eta = result.has("generated") ? new RouteStopETA() : null;
                                 sendUpdate(position, routeStop);
                                 return;
@@ -170,7 +169,6 @@ public class CheckEtaService extends IntentService {
 
     private void getETAv1(final int position, final RouteStop routeStop) throws ExecutionException, InterruptedException {
         getETAv1(position, routeStop, 0);
-        return;
     }
 
     private void getETAv1(final int position, final RouteStop routeStop, int attempt) throws ExecutionException, InterruptedException {
@@ -220,7 +218,7 @@ public class CheckEtaService extends IntentService {
             editor.putString(Constants.PREF.REQUEST_ID, null);
             editor.putString(Constants.PREF.REQUEST_TOKEN, null);
             editor.putString(Constants.PREF.REQUEST_API_ETA, null);
-            editor.commit();
+            editor.apply();
             if (attempt < 3) {
                 getETAv1(position, routeStop, attempt + 1);
             } else {
@@ -228,7 +226,6 @@ public class CheckEtaService extends IntentService {
                 routeStop.eta_fail = false;
                 sendUpdate(position, routeStop);
             }
-            return;
         } else if (null != response && response.getHeaders().code() == 200) {
             String result = response.getResult();
             if (result != null) {
@@ -237,7 +234,7 @@ public class CheckEtaService extends IntentService {
                     // delete record
                     SharedPreferences.Editor editor = mPrefs.edit();
                     editor.putString(Constants.PREF.REQUEST_API_ETA, null);
-                    editor.commit();
+                    editor.apply();
                     if (attempt < 5) {
                         getETAv1(position, routeStop, attempt);
                     } else {
@@ -288,7 +285,7 @@ public class CheckEtaService extends IntentService {
                 .asString()
                 .withResponse()
                 .get();
-        String etaJs = "";
+        String etaJs = null;
         if (null != response && response.getHeaders().code() == 200) {
             String result = response.getResult();
             if (result != null && !result.equals("")) {
@@ -301,7 +298,7 @@ public class CheckEtaService extends IntentService {
             }
         }
         if (null == etaJs || etaJs.equals("")) return "";
-        String etaApi = null;
+        String etaApi = "";
         // Find ETA API Url in found JS file
         Response<String> response2 = Ion.with(getApplicationContext())
                 .load(etaJs)
@@ -314,7 +311,7 @@ public class CheckEtaService extends IntentService {
             String result = response2.getResult();
             if (result != null && !result.equals("")) {
 
-                if (etaApi == null) {
+                if (etaApi.equals("")) {
                     // unencrypted
                     Pattern p = Pattern.compile("\"(" + Constants.URL.PATH_ETA_API + "[a-zA-Z0-9_.]*\\.php\\?[a-zA-Z0-9]*=)\"");
                     Matcher m = p.matcher(result);
@@ -324,7 +321,7 @@ public class CheckEtaService extends IntentService {
                     }
                 }
 
-                if (etaApi == null) {
+                if (etaApi.equals("")) {
                     // 5 Sept 2015
                     Pattern p = Pattern.compile("\\|([^\\|]*)\\|80K\\|\\|80M\\|8A\\|(t[a-zA-Z0-9_.]*)\\|75X");
                     Matcher m = p.matcher(result);
@@ -335,7 +332,7 @@ public class CheckEtaService extends IntentService {
                     }
                 }
 
-                if (etaApi == null) {
+                if (etaApi.equals("")) {
                     Pattern p = Pattern.compile("\\|([^\\|]*)\\|\\|(t[a-zA-Z0-9_.]*)\\|prod");
                     Matcher m = p.matcher(result);
                     if (m.find() && m.groupCount() == 2) {
@@ -345,7 +342,7 @@ public class CheckEtaService extends IntentService {
                     }
                 }
 
-                if (etaApi == null) {
+                if (etaApi.equals("")) {
                     Pattern p = Pattern.compile("\\|([^\\|]*)\\|(t[a-zA-Z0-9_.]*)\\|eq");
                     Matcher m = p.matcher(result);
                     if (m.find() && m.groupCount() == 2) {
@@ -355,7 +352,7 @@ public class CheckEtaService extends IntentService {
                     }
                 }
 
-                if (etaApi == null) {
+                if (etaApi.equals("")) {
                     Log.d(TAG, "etaApi: fail " + etaApi);
                 }
 
@@ -364,7 +361,7 @@ public class CheckEtaService extends IntentService {
         // save record
         SharedPreferences.Editor editor = mPrefs.edit();
         editor.putString(Constants.PREF.REQUEST_API_ETA, etaApi);
-        editor.commit();
+        editor.apply();
         return etaApi;
     }
 
@@ -393,7 +390,7 @@ public class CheckEtaService extends IntentService {
             JsonObject result = response.getResult();
             //Log.d(TAG, result.toString());
             if (null != result)
-                if (result.get("valid").getAsBoolean() == true) {
+                if (result.get("valid").getAsBoolean()) {
                     String id = result.get("id").getAsString();
                     String token = result.get("token").getAsString();
                     Log.d(TAG, "id: " + id + " token: " + token);
@@ -401,8 +398,8 @@ public class CheckEtaService extends IntentService {
                     SharedPreferences.Editor editor = mPrefs.edit();
                     editor.putString(Constants.PREF.REQUEST_ID, id);
                     editor.putString(Constants.PREF.REQUEST_TOKEN, token);
-                    editor.commit();
-                } else if (result.get("valid").getAsBoolean() == false &&
+                    editor.apply();
+                } else if (!result.get("valid").getAsBoolean() &&
                         !result.get("message").getAsString().equals("")) {
                     // Invalid request with output message
                     Log.d(TAG, result.get("message").getAsString());
@@ -417,10 +414,9 @@ public class CheckEtaService extends IntentService {
             editor.putString(Constants.PREF.REQUEST_API_INFO, routeInfoApi);
             editor.putString(Constants.PREF.REQUEST_ID, null);
             editor.putString(Constants.PREF.REQUEST_TOKEN, null);
-            editor.commit();
+            editor.apply();
             findToken(routeStop, routeInfoApi);
         }
-        return;
     }
 
     private void sendUpdate(int position, RouteStop routeStop) {
@@ -432,7 +428,7 @@ public class CheckEtaService extends IntentService {
                 found = true;
             }
         }
-        if (found == false)
+        if (!found)
             routeStopList.add(new RouteStopContainer(position, routeStop));
         // Log.d(TAG, position + ": " + routeStop.name_tc + " " + routeStop.eta_loading + " " + (routeStop.eta != null && routeStop.eta.etas != null ? routeStop.eta.etas : ""));
         Intent intent = new Intent(Constants.MESSAGE.ETA_UPDATED);

@@ -49,8 +49,6 @@ public class MainFragment extends Fragment
     private ActionBar mActionBar = null;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private FloatingActionButton mFab;
-    private RecyclerView mRecyclerView;
-    private View mEmptyView;
     private MenuItem mSearchMenuItem;
     private UpdateHistoryReceiver mReceiver_history;
     private UpdateEtaReceiver mReceiver_eta;
@@ -86,9 +84,11 @@ public class MainFragment extends Fragment
             routeStopList = new ArrayList<RouteStopContainer>();
         // Toolbar
         mActionBar = ((AppCompatActivity) mContext).getSupportActionBar();
-        mActionBar.setTitle(R.string.app_name);
-        mActionBar.setSubtitle(null);
-        mActionBar.setDisplayHomeAsUpEnabled(false);
+        if (null != mActionBar) {
+            mActionBar.setTitle(R.string.app_name);
+            mActionBar.setSubtitle(null);
+            mActionBar.setDisplayHomeAsUpEnabled(false);
+        }
         setHasOptionsMenu(true);
         // SwipeRefreshLayout
         mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh);
@@ -96,7 +96,7 @@ public class MainFragment extends Fragment
         mSwipeRefreshLayout.setEnabled(false);
         mSwipeRefreshLayout.setRefreshing(false);
         // RecyclerView
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.cardList);
+        RecyclerView mRecyclerView = (RecyclerView) view.findViewById(R.id.cardList);
         mRecyclerView.setHasFixedSize(true);
         final GridLayoutManager manager = new GridLayoutManager(mContext, 2);
         mRecyclerView.setLayoutManager(manager);
@@ -110,7 +110,7 @@ public class MainFragment extends Fragment
                 return position < mAdapter.getFavouriteCount() ? manager.getSpanCount() : 1;
             }
         });
-        mEmptyView = (View) view.findViewById(android.R.id.empty);
+        View mEmptyView = view.findViewById(android.R.id.empty);
         mEmptyView.setVisibility(mAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
         // Floating Action Button
         mFab = (FloatingActionButton) view.findViewById(R.id.fab);
@@ -241,7 +241,7 @@ public class MainFragment extends Fragment
         public void onReceive(Context context, Intent intent) {
             Bundle bundle = intent.getExtras();
             Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.HISTORY_UPDATED);
-            if (null != mAdapter && null != mDatabase_suggestion && aBoolean == true) {
+            if (null != mAdapter && null != mDatabase_suggestion && aBoolean) {
                 mAdapter.swapHistoryCursor(mDatabase_suggestion.getHistory());
             }
         }
@@ -252,7 +252,7 @@ public class MainFragment extends Fragment
         public void onReceive(Context context, Intent intent) {
             Bundle bundle = intent.getExtras();
             Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.ETA_UPDATED);
-            if (null != mAdapter && null != mDatabase_favourite && aBoolean == true) {
+            if (null != mAdapter && null != mDatabase_favourite && aBoolean) {
                 routeStopList = bundle.getParcelableArrayList(Constants.BUNDLE.STOP_OBJECTS);
                 int position = bundle.getInt(Constants.BUNDLE.ITEM_POSITION, -1);
                 RouteStop newObject = bundle.getParcelable(Constants.BUNDLE.STOP_OBJECT);

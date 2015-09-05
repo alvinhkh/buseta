@@ -191,10 +191,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 ListPreference listPref = (ListPreference) p;
                 p.setSummary(listPref.getEntry());
             }
-            if (p instanceof MultiSelectListPreference) {
-                EditTextPreference editTextPref = (EditTextPreference) p;
-                p.setSummary(editTextPref.getText());
-            }
         }
 
         public class UpdateSuggestionReceiver extends BroadcastReceiver {
@@ -202,7 +198,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             public void onReceive(Context context, Intent intent) {
                 Bundle bundle = intent.getExtras();
                 Boolean aBoolean = bundle.getBoolean(Constants.ROUTES.SUGGESTION_UPDATE);
-                if (aBoolean == true) {
+                if (aBoolean) {
                     int resourceId = bundle.getInt(Constants.ROUTES.MESSAGE_ID);
                     String name = getResources().getResourceName(resourceId);
                     if (name != null && name.startsWith(mActivity.getPackageName())) {
@@ -241,7 +237,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        return;
     }
 
 }

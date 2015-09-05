@@ -67,7 +67,7 @@ public class UpdateSuggestionService extends IntentService {
                                     // this number is to trigger update automatically
                                     SharedPreferences.Editor editor = mPrefs.edit();
                                     editor.putInt(Constants.PREF.VERSION_RECORD, Constants.ROUTES.VERSION);
-                                    editor.commit();
+                                    editor.apply();
                                 }
                                 if (success) {
                                     Log.d(TAG, "updated available routes suggestion");

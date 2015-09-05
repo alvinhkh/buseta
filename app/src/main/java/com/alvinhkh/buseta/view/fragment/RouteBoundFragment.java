@@ -45,12 +45,10 @@ public class RouteBoundFragment extends Fragment
 
     private Context mContext = super.getActivity();
     private ActionBar mActionBar = null;
-    private TextView mTextView_routeNo;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private ListView mListView;
     private TextView mEmptyText;
     private ProgressBar mProgressBar;
-    private Button mButton_routeNews;
 
     private RouteBoundAdapter mAdapter;
     private String _route_no = null;
@@ -84,9 +82,11 @@ public class RouteBoundFragment extends Fragment
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext.getApplicationContext());
         // Set Toolbar
         mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        mActionBar.setTitle(R.string.app_name);
-        mActionBar.setSubtitle(null);
-        mActionBar.setDisplayHomeAsUpEnabled(false);
+        if (null != mActionBar) {
+            mActionBar.setTitle(R.string.app_name);
+            mActionBar.setSubtitle(null);
+            mActionBar.setDisplayHomeAsUpEnabled(false);
+        }
         setHasOptionsMenu(true);
         // Set List Adapter
         mAdapter = new RouteBoundAdapter(mContext);
@@ -97,7 +97,7 @@ public class RouteBoundFragment extends Fragment
             getRouteInfoApi = savedInstanceState.getString("getRouteInfoApi");
         }
         //
-        mTextView_routeNo = (TextView) view.findViewById(R.id.route_no);
+        TextView mTextView_routeNo = (TextView) view.findViewById(R.id.route_no);
         mTextView_routeNo.setText(_route_no);
         //
         mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh_route);
@@ -127,7 +127,7 @@ public class RouteBoundFragment extends Fragment
         mListView.setOnItemClickListener(this);
         // mListView.setOnItemLongClickListener(this);
         // Button
-        mButton_routeNews = (Button) view.findViewById(R.id.button_news);
+        Button mButton_routeNews = (Button) view.findViewById(R.id.button_news);
         mButton_routeNews.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -260,7 +260,7 @@ public class RouteBoundFragment extends Fragment
                             JsonObject result = response.getResult();
                             //Log.d(TAG, result.toString());
                             if (null != result)
-                            if (result.get("valid").getAsBoolean() == true) {
+                            if (result.get("valid").getAsBoolean()) {
                                 //  Got Bus Routes
 
                                 JsonArray _bus_arr = result.getAsJsonArray("bus_arr");
@@ -276,7 +276,7 @@ public class RouteBoundFragment extends Fragment
                                 if (mDatabase != null)
                                     mDatabase.insertHistory(_route_no);
 
-                            } else if (result.get("valid").getAsBoolean() == false &&
+                            } else if (!result.get("valid").getAsBoolean() &&
                                     !result.get("message").getAsString().equals("")) {
                                 // Invalid request with output message
                                 if (mEmptyText != null)
@@ -304,7 +304,7 @@ public class RouteBoundFragment extends Fragment
         editor.putString(Constants.PREF.REQUEST_API_INFO, getRouteInfoApi);
         editor.putString(Constants.PREF.REQUEST_ID, _id);
         editor.putString(Constants.PREF.REQUEST_TOKEN, _token);
-        editor.commit();
+        editor.apply();
     }
 
 }

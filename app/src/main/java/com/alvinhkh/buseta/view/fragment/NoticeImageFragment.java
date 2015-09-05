@@ -31,7 +31,6 @@ public class NoticeImageFragment extends Fragment {
     private ActionBar mActionBar = null;
     private ProgressBar mProgressBar;
     private PhotoView mPhotoView;
-    private TextView mTextView;
     private Bitmap mBitmap = null;
 
     private RouteNews _notice = null;
@@ -62,9 +61,11 @@ public class NoticeImageFragment extends Fragment {
         }
         // Set Toolbar
         mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        mActionBar.setTitle(R.string.app_name);
-        mActionBar.setSubtitle(null);
-        mActionBar.setDisplayHomeAsUpEnabled(true);
+        if (null != mActionBar) {
+            mActionBar.setTitle(R.string.app_name);
+            mActionBar.setSubtitle(null);
+            mActionBar.setDisplayHomeAsUpEnabled(true);
+        }
         setHasOptionsMenu(true);
         //
         mProgressBar = (ProgressBar) view.findViewById(R.id.progressBar);
@@ -73,7 +74,7 @@ public class NoticeImageFragment extends Fragment {
         mPhotoView = (PhotoView) view.findViewById(R.id.photoView);
         mPhotoView.setMaximumScale(8);
         // Text View
-        mTextView = (TextView) view.findViewById(android.R.id.text1);
+        TextView mTextView = (TextView) view.findViewById(android.R.id.text1);
         mTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

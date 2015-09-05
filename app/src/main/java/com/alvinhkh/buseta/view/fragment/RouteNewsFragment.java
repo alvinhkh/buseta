@@ -49,7 +49,6 @@ public class RouteNewsFragment extends Fragment
 
     private Context mContext = super.getActivity();
     private ActionBar mActionBar = null;
-    private TextView mTextView_routeNo;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private ListView mListView;
     private TextView mEmptyText;
@@ -80,9 +79,11 @@ public class RouteNewsFragment extends Fragment
         _route_no = getArguments().getString("route_no");
         // Set Toolbar
         mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        mActionBar.setTitle(R.string.app_name);
-        mActionBar.setSubtitle(null);
-        mActionBar.setDisplayHomeAsUpEnabled(false);
+        if (null != mActionBar) {
+            mActionBar.setTitle(R.string.app_name);
+            mActionBar.setSubtitle(null);
+            mActionBar.setDisplayHomeAsUpEnabled(false);
+        }
         setHasOptionsMenu(true);
         // Set List Adapter
         mAdapter = new RouteNewsAdapter(mContext);
@@ -90,7 +91,7 @@ public class RouteNewsFragment extends Fragment
             mAdapter.onRestoreInstanceState(savedInstanceState);
         }
         //
-        mTextView_routeNo = (TextView) view.findViewById(R.id.route_no);
+        TextView mTextView_routeNo = (TextView) view.findViewById(R.id.route_no);
         mTextView_routeNo.setText(_route_no);
         //
         mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh_route);
@@ -325,7 +326,7 @@ public class RouteNewsFragment extends Fragment
                                 }
                             }
                         }
-                        if (shown == false) {
+                        if (!shown) {
                             Snackbar snackbar = Snackbar.make(getActivity().findViewById(R.id.fragment_container),
                                     R.string.message_fail_to_request,
                                     Snackbar.LENGTH_SHORT);

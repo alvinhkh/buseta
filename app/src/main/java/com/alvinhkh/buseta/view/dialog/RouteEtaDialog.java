@@ -62,7 +62,6 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
 
     private Cursor mCursor;
     private FavouriteDatabase mDatabase;
-    private SettingsHelper settingsHelper = null;
     private UpdateEtaReceiver mReceiver;
 
     Handler mAutoRefreshHandler = new Handler();
@@ -85,7 +84,7 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
         // get context
         mContext = RouteEtaDialog.this;
         // set database
-        settingsHelper = new SettingsHelper().parse(mContext.getApplicationContext());
+        SettingsHelper settingsHelper = new SettingsHelper().parse(mContext.getApplicationContext());
         mDatabase = new FavouriteDatabase(mContext);
         // get widgets
         iStop = (ImageView) findViewById(R.id.imageView);
@@ -134,9 +133,9 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
         //
         mCursor = mDatabase.getExist(object);
         favourite = (null != mCursor && mCursor.getCount() > 0);
-        iStar.setImageResource(favourite == true ?
+        iStar.setImageResource(favourite ?
                 R.drawable.ic_star_black_48dp : R.drawable.ic_star_border_black_48dp);
-        if (settingsHelper.getLoadStopImage() == true)
+        if (settingsHelper.getLoadStopImage())
             getStopImage();
     }
 
@@ -155,18 +154,18 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
             case R.id.star:
                 if (null == mDatabase || null == object || null == object.route_bound) break;
                 mCursor = mDatabase.getExist(object);
-                Boolean org = favourite;
+                Boolean org;
                 if (null != mCursor && mCursor.getCount() > 0) {
                     // record exist
                     org = true;
-                    favourite = mDatabase.delete(object) ? false : true;
+                    favourite = !mDatabase.delete(object);
                 } else {
                     org = false;
-                    favourite = mDatabase.insertStop(object) > 0 ? true : false;
+                    favourite = mDatabase.insertStop(object) > 0;
                 }
                 if (org != favourite)
                     iStar.startAnimation(animationRotate);
-                iStar.setImageResource(favourite == true ?
+                iStar.setImageResource(favourite ?
                         R.drawable.ic_star_black_48dp : R.drawable.ic_star_border_black_48dp);
                 object.favourite = favourite;
                 sendUpdate();
@@ -262,13 +261,13 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
             finish();
             return;
         }
-        iStar.setVisibility(hideStar == true ? View.GONE : View.VISIBLE);
+        iStar.setVisibility(hideStar ? View.GONE : View.VISIBLE);
         tStopName.setText(object.name_tc);
         tEta.setVisibility(View.VISIBLE);
-        if (object.eta_loading != null && object.eta_loading == true) {
+        if (object.eta_loading != null && object.eta_loading) {
             if (tEta.getText().equals(""))
                 tEta.setText(R.string.message_loading);
-        } else if (object.eta_fail != null && object.eta_fail == true) {
+        } else if (object.eta_fail != null && object.eta_fail) {
             tEta.setText(R.string.message_fail_to_request);
         } else if (null == object.eta || object.eta.etas.equals("")) {
             tEta.setText(R.string.message_no_data);
@@ -295,7 +294,7 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
         }
         // last updated
         String updated_time = "";
-        Date updated_date = null;
+        Date updated_date;
         if (null != object.eta.updated && !object.eta.updated.equals("")) {
             updated_date = EtaAdapterHelper.updatedDate(object);
             updated_time = (null != updated_date) ?
@@ -357,7 +356,7 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
         public void onReceive(Context context, Intent intent) {
             Bundle bundle = intent.getExtras();
             Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.ETA_UPDATED);
-            if (aBoolean == true) {
+            if (aBoolean) {
                 RouteStop routeStop = bundle.getParcelable(Constants.BUNDLE.STOP_OBJECT);
                 if (null != routeStop) {
                     object.eta = routeStop.eta;
