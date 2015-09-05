@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -27,7 +26,7 @@ import com.alvinhkh.buseta.holder.EtaAdapterHelper;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.holder.RouteStopContainer;
 import com.alvinhkh.buseta.preference.SettingsHelper;
-import com.alvinhkh.buseta.service.EtaCheckService;
+import com.alvinhkh.buseta.service.CheckEtaService;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
 
@@ -242,7 +241,7 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
         iRefresh.setVisibility(View.GONE);
         progressBar.setVisibility(View.VISIBLE);
 
-        Intent intent = new Intent(this, EtaCheckService.class);
+        Intent intent = new Intent(this, CheckEtaService.class);
         intent.putExtra(Constants.BUNDLE.ITEM_POSITION, position);
         intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
         intent.putParcelableArrayListExtra(Constants.BUNDLE.STOP_OBJECTS, list);

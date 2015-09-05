@@ -50,7 +50,7 @@
 
         <!-- Services -->
         <service
-            android:name=".service.EtaCheckService"
+            android:name=".service.CheckEtaService"
             android:enabled="true" />
         <service
             android:name=".service.UpdateSuggestionService"

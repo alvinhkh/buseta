@@ -30,9 +30,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class EtaCheckService extends IntentService {
+public class CheckEtaService extends IntentService {
 
-    private static final String TAG = "EtaCheckService";
+    private static final String TAG = "CheckEtaService";
 
     private SharedPreferences mPrefs;
     private SettingsHelper settingsHelper = null;
@@ -40,8 +40,8 @@ public class EtaCheckService extends IntentService {
     String _id = null;
     String _token = null;
 
-    public EtaCheckService() {
-        super("EtaCheckService");
+    public CheckEtaService() {
+        super("CheckEtaService");
     }
 
     @Override

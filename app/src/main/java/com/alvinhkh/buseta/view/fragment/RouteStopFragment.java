@@ -33,7 +33,7 @@ import com.alvinhkh.buseta.database.FavouriteDatabase;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.holder.RouteStopContainer;
-import com.alvinhkh.buseta.service.EtaCheckService;
+import com.alvinhkh.buseta.service.CheckEtaService;
 import com.alvinhkh.buseta.view.adapter.RouteStopAdapter;
 import com.alvinhkh.buseta.holder.RouteStopMap;
 import com.alvinhkh.buseta.preference.SettingsHelper;
@@ -90,11 +90,9 @@ public class RouteStopFragment extends Fragment
     Runnable mEtaRunnable = new Runnable() {
         @Override
         public void run() {
-            if (null != mSwipeRefreshLayout)
-                mSwipeRefreshLayout.setRefreshing(true);
             if (null != mAdapter && iEta < mAdapter.getCount()) {
                 RouteStop routeStop = mAdapter.getItem(iEta);
-                Intent intent = new Intent(mContext, EtaCheckService.class);
+                Intent intent = new Intent(mContext, CheckEtaService.class);
                 intent.putExtra(Constants.BUNDLE.ITEM_POSITION, iEta);
                 intent.putExtra(Constants.BUNDLE.STOP_OBJECT, routeStop);
                 intent.putParcelableArrayListExtra(Constants.BUNDLE.STOP_OBJECTS, routeStopList);
@@ -205,7 +203,6 @@ public class RouteStopFragment extends Fragment
         });
         fabHidden = true;
         mFab.attachToListView(mListView, new ScrollDirectionListener() {
-
             @Override
             public void onScrollDown() {
                 if (fabHidden == false)
@@ -216,7 +213,6 @@ public class RouteStopFragment extends Fragment
             public void onScrollUp() {
                 mFab.hide();
             }
-
         }, new AbsListView.OnScrollListener() {
 
             int mLastFirstVisibleItem = 0;
@@ -226,9 +222,9 @@ public class RouteStopFragment extends Fragment
                 if (view.getId() == mListView.getId()) {
                     final int currentFirstVisibleItem = mListView.getFirstVisiblePosition();
                     if (currentFirstVisibleItem > mLastFirstVisibleItem) {
-                        // getActivity().getActionBar().hide();
+                        // mActionBar.hide();
                     } else if (currentFirstVisibleItem < mLastFirstVisibleItem) {
-                        // getActivity().getActionBar().show();
+                        // mActionBar.show();
                     }
                     mLastFirstVisibleItem = currentFirstVisibleItem;
                 }
@@ -329,7 +325,7 @@ public class RouteStopFragment extends Fragment
                             final int position, long id) {
         if (view != null) {
             RouteStop routeStop = mAdapter.getItem(position);
-            Intent intent = new Intent(mContext, EtaCheckService.class);
+            Intent intent = new Intent(mContext, CheckEtaService.class);
             intent.putExtra(Constants.BUNDLE.ITEM_POSITION, position);
             intent.putExtra(Constants.BUNDLE.STOP_OBJECT, routeStop);
             intent.putParcelableArrayListExtra(Constants.BUNDLE.STOP_OBJECTS, routeStopList);
@@ -368,6 +364,8 @@ public class RouteStopFragment extends Fragment
 
     @Override
      public void onRefresh() {
+        if (null != mSwipeRefreshLayout)
+            mSwipeRefreshLayout.setRefreshing(true);
         iEta = 0;
         if (null != mEtaHandler && null != mEtaRunnable)
             mEtaHandler.post(mEtaRunnable);

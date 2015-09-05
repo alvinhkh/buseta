@@ -28,7 +28,7 @@ import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.database.FavouriteDatabase;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.holder.RouteStopContainer;
-import com.alvinhkh.buseta.service.EtaCheckService;
+import com.alvinhkh.buseta.service.CheckEtaService;
 import com.alvinhkh.buseta.view.adapter.FeatureAdapter;
 import com.alvinhkh.buseta.database.SuggestionsDatabase;
 
@@ -206,7 +206,7 @@ public class MainFragment extends Fragment
         if (null != mAdapter && null != mContext)
             for (int i = 0; i < mAdapter.getFavouriteCount(); i++) {
                 RouteStop object = mAdapter.getFavouriteItem(i);
-                Intent intent = new Intent(mContext, EtaCheckService.class);
+                Intent intent = new Intent(mContext, CheckEtaService.class);
                 intent.putExtra(Constants.BUNDLE.ITEM_POSITION, i);
                 intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
                 intent.putParcelableArrayListExtra(Constants.BUNDLE.STOP_OBJECTS, routeStopList);

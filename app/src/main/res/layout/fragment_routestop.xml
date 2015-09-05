@@ -19,6 +19,7 @@
             android:layout_centerHorizontal="true"
             android:layout_margin="16dp"
             android:src="@drawable/ic_refresh_white_24dp"
+            app:layout_behavior="com.alvinhkh.buseta.view.ScrollAwareFABBehavior"
             app:fab_type="normal"
             app:fab_shadow="true"
             app:fab_colorNormal="@color/accent"
