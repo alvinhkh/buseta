@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.AbstractCursor;
 import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -34,6 +35,7 @@ import com.alvinhkh.buseta.view.adapter.FeatureAdapter;
 import com.alvinhkh.buseta.database.SuggestionsDatabase;
 import com.koushikdutta.ion.Ion;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 
 public class MainFragment extends Fragment
@@ -218,6 +220,8 @@ public class MainFragment extends Fragment
         if (null != mAdapter && null != mContext)
             for (int i = 0; i < mAdapter.getFavouriteCount(); i++) {
                 RouteStop object = mAdapter.getFavouriteItem(i);
+                object.eta_loading = true;
+                mAdapter.notifyDataSetChanged();
                 Intent intent = new Intent(mContext, CheckEtaService.class);
                 intent.putExtra(Constants.BUNDLE.ITEM_POSITION, i);
                 intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
@@ -247,19 +251,28 @@ public class MainFragment extends Fragment
         }
     }
 
-    public class UpdateEtaReceiver extends BroadcastReceiver {
+    UpdateViewHandler mViewHandler = new UpdateViewHandler(this);
+    static class UpdateViewHandler extends Handler {
+        WeakReference<MainFragment> mFrag;
+
+        UpdateViewHandler(MainFragment aFragment) {
+            mFrag = new WeakReference<MainFragment>(aFragment);
+        }
+
         @Override
-        public void onReceive(Context context, Intent intent) {
-            Bundle bundle = intent.getExtras();
+        public void handleMessage(Message message) {
+            MainFragment f = mFrag.get();
+            if (null == f) return;
+            Bundle bundle = message.getData();
             Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.ETA_UPDATED);
-            if (null != mAdapter && null != mDatabase_favourite && aBoolean) {
-                routeStopList = bundle.getParcelableArrayList(Constants.BUNDLE.STOP_OBJECTS);
+            if (null != f.mAdapter && null != f.mDatabase_favourite && aBoolean) {
+                f.routeStopList = bundle.getParcelableArrayList(Constants.BUNDLE.STOP_OBJECTS);
                 int position = bundle.getInt(Constants.BUNDLE.ITEM_POSITION, -1);
                 RouteStop newObject = bundle.getParcelable(Constants.BUNDLE.STOP_OBJECT);
                 if (null != newObject) {
-                    for (int i = 0; i < routeStopList.size(); i++) {
-                        RouteStop oldObject = routeStopList.get(i).routeStop;
-                        int listPosition = routeStopList.get(i).position;
+                    for (int i = 0; i < f.routeStopList.size(); i++) {
+                        RouteStop oldObject = f.routeStopList.get(i).routeStop;
+                        int listPosition = f.routeStopList.get(i).position;
                         if (null != oldObject && position == listPosition) {
                             oldObject.eta = newObject.eta;
                             oldObject.eta_loading = newObject.eta_loading;
@@ -268,11 +281,27 @@ public class MainFragment extends Fragment
                         }
                     }
                 }
-                AbstractCursor cursor = (AbstractCursor) mDatabase_favourite.get();
+                AbstractCursor cursor = (AbstractCursor) f.mDatabase_favourite.get();
                 if (null != cursor)
                     cursor.setExtras(bundle);
-                mAdapter.swapFavouriteCursor(cursor);
+                f.mAdapter.swapFavouriteCursor(cursor);
             }
+        }
+    }
+
+    public class UpdateEtaReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final Bundle bundle = intent.getExtras();
+            Thread thread = new Thread() {
+                @Override
+                public void run() {
+                    Message message = mViewHandler.obtainMessage();
+                    message.setData(bundle);
+                    mViewHandler.sendMessage(message);
+                }
+            };
+            thread.run();
         }
     }
 

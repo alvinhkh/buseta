@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -47,6 +48,7 @@ import com.koushikdutta.ion.Response;
 import com.melnykov.fab.FloatingActionButton;
 import com.melnykov.fab.ScrollDirectionListener;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,6 +89,8 @@ public class RouteStopFragment extends Fragment
         public void run() {
             if (null != mAdapter && iEta < mAdapter.getCount()) {
                 RouteStop routeStop = mAdapter.getItem(iEta);
+                routeStop.eta_loading = true;
+                mAdapter.notifyDataSetChanged();
                 Intent intent = new Intent(mContext, CheckEtaService.class);
                 intent.putExtra(Constants.BUNDLE.ITEM_POSITION, iEta);
                 intent.putExtra(Constants.BUNDLE.STOP_OBJECT, routeStop);
@@ -94,10 +98,7 @@ public class RouteStopFragment extends Fragment
                 mContext.startService(intent);
                 iEta++;
                 if (iEta < mAdapter.getCount() - 1) {
-                    int interval = 800;
-                    if (null != settingsHelper && settingsHelper.getEtaApi() == 2)
-                        interval = 150;
-                    mEtaHandler.postDelayed(mEtaRunnable, interval);
+                    mEtaHandler.post(mEtaRunnable);
                 } else {
                     if (mSwipeRefreshLayout != null)
                         mSwipeRefreshLayout.setRefreshing(false);
@@ -325,6 +326,8 @@ public class RouteStopFragment extends Fragment
                             final int position, long id) {
         if (view != null) {
             RouteStop routeStop = mAdapter.getItem(position);
+            routeStop.eta_loading = true;
+            mAdapter.notifyDataSetChanged();
             Intent intent = new Intent(mContext, CheckEtaService.class);
             intent.putExtra(Constants.BUNDLE.ITEM_POSITION, position);
             intent.putExtra(Constants.BUNDLE.STOP_OBJECT, routeStop);
@@ -537,26 +540,51 @@ public class RouteStopFragment extends Fragment
 
     }
 
-    public class UpdateViewReceiver extends BroadcastReceiver {
+    UpdateViewHandler mViewHandler = new UpdateViewHandler(this);
+    static class UpdateViewHandler extends Handler {
+        WeakReference<RouteStopFragment> mFrag;
+
+        UpdateViewHandler(RouteStopFragment aFragment) {
+            mFrag = new WeakReference<RouteStopFragment>(aFragment);
+        }
+
         @Override
-        public void onReceive(Context context, Intent intent) {
-            Bundle bundle = intent.getExtras();
+        public void handleMessage(Message message) {
+            RouteStopFragment f = mFrag.get();
+            if (null == f) return;
+            Bundle bundle = message.getData();
             Boolean aBoolean_stop = bundle.getBoolean(Constants.MESSAGE.STOP_UPDATED);
             Boolean aBoolean_eta = bundle.getBoolean(Constants.MESSAGE.ETA_UPDATED);
-            if (null != mAdapter && (aBoolean_stop || aBoolean_eta)) {
+            if (null != f.mAdapter && (aBoolean_stop || aBoolean_eta)) {
                 RouteStop newObject = bundle.getParcelable(Constants.BUNDLE.STOP_OBJECT);
                 if (null != newObject) {
                     int position = Integer.parseInt(newObject.stop_seq);
-                    if (position < mAdapter.getCount()) {
-                        RouteStop oldObject = mAdapter.getItem(position);
+                    if (position < f.mAdapter.getCount()) {
+                        RouteStop oldObject = f.mAdapter.getItem(position);
                         oldObject.favourite = newObject.favourite;
                         oldObject.eta = newObject.eta;
                         oldObject.eta_loading = newObject.eta_loading;
                         oldObject.eta_fail = newObject.eta_fail;
-                        mAdapter.notifyDataSetChanged();
+                        f.mAdapter.notifyDataSetChanged();
                     }
                 }
             }
+        }
+    }
+
+    class UpdateViewReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final Bundle bundle = intent.getExtras();
+            Thread thread = new Thread() {
+                @Override
+                public void run() {
+                    Message message = mViewHandler.obtainMessage();
+                    message.setData(bundle);
+                    mViewHandler.sendMessage(message);
+                }
+            };
+            thread.run();
         }
     }
 

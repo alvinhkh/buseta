@@ -106,7 +106,7 @@ public class CheckEtaService extends IntentService {
     private void getETAv2(final int position, final RouteStop routeStop) {
         if (null == routeStop || null == routeStop.route_bound) return;
         routeStop.eta_loading = true;
-        sendUpdate(position, routeStop);
+        // sendUpdate(position, routeStop);
 
         String route_no = routeStop.route_bound.route_no.trim().replace(" ", "").toUpperCase();
         Uri routeEtaUri = Uri.parse(Constants.URL.ETA_MOBILE_API)
@@ -174,7 +174,7 @@ public class CheckEtaService extends IntentService {
     private void getETAv1(final int position, final RouteStop routeStop, int attempt) throws ExecutionException, InterruptedException {
         if (null == routeStop || null == routeStop.route_bound) return;
         routeStop.eta_loading = true;
-        sendUpdate(position, routeStop);
+        // sendUpdate(position, routeStop);
 
         _id = mPrefs.getString(Constants.PREF.REQUEST_ID, null);
         _token = mPrefs.getString(Constants.PREF.REQUEST_TOKEN, null);
