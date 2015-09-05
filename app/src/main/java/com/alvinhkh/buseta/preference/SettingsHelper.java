@@ -8,8 +8,6 @@ public class SettingsHelper {
 
     private Integer etaApi = 2;
 
-    private Boolean homeScreenSearchButton = true;
-
     private Boolean loadStopImage = false;
 
     public SettingsHelper() {
@@ -21,14 +19,6 @@ public class SettingsHelper {
 
     public void setEtaApi(Integer etaApi) {
         this.etaApi = etaApi;
-    }
-
-    public Boolean getHomeScreenSearchButton() {
-        return homeScreenSearchButton;
-    }
-
-    public void setHomeScreenSearchButton(Boolean homeScreenSearchButton) {
-        this.homeScreenSearchButton = homeScreenSearchButton;
     }
 
     public Boolean getLoadStopImage(){
@@ -54,7 +44,6 @@ public class SettingsHelper {
             e.printStackTrace();
             setEtaApi(2);
         }
-        setHomeScreenSearchButton(sPref.getBoolean("home_search_button", true));
         setLoadStopImage(sPref.getBoolean("load_stop_image", false));
         return this;
     }

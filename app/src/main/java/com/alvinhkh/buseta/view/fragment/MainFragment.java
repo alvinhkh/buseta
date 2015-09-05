@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.database.AbstractCursor;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -21,14 +22,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.database.FavouriteDatabase;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.holder.RouteStopContainer;
-import com.alvinhkh.buseta.preference.SettingsHelper;
 import com.alvinhkh.buseta.service.EtaCheckService;
 import com.alvinhkh.buseta.view.adapter.FeatureAdapter;
 import com.alvinhkh.buseta.database.SuggestionsDatabase;
@@ -40,16 +39,17 @@ public class MainFragment extends Fragment
         SwipeRefreshLayout.OnRefreshListener {
 
     private static final String TAG = "MainFragment";
+
     private Context mContext = super.getActivity();
-    private SettingsHelper settingsHelper = null;
     private SuggestionsDatabase mDatabase_suggestion;
     private FavouriteDatabase mDatabase_favourite;
     private FeatureAdapter mAdapter;
     private ActionBar mActionBar = null;
     private SwipeRefreshLayout mSwipeRefreshLayout;
+    private FloatingActionButton mFab;
     private RecyclerView mRecyclerView;
+    private View mEmptyView;
     private MenuItem mSearchMenuItem;
-    private Button mButton;
     private UpdateHistoryReceiver mReceiver_history;
     private UpdateEtaReceiver mReceiver_eta;
     private ArrayList<RouteStopContainer> routeStopList = null;
@@ -69,7 +69,6 @@ public class MainFragment extends Fragment
                              Bundle savedInstanceState) {
         mContext = super.getActivity();
         View view = inflater.inflate(R.layout.fragment_main, container, false);
-        settingsHelper = new SettingsHelper().parse(mContext.getApplicationContext());
         mDatabase_suggestion = new SuggestionsDatabase(mContext.getApplicationContext());
         mDatabase_favourite = new FavouriteDatabase(mContext.getApplicationContext());
         AbstractCursor cursor_fav = (AbstractCursor) mDatabase_favourite.get();
@@ -89,23 +88,12 @@ public class MainFragment extends Fragment
         mActionBar.setSubtitle(null);
         mActionBar.setDisplayHomeAsUpEnabled(false);
         setHasOptionsMenu(true);
-
+        // SwipeRefreshLayout
         mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh);
         mSwipeRefreshLayout.setOnRefreshListener(this);
         mSwipeRefreshLayout.setEnabled(false);
         mSwipeRefreshLayout.setRefreshing(false);
-        mButton = (Button) view.findViewById(R.id.buttonSearch);
-        mButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (null != mSearchMenuItem) {
-                    mSearchMenuItem.expandActionView();
-                }
-            }
-        });
-        mButton.setVisibility(
-                (settingsHelper.getHomeScreenSearchButton() == false) ? View.GONE : View.VISIBLE);
-
+        // RecyclerView
         mRecyclerView = (RecyclerView) view.findViewById(R.id.cardList);
         mRecyclerView.setHasFixedSize(true);
         final GridLayoutManager manager = new GridLayoutManager(mContext, 2);
@@ -118,6 +106,17 @@ public class MainFragment extends Fragment
             @Override
             public int getSpanSize(int position) {
                 return position < mAdapter.getFavouriteCount() ? manager.getSpanCount() : 1;
+            }
+        });
+        mEmptyView = (View) view.findViewById(android.R.id.empty);
+        mEmptyView.setVisibility(mAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
+        // Floating Action Button
+        mFab = (FloatingActionButton) view.findViewById(R.id.fab);
+        mFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (null != mSearchMenuItem)
+                    mSearchMenuItem.expandActionView();
             }
         });
         // Set up a listener whenever a key changes
@@ -148,6 +147,8 @@ public class MainFragment extends Fragment
         }
         if (null != mAdapter)
             mAdapter.swapHistoryCursor(mDatabase_suggestion.getHistory());
+        if (null != mFab)
+            mFab.show();
     }
 
     @Override
@@ -179,7 +180,7 @@ public class MainFragment extends Fragment
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
-        menu.findItem(R.id.action_settings).setVisible(true);
+        menu.findItem(R.id.action_search).setVisible(false);
         mSearchMenuItem = menu.findItem(R.id.action_search);
     }
 
@@ -195,12 +196,6 @@ public class MainFragment extends Fragment
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sp, String key) {
-        settingsHelper = new SettingsHelper().parse(sp);
-        if (key.matches("home_search_button")) {
-            mButton.setVisibility(
-                    (settingsHelper.getHomeScreenSearchButton() == false)
-                            ? View.GONE : View.VISIBLE);
-        }
         if (key.matches("eta_version")) {
             onRefresh();
         }

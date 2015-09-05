@@ -27,7 +27,7 @@
     <string name="passenger_notice">乘客通告</string>
     <string name="search_route">搜尋路線</string>
     <string name="select_route_bound">選擇路線</string>
-    <string name="start_search_route">開始搜尋路線</string>
+    <string name="start_search_route">按右下角按鈕，開始搜尋路線</string>
     <string name="stop_name">站名</string>
 
     <string name="label_last_updated">數據最後更新：</string>
@@ -37,9 +37,6 @@
     <string name="category_general">一般</string>
     <string name="title_clear_history">清除搜尋記錄</string>
     <string name="summary_clear_history"></string>
-    <string name="title_home_search_button">主畫面搜尋按鈕</string>
-    <string name="summary_on_home_search_button">顯示</string>
-    <string name="summary_off_home_search_button">隱藏</string>
     <string name="title_load_stop_image">顯示車站圖片</string>
     <string name="summary_on_load_stop_image">自動載入車站圖片</string>
     <string name="summary_off_load_stop_image">手動點擊站名載入圖片</string>

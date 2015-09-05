@@ -12,13 +12,6 @@
             android:persistent="false" />
 
         <SwitchPreference
-            android:key="home_search_button"
-            android:title="@string/title_home_search_button"
-            android:summaryOn="@string/summary_on_home_search_button"
-            android:summaryOff="@string/summary_off_home_search_button"
-            android:defaultValue="true" />
-
-        <SwitchPreference
             android:key="load_stop_image"
             android:title="@string/title_load_stop_image"
             android:summaryOn="@string/summary_on_load_stop_image"

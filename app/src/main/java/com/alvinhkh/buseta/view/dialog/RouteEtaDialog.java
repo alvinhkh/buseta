@@ -271,10 +271,10 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
                 tEta.setText(R.string.message_loading);
         } else if (object.eta_fail != null && object.eta_fail == true) {
             tEta.setText(R.string.message_fail_to_request);
-        } else if (null == object.eta) {
+        } else if (null == object.eta || object.eta.etas.equals("")) {
             tEta.setText(R.string.message_no_data);
         }
-        if (null == object.eta) {
+        if (null == object.eta || object.eta.etas.equals("")) {
             lServerTime.setVisibility(View.GONE);
             tServerTime.setVisibility(View.GONE);
             lLastUpdated.setVisibility(View.GONE);
