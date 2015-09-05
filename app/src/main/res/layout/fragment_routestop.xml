@@ -11,7 +11,7 @@
 
         <include layout="@layout/fragment_listview"/>
 
-        <android.support.design.widget.FloatingActionButton
+        <com.melnykov.fab.FloatingActionButton
             android:id="@+id/fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -19,7 +19,11 @@
             android:layout_centerHorizontal="true"
             android:layout_margin="16dp"
             android:src="@drawable/ic_refresh_white_24dp"
-            app:fabSize="normal" />
+            app:fab_type="normal"
+            app:fab_shadow="true"
+            app:fab_colorNormal="@color/accent"
+            app:fab_colorPressed="@color/accent_pressed"
+            app:fab_colorRipple="@color/ripple" />
 
     </RelativeLayout>
 

@@ -4,9 +4,11 @@
     <color name="primary_dark">#D32F2F</color>
     <color name="primary_light">#FFCDD2</color>
     <color name="accent">#FF9800</color>
+    <color name="accent_pressed">#F57C00</color>
+    <color name="ripple">#FB8C00</color>
     <color name="primary_text">#212121</color>
     <color name="secondary_text">#727272</color>
-    <color name="highlighted_text">#D32F2F</color>
+    <color name="highlighted_text">#D50000</color>
     <color name="diminish_text">#989898</color>
     <color name="icons">#FFFFFF</color>
     <color name="divider">#B6B6B6</color>

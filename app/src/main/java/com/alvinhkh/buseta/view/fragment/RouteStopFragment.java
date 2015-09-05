@@ -5,13 +5,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.database.AbstractCursor;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
@@ -23,8 +21,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -37,7 +35,6 @@ import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.holder.RouteStopContainer;
 import com.alvinhkh.buseta.service.EtaCheckService;
 import com.alvinhkh.buseta.view.adapter.RouteStopAdapter;
-import com.alvinhkh.buseta.holder.RouteStopETA;
 import com.alvinhkh.buseta.holder.RouteStopMap;
 import com.alvinhkh.buseta.preference.SettingsHelper;
 import com.alvinhkh.buseta.view.dialog.RouteEtaDialog;
@@ -45,15 +42,14 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
 import com.koushikdutta.ion.Response;
+import com.melnykov.fab.FloatingActionButton;
+import com.melnykov.fab.ScrollDirectionListener;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class RouteStopFragment extends Fragment
         implements AdapterView.OnItemClickListener,
@@ -83,6 +79,7 @@ public class RouteStopFragment extends Fragment
     private String _token = null;
     private String etaApi = "";
     private String getRouteInfoApi = "";
+    private Boolean fabHidden = true;
     private FavouriteDatabase mDatabase;
     private SettingsHelper settingsHelper = null;
     private SharedPreferences mPrefs;
@@ -172,19 +169,11 @@ public class RouteStopFragment extends Fragment
         }
         if (null == routeStopList)
             routeStopList = new ArrayList<RouteStopContainer>();
-        //
+        // SwipeRefreshLayout
         mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh_route);
         mSwipeRefreshLayout.setOnRefreshListener(this);
         mSwipeRefreshLayout.setEnabled(false); // disable pull-to-refresh
         mSwipeRefreshLayout.setRefreshing(false);
-        mFab = (FloatingActionButton) view.findViewById(R.id.fab);
-        mFab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                onRefresh();
-            }
-        });
-        mFab.hide();
         mProgressBar = (ProgressBar) view.findViewById(R.id.progressBar);
         mProgressBar.setVisibility(View.GONE);
         // Set Listview
@@ -197,8 +186,7 @@ public class RouteStopFragment extends Fragment
                 && savedInstanceState.containsKey(KEY_LIST_VIEW_STATE)) {
             mListView.onRestoreInstanceState(savedInstanceState
                     .getParcelable(KEY_LIST_VIEW_STATE));
-            if (null != mFab)
-                mFab.show();
+            fabHidden = false;
         } else {
             getRouteInfoApi = Constants.URL.ROUTE_INFO;
             // Get Route Stops
@@ -207,6 +195,60 @@ public class RouteStopFragment extends Fragment
         mListView.setAdapter(mAdapter);
         mListView.setOnItemLongClickListener(this);
         mListView.setOnItemClickListener(this);
+        // FloatingActionButton
+        mFab = (FloatingActionButton) view.findViewById(R.id.fab);
+        mFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onRefresh();
+            }
+        });
+        fabHidden = true;
+        mFab.attachToListView(mListView, new ScrollDirectionListener() {
+
+            @Override
+            public void onScrollDown() {
+                if (fabHidden == false)
+                    mFab.show();
+            }
+
+            @Override
+            public void onScrollUp() {
+                mFab.hide();
+            }
+
+        }, new AbsListView.OnScrollListener() {
+
+            int mLastFirstVisibleItem = 0;
+
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+                if (view.getId() == mListView.getId()) {
+                    final int currentFirstVisibleItem = mListView.getFirstVisiblePosition();
+                    if (currentFirstVisibleItem > mLastFirstVisibleItem) {
+                        // getActivity().getActionBar().hide();
+                    } else if (currentFirstVisibleItem < mLastFirstVisibleItem) {
+                        // getActivity().getActionBar().show();
+                    }
+                    mLastFirstVisibleItem = currentFirstVisibleItem;
+                }
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                boolean enable = false;
+                if (mListView != null && mListView.getChildCount() > 0) {
+                    // check if the first item of the list is visible
+                    boolean firstItemVisible = mListView.getFirstVisiblePosition() == 0;
+                    // check if the top of the first item is visible
+                    boolean topOfFirstItemVisible = mListView.getChildAt(0).getTop() == 0;
+                    // enabling or disabling the refresh layout
+                    enable = firstItemVisible && topOfFirstItemVisible;
+                }
+                // mSwipeRefreshLayout.setEnabled(enable);
+            }
+
+        });
         // Broadcast Receiver
         if (null != mContext) {
             mReceiver = new UpdateViewReceiver();
@@ -397,8 +439,7 @@ public class RouteStopFragment extends Fragment
                                 if (mEmptyText != null)
                                     mEmptyText.setText("");
 
-                                if (null != mFab)
-                                    mFab.show();
+                                fabHidden = false;
 
                             } else if (result.get("valid").getAsBoolean() == false &&
                                     !result.get("message").getAsString().equals("")) {
