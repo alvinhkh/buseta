@@ -69,8 +69,8 @@ public class MainFragment extends Fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        mContext = super.getActivity();
         View view = inflater.inflate(R.layout.fragment_main, container, false);
+        mContext = super.getActivity();
         mDatabase_suggestion = new SuggestionsDatabase(mContext.getApplicationContext());
         mDatabase_favourite = new FavouriteDatabase(mContext.getApplicationContext());
         AbstractCursor cursor_fav = (AbstractCursor) mDatabase_favourite.get();
@@ -142,7 +142,7 @@ public class MainFragment extends Fragment
             mContext.registerReceiver(mReceiver_eta, mFilter_eta);
         }
         if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
-            mAutoRefreshHandler.post(mAutoRefreshRunnable);
+            mAutoRefreshHandler.postDelayed(mAutoRefreshRunnable, 100);
 
         return view;
     }
@@ -220,8 +220,6 @@ public class MainFragment extends Fragment
         if (null != mAdapter && null != mContext)
             for (int i = 0; i < mAdapter.getFavouriteCount(); i++) {
                 RouteStop object = mAdapter.getFavouriteItem(i);
-                object.eta_loading = true;
-                mAdapter.notifyDataSetChanged();
                 Intent intent = new Intent(mContext, CheckEtaService.class);
                 intent.putExtra(Constants.BUNDLE.ITEM_POSITION, i);
                 intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);

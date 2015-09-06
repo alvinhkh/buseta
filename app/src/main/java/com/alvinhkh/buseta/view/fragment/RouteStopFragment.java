@@ -98,7 +98,7 @@ public class RouteStopFragment extends Fragment
                 mContext.startService(intent);
                 iEta++;
                 if (iEta < mAdapter.getCount() - 1) {
-                    mEtaHandler.post(mEtaRunnable);
+                    mEtaHandler.postDelayed(mEtaRunnable, 100);
                 } else {
                     if (mSwipeRefreshLayout != null)
                         mSwipeRefreshLayout.setRefreshing(false);
