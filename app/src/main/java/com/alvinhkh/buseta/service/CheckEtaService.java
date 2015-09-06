@@ -1,14 +1,18 @@
 package com.alvinhkh.buseta.service;
 
 import android.app.IntentService;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.alvinhkh.buseta.Constants;
+import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.holder.RouteStopContainer;
 import com.alvinhkh.buseta.holder.RouteStopETA;
@@ -72,7 +76,6 @@ public class CheckEtaService extends IntentService {
         if (intent == null) return;
         Bundle extras = intent.getExtras();
         if (extras == null) return;
-
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         RouteStop object = extras.getParcelable(Constants.BUNDLE.STOP_OBJECT);
@@ -81,6 +84,18 @@ public class CheckEtaService extends IntentService {
             routeStopList = extras.getParcelableArrayList(Constants.BUNDLE.STOP_OBJECTS);
         if (null == routeStopList)
             routeStopList = new ArrayList<>();
+
+        // Check internet connection
+        final ConnectivityManager conMgr =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
+        if (activeNetwork == null || !activeNetwork.isConnected()) {
+            object.eta_loading = false;
+            object.eta_fail = true;
+            sendUpdate(position, object);
+            return;
+        }
+
         if (null != object)
             getETA(position, object);
     }

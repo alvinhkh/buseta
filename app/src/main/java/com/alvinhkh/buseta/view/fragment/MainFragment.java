@@ -6,10 +6,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.AbstractCursor;
+import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -24,6 +28,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
@@ -217,15 +222,28 @@ public class MainFragment extends Fragment
 
     public void onRefresh() {
         mSwipeRefreshLayout.setRefreshing(true);
-        if (null != mAdapter && null != mContext)
-            for (int i = 0; i < mAdapter.getFavouriteCount(); i++) {
-                RouteStop object = mAdapter.getFavouriteItem(i);
-                Intent intent = new Intent(mContext, CheckEtaService.class);
-                intent.putExtra(Constants.BUNDLE.ITEM_POSITION, i);
-                intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
-                intent.putParcelableArrayListExtra(Constants.BUNDLE.STOP_OBJECTS, routeStopList);
-                mContext.startService(intent);
+        if (null != mAdapter && null != mContext) {
+            // Check internet connection
+            final ConnectivityManager conMgr = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+            final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
+            if (activeNetwork != null && activeNetwork.isConnected()) {
+                for (int i = 0; i < mAdapter.getFavouriteCount(); i++) {
+                    RouteStop object = mAdapter.getFavouriteItem(i);
+                    Intent intent = new Intent(mContext, CheckEtaService.class);
+                    intent.putExtra(Constants.BUNDLE.ITEM_POSITION, i);
+                    intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
+                    intent.putParcelableArrayListExtra(Constants.BUNDLE.STOP_OBJECTS, routeStopList);
+                    mContext.startService(intent);
+                }
+            } else {
+                Snackbar snackbar = Snackbar.make(getActivity().findViewById(R.id.coordinator),
+                        R.string.message_no_internet_connection, Snackbar.LENGTH_LONG);
+                TextView tv = (TextView)
+                        snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
+                tv.setTextColor(Color.WHITE);
+                snackbar.show();
             }
+        }
         mSwipeRefreshLayout.setRefreshing(false);
     }
 

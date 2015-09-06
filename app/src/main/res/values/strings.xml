@@ -63,8 +63,9 @@
     <string name="message_database_updated">數據庫經已更新</string>
     <string name="message_fail_to_request">未能載入，請再試一次</string>
     <string name="message_loading">載入中...</string>
-    <string name="message_no_passenger_notice">暫時沒有任何通告</string>
     <string name="message_no_data">暫時沒有資料</string>
+    <string name="message_no_internet_connection">請檢查網絡連線</string>
+    <string name="message_no_passenger_notice">暫時沒有任何通告</string>
     <string name="message_please_click_once_again">請再按多一次</string>
     <string name="message_reminder_auto_refresh">提示：每分鐘會自動更新</string>
     <string name="message_remove_from_search_history">從搜尋記錄中移除</string>

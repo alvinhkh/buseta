@@ -2,7 +2,11 @@ package com.alvinhkh.buseta.view.fragment;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -140,6 +144,21 @@ public class NoticeImageFragment extends Fragment {
     }
 
     private void showNoticeImage(final String notice_image) {
+
+        // Check internet connection
+        final ConnectivityManager conMgr = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
+        if (activeNetwork == null || !activeNetwork.isConnected()) {
+            Snackbar snackbar = Snackbar.make(getActivity().findViewById(android.R.id.content),
+                    R.string.message_no_internet_connection, Snackbar.LENGTH_LONG);
+            TextView tv = (TextView)
+                    snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
+            tv.setTextColor(Color.WHITE);
+            snackbar.show();
+            if (mProgressBar != null)
+                mProgressBar.setVisibility(View.GONE);
+            return;
+        }
 
         if (mProgressBar != null)
             mProgressBar.setVisibility(View.VISIBLE);

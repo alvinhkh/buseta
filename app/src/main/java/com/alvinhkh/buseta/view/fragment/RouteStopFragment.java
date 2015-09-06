@@ -6,11 +6,15 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
@@ -378,16 +382,36 @@ public class RouteStopFragment extends Fragment
         final String route_no = routeBound.route_no;
         final String route_bound = routeBound.route_bound;
 
-        if (mEmptyText != null)
-            mEmptyText.setText(R.string.message_loading);
-        if (mProgressBar != null)
-            mProgressBar.setVisibility(View.VISIBLE);
         if (null != mEtaHandler && null != mEtaRunnable)
             mEtaHandler.removeCallbacks(mEtaRunnable);
         if (null != mAdapter) {
             mAdapter.clear();
             mAdapter.notifyDataSetChanged();
         }
+
+        // Check internet connection
+        final ConnectivityManager conMgr = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
+        if (activeNetwork == null || !activeNetwork.isConnected()) {
+            Snackbar snackbar = Snackbar.make(getActivity().findViewById(android.R.id.content),
+                    R.string.message_no_internet_connection, Snackbar.LENGTH_LONG);
+            TextView tv = (TextView)
+                    snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
+            tv.setTextColor(Color.WHITE);
+            snackbar.show();
+            if (mProgressBar != null)
+                mProgressBar.setVisibility(View.GONE);
+            if (mEmptyText != null)
+                mEmptyText.setText(R.string.message_fail_to_request);
+            if (null != mFab)
+                mFab.hide();
+            return;
+        }
+
+        if (mEmptyText != null)
+            mEmptyText.setText(R.string.message_loading);
+        if (mProgressBar != null)
+            mProgressBar.setVisibility(View.VISIBLE);
 
         String _random_t = ((Double) Math.random()).toString();
         Uri routeStopUri = Uri.parse(getRouteInfoApi)
@@ -416,7 +440,7 @@ public class RouteStopFragment extends Fragment
                             Log.e(TAG, e.toString());
                             if (mEmptyText != null)
                                 mEmptyText.setText(R.string.message_fail_to_request);
-                        }
+                        } else
                         if (null != response && response.getHeaders().code() == 200) {
                             JsonObject result = response.getResult();
                             //Log.d(TAG, result.toString());

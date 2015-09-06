@@ -1,11 +1,18 @@
 package com.alvinhkh.buseta.service;
 
 import android.app.IntentService;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
+import android.support.design.widget.Snackbar;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
@@ -43,6 +50,15 @@ public class UpdateSuggestionService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         // Log.d(TAG, "onHandleIntent");
+        // Check internet connection
+        final ConnectivityManager conMgr =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
+        if (activeNetwork == null || !activeNetwork.isConnected()) {
+            sendUpdate(R.string.message_no_internet_connection);
+            return;
+        }
+        // start fetch available bus route
         sendUpdate(R.string.message_database_updating);
         Ion.with(getApplicationContext())
                 .load(Constants.URL.ROUTE_AVAILABLE)
