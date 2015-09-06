@@ -2,6 +2,8 @@
 <resources>
 
     <string name="app_name">BusETA</string>
+    <string name="launcher_name">BusETA</string>
+
     <string name="action_settings">設定</string>
     <string name="action_search">搜尋</string>
     <string name="action_refresh">重新載入</string>
@@ -13,12 +15,11 @@
     <string name="dest">往</string>
     <string name="destination">往%s</string>
     <string name="disabled">禁用</string>
-    <string name="dotcom">AlvinHKH.com</string>
-    <string name="dots">...</string>
+    <string name="dots" translatable="false">&#8230;</string>
     <string name="enabled">啟用</string>
     <string name="eta">到站時間預報</string>
-    <string name="hint_enter_route">輸入路線...</string>
-    <string name="hkd">$%s</string>
+    <string name="hint_enter_route">輸入路線&#8230;</string>
+    <string name="hkd" translatable="false">$%s</string>
     <string name="minutes">分鐘</string>
     <string name="now">現在</string>
     <string name="open_source_license">開放原始碼授權</string>
@@ -41,16 +42,19 @@
     <string name="summary_on_load_stop_image">自動載入車站圖片</string>
     <string name="summary_off_load_stop_image">手動點擊站名載入圖片</string>
     <string name="category_debug">測試</string>
+    <string name="title_eta_version">到站時間預報系統</string>
     <string name="title_update_route_suggestion">更新建議路線</string>
     <string name="summary_update_route_suggestion">手動更新有提供到站時間預報的路線資料</string>
-    <string name="title_eta_version">到站時間預報系統</string>
+    <string name="title_hide_ad">隱藏廣告</string>
+    <string name="summary_on_hide_ad">除設定頁面，不顯示其他廣告</string>
+    <string name="summary_off_hide_ad"></string>
     <string name="category_about">關於</string>
-    <string name="title_app_name">%s \u00A9 2015</string>
+    <string name="title_app_name" translatable="false">%s \u00A9 2015</string>
     <string name="summary_app_name">@string/url_app</string>
     <string name="title_app_version">版本</string>
-    <string name="summary_app_version">%1$s (%2$s)</string>
+    <string name="summary_app_version" translatable="false">%1$s (%2$s)</string>
     <string name="title_developer">開發者</string>
-    <string name="summary_developer">AlvinHKH</string>
+    <string name="summary_developer" translatable="false">AlvinHKH</string>
     <string name="title_open_source_license">開放原始碼授權</string>
     <string name="summary_open_source_license"></string>
     <string name="category_statement">聲明</string>
@@ -62,7 +66,10 @@
     <string name="message_database_updating">數據庫更新中</string>
     <string name="message_database_updated">數據庫經已更新</string>
     <string name="message_fail_to_request">未能載入，請再試一次</string>
-    <string name="message_loading">載入中...</string>
+    <string name="message_hide_ad">除設定頁面，其他廣告經已隱藏</string>
+    <string name="message_hide_ad_smile">:)</string>
+    <string name="message_hide_ad_tip">試下SEARCH “%1$s”同“%2$s”</string>
+    <string name="message_loading">載入中&#8230;</string>
     <string name="message_no_data">暫時沒有資料</string>
     <string name="message_no_internet_connection">請檢查網絡連線</string>
     <string name="message_no_passenger_notice">暫時沒有任何通告</string>
@@ -70,10 +77,16 @@
     <string name="message_reminder_auto_refresh">提示：每分鐘會自動更新</string>
     <string name="message_remove_from_search_history">從搜尋記錄中移除</string>
     <string name="message_remove_from_favourite">從記錄中移除</string>
+    <string name="message_request_hide_ad">收到! 除咗設定嗰頁，其他廣告都隱藏晒</string>
+    <string name="message_request_hide_ad_again">除咗設定嗰頁，其他廣告都已經隱藏晒，唔洗講咁多次!</string>
+    <string name="message_request_show_ad">所有廣告都唔再隱藏喇 :)</string>
     <string name="message_route_not_support_eta">本站沒有抵站時間預報服務</string>
     <string name="message_total_routes">(共 %s 條路線)</string>
 
-    <string name="url_app">http://buseta.alvinhkh.com</string>
-    <string name="url_developer">http://www.alvinhkh.com</string>
+    <string name="url_app" translatable="false">http://buseta.alvinhkh.com</string>
+    <string name="url_developer" translatable="false">http://www.alvinhkh.com</string>
+
+    <string name="ad_banner_unit_id" translatable="false">ca-app-pub-6262559170277485/9622928959</string>
+    <string name="ad_test_device" translatable="false">7B806BF34E88BA94C952B4C63569BED1</string>
 
 </resources>

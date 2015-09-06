@@ -14,12 +14,28 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <FrameLayout
-        android:id="@+id/fragment_container"
-        tools:layout="@layout/fragment_main"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/AppBar">
-    </FrameLayout>
+        android:layout_below="@id/AppBar"
+        android:orientation="vertical"
+        android:baselineAligned="false">
+
+        <FrameLayout
+            android:id="@+id/adView_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:background="@color/dim_foreground_material_dark"
+            android:visibility="gone" />
+
+        <FrameLayout
+            android:id="@+id/fragment_container"
+            tools:layout="@layout/fragment_main"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+    </LinearLayout>
 
 </RelativeLayout>

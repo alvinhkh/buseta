@@ -6,9 +6,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
 import android.graphics.Color;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -27,6 +29,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.FilterQueryProvider;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -43,25 +46,27 @@ import com.alvinhkh.buseta.view.fragment.RouteBoundFragment;
 import com.alvinhkh.buseta.view.fragment.RouteNewsFragment;
 import com.alvinhkh.buseta.view.fragment.RouteStopFragment;
 import com.alvinhkh.buseta.preference.SettingsActivity;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
 import com.koushikdutta.ion.Ion;
 
 public class MainActivity extends AppCompatActivity
-        implements SearchView.OnQueryTextListener,
-        SearchView.OnSuggestionListener,
-        FilterQueryProvider {
+        implements SharedPreferences.OnSharedPreferenceChangeListener,
+        SearchView.OnQueryTextListener, SearchView.OnSuggestionListener, FilterQueryProvider {
 
     private static final String TAG = "MainActivity";
 
-    SharedPreferences mPrefs;
-
-    // SearchView Suggestion, reference: http://stackoverflow.com/a/13773625
-    private SuggestionsDatabase mDatabase;
+    private SharedPreferences mPrefs;
+    private SuggestionsDatabase mDatabase; // SearchView Suggestion, reference: http://stackoverflow.com/a/13773625
     private MenuItem mSearchMenuItem;
     private SearchView mSearchView;
     private SuggestionSimpleCursorAdapter mAdapter;
     private Cursor mCursor;
     private UpdateSuggestionReceiver mReceiver;
     private Snackbar mSnackbar;
+    private AdView mAdView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +75,8 @@ public class MainActivity extends AppCompatActivity
 
         mDatabase = new SuggestionsDatabase(getApplicationContext());
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        // Set up a listener whenever a key changes
+        PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).registerOnSharedPreferenceChangeListener(this);
         // Set Toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -148,6 +155,21 @@ public class MainActivity extends AppCompatActivity
             startService(intent);
         }
 
+        createAdView();
+    }
+
+    @Override
+     public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        createAdView();
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sp, String key) {
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        if (key.matches(Constants.PREF.AD_HIDE)) {
+            createAdView();
+        }
     }
 
     @Override
@@ -192,16 +214,27 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if (null != mAdView)
+            mAdView.resume();
+    }
+
+    @Override
     protected void onPause() {
         // hide the keyboard in order to avoid getTextBeforeCursor on inactive InputConnection
         InputMethodManager inputMethodManager =
                 (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.hideSoftInputFromWindow(new View(this).getWindowToken(), 0);
+        if (null != mAdView)
+            mAdView.pause();
         super.onPause();
     }
 
     @Override
     public void onDestroy() {
+        if (null != mAdView)
+            mAdView.destroy();
         if (null != mReceiver)
             unregisterReceiver(mReceiver);
         if (null != mDatabase)
@@ -253,8 +286,42 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onQueryTextSubmit(String query) {
+        if (null == query) return false;
         collapseSearchView();
-        showRouteBoundFragment(query);
+        boolean showMessage = true;
+        if (query.toUpperCase().equals(Constants.PREF.AD_KEY) ||
+                query.toUpperCase().equals(Constants.PREF.AD_SHOW)) {
+            Boolean hidden = mPrefs.getBoolean(Constants.PREF.AD_HIDE, false);
+            SharedPreferences.Editor editor = mPrefs.edit();
+            editor.putBoolean(Constants.PREF.AD_HIDE,
+                    query.equals(Constants.PREF.AD_KEY) ? true : false);
+            editor.apply();
+            createAdView();
+            if (showMessage) {
+                // show snack bar
+                int stringId = R.string.message_request_hide_ad;
+                if (query.equals(Constants.PREF.AD_SHOW))
+                    stringId = R.string.message_request_show_ad;
+                if (hidden && query.equals(Constants.PREF.AD_KEY))
+                    stringId = R.string.message_request_hide_ad_again;
+                final Snackbar snackbar = Snackbar.make(findViewById(R.id.coordinator) == null ?
+                                findViewById(android.R.id.content) : findViewById(R.id.coordinator),
+                        stringId, Snackbar.LENGTH_INDEFINITE);
+                TextView tv = (TextView)
+                        snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
+                tv.setTextColor(Color.WHITE);
+                snackbar.show();
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (snackbar == null) return;
+                        snackbar.dismiss();
+                    }
+                }, 5000);
+            }
+        } else {
+            showRouteBoundFragment(query);
+        }
         return true;
     }
 
@@ -276,6 +343,43 @@ public class MainActivity extends AppCompatActivity
     private void collapseSearchView() {
         if (null != mSearchMenuItem)
             mSearchMenuItem.collapseActionView();
+    }
+
+    private void createAdView() {
+        // Admob
+        final FrameLayout adViewContainer = (FrameLayout) findViewById(R.id.adView_container);
+        if (null == mPrefs) {
+            adViewContainer.setVisibility(View.VISIBLE);
+            return;
+        }
+        adViewContainer.setVisibility(View.GONE);
+        if (null != mAdView) {
+            mAdView.destroy();
+            mAdView.setVisibility(View.GONE);
+        }
+        boolean hideAdView = mPrefs.getBoolean(Constants.PREF.AD_HIDE, false);
+        if (!hideAdView) {
+            mAdView = new AdView(this);
+            mAdView.setAdUnitId(getString(R.string.ad_banner_unit_id));
+            mAdView.setAdSize(AdSize.SMART_BANNER);
+            mAdView.setAdListener(new AdListener() {
+                @Override
+                public void onAdLoaded() {
+                    adViewContainer.setVisibility(View.VISIBLE);
+                }
+
+                @Override
+                public void onAdFailedToLoad(int errorCode) {
+                    adViewContainer.setVisibility(View.VISIBLE);
+                }
+            });
+            adViewContainer.addView(mAdView);
+            AdRequest mAdRequest = new AdRequest.Builder()
+                    .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)  // All emulators
+                    .addTestDevice(getString(R.string.ad_test_device))
+                    .build();
+            mAdView.loadAd(mAdRequest);
+        }
     }
 
     public void showRouteBoundFragment(String _route_no){

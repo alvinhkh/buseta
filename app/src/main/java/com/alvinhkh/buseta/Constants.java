@@ -47,6 +47,9 @@ public class Constants {
         String REQUEST_TOKEN = "com.alvinhkh.buseta.REQUEST_TOKEN";
         String REQUEST_API_ETA = "com.alvinhkh.buseta.REQUEST_API_ETA";
         String REQUEST_API_INFO = "com.alvinhkh.buseta.REQUEST_API_INFO";
+        String AD_KEY = "I HATE ADS!";
+        String AD_SHOW = "SHOW ME";
+        String AD_HIDE = "com.alvinhkh.buseta.AD_HIDE";
     }
 
 }

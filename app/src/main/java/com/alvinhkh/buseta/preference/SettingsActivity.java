@@ -7,14 +7,16 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
-import android.preference.MultiSelectListPreference;
 import android.preference.Preference;
 
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 
@@ -22,22 +24,32 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.preference.ListPreference;
 import android.preference.PreferenceGroup;
 import android.preference.SwitchPreference;
+import android.provider.Settings;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.Utils;
 import com.alvinhkh.buseta.database.SuggestionsDatabase;
 import com.alvinhkh.buseta.service.UpdateSuggestionService;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
 
 public class SettingsActivity extends AppCompatPreferenceActivity {
 
     private static final String TAG = "SettingsActivity";
+
+    private AdView mAdView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +61,66 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         getFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, new SettingsFragment())
                 .commit();
+
+        createAdView();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        createAdView();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (null != mAdView)
+            mAdView.resume();
+    }
+
+    @Override
+    protected void onPause() {
+        if (null != mAdView)
+            mAdView.pause();
+        super.onPause();
+    }
+
+    private void createAdView() {
+        // Admob
+        final FrameLayout adViewContainer = (FrameLayout) findViewById(R.id.adView_container);
+        adViewContainer.setVisibility(View.GONE);
+        if (null != mAdView) {
+            mAdView.destroy();
+            mAdView.setVisibility(View.GONE);
+        }
+        boolean hideAdView = false;
+        if (!hideAdView) {
+            mAdView = new AdView(this);
+            mAdView.setAdUnitId(getString(R.string.ad_banner_unit_id));
+            mAdView.setAdSize(AdSize.SMART_BANNER);
+            mAdView.setAdListener(new AdListener() {
+                @Override
+                public void onAdLoaded() {
+                    adViewContainer.setVisibility(View.VISIBLE);
+                }
+
+                @Override
+                public void onAdFailedToLoad(int errorCode) {
+                    adViewContainer.setVisibility(View.GONE);
+                }
+            });
+            adViewContainer.addView(mAdView);
+            AdRequest mAdRequest = new AdRequest.Builder()
+                    .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)  // All emulators
+                    .addTestDevice(getString(R.string.ad_test_device))
+                    .build();
+            mAdView.loadAd(mAdRequest);
+            // get device md5 id
+            String android_id = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
+            String deviceId = Utils.md5(android_id).toUpperCase();
+            boolean isTestDevice = mAdRequest.isTestDevice(this);
+            Log.v(TAG, "is Admob Test Device ? " + deviceId + " " + isTestDevice);
+        }
     }
 
     public static class SettingsFragment extends PreferenceFragment implements
@@ -92,7 +164,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                                     intent.putExtra(Constants.MESSAGE.HISTORY_UPDATED, true);
                                     mActivity.sendBroadcast(intent);
                                     Snackbar snackbar = Snackbar.make(
-                                            mActivity.findViewById(R.id.fragment_container),
+                                            mActivity.findViewById(android.R.id.content),
                                             mDatabase.clearHistory() ?
                                                     R.string.message_clear_search_history_success :
                                                     R.string.message_clear_search_history_fail,
@@ -117,6 +189,25 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     return true;
                 }
             });
+            PreferenceCategory categoryDebug = (PreferenceCategory) findPreference("category_debug");
+            // hide ad
+            SwitchPreference hideAd = (SwitchPreference) getPreferenceScreen().findPreference(Constants.PREF.AD_HIDE);
+            hideAd.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    SwitchPreference switchPref = (SwitchPreference) preference;
+                    if (switchPref.isChecked()) {
+                        final Snackbar snackbar = Snackbar.make(mActivity.findViewById(android.R.id.content),
+                                R.string.message_hide_ad, Snackbar.LENGTH_LONG);
+                        TextView tv = (TextView)
+                                snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
+                        tv.setTextColor(Color.WHITE);
+                        snackbar.show();
+                    }
+                    return true;
+                }
+            });
+            categoryDebug.removePreference(hideAd); // comment this line to show the preference
             // App Name
             Preference appName = getPreferenceScreen().findPreference("app_name");
             appName.setTitle(getString(R.string.title_app_name, getString(R.string.app_name)));
@@ -125,6 +216,35 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             int versionCode = BuildConfig.VERSION_CODE;
             String versionName = BuildConfig.VERSION_NAME;
             appVersion.setSummary(getString(R.string.summary_app_version, versionName, versionCode));
+            // hide ad tips
+            appVersion.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                int clickCounter = 0;
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    clickCounter++;
+                    if (clickCounter == 3 || clickCounter == 6 || clickCounter >= 10) {
+                        String msg;
+                        if (clickCounter >= 10)
+                            msg = getString(R.string.message_hide_ad_tip, Constants.PREF.AD_KEY, Constants.PREF.AD_SHOW);
+                        else
+                            msg = getString(R.string.message_hide_ad_smile);
+                        final Snackbar snackbar = Snackbar.make(mActivity.findViewById(android.R.id.content),
+                                msg, Snackbar.LENGTH_INDEFINITE);
+                        TextView tv = (TextView)
+                                snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
+                        tv.setTextColor(Color.WHITE);
+                        snackbar.show();
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (snackbar == null) return;
+                                snackbar.dismiss();
+                            }
+                        }, 6000);
+                    }
+                    return true;
+                }
+            });
             // Developer
             Preference developer = getPreferenceScreen().findPreference("developer");
             developer.setSummary(getString(R.string.summary_developer) + " (" + getString(R.string.url_developer) + ")");
