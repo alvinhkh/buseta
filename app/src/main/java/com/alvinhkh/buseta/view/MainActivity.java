@@ -237,6 +237,8 @@ public class MainActivity extends AppCompatActivity
             mAdView.destroy();
         if (null != mReceiver)
             unregisterReceiver(mReceiver);
+        if (null != mCursor)
+            mCursor.close();
         if (null != mDatabase)
             mDatabase.close();
         Ion.getDefault(getBaseContext()).cancelAll(getBaseContext());

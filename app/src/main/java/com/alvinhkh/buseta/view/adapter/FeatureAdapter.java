@@ -15,7 +15,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
-import com.alvinhkh.buseta.database.FavouriteDatabase;
+import com.alvinhkh.buseta.database.FavouriteTable;
 import com.alvinhkh.buseta.holder.EtaAdapterHelper;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
@@ -95,15 +95,15 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
         mCursor_favourite.moveToPosition(position);
         // Load data from dataCursor and return it...
         RouteBound routeBound = new RouteBound();
-        routeBound.route_no = mCursor_favourite.getString(mCursor_favourite.getColumnIndex(FavouriteDatabase.COLUMN_ROUTE));
-        routeBound.route_bound = mCursor_favourite.getString(mCursor_favourite.getColumnIndex(FavouriteDatabase.COLUMN_BOUND));
-        routeBound.origin_tc = mCursor_favourite.getString(mCursor_favourite.getColumnIndex(FavouriteDatabase.COLUMN_ORIGIN));
-        routeBound.destination_tc = mCursor_favourite.getString(mCursor_favourite.getColumnIndex(FavouriteDatabase.COLUMN_DESTINATION));
+        routeBound.route_no = mCursor_favourite.getString(mCursor_favourite.getColumnIndex(FavouriteTable.COLUMN_ROUTE));
+        routeBound.route_bound = mCursor_favourite.getString(mCursor_favourite.getColumnIndex(FavouriteTable.COLUMN_BOUND));
+        routeBound.origin_tc = mCursor_favourite.getString(mCursor_favourite.getColumnIndex(FavouriteTable.COLUMN_ORIGIN));
+        routeBound.destination_tc = mCursor_favourite.getString(mCursor_favourite.getColumnIndex(FavouriteTable.COLUMN_DESTINATION));
         RouteStop routeStop = new RouteStop();
         routeStop.route_bound = routeBound;
-        routeStop.stop_seq = mCursor_favourite.getString(mCursor_favourite.getColumnIndex(FavouriteDatabase.COLUMN_STOP_SEQ));
-        routeStop.name_tc = mCursor_favourite.getString(mCursor_favourite.getColumnIndex(FavouriteDatabase.COLUMN_STOP_NAME));
-        routeStop.code = mCursor_favourite.getString(mCursor_favourite.getColumnIndex(FavouriteDatabase.COLUMN_STOP_CODE));
+        routeStop.stop_seq = mCursor_favourite.getString(mCursor_favourite.getColumnIndex(FavouriteTable.COLUMN_STOP_SEQ));
+        routeStop.name_tc = mCursor_favourite.getString(mCursor_favourite.getColumnIndex(FavouriteTable.COLUMN_STOP_NAME));
+        routeStop.code = mCursor_favourite.getString(mCursor_favourite.getColumnIndex(FavouriteTable.COLUMN_STOP_CODE));
         routeStop.favourite = true;
         Bundle extras = mCursor_favourite.getExtras();
         if (null != extras) {

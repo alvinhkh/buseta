@@ -1,12 +1,14 @@
 package com.alvinhkh.buseta.view.dialog;
 
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.Snackbar;
@@ -21,7 +23,8 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.database.FavouriteDatabase;
+import com.alvinhkh.buseta.database.FavouriteProvider;
+import com.alvinhkh.buseta.database.FavouriteTable;
 import com.alvinhkh.buseta.holder.EtaAdapterHelper;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.holder.RouteStopContainer;
@@ -61,7 +64,6 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
     private Boolean hideStar = false;
 
     private Cursor mCursor;
-    private FavouriteDatabase mDatabase;
     private UpdateEtaReceiver mReceiver;
 
     Handler mAutoRefreshHandler = new Handler();
@@ -85,7 +87,6 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
         mContext = RouteEtaDialog.this;
         // set database
         SettingsHelper settingsHelper = new SettingsHelper().parse(mContext.getApplicationContext());
-        mDatabase = new FavouriteDatabase(mContext);
         // get widgets
         iStop = (ImageView) findViewById(R.id.imageView);
         iStar = (ImageView) findViewById(R.id.star);
@@ -131,12 +132,26 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
             finish();
         }
         //
-        mCursor = mDatabase.getExist(object);
+        mCursor = getExistFavourite(object);
         favourite = (null != mCursor && mCursor.getCount() > 0);
         iStar.setImageResource(favourite ?
                 R.drawable.ic_star_black_48dp : R.drawable.ic_star_border_black_48dp);
         if (settingsHelper.getLoadStopImage())
             getStopImage();
+    }
+
+    private Cursor getExistFavourite(RouteStop object) {
+        return getContentResolver().query(FavouriteProvider.CONTENT_URI,
+                null,
+                FavouriteTable.COLUMN_ROUTE + " =?" +
+                        " AND " + FavouriteTable.COLUMN_BOUND + " =?" +
+                        " AND " + FavouriteTable.COLUMN_STOP_CODE + " =?",
+                new String[] {
+                        object.route_bound.route_no,
+                        object.route_bound.route_bound,
+                        object.code
+                },
+                FavouriteTable.COLUMN_DATE + " DESC");
     }
 
     @Override
@@ -152,16 +167,37 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
                 snackbar.show();
                 break;
             case R.id.star:
-                if (null == mDatabase || null == object || null == object.route_bound) break;
-                mCursor = mDatabase.getExist(object);
+                if (null == object || null == object.route_bound) break;
+                if (null != mCursor) mCursor.close();
+                mCursor = getExistFavourite(object);
                 Boolean org;
                 if (null != mCursor && mCursor.getCount() > 0) {
                     // record exist
                     org = true;
-                    favourite = !mDatabase.delete(object);
+                    int rowDeleted = mContext.getContentResolver().delete(
+                            FavouriteProvider.CONTENT_URI,
+                            FavouriteTable.COLUMN_ROUTE + " = ?" +
+                                    " AND " + FavouriteTable.COLUMN_BOUND + " = ?" +
+                                    " AND " + FavouriteTable.COLUMN_STOP_CODE + " = ?",
+                            new String[] {
+                                    object.route_bound.route_no,
+                                    object.route_bound.route_bound,
+                                    object.code
+                            });
+                    favourite = !(rowDeleted > 0);
                 } else {
                     org = false;
-                    favourite = mDatabase.insertStop(object) > 0;
+                    ContentValues values = new ContentValues();
+                    values.put(FavouriteTable.COLUMN_ROUTE, object.route_bound.route_no);
+                    values.put(FavouriteTable.COLUMN_BOUND, object.route_bound.route_bound);
+                    values.put(FavouriteTable.COLUMN_ORIGIN, object.route_bound.origin_tc);
+                    values.put(FavouriteTable.COLUMN_DESTINATION, object.route_bound.destination_tc);
+                    values.put(FavouriteTable.COLUMN_STOP_SEQ, object.stop_seq);
+                    values.put(FavouriteTable.COLUMN_STOP_CODE, object.code);
+                    values.put(FavouriteTable.COLUMN_STOP_NAME, object.name_tc);
+                    values.put(FavouriteTable.COLUMN_DATE, String.valueOf(System.currentTimeMillis() / 1000L));
+                    Uri favUri = mContext.getContentResolver().insert(FavouriteProvider.CONTENT_URI, values);
+                    favourite = (favUri != null);
                 }
                 if (org != favourite)
                     iStar.startAnimation(animationRotate);
@@ -206,8 +242,6 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
             mAutoRefreshHandler.removeCallbacks(mAutoRefreshRunnable);
         if (null != mCursor)
             mCursor.close();
-        if (null != mDatabase)
-            mDatabase.close();
         Ion.getDefault(mContext).cancelAll(mContext);
         super.onDestroy();
     }

@@ -1,0 +1,48 @@
+package com.alvinhkh.buseta.database;
+
+import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
+
+public class FavouriteTable {
+
+    public final static String TABLE_NAME = "favourite";
+    public final static String COLUMN_ID = "_id";
+    public final static String COLUMN_DATE = "date";
+    public final static String COLUMN_ROUTE = "no";
+    public final static String COLUMN_BOUND = "bound";
+    public final static String COLUMN_ORIGIN = "origin";
+    public final static String COLUMN_DESTINATION = "destination";
+    public final static String COLUMN_STOP_SEQ = "stop_seq";
+    public final static String COLUMN_STOP_CODE = "stop_code";
+    public final static String COLUMN_STOP_NAME = "stop_name";
+
+    private static final String DATABASE_CREATE = "CREATE TABLE "
+            + TABLE_NAME
+            + "("
+            + COLUMN_ID + " INTEGER primary key autoincrement, "
+            + COLUMN_DATE + " TEXT not NULL, "
+            + COLUMN_ROUTE + " TEXT not NULL, "
+            + COLUMN_BOUND + " TEXT not NULL, "
+            + COLUMN_ORIGIN + " TEXT not NULL, "
+            + COLUMN_DESTINATION + " TEXT not NULL, "
+            + COLUMN_STOP_SEQ + " TEXT not NULL, "
+            + COLUMN_STOP_CODE + " TEXT not NULL, "
+            + COLUMN_STOP_NAME + " TEXT not NULL, "
+            + "UNIQUE (" + COLUMN_ROUTE + ", "
+            + COLUMN_BOUND + ", " + COLUMN_STOP_CODE
+            + ") ON CONFLICT REPLACE"
+            + ");";
+
+    public static void onCreate(SQLiteDatabase database) {
+        database.execSQL(DATABASE_CREATE);
+    }
+
+    public static void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        Log.w(FavouriteOpenHelper.class.getName(),
+                "Upgrading database from version " + oldVersion + " to "
+                        + newVersion + ", which will destroy all old data");
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
+        onCreate(db);
+    }
+
+}

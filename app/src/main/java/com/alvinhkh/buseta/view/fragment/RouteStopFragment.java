@@ -33,7 +33,8 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.database.FavouriteDatabase;
+import com.alvinhkh.buseta.database.FavouriteProvider;
+import com.alvinhkh.buseta.database.FavouriteTable;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.holder.RouteStopContainer;
@@ -81,7 +82,6 @@ public class RouteStopFragment extends Fragment
     private String etaApi = "";
     private String getRouteInfoApi = "";
     private Boolean fabHidden = true;
-    private FavouriteDatabase mDatabase;
     private SettingsHelper settingsHelper = null;
     private SharedPreferences mPrefs;
 
@@ -137,8 +137,6 @@ public class RouteStopFragment extends Fragment
                              final Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_routestop, container, false);
         mContext = super.getActivity();
-        // set database
-        mDatabase = new FavouriteDatabase(mContext);
         settingsHelper = new SettingsHelper().parse(mContext.getApplicationContext());
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext.getApplicationContext());
         // Get arguments
@@ -312,8 +310,6 @@ public class RouteStopFragment extends Fragment
             mProgressBar.setVisibility(View.GONE);
         if (null != mEmptyText)
             mEmptyText.setVisibility(View.GONE);
-        if (null != mDatabase)
-            mDatabase.close();
         if (null != mEtaHandler && null != mEtaRunnable)
             mEtaHandler.removeCallbacks(mEtaRunnable);
         if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
@@ -455,9 +451,10 @@ public class RouteStopFragment extends Fragment
                                     RouteStop routeStop = gson.fromJson(element.getAsJsonObject(), RouteStop.class);
                                     routeStop.route_bound = _routeBound;
                                     routeStop.stop_seq = String.valueOf(seq);
-                                    Cursor cursor = mDatabase.getExist(routeStop);
+                                    Cursor cursor = getExistFavourite(routeStop);
                                     routeStop.favourite = (null != cursor && cursor.getCount() > 0);
                                     mAdapter.add(routeStop);
+                                    cursor.close();
                                     seq++;
                                 }
                                 _id = result.get("id").getAsString();
@@ -485,6 +482,21 @@ public class RouteStopFragment extends Fragment
                     }
                 });
 
+    }
+
+    private Cursor getExistFavourite(RouteStop object) {
+        if (null == mContext) return null;
+        return mContext.getContentResolver().query(FavouriteProvider.CONTENT_URI,
+                null,
+                FavouriteTable.COLUMN_ROUTE + " =?" +
+                        " AND " + FavouriteTable.COLUMN_BOUND + " =?" +
+                        " AND " + FavouriteTable.COLUMN_STOP_CODE + " =?",
+                new String[] {
+                        object.route_bound.route_no,
+                        object.route_bound.route_bound,
+                        object.code
+                },
+                FavouriteTable.COLUMN_DATE + " DESC");
     }
 
     private void switchGetRouteInfoApi() {

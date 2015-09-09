@@ -68,6 +68,12 @@
             android:name=".service.UpdateSuggestionService"
             android:enabled="true" />
 
+        <!-- Content Provider -->
+        <provider
+            android:name=".database.FavouriteProvider"
+            android:authorities="com.alvinhkh.buseta.FavouriteProvider"
+            android:exported="true" />
+
     </application>
 
 </manifest>
