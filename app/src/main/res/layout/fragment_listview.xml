@@ -10,7 +10,11 @@
         android:layout_height="match_parent"
         android:drawSelectorOnTop="false"
         android:fastScrollAlwaysVisible="false"
-        android:fastScrollEnabled="true"
+        android:fastScrollEnabled="false"
+        android:clipToPadding="false"
+        android:scrollbarStyle="outsideInset"
+        android:overScrollFooter="@android:color/transparent"
+        android:footerDividersEnabled="false"
         android:visibility="gone" />
 
     <LinearLayout
