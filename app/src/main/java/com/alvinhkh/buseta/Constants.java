@@ -22,7 +22,7 @@ public class Constants {
     }
 
     public interface ROUTES {
-        Integer VERSION = 2;
+        Integer VERSION = 3;
         String SUGGESTION_UPDATE = "com.alvinhkh.buseta.ROUTES.SUGGESTION_UPDATE";
         String MESSAGE_ID = "com.alvinhkh.buseta.ROUTES.MESSAGE_ID";
     }
