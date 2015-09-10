@@ -67,12 +67,28 @@
         <service
             android:name=".service.UpdateSuggestionService"
             android:enabled="true" />
+        <service
+            android:name=".service.EtaWidgetService"
+            android:permission="android.permission.BIND_REMOTEVIEWS"
+            android:enabled="true" />
 
         <!-- Content Provider -->
         <provider
             android:name=".database.FavouriteProvider"
             android:authorities="com.alvinhkh.buseta.FavouriteProvider"
             android:exported="true" />
+
+        <!-- Widget -->
+        <receiver android:name=".view.EtaWidgetProvider" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.appwidget.action.APPWIDGET_DELETED" />
+                <action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
+                <action android:name="android.appwidget.action.APPWIDGET_DISABLED" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider"
+                android:resource="@xml/widget_eta_info" />
+        </receiver>
 
     </application>
 
