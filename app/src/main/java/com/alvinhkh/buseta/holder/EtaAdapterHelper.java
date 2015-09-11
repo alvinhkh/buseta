@@ -9,10 +9,11 @@ import com.alvinhkh.buseta.R;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 public class EtaAdapterHelper {
 
-    public static SimpleDateFormat display_format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+    public static SimpleDateFormat display_format = new SimpleDateFormat("HH:mm:ss dd/MM", Locale.US);
 
     public static Date serverDate(RouteStop object) {
         Date server_date = null;
@@ -20,7 +21,7 @@ public class EtaAdapterHelper {
             if (object.eta.api_version == 2) {
                 server_date = new Date(Long.parseLong(object.eta.server_time));
             } else if (object.eta.api_version == 1) {
-                SimpleDateFormat date_format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                SimpleDateFormat date_format = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.US);
                 try {
                     server_date = date_format.parse(object.eta.server_time);
                 } catch (ParseException ep) {
