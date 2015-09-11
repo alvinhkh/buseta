@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 
 import android.content.ContentProvider;
-import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
@@ -17,24 +16,35 @@ public class FavouriteProvider extends ContentProvider {
 
     private FavouriteOpenHelper mHelper;
 
-    // used for the UriMatcher
-    private static final int FAV = 10;
-    private static final int FAV_ID = 20;
     private static final String AUTHORITY = "com.alvinhkh.buseta.FavouriteProvider";
-
-    private static final String BASE_PATH = "favs";
+    private static final String BASE_PATH_LEFT_JOIN = "left_join";
     public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY
-            + "/" + BASE_PATH);
+            + "/" + BASE_PATH_LEFT_JOIN);
+    private static final String BASE_PATH_RIGHT_JOIN = "right_join";
+    public static final Uri CONTENT_URI_ETA_JOIN = Uri.parse("content://" + AUTHORITY
+            + "/" + BASE_PATH_RIGHT_JOIN);
+    private static final String BASE_PATH_FAV = "favs";
+    public static final Uri CONTENT_URI_FAV = Uri.parse("content://" + AUTHORITY
+            + "/" + BASE_PATH_FAV);
+    private static final String BASE_PATH_ETA = "etas";
+    public static final Uri CONTENT_URI_ETA = Uri.parse("content://" + AUTHORITY
+            + "/" + BASE_PATH_ETA);
 
-    public static final String CONTENT_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE
-            + "/favs";
-    public static final String CONTENT_ITEM_TYPE = ContentResolver.CURSOR_ITEM_BASE_TYPE
-            + "/fav";
-
+    // used for the UriMatcher
+    private static final int FAV_FIRST = 10;
+    private static final int ETA_FIRST = 11;
+    private static final int FAV = 20;
+    private static final int FAV_ID = 21;
+    private static final int ETA = 30;
+    private static final int ETA_ID = 31;
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     static {
-        sURIMatcher.addURI(AUTHORITY, BASE_PATH, FAV);
-        sURIMatcher.addURI(AUTHORITY, BASE_PATH + "/#", FAV_ID);
+        sURIMatcher.addURI(AUTHORITY, BASE_PATH_LEFT_JOIN, FAV_FIRST);
+        sURIMatcher.addURI(AUTHORITY, BASE_PATH_RIGHT_JOIN, ETA_FIRST);
+        sURIMatcher.addURI(AUTHORITY, BASE_PATH_FAV, FAV);
+        sURIMatcher.addURI(AUTHORITY, BASE_PATH_FAV + "/#", FAV_ID);
+        sURIMatcher.addURI(AUTHORITY, BASE_PATH_ETA, ETA);
+        sURIMatcher.addURI(AUTHORITY, BASE_PATH_ETA + "/#", ETA_ID);
     }
 
     @Override
@@ -49,21 +59,52 @@ public class FavouriteProvider extends ContentProvider {
 
         // Uisng SQLiteQueryBuilder instead of query() method
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
-
         // check if the caller has requested a column which does not exists
         checkColumns(projection);
 
-        // Set the table
-        queryBuilder.setTables(FavouriteTable.TABLE_NAME);
-
         int uriType = sURIMatcher.match(uri);
         switch (uriType) {
+            case FAV_FIRST:
+                // Set the table
+                queryBuilder.setTables(FavouriteTable.TABLE_NAME +
+                        " LEFT JOIN " + EtaTable.TABLE_NAME +
+                        " ON (" +
+                        FavouriteTable.COLUMN_ROUTE + "=" + EtaTable.COLUMN_ROUTE + " AND " +
+                        FavouriteTable.COLUMN_BOUND + "=" + EtaTable.COLUMN_BOUND + " AND " +
+                        FavouriteTable.COLUMN_STOP_SEQ + "=" + EtaTable.COLUMN_STOP_SEQ + " AND " +
+                        FavouriteTable.COLUMN_STOP_CODE + "=" + EtaTable.COLUMN_STOP_CODE +
+                        ")");
+                break;
+            case ETA_FIRST:
+                // Set the table
+                queryBuilder.setTables(EtaTable.TABLE_NAME +
+                        " LEFT JOIN " + FavouriteTable.TABLE_NAME +
+                        " ON (" +
+                        FavouriteTable.COLUMN_ROUTE + "=" + EtaTable.COLUMN_ROUTE + " AND " +
+                        FavouriteTable.COLUMN_BOUND + "=" + EtaTable.COLUMN_BOUND + " AND " +
+                        FavouriteTable.COLUMN_STOP_SEQ + "=" + EtaTable.COLUMN_STOP_SEQ + " AND " +
+                        FavouriteTable.COLUMN_STOP_CODE + "=" + EtaTable.COLUMN_STOP_CODE +
+                        ")");
+                break;
             case FAV:
+                // Set the table
+                queryBuilder.setTables(FavouriteTable.TABLE_NAME);
+                break;
+            case ETA:
+                // Set the table
+                queryBuilder.setTables(EtaTable.TABLE_NAME);
                 break;
             case FAV_ID:
+                // Set the table
+                queryBuilder.setTables(FavouriteTable.TABLE_NAME);
                 // adding the ID to the original query
-                queryBuilder.appendWhere(FavouriteTable.COLUMN_ID + "="
-                        + uri.getLastPathSegment());
+                queryBuilder.appendWhere(FavouriteTable.COLUMN_ID + "=" + uri.getLastPathSegment());
+                break;
+            case ETA_ID:
+                // Set the table
+                queryBuilder.setTables(EtaTable.TABLE_NAME);
+                // adding the ID to the original query
+                queryBuilder.appendWhere(EtaTable.COLUMN_ID + "=" + uri.getLastPathSegment());
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -87,24 +128,47 @@ public class FavouriteProvider extends ContentProvider {
     public Uri insert(Uri uri, ContentValues values) {
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase sqlDB = mHelper.getWritableDatabase();
-        long id = 0;
+        long id;
         switch (uriType) {
             case FAV:
                 id = sqlDB.insert(FavouriteTable.TABLE_NAME, null, values);
+                break;
+            case ETA:
+                id = sqlDB.insert(EtaTable.TABLE_NAME, null, values);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
         getContext().getContentResolver().notifyChange(uri, null);
-        return Uri.parse(BASE_PATH + "/#" + id);
+        switch (uriType) {
+            case FAV:
+                return Uri.parse(BASE_PATH_FAV + "/#" + id);
+            case ETA:
+                return Uri.parse(BASE_PATH_ETA + "/#" + id);
+            default:
+                return null;
+        }
     }
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase sqlDB = mHelper.getWritableDatabase();
-        int rowsDeleted = 0;
+        int rowsDeleted;
         switch (uriType) {
+            case ETA_FIRST:
+                rowsDeleted = sqlDB.delete(EtaTable.TABLE_NAME, EtaTable.COLUMN_ID +
+                                " IN ( " + "SELECT " + EtaTable.COLUMN_ID + " FROM " +
+                                EtaTable.TABLE_NAME +
+                                " LEFT JOIN " + FavouriteTable.TABLE_NAME +
+                                " ON (" +
+                                FavouriteTable.COLUMN_ROUTE + "=" + EtaTable.COLUMN_ROUTE + " AND " +
+                                FavouriteTable.COLUMN_BOUND + "=" + EtaTable.COLUMN_BOUND + " AND " +
+                                FavouriteTable.COLUMN_STOP_SEQ + "=" + EtaTable.COLUMN_STOP_SEQ + " AND " +
+                                FavouriteTable.COLUMN_STOP_CODE + "=" + EtaTable.COLUMN_STOP_CODE +
+                                ")" + " WHERE " + FavouriteTable.COLUMN_ID + " IS NULL)",
+                        null);
+                break;
             case FAV:
                 rowsDeleted = sqlDB.delete(FavouriteTable.TABLE_NAME, selection,
                         selectionArgs);
@@ -122,6 +186,23 @@ public class FavouriteProvider extends ContentProvider {
                             selectionArgs);
                 }
                 break;
+            case ETA:
+                rowsDeleted = sqlDB.delete(EtaTable.TABLE_NAME, selection,
+                        selectionArgs);
+                break;
+            case ETA_ID:
+                id = uri.getLastPathSegment();
+                if (TextUtils.isEmpty(selection)) {
+                    rowsDeleted = sqlDB.delete(EtaTable.TABLE_NAME,
+                            EtaTable.COLUMN_ID + "=" + id,
+                            null);
+                } else {
+                    rowsDeleted = sqlDB.delete(EtaTable.TABLE_NAME,
+                            EtaTable.COLUMN_ID + "=" + id
+                                    + " and " + selection,
+                            selectionArgs);
+                }
+                break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
@@ -135,7 +216,7 @@ public class FavouriteProvider extends ContentProvider {
 
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase sqlDB = mHelper.getWritableDatabase();
-        int rowsUpdated = 0;
+        int rowsUpdated;
         switch (uriType) {
             case FAV:
                 rowsUpdated = sqlDB.update(FavouriteTable.TABLE_NAME,
@@ -159,6 +240,28 @@ public class FavouriteProvider extends ContentProvider {
                             selectionArgs);
                 }
                 break;
+            case ETA:
+                rowsUpdated = sqlDB.update(EtaTable.TABLE_NAME,
+                        values,
+                        selection,
+                        selectionArgs);
+                break;
+            case ETA_ID:
+                id = uri.getLastPathSegment();
+                if (TextUtils.isEmpty(selection)) {
+                    rowsUpdated = sqlDB.update(EtaTable.TABLE_NAME,
+                            values,
+                            EtaTable.COLUMN_ID + "=" + id,
+                            null);
+                } else {
+                    rowsUpdated = sqlDB.update(EtaTable.TABLE_NAME,
+                            values,
+                            EtaTable.COLUMN_ID + "=" + id
+                                    + " and "
+                                    + selection,
+                            selectionArgs);
+                }
+                break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
@@ -176,11 +279,23 @@ public class FavouriteProvider extends ContentProvider {
                 FavouriteTable.COLUMN_DESTINATION,
                 FavouriteTable.COLUMN_STOP_SEQ,
                 FavouriteTable.COLUMN_STOP_CODE,
-                FavouriteTable.COLUMN_STOP_NAME
+                FavouriteTable.COLUMN_STOP_NAME,
+
+                EtaTable.COLUMN_ID,
+                EtaTable.COLUMN_DATE,
+                EtaTable.COLUMN_ROUTE,
+                EtaTable.COLUMN_BOUND,
+                EtaTable.COLUMN_STOP_SEQ,
+                EtaTable.COLUMN_STOP_CODE,
+                EtaTable.COLUMN_ETA_API,
+                EtaTable.COLUMN_ETA_TIME,
+                EtaTable.COLUMN_ETA_EXPIRE,
+                EtaTable.COLUMN_SERVER_TIME,
+                EtaTable.COLUMN_UPDATED
         };
         if (projection != null) {
-            HashSet<String> requestedColumns = new HashSet<String>(Arrays.asList(projection));
-            HashSet<String> availableColumns = new HashSet<String>(Arrays.asList(available));
+            HashSet<String> requestedColumns = new HashSet<>(Arrays.asList(projection));
+            HashSet<String> availableColumns = new HashSet<>(Arrays.asList(available));
             // check if all columns which are requested are available
             if (!availableColumns.containsAll(requestedColumns)) {
                 throw new IllegalArgumentException("Unknown columns in projection");

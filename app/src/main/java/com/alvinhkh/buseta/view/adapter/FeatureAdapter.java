@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
-import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
@@ -15,11 +14,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
+import com.alvinhkh.buseta.database.EtaTable;
 import com.alvinhkh.buseta.database.FavouriteTable;
 import com.alvinhkh.buseta.holder.EtaAdapterHelper;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
-import com.alvinhkh.buseta.holder.RouteStopContainer;
+import com.alvinhkh.buseta.holder.RouteStopETA;
 import com.alvinhkh.buseta.view.MainActivity;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RecyclerViewHolder;
@@ -30,7 +30,6 @@ import com.alvinhkh.buseta.view.dialog.RouteEtaDialog;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,7 +48,6 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
     private Activity mActivity;
     private Cursor mCursor_history;
     private Cursor mCursor_favourite;
-    private ArrayList<RouteStopContainer> routeStopList = new ArrayList<>();
 
     public FeatureAdapter(Activity activity, Cursor cursor_history, Cursor cursor_favourite) {
         mActivity = activity;
@@ -83,7 +81,6 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
     public Cursor swapFavouriteCursor(Cursor cursor) {
         if (mCursor_favourite == cursor)
             return null;
-        routeStopList.clear();
         Cursor oldCursor = mCursor_favourite;
         this.mCursor_favourite = cursor;
         if (cursor != null)
@@ -91,39 +88,39 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
         return oldCursor;
     }
 
+    private String getFavouriteColumnString(Cursor cursor, String column) {
+        int index = cursor.getColumnIndex(column);
+        return cursor.isNull(index) ? "" : cursor.getString(index);
+    }
+
     public RouteStop getFavouriteItem(int position) {
         mCursor_favourite.moveToPosition(position);
         // Load data from dataCursor and return it...
         RouteBound routeBound = new RouteBound();
-        routeBound.route_no = mCursor_favourite.getString(mCursor_favourite.getColumnIndex(FavouriteTable.COLUMN_ROUTE));
-        routeBound.route_bound = mCursor_favourite.getString(mCursor_favourite.getColumnIndex(FavouriteTable.COLUMN_BOUND));
-        routeBound.origin_tc = mCursor_favourite.getString(mCursor_favourite.getColumnIndex(FavouriteTable.COLUMN_ORIGIN));
-        routeBound.destination_tc = mCursor_favourite.getString(mCursor_favourite.getColumnIndex(FavouriteTable.COLUMN_DESTINATION));
+        routeBound.route_no = getFavouriteColumnString(mCursor_favourite, FavouriteTable.COLUMN_ROUTE);
+        routeBound.route_bound = getFavouriteColumnString(mCursor_favourite, FavouriteTable.COLUMN_BOUND);
+        routeBound.origin_tc = getFavouriteColumnString(mCursor_favourite, FavouriteTable.COLUMN_ORIGIN);
+        routeBound.destination_tc = getFavouriteColumnString(mCursor_favourite, FavouriteTable.COLUMN_DESTINATION);
+        RouteStopETA routeStopETA = null;
+        String apiVersion = getFavouriteColumnString(mCursor_favourite, EtaTable.COLUMN_ETA_API);
+        if (null != apiVersion && !apiVersion.equals("")) {
+            routeStopETA = new RouteStopETA();
+            routeStopETA.api_version = Integer.valueOf(apiVersion);
+            routeStopETA.seq = getFavouriteColumnString(mCursor_favourite, EtaTable.COLUMN_STOP_SEQ);
+            routeStopETA.etas = getFavouriteColumnString(mCursor_favourite, EtaTable.COLUMN_ETA_TIME);
+            routeStopETA.expires = getFavouriteColumnString(mCursor_favourite, EtaTable.COLUMN_ETA_EXPIRE);
+            routeStopETA.server_time = getFavouriteColumnString(mCursor_favourite, EtaTable.COLUMN_SERVER_TIME);
+            routeStopETA.updated = getFavouriteColumnString(mCursor_favourite, EtaTable.COLUMN_UPDATED);
+        }
         RouteStop routeStop = new RouteStop();
         routeStop.route_bound = routeBound;
-        routeStop.stop_seq = mCursor_favourite.getString(mCursor_favourite.getColumnIndex(FavouriteTable.COLUMN_STOP_SEQ));
-        routeStop.name_tc = mCursor_favourite.getString(mCursor_favourite.getColumnIndex(FavouriteTable.COLUMN_STOP_NAME));
-        routeStop.code = mCursor_favourite.getString(mCursor_favourite.getColumnIndex(FavouriteTable.COLUMN_STOP_CODE));
+        routeStop.stop_seq = getFavouriteColumnString(mCursor_favourite, FavouriteTable.COLUMN_STOP_SEQ);
+        routeStop.name_tc = getFavouriteColumnString(mCursor_favourite, FavouriteTable.COLUMN_STOP_NAME);
+        routeStop.code = getFavouriteColumnString(mCursor_favourite, FavouriteTable.COLUMN_STOP_CODE);
         routeStop.favourite = true;
-        Bundle extras = mCursor_favourite.getExtras();
-        if (null != extras) {
-            Boolean etaUpdated = extras.getBoolean(Constants.MESSAGE.ETA_UPDATED, false);
-            Boolean rotated = extras.getBoolean(Constants.MESSAGE.STATE_UPDATED, false);
-            ArrayList<RouteStopContainer> newObjects = extras.getParcelableArrayList(Constants.BUNDLE.STOP_OBJECTS);
-            if (newObjects != null)
-                routeStopList = newObjects;
-            if (etaUpdated || rotated)
-            for (int i = 0; i < routeStopList.size(); i++) {
-                RouteStop newObject = routeStopList.get(i).routeStop;
-                int listPosition = routeStopList.get(i).position;
-                if (null != newObject && listPosition == position) {
-                    routeStop.eta = newObject.eta;
-                    routeStop.eta_loading = newObject.eta_loading;
-                    routeStop.eta_fail = newObject.eta_fail;
-                }
-            }
-
-        }
+        routeStop.eta = routeStopETA;
+        routeStop.eta_loading = getFavouriteColumnString(mCursor_favourite, EtaTable.COLUMN_LOADING).equals("true");
+        routeStop.eta_fail = getFavouriteColumnString(mCursor_favourite, EtaTable.COLUMN_FAIL).equals("true");
         return routeStop;
     }
 
@@ -233,11 +230,9 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
         if (viewType == ITEM_VIEW_TYPE_FAVOURITE) {
-            View v = LayoutInflater.
-                    from(viewGroup.getContext()).
+            View v = LayoutInflater.from(viewGroup.getContext()).
                     inflate(R.layout.card_favourite, viewGroup, false);
-
-            ViewHolder vh = new FavouriteViewHolder(v, new RecyclerViewHolder.ViewHolderClicks() {
+            return new FavouriteViewHolder(v, new RecyclerViewHolder.ViewHolderClicks() {
                 private RouteStop getObject(View caller) {
                     TextView tRouteNo = (TextView) caller.findViewById(R.id.route_no);
                     TextView tRouteBound = (TextView) caller.findViewById(R.id.route_bound);
@@ -269,14 +264,11 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
                     Intent intent = new Intent(caller.getContext(), RouteEtaDialog.class);
                     intent.setAction(Intent.ACTION_VIEW);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.putExtra(Constants.BUNDLE.ITEM_POSITION, Integer.valueOf(routeStop.stop_seq));
                     intent.putExtra(Constants.BUNDLE.STOP_OBJECT, routeStop);
                     mActivity.startActivity(intent);
                 }
                 public boolean onLongClickView(View caller) {
                     if (null == mActivity) return false;
-                    TextView tPosition = (TextView) caller.findViewById(R.id.position);
-                    Integer position = Integer.valueOf(tPosition.getText().toString());
                     RouteStop routeStop = getObject(caller);
                     // Go to route stop fragment
                     // ((MainActivity) mActivity).showRouteBoundFragment(routeStop.route_bound.route_no);
@@ -286,20 +278,15 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
                     intent.setAction(Intent.ACTION_VIEW);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.putExtra(Constants.MESSAGE.HIDE_STAR, true);
-                    // intent.putExtra(Constants.BUNDLE.ITEM_POSITION, Integer.valueOf(routeStop.stop_seq));
-                    intent.putExtra(Constants.BUNDLE.ITEM_POSITION, position);
                     intent.putExtra(Constants.BUNDLE.STOP_OBJECT, routeStop);
-                    intent.putParcelableArrayListExtra(Constants.BUNDLE.STOP_OBJECTS, routeStopList);
                     mActivity.startActivity(intent);
                     return true;
                 }
             });
-            return vh;
         }
-        View v = LayoutInflater.
-                from(viewGroup.getContext()).
+        View v = LayoutInflater.from(viewGroup.getContext()).
                 inflate(R.layout.card_history, viewGroup, false);
-        ViewHolder vh = new HistoryViewHolder(v, new RecyclerViewHolder.ViewHolderClicks() {
+        return new HistoryViewHolder(v, new RecyclerViewHolder.ViewHolderClicks() {
             public void onClickView(View caller) {
                 TextView textView = (TextView) caller.findViewById(android.R.id.text1);
                 String _route_no = textView.getText().toString();
@@ -328,7 +315,6 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
                 return true;
             }
         });
-        return vh;
     }
 
     @Override

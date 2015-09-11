@@ -27,6 +27,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -39,6 +40,7 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.database.FavouriteProvider;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteNews;
 import com.alvinhkh.buseta.service.UpdateSuggestionService;
@@ -239,6 +241,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onDestroy() {
+        int rowsDeleted = getContentResolver().delete(FavouriteProvider.CONTENT_URI_ETA_JOIN, null, null);
+        Log.d(TAG, "Deleted ETA Records: " + rowsDeleted);
         if (null != mAdView)
             mAdView.destroy();
         if (null != mReceiver)
@@ -322,7 +326,6 @@ public class MainActivity extends AppCompatActivity
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        if (snackbar == null) return;
                         snackbar.dismiss();
                     }
                 }, 5000);
