@@ -1,6 +1,7 @@
 package com.alvinhkh.buseta.preference;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,7 +10,10 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.CheckBoxPreference;
@@ -26,6 +30,7 @@ import android.preference.PreferenceGroup;
 import android.preference.SwitchPreference;
 import android.provider.Settings;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -54,6 +59,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setTaskDescription(getString(R.string.app_name));
         setContentView(R.layout.activity_settings);
         setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
 
@@ -357,6 +363,17 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+    }
+
+    private void setTaskDescription(String title) {
+        // overview task
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+            ActivityManager.TaskDescription taskDesc =
+                    new ActivityManager.TaskDescription(title, bm,
+                            ContextCompat.getColor(this, R.color.primary_600));
+            setTaskDescription(taskDesc);
+        }
     }
 
 }

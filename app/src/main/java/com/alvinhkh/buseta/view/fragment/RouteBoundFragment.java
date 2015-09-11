@@ -1,15 +1,20 @@
 package com.alvinhkh.buseta.view.fragment;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -84,6 +89,8 @@ public class RouteBoundFragment extends Fragment
         // Set Database for inserting search history
         mDatabase = new SuggestionsDatabase(mContext);
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext.getApplicationContext());
+        // Overview task
+        setTaskDescription(_route_no + getString(R.string.interpunct) + getString(R.string.launcher_name));
         // Set Toolbar
         mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (null != mActionBar) {
@@ -220,6 +227,17 @@ public class RouteBoundFragment extends Fragment
         if (null != mSwipeRefreshLayout)
             mSwipeRefreshLayout.setRefreshing(true);
         getRouteBounds(_route_no);
+    }
+
+    private void setTaskDescription(String title) {
+        // overview task
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+            ActivityManager.TaskDescription taskDesc =
+                    new ActivityManager.TaskDescription(title, bm,
+                            ContextCompat.getColor(mContext, R.color.primary_600));
+            ((AppCompatActivity) mContext).setTaskDescription(taskDesc);
+        }
     }
 
     private void getRouteBounds(final String _route_no) {

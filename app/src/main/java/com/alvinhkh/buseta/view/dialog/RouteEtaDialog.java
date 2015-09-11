@@ -1,5 +1,6 @@
 package com.alvinhkh.buseta.view.dialog;
 
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -7,11 +8,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -85,6 +89,7 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
         setFinishOnTouchOutside(true);
         // get context
         mContext = RouteEtaDialog.this;
+        setTaskDescription(getString(R.string.launcher_name));
         // set database
         SettingsHelper settingsHelper = new SettingsHelper().parse(mContext.getApplicationContext());
         // get widgets
@@ -127,6 +132,9 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
             position = extras.getInt(Constants.BUNDLE.ITEM_POSITION, -1);
             object = extras.getParcelable(Constants.BUNDLE.STOP_OBJECT);
             list = extras.getParcelableArrayList(Constants.BUNDLE.STOP_OBJECTS);
+            // overview task
+            setTaskDescription(null == object || null == object.route_bound ? getString(R.string.launcher_name) :
+                    object.route_bound.route_no + getString(R.string.interpunct) + getString(R.string.launcher_name));
             parse();
         } else {
             finish();
@@ -138,20 +146,6 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
                 R.drawable.ic_star_black_48dp : R.drawable.ic_star_border_black_48dp);
         if (settingsHelper.getLoadStopImage())
             getStopImage();
-    }
-
-    private Cursor getExistFavourite(RouteStop object) {
-        return getContentResolver().query(FavouriteProvider.CONTENT_URI,
-                null,
-                FavouriteTable.COLUMN_ROUTE + " =?" +
-                        " AND " + FavouriteTable.COLUMN_BOUND + " =?" +
-                        " AND " + FavouriteTable.COLUMN_STOP_CODE + " =?",
-                new String[] {
-                        object.route_bound.route_no,
-                        object.route_bound.route_bound,
-                        object.code
-                },
-                FavouriteTable.COLUMN_DATE + " DESC");
     }
 
     @Override
@@ -281,6 +275,17 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
         startService(intent);
     }
 
+    private void setTaskDescription(String title) {
+        // overview task
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+            ActivityManager.TaskDescription taskDesc =
+                    new ActivityManager.TaskDescription(title, bm,
+                            ContextCompat.getColor(mContext, R.color.primary_600));
+            ((AppCompatActivity) mContext).setTaskDescription(taskDesc);
+        }
+    }
+
     private void sendUpdate() {
         Intent intent = new Intent(Constants.MESSAGE.STOP_UPDATED);
         intent.putExtra(Constants.MESSAGE.STOP_UPDATED, true);
@@ -289,7 +294,21 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
         intent.putParcelableArrayListExtra(Constants.BUNDLE.STOP_OBJECTS, list);
         getApplication().sendBroadcast(intent);
     }
-    
+
+    private Cursor getExistFavourite(RouteStop object) {
+        return getContentResolver().query(FavouriteProvider.CONTENT_URI,
+                null,
+                FavouriteTable.COLUMN_ROUTE + " =?" +
+                        " AND " + FavouriteTable.COLUMN_BOUND + " =?" +
+                        " AND " + FavouriteTable.COLUMN_STOP_CODE + " =?",
+                new String[] {
+                        object.route_bound.route_no,
+                        object.route_bound.route_bound,
+                        object.code
+                },
+                FavouriteTable.COLUMN_DATE + " DESC");
+    }
+
     private void parse() {
         if (null == object) {
             finish();
@@ -342,6 +361,13 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
             sb.append(etas[i]);
             String estimate = EtaAdapterHelper.etaEstimate(object, etas, i, server_date, null, null, null);
             sb.append(estimate);
+            if (i == 0) {
+                String text = etas[i].replaceAll(" ?　?預定班次", "");
+                setTaskDescription(null == object || null == object.route_bound ?
+                        getString(R.string.launcher_name) :
+                        text + " " + object.route_bound.route_no + " " + object.name_tc +
+                                getString(R.string.interpunct) + getString(R.string.launcher_name));
+            }
             if (i < etas.length - 1)
                 sb.append("\n");
         }

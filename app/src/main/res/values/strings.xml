@@ -20,6 +20,7 @@
     <string name="eta">到站時間預報</string>
     <string name="hint_enter_route">輸入路線&#8230;</string>
     <string name="hkd" translatable="false">$%s</string>
+    <string name="interpunct" translatable="false">\u00A0&#183;\u00A0</string>
     <string name="minutes">分鐘</string>
     <string name="now">現在</string>
     <string name="open_source_license">開放原始碼授權</string>

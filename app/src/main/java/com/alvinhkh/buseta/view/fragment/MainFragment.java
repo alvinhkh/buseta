@@ -1,14 +1,18 @@
 package com.alvinhkh.buseta.view.fragment;
 
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
@@ -16,6 +20,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -90,6 +95,8 @@ public class MainFragment extends Fragment
         }
         if (null == routeStopList)
             routeStopList = new ArrayList<RouteStopContainer>();
+        // Overview task
+        setTaskDescription(getString(R.string.launcher_name));
         // Toolbar
         mActionBar = ((AppCompatActivity) mContext).getSupportActionBar();
         if (null != mActionBar) {
@@ -247,6 +254,17 @@ public class MainFragment extends Fragment
             }
         }
         mSwipeRefreshLayout.setRefreshing(false);
+    }
+
+    private void setTaskDescription(String title) {
+        // overview task
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+            ActivityManager.TaskDescription taskDesc =
+                    new ActivityManager.TaskDescription(title, bm,
+                            ContextCompat.getColor(mContext, R.color.primary_600));
+            ((AppCompatActivity) mContext).setTaskDescription(taskDesc);
+        }
     }
 
     Handler mAutoRefreshHandler = new Handler();

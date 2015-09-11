@@ -1,13 +1,17 @@
 package com.alvinhkh.buseta.view.fragment;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
@@ -63,6 +67,9 @@ public class NoticeImageFragment extends Fragment {
             _notice_title = _notice.title;
             _notice_image = _notice.link;
         }
+        // Overview task
+        setTaskDescription(getString(R.string.passenger_notice) +
+                getString(R.string.interpunct) + getString(R.string.launcher_name));
         // Set Toolbar
         mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (null != mActionBar) {
@@ -141,6 +148,17 @@ public class NoticeImageFragment extends Fragment {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void setTaskDescription(String title) {
+        // overview task
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+            ActivityManager.TaskDescription taskDesc =
+                    new ActivityManager.TaskDescription(title, bm,
+                            ContextCompat.getColor(mContext, R.color.primary_600));
+            ((AppCompatActivity) mContext).setTaskDescription(taskDesc);
+        }
     }
 
     private void showNoticeImage(final String notice_image) {
