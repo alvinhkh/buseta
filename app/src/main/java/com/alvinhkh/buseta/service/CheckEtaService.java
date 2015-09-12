@@ -38,10 +38,11 @@ public class CheckEtaService extends IntentService {
 
     private static final String TAG = "CheckEtaService";
 
-    private SharedPreferences mPrefs;
-    private SettingsHelper settingsHelper = null;
+    SharedPreferences mPrefs;
+    SettingsHelper settingsHelper = null;
     String _id = null;
     String _token = null;
+    Boolean isWidget = false;
 
     public CheckEtaService() {
         super("CheckEtaService");
@@ -75,6 +76,7 @@ public class CheckEtaService extends IntentService {
         Bundle extras = intent.getExtras();
         if (extras == null) return;
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        isWidget = extras.getBoolean(Constants.MESSAGE.WIDGET_UPDATE, false);
 
         RouteStop object = extras.getParcelable(Constants.BUNDLE.STOP_OBJECT);
         if (null != object) {
@@ -113,7 +115,7 @@ public class CheckEtaService extends IntentService {
     private void getETAv2(final RouteStop routeStop) {
         if (null == routeStop || null == routeStop.route_bound) return;
         routeStop.eta_loading = true;
-        sendUpdate(routeStop);
+        sendUpdating(routeStop);
 
         String route_no = routeStop.route_bound.route_no.trim().replace(" ", "").toUpperCase();
         Uri routeEtaUri = Uri.parse(Constants.URL.ETA_MOBILE_API)
@@ -181,7 +183,7 @@ public class CheckEtaService extends IntentService {
     private void getETAv1(final RouteStop routeStop, int attempt) throws ExecutionException, InterruptedException {
         if (null == routeStop || null == routeStop.route_bound) return;
         routeStop.eta_loading = true;
-        sendUpdate(routeStop);
+        sendUpdating(routeStop);
 
         _id = mPrefs.getString(Constants.PREF.REQUEST_ID, null);
         _token = mPrefs.getString(Constants.PREF.REQUEST_TOKEN, null);
@@ -426,6 +428,11 @@ public class CheckEtaService extends IntentService {
         }
     }
 
+    private void sendUpdating(RouteStop object) {
+        if (isWidget) return;
+        sendUpdate(object);
+    }
+
     private void sendUpdate(RouteStop object) {
         if (null != object && null != object.route_bound) {
             ContentValues values = new ContentValues();
@@ -449,6 +456,8 @@ public class CheckEtaService extends IntentService {
                 Intent intent = new Intent(Constants.MESSAGE.ETA_UPDATED);
                 intent.putExtra(Constants.MESSAGE.ETA_UPDATED, true);
                 intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
+                if (isWidget)
+                    intent.putExtra(Constants.MESSAGE.WIDGET_UPDATE, true);
                 sendBroadcast(intent);
             }
         }

@@ -4,17 +4,101 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ListView
-        android:id="@+id/listView"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content">
 
-    <Button
-        android:id="@+id/actionButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Refresh"
-        android:layout_gravity="right|top"
-        android:layout_margin="8dp" />
+        <RelativeLayout
+            android:id="@+id/headerLayout"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_alignParentTop="true"
+            android:background="@drawable/widget_header_background"
+            android:nestedScrollingEnabled="true">
+
+            <LinearLayout
+                android:id="@+id/headerText"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentLeft="true"
+                android:layout_toStartOf="@+id/refreshButton"
+                android:layout_toLeftOf="@+id/refreshButton"
+                android:layout_centerInParent="true"
+                android:layout_gravity="center_vertical"
+                android:gravity="center_vertical"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp">
+
+                <TextView
+                    android:id="@+id/textView_title"
+                    android:clickable="true"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="top|left"
+                    style="@android:style/TextAppearance.Large"
+                    android:text="@string/app_name"/>
+
+                <TextView
+                    android:id="@+id/textView_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="bottom|left"
+                    android:text=""
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/refreshButton"
+                android:src="@drawable/ic_refresh_white_24dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_gravity="center_vertical"
+                android:layout_centerInParent="true"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:paddingLeft="10dp"
+                android:paddingRight="10dp" />
+
+        </RelativeLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentBottom="true"
+            android:layout_below="@+id/headerLayout"
+            android:background="@drawable/widget_body_background">
+
+            <ListView
+                android:id="@+id/listView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="8dp"
+                android:divider="@color/white"
+                android:dividerHeight="8dp"
+                android:stretchMode="columnWidth"
+                android:drawSelectorOnTop="false"
+                android:fastScrollAlwaysVisible="false"
+                android:fastScrollEnabled="false"
+                android:clipToPadding="false"
+                android:scrollbarStyle="outsideOverlay"
+                android:overScrollFooter="@android:color/transparent"
+                android:footerDividersEnabled="false" />
+
+            <TextView
+                android:id="@+id/emptyView"
+                android:background="@color/white"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="@string/dots" />
+
+        </FrameLayout>
+
+    </RelativeLayout>
 
 </FrameLayout>

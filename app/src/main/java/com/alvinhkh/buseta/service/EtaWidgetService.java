@@ -4,17 +4,22 @@ import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.database.EtaTable;
 import com.alvinhkh.buseta.database.FavouriteProvider;
 import com.alvinhkh.buseta.database.FavouriteTable;
 import com.alvinhkh.buseta.holder.EtaAdapterHelper;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
+import com.alvinhkh.buseta.holder.RouteStopETA;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -37,8 +42,6 @@ public class EtaWidgetService extends RemoteViewsService {
  * This is the factory that will provide data to the collection widget.
  */
 class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
-
-    private static final String TAG = "StackRemoteViewsFactory";
 
     private Context mContext;
     private Cursor mCursor;
@@ -64,32 +67,62 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
         return mCursor.getCount();
     }
 
+    private String getColumnString(Cursor cursor, String column) {
+        int index = cursor.getColumnIndex(column);
+        return cursor.isNull(index) ? "" : cursor.getString(index);
+    }
+
     private RouteStop getItem(int position) {
-        RouteStop object = null;
+        RouteStop routeStop = null;
         if (mCursor.moveToPosition(position)) {
             // Load data from cursor and return it...
             RouteBound routeBound = new RouteBound();
-            routeBound.route_no = mCursor.getString(mCursor.getColumnIndex(FavouriteTable.COLUMN_ROUTE));
-            routeBound.route_bound = mCursor.getString(mCursor.getColumnIndex(FavouriteTable.COLUMN_BOUND));
-            routeBound.origin_tc = mCursor.getString(mCursor.getColumnIndex(FavouriteTable.COLUMN_ORIGIN));
-            routeBound.destination_tc = mCursor.getString(mCursor.getColumnIndex(FavouriteTable.COLUMN_DESTINATION));
-            object = new RouteStop();
-            object.route_bound = routeBound;
-            object.stop_seq = mCursor.getString(mCursor.getColumnIndex(FavouriteTable.COLUMN_STOP_SEQ));
-            object.name_tc = mCursor.getString(mCursor.getColumnIndex(FavouriteTable.COLUMN_STOP_NAME));
-            object.code = mCursor.getString(mCursor.getColumnIndex(FavouriteTable.COLUMN_STOP_CODE));
-            object.favourite = true;
+            routeBound.route_no = getColumnString(mCursor, FavouriteTable.COLUMN_ROUTE);
+            routeBound.route_bound = getColumnString(mCursor, FavouriteTable.COLUMN_BOUND);
+            routeBound.origin_tc = getColumnString(mCursor, FavouriteTable.COLUMN_ORIGIN);
+            routeBound.destination_tc = getColumnString(mCursor, FavouriteTable.COLUMN_DESTINATION);
+            RouteStopETA routeStopETA = null;
+            String apiVersion = getColumnString(mCursor, EtaTable.COLUMN_ETA_API);
+            if (null != apiVersion && !apiVersion.equals("")) {
+                routeStopETA = new RouteStopETA();
+                routeStopETA.api_version = Integer.valueOf(apiVersion);
+                routeStopETA.seq = getColumnString(mCursor, EtaTable.COLUMN_STOP_SEQ);
+                routeStopETA.etas = getColumnString(mCursor, EtaTable.COLUMN_ETA_TIME);
+                routeStopETA.expires = getColumnString(mCursor, EtaTable.COLUMN_ETA_EXPIRE);
+                routeStopETA.server_time = getColumnString(mCursor, EtaTable.COLUMN_SERVER_TIME);
+                routeStopETA.updated = getColumnString(mCursor, EtaTable.COLUMN_UPDATED);
+            }
+            routeStop = new RouteStop();
+            routeStop.route_bound = routeBound;
+            routeStop.stop_seq = getColumnString(mCursor, FavouriteTable.COLUMN_STOP_SEQ);
+            routeStop.name_tc = getColumnString(mCursor, FavouriteTable.COLUMN_STOP_NAME);
+            routeStop.code = getColumnString(mCursor, FavouriteTable.COLUMN_STOP_CODE);
+            routeStop.favourite = true;
+            routeStop.eta = routeStopETA;
+            routeStop.eta_loading = getColumnString(mCursor, EtaTable.COLUMN_LOADING).equals("true");
+            routeStop.eta_fail = getColumnString(mCursor, EtaTable.COLUMN_FAIL).equals("true");
         }
-        return object;
+        return routeStop;
     }
 
     public RemoteViews getViewAt(int position) {
         // Get the data for this position from the content provider
         RouteStop object = getItem(position);
-
         // Return a proper item
-        RemoteViews rv = new RemoteViews(mContext.getPackageName(), R.layout.item_eta);
+        RemoteViews rv = new RemoteViews(mContext.getPackageName(), R.layout.widget_item_eta);
+        final ConnectivityManager conMgr =
+                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
+        if (activeNetwork == null || !activeNetwork.isConnected()) {
+            rv.setViewVisibility(R.id.textView_text, View.VISIBLE);
+            rv.setTextViewText(R.id.textView_text,
+                    mContext.getString(R.string.message_no_internet_connection));
+        } else {
+            rv.setViewVisibility(R.id.textView_text, View.GONE);
+            rv.setTextViewText(R.id.textView_text, "");
+        }
         if (null != object&& null != object.route_bound) {
+            // load data
             rv.setTextViewText(R.id.stop_code, object.code);
             rv.setTextViewText(R.id.stop_seq, object.stop_seq);
             rv.setTextViewText(R.id.route_bound, object.route_bound.route_bound);
@@ -99,9 +132,9 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
             rv.setTextViewText(R.id.eta, "");
             rv.setTextViewText(R.id.eta_more, "");
             // eta
-            if (object.eta_loading != null && object.eta_loading == true) {
+            if (object.eta_loading != null && object.eta_loading) {
                 rv.setTextViewText(R.id.eta_more, mContext.getString(R.string.message_loading));
-            } else if (object.eta_fail != null && object.eta_fail == true) {
+            } else if (object.eta_fail != null && object.eta_fail) {
                 rv.setTextViewText(R.id.eta_more, mContext.getString(R.string.message_fail_to_request));
             } else if (null != object.eta) {
                 if (object.eta.etas.equals("") && object.eta.expires.equals("")) {
@@ -129,7 +162,6 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
                         } else {
                             StringBuilder sb = new StringBuilder();
                             for (int i = 0; i < etas.length; i++) {
-                                if (i > 1) break; // only show one more result in eta_more
                                 sb.append(etas[i]);
                                 String estimate = EtaAdapterHelper.etaEstimate(object, etas, i, server_date,
                                         null, null, null);
