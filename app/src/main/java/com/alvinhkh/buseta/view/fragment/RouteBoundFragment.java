@@ -1,15 +1,20 @@
 package com.alvinhkh.buseta.view.fragment;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -56,8 +61,6 @@ public class RouteBoundFragment extends Fragment
 
     private RouteBoundAdapter mAdapter;
     private String _route_no = null;
-    private String _id = null;
-    private String _token = null;
     private String getRouteInfoApi = "";
 
     private SuggestionsDatabase mDatabase;
@@ -84,6 +87,8 @@ public class RouteBoundFragment extends Fragment
         // Set Database for inserting search history
         mDatabase = new SuggestionsDatabase(mContext);
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext.getApplicationContext());
+        // Overview task
+        setTaskDescription(_route_no + getString(R.string.interpunct) + getString(R.string.launcher_name));
         // Set Toolbar
         mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (null != mActionBar) {
@@ -96,9 +101,6 @@ public class RouteBoundFragment extends Fragment
         mAdapter = new RouteBoundAdapter(mContext);
         if (savedInstanceState != null) {
             mAdapter.onRestoreInstanceState(savedInstanceState);
-            _id = savedInstanceState.getString("_id");
-            _token = savedInstanceState.getString("_token");
-            getRouteInfoApi = savedInstanceState.getString("getRouteInfoApi");
         }
         //
         TextView mTextView_routeNo = (TextView) view.findViewById(R.id.route_no);
@@ -120,8 +122,8 @@ public class RouteBoundFragment extends Fragment
                 && savedInstanceState.containsKey(KEY_LIST_VIEW_STATE)) {
             mListView.onRestoreInstanceState(savedInstanceState
                     .getParcelable(KEY_LIST_VIEW_STATE));
-            getRouteInfoApi = savedInstanceState.getString("getRouteInfoApi");
             mEmptyText.setText(savedInstanceState.getString("EmptyText", ""));
+            getRouteInfoApi = savedInstanceState.getString("getRouteInfoApi");
         } else {
             getRouteInfoApi = Constants.URL.ROUTE_INFO;
             // Get Route Bounds
@@ -146,8 +148,6 @@ public class RouteBoundFragment extends Fragment
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString("_route_no", _route_no);
-        outState.putString("_id", _id);
-        outState.putString("_token", _token);
         outState.putString("getRouteInfoApi", getRouteInfoApi);
         if (null != mAdapter) {
             mAdapter.onSaveInstanceState(outState);
@@ -222,6 +222,17 @@ public class RouteBoundFragment extends Fragment
         getRouteBounds(_route_no);
     }
 
+    private void setTaskDescription(String title) {
+        // overview task
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+            ActivityManager.TaskDescription taskDesc =
+                    new ActivityManager.TaskDescription(title, bm,
+                            ContextCompat.getColor(mContext, R.color.primary_600));
+            ((AppCompatActivity) mContext).setTaskDescription(taskDesc);
+        }
+    }
+
     private void getRouteBounds(final String _route_no) {
 
         if (null != mAdapter) {
@@ -290,8 +301,6 @@ public class RouteBoundFragment extends Fragment
                                     RouteBound routeBound = gson.fromJson(element.getAsJsonObject(), RouteBound.class);
                                     mAdapter.add(routeBound);
                                 }
-                                _id = result.get("id").getAsString();
-                                _token = result.get("token").getAsString();
                                 if (mEmptyText != null)
                                     mEmptyText.setText("");
                                 if (mDatabase != null)
@@ -323,8 +332,6 @@ public class RouteBoundFragment extends Fragment
         }
         SharedPreferences.Editor editor = mPrefs.edit();
         editor.putString(Constants.PREF.REQUEST_API_INFO, getRouteInfoApi);
-        editor.putString(Constants.PREF.REQUEST_ID, _id);
-        editor.putString(Constants.PREF.REQUEST_TOKEN, _token);
         editor.apply();
     }
 

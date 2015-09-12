@@ -1,6 +1,7 @@
 package com.alvinhkh.buseta.service;
 
 import android.app.IntentService;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,9 +13,9 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.alvinhkh.buseta.Constants;
-import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.database.EtaTable;
+import com.alvinhkh.buseta.database.FavouriteProvider;
 import com.alvinhkh.buseta.holder.RouteStop;
-import com.alvinhkh.buseta.holder.RouteStopContainer;
 import com.alvinhkh.buseta.holder.RouteStopETA;
 import com.alvinhkh.buseta.preference.SettingsHelper;
 import com.google.gson.Gson;
@@ -29,7 +30,6 @@ import com.koushikdutta.ion.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -40,7 +40,6 @@ public class CheckEtaService extends IntentService {
 
     private SharedPreferences mPrefs;
     private SettingsHelper settingsHelper = null;
-    private ArrayList<RouteStopContainer> routeStopList = new ArrayList<>();
     String _id = null;
     String _token = null;
 
@@ -51,7 +50,6 @@ public class CheckEtaService extends IntentService {
     @Override
     public void onCreate() {
         super.onCreate();
-        routeStopList = null;
         _id = null;
         _token = null;
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -79,32 +77,26 @@ public class CheckEtaService extends IntentService {
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         RouteStop object = extras.getParcelable(Constants.BUNDLE.STOP_OBJECT);
-        int position = extras.getInt(Constants.BUNDLE.ITEM_POSITION, -1);
-        if (null == routeStopList)
-            routeStopList = extras.getParcelableArrayList(Constants.BUNDLE.STOP_OBJECTS);
-        if (null == routeStopList)
-            routeStopList = new ArrayList<>();
-
-        // Check internet connection
-        final ConnectivityManager conMgr =
-                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
-        if (activeNetwork == null || !activeNetwork.isConnected()) {
-            object.eta_loading = false;
-            object.eta_fail = true;
-            sendUpdate(position, object);
-            return;
+        if (null != object) {
+            // Check internet connection
+            final ConnectivityManager conMgr =
+                    (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
+            if (activeNetwork == null || !activeNetwork.isConnected()) {
+                object.eta_loading = false;
+                object.eta_fail = true;
+                sendUpdate(object);
+                return;
+            }
+            getETA(object);
         }
-
-        if (null != object)
-            getETA(position, object);
     }
 
-    private void getETA(int position, RouteStop routeStop) {
+    private void getETA(RouteStop routeStop) {
         switch (settingsHelper.getEtaApi()) {
             case 1:
                 try {
-                    getETAv1(position, routeStop);
+                    getETAv1(routeStop);
                 } catch (InterruptedException e) {
                     Log.e(TAG, e.getMessage());
                 } catch (ExecutionException e) {
@@ -113,15 +105,15 @@ public class CheckEtaService extends IntentService {
                 break;
             case 2:
             default:
-                getETAv2(position, routeStop);
+                getETAv2(routeStop);
                 break;
         }
     }
 
-    private void getETAv2(final int position, final RouteStop routeStop) {
+    private void getETAv2(final RouteStop routeStop) {
         if (null == routeStop || null == routeStop.route_bound) return;
         routeStop.eta_loading = true;
-        sendUpdate(position, routeStop);
+        sendUpdate(routeStop);
 
         String route_no = routeStop.route_bound.route_no.trim().replace(" ", "").toUpperCase();
         Uri routeEtaUri = Uri.parse(Constants.URL.ETA_MOBILE_API)
@@ -152,7 +144,7 @@ public class CheckEtaService extends IntentService {
                                 routeStop.eta_loading = false;
                                 routeStop.eta_fail = !result.has("generated");
                                 routeStop.eta = result.has("generated") ? new RouteStopETA() : null;
-                                sendUpdate(position, routeStop);
+                                sendUpdate(routeStop);
                                 return;
                             }
                             JsonArray jsonArray = result.get("response").getAsJsonArray();
@@ -177,19 +169,19 @@ public class CheckEtaService extends IntentService {
                             routeStop.eta = routeStopETA;
                         }
                         routeStop.eta_loading = false;
-                        sendUpdate(position, routeStop);
+                        sendUpdate(routeStop);
                     }
                 });
     }
 
-    private void getETAv1(final int position, final RouteStop routeStop) throws ExecutionException, InterruptedException {
-        getETAv1(position, routeStop, 0);
+    private void getETAv1(final RouteStop routeStop) throws ExecutionException, InterruptedException {
+        getETAv1(routeStop, 0);
     }
 
-    private void getETAv1(final int position, final RouteStop routeStop, int attempt) throws ExecutionException, InterruptedException {
+    private void getETAv1(final RouteStop routeStop, int attempt) throws ExecutionException, InterruptedException {
         if (null == routeStop || null == routeStop.route_bound) return;
         routeStop.eta_loading = true;
-        sendUpdate(position, routeStop);
+        sendUpdate(routeStop);
 
         _id = mPrefs.getString(Constants.PREF.REQUEST_ID, null);
         _token = mPrefs.getString(Constants.PREF.REQUEST_TOKEN, null);
@@ -205,7 +197,7 @@ public class CheckEtaService extends IntentService {
         if (etaApi == null) {
             routeStop.eta_loading = false;
             routeStop.eta_fail = true;
-            sendUpdate(position, routeStop);
+            sendUpdate(routeStop);
             return;
         }
         Response<String> response = Ion.with(getApplicationContext())
@@ -235,11 +227,11 @@ public class CheckEtaService extends IntentService {
             editor.putString(Constants.PREF.REQUEST_API_ETA, null);
             editor.apply();
             if (attempt < 3) {
-                getETAv1(position, routeStop, attempt + 1);
+                getETAv1(routeStop, attempt + 1);
             } else {
                 routeStop.eta_loading = false;
                 routeStop.eta_fail = false;
-                sendUpdate(position, routeStop);
+                sendUpdate(routeStop);
             }
         } else if (null != response && response.getHeaders().code() == 200) {
             String result = response.getResult();
@@ -251,11 +243,11 @@ public class CheckEtaService extends IntentService {
                     editor.putString(Constants.PREF.REQUEST_API_ETA, null);
                     editor.apply();
                     if (attempt < 5) {
-                        getETAv1(position, routeStop, attempt);
+                        getETAv1(routeStop, attempt);
                     } else {
                         routeStop.eta_loading = false;
                         routeStop.eta_fail = true;
-                        sendUpdate(position, routeStop);
+                        sendUpdate(routeStop);
                     }
                     return;
                 }
@@ -280,13 +272,13 @@ public class CheckEtaService extends IntentService {
                     if (count > 1 && count == etas.length && attempt < 8) {
                         // more than one and all same, more likely error
                         Log.d(TAG, "sam.sam.sam.");
-                        getETAv1(position, routeStop, attempt + 1);
+                        getETAv1(routeStop, attempt + 1);
                         return;
                     }
                 }
                 routeStop.eta = routeStopETA;
                 routeStop.eta_loading = false;
-                sendUpdate(position, routeStop);
+                sendUpdate(routeStop);
             }
         }
     }
@@ -434,24 +426,32 @@ public class CheckEtaService extends IntentService {
         }
     }
 
-    private void sendUpdate(int position, RouteStop routeStop) {
-        boolean found = false;
-        for (int i = 0; i < routeStopList.size(); i++) {
-            RouteStopContainer container = routeStopList.get(i);
-            if (container.position == position) {
-                container.routeStop = routeStop;
-                found = true;
+    private void sendUpdate(RouteStop object) {
+        if (null != object && null != object.route_bound) {
+            ContentValues values = new ContentValues();
+            values.put(EtaTable.COLUMN_LOADING, object.eta_loading);
+            values.put(EtaTable.COLUMN_FAIL, object.eta_fail);
+            values.put(EtaTable.COLUMN_ROUTE, object.route_bound.route_no);
+            values.put(EtaTable.COLUMN_BOUND, object.route_bound.route_bound);
+            values.put(EtaTable.COLUMN_STOP_SEQ, object.stop_seq);
+            values.put(EtaTable.COLUMN_STOP_CODE, object.code);
+            if (null != object.eta) {
+                values.put(EtaTable.COLUMN_ETA_API, String.valueOf(object.eta.api_version));
+                values.put(EtaTable.COLUMN_ETA_TIME, object.eta.etas);
+                values.put(EtaTable.COLUMN_ETA_EXPIRE, object.eta.expires);
+                values.put(EtaTable.COLUMN_SERVER_TIME, object.eta.server_time);
+                values.put(EtaTable.COLUMN_UPDATED, object.eta.updated);
+            }
+            values.put(EtaTable.COLUMN_DATE, String.valueOf(System.currentTimeMillis() / 1000L));
+            Uri etaUri = getContentResolver().insert(FavouriteProvider.CONTENT_URI_ETA, values);
+            Boolean inserted = (null != etaUri);
+            if (inserted) {
+                Intent intent = new Intent(Constants.MESSAGE.ETA_UPDATED);
+                intent.putExtra(Constants.MESSAGE.ETA_UPDATED, true);
+                intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
+                sendBroadcast(intent);
             }
         }
-        if (!found)
-            routeStopList.add(new RouteStopContainer(position, routeStop));
-        // Log.d(TAG, position + ": " + routeStop.name_tc + " " + routeStop.eta_loading + " " + (routeStop.eta != null && routeStop.eta.etas != null ? routeStop.eta.etas : ""));
-        Intent intent = new Intent(Constants.MESSAGE.ETA_UPDATED);
-        intent.putExtra(Constants.MESSAGE.ETA_UPDATED, true);
-        intent.putExtra(Constants.BUNDLE.ITEM_POSITION, position);
-        intent.putExtra(Constants.BUNDLE.STOP_OBJECT, routeStop);
-        intent.putParcelableArrayListExtra(Constants.BUNDLE.STOP_OBJECTS, routeStopList);
-        sendBroadcast(intent);
     }
 
 }

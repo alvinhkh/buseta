@@ -1,14 +1,18 @@
 package com.alvinhkh.buseta.view.fragment;
 
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
@@ -16,6 +20,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -35,14 +40,12 @@ import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.database.FavouriteProvider;
 import com.alvinhkh.buseta.database.FavouriteTable;
 import com.alvinhkh.buseta.holder.RouteStop;
-import com.alvinhkh.buseta.holder.RouteStopContainer;
 import com.alvinhkh.buseta.service.CheckEtaService;
 import com.alvinhkh.buseta.view.adapter.FeatureAdapter;
 import com.alvinhkh.buseta.database.SuggestionsDatabase;
 import com.koushikdutta.ion.Ion;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 
 public class MainFragment extends Fragment
         implements SharedPreferences.OnSharedPreferenceChangeListener,
@@ -53,13 +56,14 @@ public class MainFragment extends Fragment
     private Context mContext = super.getActivity();
     private SuggestionsDatabase mDatabase_suggestion;
     private FeatureAdapter mAdapter;
+    private Cursor mCursor_history;
+    private Cursor mCursor_favorite;
     private ActionBar mActionBar = null;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private FloatingActionButton mFab;
     private MenuItem mSearchMenuItem;
     private UpdateHistoryReceiver mReceiver_history;
     private UpdateEtaReceiver mReceiver_eta;
-    private ArrayList<RouteStopContainer> routeStopList = null;
 
     public MainFragment() {
     }
@@ -77,19 +81,8 @@ public class MainFragment extends Fragment
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         mContext = super.getActivity();
         mDatabase_suggestion = new SuggestionsDatabase(mContext.getApplicationContext());
-        Cursor cursorFav = mContext.getContentResolver().query(
-                        FavouriteProvider.CONTENT_URI, null, null, null,
-                FavouriteTable.COLUMN_DATE + " DESC");
-        if (savedInstanceState != null) {
-            routeStopList = savedInstanceState.getParcelableArrayList(Constants.BUNDLE.STOP_OBJECTS);
-            Bundle bundle = new Bundle();
-            bundle.putBoolean(Constants.MESSAGE.STATE_UPDATED, true);
-            bundle.putParcelableArrayList(Constants.BUNDLE.STOP_OBJECTS, routeStopList);
-            if (null != cursorFav)
-                cursorFav.setExtras(bundle);
-        }
-        if (null == routeStopList)
-            routeStopList = new ArrayList<RouteStopContainer>();
+        // Overview task
+        setTaskDescription(getString(R.string.launcher_name));
         // Toolbar
         mActionBar = ((AppCompatActivity) mContext).getSupportActionBar();
         if (null != mActionBar) {
@@ -108,9 +101,11 @@ public class MainFragment extends Fragment
         mRecyclerView.setHasFixedSize(true);
         final GridLayoutManager manager = new GridLayoutManager(mContext, 2);
         mRecyclerView.setLayoutManager(manager);
-        mAdapter = new FeatureAdapter(getActivity(),
-                mDatabase_suggestion.getHistory(),
-                cursorFav);
+        mCursor_history = mDatabase_suggestion.getHistory();
+        mCursor_favorite = mContext.getContentResolver().query(
+                FavouriteProvider.CONTENT_URI, null, null, null,
+                FavouriteTable.COLUMN_DATE + " DESC");
+        mAdapter = new FeatureAdapter(getActivity(), mCursor_history, mCursor_favorite);
         mRecyclerView.setAdapter(mAdapter);
         manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
@@ -170,13 +165,6 @@ public class MainFragment extends Fragment
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        if (null != routeStopList)
-            outState.putParcelableArrayList(Constants.BUNDLE.STOP_OBJECTS, routeStopList);
-    }
-
-    @Override
     public void onDestroyView() {
         Ion.getDefault(mContext).cancelAll(mContext);
         if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
@@ -189,6 +177,10 @@ public class MainFragment extends Fragment
         }
         // Unregister the listener whenever a key changes
         PreferenceManager.getDefaultSharedPreferences(mContext).unregisterOnSharedPreferenceChangeListener(this);
+        if (null != mCursor_favorite)
+            mCursor_favorite.close();
+        if (null != mCursor_history)
+            mCursor_history.close();
         if (null != mDatabase_suggestion)
             mDatabase_suggestion.close();
         View view = getView();
@@ -232,9 +224,7 @@ public class MainFragment extends Fragment
                 for (int i = 0; i < mAdapter.getFavouriteCount(); i++) {
                     RouteStop object = mAdapter.getFavouriteItem(i);
                     Intent intent = new Intent(mContext, CheckEtaService.class);
-                    intent.putExtra(Constants.BUNDLE.ITEM_POSITION, i);
                     intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
-                    intent.putParcelableArrayListExtra(Constants.BUNDLE.STOP_OBJECTS, routeStopList);
                     mContext.startService(intent);
                 }
             } else {
@@ -249,6 +239,17 @@ public class MainFragment extends Fragment
         mSwipeRefreshLayout.setRefreshing(false);
     }
 
+    private void setTaskDescription(String title) {
+        // overview task
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+            ActivityManager.TaskDescription taskDesc =
+                    new ActivityManager.TaskDescription(title, bm,
+                            ContextCompat.getColor(mContext, R.color.primary_600));
+            ((AppCompatActivity) mContext).setTaskDescription(taskDesc);
+        }
+    }
+
     Handler mAutoRefreshHandler = new Handler();
     Runnable mAutoRefreshRunnable = new Runnable() {
         @Override
@@ -258,16 +259,42 @@ public class MainFragment extends Fragment
         }
     };
 
-    public class UpdateHistoryReceiver extends BroadcastReceiver {
+    UpdateHistoryHandler mHistoryHandler = new UpdateHistoryHandler(this);
+    static class UpdateHistoryHandler extends Handler {
+        WeakReference<MainFragment> mFrag;
+
+        UpdateHistoryHandler(MainFragment aFragment) {
+            mFrag = new WeakReference<MainFragment>(aFragment);
+        }
+
         @Override
-        public void onReceive(Context context, Intent intent) {
-            Bundle bundle = intent.getExtras();
+        public void handleMessage(Message message) {
+            MainFragment f = mFrag.get();
+            if (null == f) return;
+            Bundle bundle = message.getData();
             Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.HISTORY_UPDATED);
-            if (null != mAdapter && null != mDatabase_suggestion && aBoolean) {
-                Cursor oldCursor = mAdapter.swapHistoryCursor(mDatabase_suggestion.getHistory());
+            if (null != f.mAdapter && null != f.mContext && aBoolean) {
+                f.mCursor_history = f.mDatabase_suggestion.getHistory();
+                Cursor oldCursor = f.mAdapter.swapHistoryCursor(f.mCursor_history);
                 if (null != oldCursor)
                     oldCursor.close();
             }
+        }
+    }
+
+    public class UpdateHistoryReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final Bundle bundle = intent.getExtras();
+            Thread thread = new Thread() {
+                @Override
+                public void run() {
+                    Message message = mHistoryHandler.obtainMessage();
+                    message.setData(bundle);
+                    mHistoryHandler.sendMessage(message);
+                }
+            };
+            thread.run();
         }
     }
 
@@ -286,27 +313,10 @@ public class MainFragment extends Fragment
             Bundle bundle = message.getData();
             Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.ETA_UPDATED);
             if (null != f.mAdapter && null != f.mContext && aBoolean) {
-                f.routeStopList = bundle.getParcelableArrayList(Constants.BUNDLE.STOP_OBJECTS);
-                int position = bundle.getInt(Constants.BUNDLE.ITEM_POSITION, -1);
-                RouteStop newObject = bundle.getParcelable(Constants.BUNDLE.STOP_OBJECT);
-                if (null != newObject) {
-                    for (int i = 0; i < f.routeStopList.size(); i++) {
-                        RouteStop oldObject = f.routeStopList.get(i).routeStop;
-                        int listPosition = f.routeStopList.get(i).position;
-                        if (null != oldObject && position == listPosition) {
-                            oldObject.eta = newObject.eta;
-                            oldObject.eta_loading = newObject.eta_loading;
-                            oldObject.eta_fail = newObject.eta_fail;
-                            oldObject.favourite = newObject.favourite;
-                        }
-                    }
-                }
-                Cursor cursorFav = f.mContext.getContentResolver().query(
+                f.mCursor_favorite = f.mContext.getContentResolver().query(
                         FavouriteProvider.CONTENT_URI, null, null, null,
                         FavouriteTable.COLUMN_DATE + " DESC");
-                if (null != cursorFav)
-                    cursorFav.setExtras(bundle);
-                Cursor oldCursor = f.mAdapter.swapFavouriteCursor(cursorFav);
+                Cursor oldCursor = f.mAdapter.swapFavouriteCursor(f.mCursor_favorite);
                 if (null != oldCursor)
                     oldCursor.close();
             }

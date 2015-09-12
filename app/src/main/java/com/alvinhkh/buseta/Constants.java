@@ -31,14 +31,11 @@ public class Constants {
         String HISTORY_UPDATED = "com.alvinhkh.buseta.HISTORY_UPDATED";
         String STOP_UPDATED = "com.alvinhkh.buseta.STOP_UPDATED";
         String ETA_UPDATED = "com.alvinhkh.buseta.ETA_UPDATED";
-        String STATE_UPDATED = "com.alvinhkh.buseta.STATE_UPDATED";
         String HIDE_STAR = "com.alvinhkh.buseta.HIDE_STAR";
     }
 
     public interface BUNDLE {
-        String ITEM_POSITION = "com.alvinhkh.buseta.ITEM_POSITION";
         String STOP_OBJECT = "com.alvinhkh.buseta.STOP_OBJECT";
-        String STOP_OBJECTS = "com.alvinhkh.buseta.STOP_OBJECTS";
     }
 
     public interface PREF {

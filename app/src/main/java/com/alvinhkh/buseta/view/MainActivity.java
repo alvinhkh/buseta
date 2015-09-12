@@ -1,5 +1,6 @@
 package com.alvinhkh.buseta.view;
 
+import android.app.ActivityManager;
 import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -9,7 +10,10 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
@@ -23,6 +27,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -35,6 +40,7 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.database.FavouriteProvider;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteNews;
 import com.alvinhkh.buseta.service.UpdateSuggestionService;
@@ -77,6 +83,8 @@ public class MainActivity extends AppCompatActivity
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         // Set up a listener whenever a key changes
         PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).registerOnSharedPreferenceChangeListener(this);
+        // Overview task
+        setTaskDescription(getString(R.string.launcher_name));
         // Set Toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -233,6 +241,8 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onDestroy() {
+        int rowsDeleted = getContentResolver().delete(FavouriteProvider.CONTENT_URI_ETA_JOIN, null, null);
+        Log.d(TAG, "Deleted ETA Records: " + rowsDeleted);
         if (null != mAdView)
             mAdView.destroy();
         if (null != mReceiver)
@@ -316,7 +326,6 @@ public class MainActivity extends AppCompatActivity
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        if (snackbar == null) return;
                         snackbar.dismiss();
                     }
                 }, 5000);
@@ -340,6 +349,17 @@ public class MainActivity extends AppCompatActivity
             mCursor = mDatabase.get(constraint.toString().trim().replace(" ", ""));
         }
         return mCursor;
+    }
+
+    private void setTaskDescription(String title) {
+        // overview task
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+            ActivityManager.TaskDescription taskDesc =
+                    new ActivityManager.TaskDescription(title, bm,
+                            ContextCompat.getColor(this, R.color.primary_600));
+            setTaskDescription(taskDesc);
+        }
     }
 
     private void collapseSearchView() {
