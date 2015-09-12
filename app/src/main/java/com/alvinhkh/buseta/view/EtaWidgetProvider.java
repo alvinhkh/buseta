@@ -13,6 +13,7 @@ import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -176,41 +177,38 @@ public class EtaWidgetProvider extends AppWidgetProvider {
     }
 
     private RemoteViews buildLayout(final Context context, final int appWidgetId, boolean largeLayout) {
+        // Specify the service to provide data for the collection widget.  Note that we need to
+        // embed the appWidgetId via the data otherwise it will be ignored.
+        final Intent intent = new Intent(context, EtaWidgetService.class);
+        intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+        intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
+        rv = new RemoteViews(context.getPackageName(), R.layout.widget_eta);
+        rv.setRemoteAdapter(R.id.listView, intent);
+        sWorkerQueue.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                final AppWidgetManager mgr = AppWidgetManager.getInstance(context);
+                mgr.partiallyUpdateAppWidget(appWidgetId, rv);
+            }
+        }, 1000);
+        rv.setEmptyView(R.id.listView, R.id.emptyView);
+        // click open app intent
+        final Intent openAppIntent = new Intent(context, MainActivity.class);
+        PendingIntent openAppPendingIntent = PendingIntent.getActivity(context, 0, openAppIntent, 0);
+        // update intent
+        final Intent updateIntent = new Intent(context, EtaWidgetProvider.class);
+        updateIntent.setAction(Constants.MESSAGE.WIDGET_TRIGGER_UPDATE);
+        updateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+        // updateIntent.setData(Uri.parse(updateIntent.toUri(Intent.URI_INTENT_SCHEME)));
+        final PendingIntent updatePendingIntent = PendingIntent.getBroadcast(context, 0,
+                updateIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        rv.setPendingIntentTemplate(R.id.listView, updatePendingIntent);
         if (largeLayout) {
-            // Specify the service to provide data for the collection widget.  Note that we need to
-            // embed the appWidgetId via the data otherwise it will be ignored.
-            final Intent intent = new Intent(context, EtaWidgetService.class);
-            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-            intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
-            rv = new RemoteViews(context.getPackageName(), R.layout.widget_eta);
-            rv.setRemoteAdapter(R.id.listView, intent);
-            sWorkerQueue.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    final AppWidgetManager mgr = AppWidgetManager.getInstance(context);
-                    mgr.partiallyUpdateAppWidget(appWidgetId, rv);
-                }
-            }, 1000);
-            rv.setEmptyView(R.id.listView, R.id.emptyView);
-            // header click open app
-            final Intent openAppIntent = new Intent(context, MainActivity.class);
-            PendingIntent openAppPendingIntent = PendingIntent.getActivity(context, 0, openAppIntent, 0);
+            rv.setViewVisibility(R.id.headerLayout, View.VISIBLE);
             rv.setOnClickPendingIntent(R.id.headerText, openAppPendingIntent);
-            // refresh button
-            final Intent onClickIntent = new Intent(context, EtaWidgetProvider.class);
-            onClickIntent.setAction(Constants.MESSAGE.WIDGET_TRIGGER_UPDATE);
-            onClickIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-            // onClickIntent.setData(Uri.parse(onClickIntent.toUri(Intent.URI_INTENT_SCHEME)));
-            final PendingIntent onClickPendingIntent = PendingIntent.getBroadcast(context, 0,
-                    onClickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-            rv.setOnClickPendingIntent(R.id.refreshButton, onClickPendingIntent);
-            rv.setPendingIntentTemplate(R.id.listView, onClickPendingIntent);
+            rv.setOnClickPendingIntent(R.id.refreshButton, updatePendingIntent);
         } else {
-            final Intent intent = new Intent(context, EtaWidgetService.class);
-            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-            intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
-            rv = new RemoteViews(context.getPackageName(), R.layout.widget_eta);
-            // ...
+            rv.setViewVisibility(R.id.headerLayout, View.GONE);
         }
         return rv;
     }
@@ -230,30 +228,37 @@ public class EtaWidgetProvider extends AppWidgetProvider {
         }
         // Update each of the widgets with the remote adapter
         for (int i = 0; i < appWidgetIds.length; ++i) {
+            if (i == 0 && android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                updateWidgetSize(appWidgetManager.getAppWidgetOptions(appWidgetIds[i]));
+            }
             RemoteViews layout = buildLayout(context, appWidgetIds[i], mIsLargeLayout);
             appWidgetManager.updateAppWidget(appWidgetIds[i], layout);
         }
         super.onUpdate(context, appWidgetManager, appWidgetIds);
     }
 
-    @TargetApi(16)
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     @Override
     public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager,
                                           int appWidgetId, Bundle newOptions) {
-
-        int minWidth = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH);
-        int maxWidth = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH);
-        int minHeight = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT);
-        int maxHeight = newOptions.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT);
-
+        updateWidgetSize(newOptions);
         RemoteViews layout;
-        if (minHeight < 100) {
+        layout = buildLayout(context, appWidgetId, mIsLargeLayout);
+        appWidgetManager.updateAppWidget(appWidgetId, layout);
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    private void updateWidgetSize(Bundle bundle) {
+        if (null == bundle) return;
+        int minWidth = bundle.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH);
+        int maxWidth = bundle.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH);
+        int minHeight = bundle.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT);
+        int maxHeight = bundle.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT);
+        if (minHeight < 80) {
             mIsLargeLayout = false;
         } else {
             mIsLargeLayout = true;
         }
-        layout = buildLayout(context, appWidgetId, mIsLargeLayout);
-        appWidgetManager.updateAppWidget(appWidgetId, layout);
     }
 
 }

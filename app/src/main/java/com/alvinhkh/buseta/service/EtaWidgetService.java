@@ -64,7 +64,7 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
     }
 
     public int getCount() {
-        return mCursor.getCount();
+        return (null == mCursor) ? 0 : mCursor.getCount();
     }
 
     private String getColumnString(Cursor cursor, String column) {
@@ -179,8 +179,6 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
                     }
                 }
             }
-            //rv.setScrollPosition(R.id.listView, 5);
-
             // Set the click intent
             final Intent fillInIntent = new Intent();
             final Bundle extras = new Bundle();
@@ -192,12 +190,10 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
         return rv;
     }
     public RemoteViews getLoadingView() {
-        // We aren't going to return a default loading view in this sample
         return null;
     }
 
     public int getViewTypeCount() {
-        // Technically, we have two types of views (the dark and light background views)
         return 2;
     }
 
