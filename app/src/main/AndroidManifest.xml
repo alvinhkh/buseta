@@ -82,12 +82,15 @@
         <receiver android:name=".view.EtaWidgetProvider" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                <action android:name="android.appwidget.action.APPWIDGET_DELETED" />
                 <action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
+                <action android:name="android.appwidget.action.APPWIDGET_DELETED" />
                 <action android:name="android.appwidget.action.APPWIDGET_DISABLED" />
             </intent-filter>
             <intent-filter>
                 <action android:name="com.alvinhkh.buseta.ETA_UPDATED" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.alvinhkh.buseta.WIDGET_TRIGGER_UPDATE" />
             </intent-filter>
             <meta-data android:name="android.appwidget.provider"
                 android:resource="@xml/widget_eta_info" />

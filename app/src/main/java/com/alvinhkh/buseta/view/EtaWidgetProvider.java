@@ -27,6 +27,7 @@ import com.alvinhkh.buseta.database.FavouriteTable;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.service.CheckEtaService;
+import com.alvinhkh.buseta.service.EtaWidgetAlarm;
 import com.alvinhkh.buseta.service.EtaWidgetService;
 
 /**
@@ -60,13 +61,12 @@ public class EtaWidgetProvider extends AppWidgetProvider {
 
     private static final String TAG = "EtaWidgetProvider";
 
-    public static String REFRESH_ACTION = "com.alvinhkh.buseta.widget.CLICK";
-
     private static HandlerThread sWorkerThread;
     private static Handler sWorkerQueue;
     private static EtaDataProviderObserver sDataObserver;
 
     RemoteViews rv;
+    int intervalMinutes = 1;
 
     private boolean mIsLargeLayout = true;
 
@@ -91,6 +91,16 @@ public class EtaWidgetProvider extends AppWidgetProvider {
             sDataObserver = new EtaDataProviderObserver(mgr, cn, sWorkerQueue);
             r.registerContentObserver(FavouriteProvider.CONTENT_URI, true, sDataObserver);
         }
+        // start alarm
+        EtaWidgetAlarm alarm = new EtaWidgetAlarm(context.getApplicationContext());
+        alarm.startAlarm(intervalMinutes);
+    }
+
+    @Override
+    public void onDisabled(Context context) {
+        // Log.d(TAG, "onDisabled");
+        EtaWidgetAlarm appWidgetAlarm = new EtaWidgetAlarm(context.getApplicationContext());
+        appWidgetAlarm.stopAlarm();
     }
 
     @Override
@@ -99,7 +109,7 @@ public class EtaWidgetProvider extends AppWidgetProvider {
         final Bundle bundle = intent.getExtras();
         final int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
                 AppWidgetManager.INVALID_APPWIDGET_ID);
-        if (action.equals(REFRESH_ACTION)) {
+        if (action.equals(Constants.MESSAGE.WIDGET_TRIGGER_UPDATE)) {
             sWorkerQueue.removeMessages(0);
             onRefresh(context);
         } else if (action.equals(Constants.MESSAGE.ETA_UPDATED)) {
@@ -188,7 +198,7 @@ public class EtaWidgetProvider extends AppWidgetProvider {
             rv.setOnClickPendingIntent(R.id.headerText, openAppPendingIntent);
             // refresh button
             final Intent onClickIntent = new Intent(context, EtaWidgetProvider.class);
-            onClickIntent.setAction(EtaWidgetProvider.REFRESH_ACTION);
+            onClickIntent.setAction(Constants.MESSAGE.WIDGET_TRIGGER_UPDATE);
             onClickIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
             // onClickIntent.setData(Uri.parse(onClickIntent.toUri(Intent.URI_INTENT_SCHEME)));
             final PendingIntent onClickPendingIntent = PendingIntent.getBroadcast(context, 0,
@@ -209,6 +219,15 @@ public class EtaWidgetProvider extends AppWidgetProvider {
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         // Log.d(TAG, "onUpdate");
         onRefresh(context);
+        boolean alarmUp = (PendingIntent.getBroadcast(context, 0,
+                new Intent(Constants.MESSAGE.WIDGET_TRIGGER_UPDATE),
+                PendingIntent.FLAG_NO_CREATE) != null);
+        if (alarmUp) {
+            Log.d(TAG, "Alarm is already active");
+        } else {
+            EtaWidgetAlarm alarm = new EtaWidgetAlarm(context.getApplicationContext());
+            alarm.startAlarm(intervalMinutes);
+        }
         // Update each of the widgets with the remote adapter
         for (int i = 0; i < appWidgetIds.length; ++i) {
             RemoteViews layout = buildLayout(context, appWidgetIds[i], mIsLargeLayout);

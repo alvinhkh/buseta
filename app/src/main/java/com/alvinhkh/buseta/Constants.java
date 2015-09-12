@@ -33,6 +33,7 @@ public class Constants {
         String ETA_UPDATED = "com.alvinhkh.buseta.ETA_UPDATED";
         String HIDE_STAR = "com.alvinhkh.buseta.HIDE_STAR";
         String WIDGET_UPDATE = "com.alvinhkh.buseta.WIDGET_UPDATE";
+        String WIDGET_TRIGGER_UPDATE = "com.alvinhkh.buseta.WIDGET_TRIGGER_UPDATE";
     }
 
     public interface BUNDLE {
