@@ -61,8 +61,6 @@ public class RouteBoundFragment extends Fragment
 
     private RouteBoundAdapter mAdapter;
     private String _route_no = null;
-    private String _id = null;
-    private String _token = null;
     private String getRouteInfoApi = "";
 
     private SuggestionsDatabase mDatabase;
@@ -103,9 +101,6 @@ public class RouteBoundFragment extends Fragment
         mAdapter = new RouteBoundAdapter(mContext);
         if (savedInstanceState != null) {
             mAdapter.onRestoreInstanceState(savedInstanceState);
-            _id = savedInstanceState.getString("_id");
-            _token = savedInstanceState.getString("_token");
-            getRouteInfoApi = savedInstanceState.getString("getRouteInfoApi");
         }
         //
         TextView mTextView_routeNo = (TextView) view.findViewById(R.id.route_no);
@@ -127,8 +122,8 @@ public class RouteBoundFragment extends Fragment
                 && savedInstanceState.containsKey(KEY_LIST_VIEW_STATE)) {
             mListView.onRestoreInstanceState(savedInstanceState
                     .getParcelable(KEY_LIST_VIEW_STATE));
-            getRouteInfoApi = savedInstanceState.getString("getRouteInfoApi");
             mEmptyText.setText(savedInstanceState.getString("EmptyText", ""));
+            getRouteInfoApi = savedInstanceState.getString("getRouteInfoApi");
         } else {
             getRouteInfoApi = Constants.URL.ROUTE_INFO;
             // Get Route Bounds
@@ -153,8 +148,6 @@ public class RouteBoundFragment extends Fragment
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString("_route_no", _route_no);
-        outState.putString("_id", _id);
-        outState.putString("_token", _token);
         outState.putString("getRouteInfoApi", getRouteInfoApi);
         if (null != mAdapter) {
             mAdapter.onSaveInstanceState(outState);
@@ -308,8 +301,6 @@ public class RouteBoundFragment extends Fragment
                                     RouteBound routeBound = gson.fromJson(element.getAsJsonObject(), RouteBound.class);
                                     mAdapter.add(routeBound);
                                 }
-                                _id = result.get("id").getAsString();
-                                _token = result.get("token").getAsString();
                                 if (mEmptyText != null)
                                     mEmptyText.setText("");
                                 if (mDatabase != null)
@@ -341,8 +332,6 @@ public class RouteBoundFragment extends Fragment
         }
         SharedPreferences.Editor editor = mPrefs.edit();
         editor.putString(Constants.PREF.REQUEST_API_INFO, getRouteInfoApi);
-        editor.putString(Constants.PREF.REQUEST_ID, _id);
-        editor.putString(Constants.PREF.REQUEST_TOKEN, _token);
         editor.apply();
     }
 

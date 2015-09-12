@@ -80,9 +80,6 @@ public class RouteStopFragment extends Fragment
     private UpdateViewReceiver mReceiver;
 
     private RouteBound _routeBound;
-    private String _id = null;
-    private String _token = null;
-    private String etaApi = "";
     private String getRouteInfoApi = "";
     private Boolean fabHidden = true;
     private SharedPreferences mPrefs;
@@ -160,10 +157,6 @@ public class RouteStopFragment extends Fragment
         mAdapter = new RouteStopAdapter(mContext);
         if (savedInstanceState != null) {
             mAdapter.onRestoreInstanceState(savedInstanceState);
-            _id = savedInstanceState.getString("_id");
-            _token = savedInstanceState.getString("_token");
-            etaApi = savedInstanceState.getString("etaApi");
-            getRouteInfoApi = savedInstanceState.getString("getRouteInfoApi");
         }
         // SwipeRefreshLayout
         mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh_route);
@@ -250,6 +243,7 @@ public class RouteStopFragment extends Fragment
                     .getParcelable(KEY_LIST_VIEW_STATE));
             mEmptyText.setText(savedInstanceState.getString("EmptyText", ""));
             fabHidden = false;
+            getRouteInfoApi = savedInstanceState.getString("getRouteInfoApi");
         } else {
             getRouteInfoApi = Constants.URL.ROUTE_INFO;
             // Get Route Stops
@@ -268,9 +262,6 @@ public class RouteStopFragment extends Fragment
         if (null != mEmptyText)
             outState.putString("EmptyText", mEmptyText.getText().toString());
         outState.putParcelable("route", _routeBound);
-        outState.putString("_id", _id);
-        outState.putString("_token", _token);
-        outState.putString("etaApi", etaApi);
         outState.putString("getRouteInfoApi", getRouteInfoApi);
     }
 
@@ -460,8 +451,6 @@ public class RouteStopFragment extends Fragment
                                         cursor.close();
                                     seq++;
                                 }
-                                _id = result.get("id").getAsString();
-                                _token = result.get("token").getAsString();
                                 getRouteFares(_routeBound);
                                 // Get ETA records in database
                                 Intent intent = new Intent(Constants.MESSAGE.ETA_UPDATED);
@@ -515,8 +504,6 @@ public class RouteStopFragment extends Fragment
         }
         SharedPreferences.Editor editor = mPrefs.edit();
         editor.putString(Constants.PREF.REQUEST_API_INFO, getRouteInfoApi);
-        editor.putString(Constants.PREF.REQUEST_ID, _id);
-        editor.putString(Constants.PREF.REQUEST_TOKEN, _token);
         editor.apply();
     }
 
