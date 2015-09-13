@@ -35,7 +35,7 @@ public class SuggestionProvider extends ContentProvider {
         sURIMatcher.addURI(AUTHORITY, BASE_PATH, SUGGESTION);
         sURIMatcher.addURI(AUTHORITY, BASE_PATH + "/#", SUGGESTION_ID);
         sURIMatcher.addURI(AUTHORITY, BASE_PATH_SUGGESTIONS, SUGGESTIONS_ANY);
-        sURIMatcher.addURI(AUTHORITY, BASE_PATH_SUGGESTIONS + "/#", SUGGESTIONS);
+        sURIMatcher.addURI(AUTHORITY, BASE_PATH_SUGGESTIONS + "/*", SUGGESTIONS);
     }
 
     @Override

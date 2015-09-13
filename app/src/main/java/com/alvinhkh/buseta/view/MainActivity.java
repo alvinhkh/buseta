@@ -348,6 +348,7 @@ public class MainActivity extends AppCompatActivity
                             SuggestionTable.COLUMN_TYPE + " = '" + SuggestionTable.TYPE_HISTORY + "'",
                     null, SuggestionTable.COLUMN_DATE + " DESC LIMIT 5");
         } else {
+            constraint = constraint.toString().trim().replace(" ", "");
             Uri suggestionUri = Uri.parse(SuggestionProvider.CONTENT_URI_SUGGESTIONS + "/" + constraint);
             mCursor = getContentResolver().query(suggestionUri, null, null, null, null);
         }
