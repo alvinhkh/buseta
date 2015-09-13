@@ -595,11 +595,16 @@ public class RouteStopFragment extends Fragment
                     int position = Integer.parseInt(newObject.stop_seq);
                     if (position < f.mAdapter.getCount()) {
                         RouteStop oldObject = f.mAdapter.getItem(position);
-                        oldObject.favourite = newObject.favourite;
-                        oldObject.eta = newObject.eta;
-                        oldObject.eta_loading = newObject.eta_loading;
-                        oldObject.eta_fail = newObject.eta_fail;
-                        f.mAdapter.notifyDataSetChanged();
+                        if (oldObject.route_bound.route_no.equals(newObject.route_bound.route_no) &&
+                                oldObject.route_bound.route_bound.equals(newObject.route_bound.route_bound) &&
+                                oldObject.stop_seq.equals(newObject.stop_seq) &&
+                                oldObject.code.equals(newObject.code)) {
+                            oldObject.favourite = newObject.favourite;
+                            oldObject.eta = newObject.eta;
+                            oldObject.eta_loading = newObject.eta_loading;
+                            oldObject.eta_fail = newObject.eta_fail;
+                            f.mAdapter.notifyDataSetChanged();
+                        }
                     }
                 } else {
 
@@ -625,11 +630,16 @@ public class RouteStopFragment extends Fragment
                                 routeStopETA.server_time = getColumnString(cursor, EtaTable.COLUMN_SERVER_TIME);
                                 routeStopETA.updated = getColumnString(cursor, EtaTable.COLUMN_UPDATED);
                             }
+                            String route_no = getColumnString(cursor, EtaTable.COLUMN_ROUTE);
+                            String route_bound = getColumnString(cursor, EtaTable.COLUMN_BOUND);
                             String stop_seq = getColumnString(cursor, EtaTable.COLUMN_STOP_SEQ);
                             String stop_code = getColumnString(cursor, EtaTable.COLUMN_STOP_CODE);
                             for (int i = 0; i < f.mAdapter.getCount(); i++) {
                                 RouteStop object = f.mAdapter.getItem(i);
-                                if (object.stop_seq.equals(stop_seq) && object.code.equals(stop_code)) {
+                                if (object.route_bound.route_no.equals(route_no) &&
+                                        object.route_bound.route_bound.equals(route_bound) &&
+                                        object.stop_seq.equals(stop_seq) &&
+                                        object.code.equals(stop_code)) {
                                     object.eta = routeStopETA;
                                     object.eta_loading = getColumnString(cursor, EtaTable.COLUMN_LOADING).equals("true");
                                     object.eta_fail = getColumnString(cursor, EtaTable.COLUMN_FAIL).equals("true");
