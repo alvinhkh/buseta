@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.database;
+package com.alvinhkh.buseta.provider;
 
 import java.util.Arrays;
 import java.util.HashSet;

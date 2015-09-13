@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.database;
+package com.alvinhkh.buseta.provider;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;

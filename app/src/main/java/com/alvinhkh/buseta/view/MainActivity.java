@@ -40,12 +40,12 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.database.FavouriteProvider;
+import com.alvinhkh.buseta.provider.FavouriteProvider;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteNews;
 import com.alvinhkh.buseta.service.UpdateSuggestionService;
 import com.alvinhkh.buseta.view.adapter.SuggestionSimpleCursorAdapter;
-import com.alvinhkh.buseta.database.SuggestionsDatabase;
+import com.alvinhkh.buseta.provider.SuggestionsDatabase;
 import com.alvinhkh.buseta.view.fragment.MainFragment;
 import com.alvinhkh.buseta.view.fragment.NoticeImageFragment;
 import com.alvinhkh.buseta.view.fragment.RouteBoundFragment;

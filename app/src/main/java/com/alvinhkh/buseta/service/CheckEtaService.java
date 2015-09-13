@@ -13,8 +13,8 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.alvinhkh.buseta.Constants;
-import com.alvinhkh.buseta.database.EtaTable;
-import com.alvinhkh.buseta.database.FavouriteProvider;
+import com.alvinhkh.buseta.provider.EtaTable;
+import com.alvinhkh.buseta.provider.FavouriteProvider;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.holder.RouteStopETA;
 import com.alvinhkh.buseta.preference.SettingsHelper;

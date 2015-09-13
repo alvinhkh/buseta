@@ -43,7 +43,7 @@ import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.Utils;
-import com.alvinhkh.buseta.database.SuggestionsDatabase;
+import com.alvinhkh.buseta.provider.SuggestionsDatabase;
 import com.alvinhkh.buseta.service.UpdateSuggestionService;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;

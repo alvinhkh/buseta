@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.view;
+package com.alvinhkh.buseta.provider;
 
 import android.annotation.TargetApi;
 import android.app.PendingIntent;
@@ -23,13 +23,12 @@ import android.widget.RemoteViews;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.database.FavouriteProvider;
-import com.alvinhkh.buseta.database.FavouriteTable;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.service.CheckEtaService;
 import com.alvinhkh.buseta.service.EtaWidgetAlarm;
 import com.alvinhkh.buseta.service.EtaWidgetService;
+import com.alvinhkh.buseta.view.MainActivity;
 
 /**
  * Our data observer just notifies an update for all weather widgets when it detects a change.

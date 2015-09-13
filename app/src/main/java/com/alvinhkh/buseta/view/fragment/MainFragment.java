@@ -37,12 +37,12 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.database.FavouriteProvider;
-import com.alvinhkh.buseta.database.FavouriteTable;
+import com.alvinhkh.buseta.provider.FavouriteProvider;
+import com.alvinhkh.buseta.provider.FavouriteTable;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.service.CheckEtaService;
 import com.alvinhkh.buseta.view.adapter.FeatureAdapter;
-import com.alvinhkh.buseta.database.SuggestionsDatabase;
+import com.alvinhkh.buseta.provider.SuggestionsDatabase;
 import com.koushikdutta.ion.Ion;
 
 import java.lang.ref.WeakReference;

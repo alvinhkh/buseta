@@ -4,7 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.support.v4.widget.SimpleCursorAdapter;
 
-import com.alvinhkh.buseta.database.SuggestionsDatabase;
+import com.alvinhkh.buseta.provider.SuggestionsDatabase;
 
 public class SuggestionSimpleCursorAdapter extends SimpleCursorAdapter {
 

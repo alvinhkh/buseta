@@ -34,7 +34,7 @@ import com.alvinhkh.buseta.view.MainActivity;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.view.adapter.RouteBoundAdapter;
-import com.alvinhkh.buseta.database.SuggestionsDatabase;
+import com.alvinhkh.buseta.provider.SuggestionsDatabase;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

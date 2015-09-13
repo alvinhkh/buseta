@@ -74,12 +74,12 @@
 
         <!-- Content Provider -->
         <provider
-            android:name=".database.FavouriteProvider"
+            android:name=".provider.FavouriteProvider"
             android:authorities="com.alvinhkh.buseta.FavouriteProvider"
             android:exported="true" />
 
         <!-- Broadcast Receiver -->
-        <receiver android:name=".view.EtaWidgetProvider" >
+        <receiver android:name=".provider.EtaWidgetProvider" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="android.appwidget.action.APPWIDGET_ENABLED" />

@@ -27,9 +27,9 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.database.EtaTable;
-import com.alvinhkh.buseta.database.FavouriteProvider;
-import com.alvinhkh.buseta.database.FavouriteTable;
+import com.alvinhkh.buseta.provider.EtaTable;
+import com.alvinhkh.buseta.provider.FavouriteProvider;
+import com.alvinhkh.buseta.provider.FavouriteTable;
 import com.alvinhkh.buseta.holder.EtaAdapterHelper;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.preference.SettingsHelper;

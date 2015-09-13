@@ -14,8 +14,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
-import com.alvinhkh.buseta.database.EtaTable;
-import com.alvinhkh.buseta.database.FavouriteTable;
+import com.alvinhkh.buseta.provider.EtaTable;
+import com.alvinhkh.buseta.provider.FavouriteTable;
 import com.alvinhkh.buseta.holder.EtaAdapterHelper;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
@@ -24,7 +24,7 @@ import com.alvinhkh.buseta.view.MainActivity;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RecyclerViewHolder;
 import com.alvinhkh.buseta.holder.SearchHistory;
-import com.alvinhkh.buseta.database.SuggestionsDatabase;
+import com.alvinhkh.buseta.provider.SuggestionsDatabase;
 import com.alvinhkh.buseta.view.dialog.RouteEtaDialog;
 
 import org.jsoup.Jsoup;
