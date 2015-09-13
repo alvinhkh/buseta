@@ -1,6 +1,7 @@
 package com.alvinhkh.buseta.view.fragment;
 
 import android.app.ActivityManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -30,11 +31,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
+import com.alvinhkh.buseta.provider.SuggestionProvider;
+import com.alvinhkh.buseta.provider.SuggestionTable;
 import com.alvinhkh.buseta.view.MainActivity;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.view.adapter.RouteBoundAdapter;
-import com.alvinhkh.buseta.provider.SuggestionsDatabase;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -63,7 +65,6 @@ public class RouteBoundFragment extends Fragment
     private String _route_no = null;
     private String getRouteInfoApi = "";
 
-    private SuggestionsDatabase mDatabase;
     private SharedPreferences mPrefs;
 
     public RouteBoundFragment() {
@@ -84,8 +85,6 @@ public class RouteBoundFragment extends Fragment
         mContext = super.getActivity();
         // Get arguments
         _route_no = getArguments().getString("route_no");
-        // Set Database for inserting search history
-        mDatabase = new SuggestionsDatabase(mContext);
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext.getApplicationContext());
         // Overview task
         setTaskDescription(_route_no + getString(R.string.interpunct) + getString(R.string.launcher_name));
@@ -169,8 +168,6 @@ public class RouteBoundFragment extends Fragment
     @Override
     public void onDestroyView() {
         Ion.getDefault(mContext).cancelAll(mContext);
-        if (null != mDatabase)
-            mDatabase.close();
         if (null != mSwipeRefreshLayout)
             mSwipeRefreshLayout.setRefreshing(false);
         if (null != mListView)
@@ -285,7 +282,7 @@ public class RouteBoundFragment extends Fragment
                         // do stuff with the result or error
                         if (e != null) {
                             Log.d(TAG, e.toString());
-                            if (mEmptyText != null)
+                            if (null != mEmptyText)
                                 mEmptyText.setText(R.string.message_fail_to_request);
                         } else
                         if (null != response && response.getHeaders().code() == 200) {
@@ -294,22 +291,25 @@ public class RouteBoundFragment extends Fragment
                             if (null != result)
                             if (result.get("valid").getAsBoolean()) {
                                 //  Got Bus Routes
-
                                 JsonArray _bus_arr = result.getAsJsonArray("bus_arr");
                                 for (JsonElement element : _bus_arr) {
                                     Gson gson = new Gson();
                                     RouteBound routeBound = gson.fromJson(element.getAsJsonObject(), RouteBound.class);
                                     mAdapter.add(routeBound);
                                 }
-                                if (mEmptyText != null)
+                                if (null != mEmptyText)
                                     mEmptyText.setText("");
-                                if (mDatabase != null)
-                                    mDatabase.insertHistory(_route_no);
-
+                                if (null != mContext) {
+                                    ContentValues values = new ContentValues();
+                                    values.put(SuggestionTable.COLUMN_TEXT, _route_no);
+                                    values.put(SuggestionTable.COLUMN_TYPE, SuggestionTable.TYPE_HISTORY);
+                                    values.put(SuggestionTable.COLUMN_DATE, String.valueOf(System.currentTimeMillis() / 1000L));
+                                    mContext.getContentResolver().insert(SuggestionProvider.CONTENT_URI, values);
+                                }
                             } else if (!result.get("valid").getAsBoolean() &&
                                     !result.get("message").getAsString().equals("")) {
                                 // Invalid request with output message
-                                if (mEmptyText != null)
+                                if (null != mEmptyText)
                                     mEmptyText.setText(result.get("message").getAsString());
                             }
                         } else {

@@ -43,7 +43,8 @@ import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.Utils;
-import com.alvinhkh.buseta.provider.SuggestionsDatabase;
+import com.alvinhkh.buseta.provider.SuggestionProvider;
+import com.alvinhkh.buseta.provider.SuggestionTable;
 import com.alvinhkh.buseta.service.UpdateSuggestionService;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
@@ -133,7 +134,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             OnSharedPreferenceChangeListener {
 
         private Activity mActivity;
-        private SuggestionsDatabase mDatabase;
         private UpdateSuggestionReceiver mReceiver;
 
         @Override
@@ -141,7 +141,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             super.onCreate(savedInstanceState);
 
             mActivity = super.getActivity();
-            mDatabase = new SuggestionsDatabase(mActivity.getApplicationContext());
             // Load the preferences from an XML resource
             addPreferencesFromResource(R.xml.preferences);
             // Set Default values from XML attribute
@@ -169,9 +168,13 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                                     Intent intent = new Intent(Constants.MESSAGE.HISTORY_UPDATED);
                                     intent.putExtra(Constants.MESSAGE.HISTORY_UPDATED, true);
                                     mActivity.sendBroadcast(intent);
+                                    int rowDeleted =
+                                            mActivity.getContentResolver().delete(SuggestionProvider.CONTENT_URI,
+                                                    SuggestionTable.COLUMN_TYPE + "=?",
+                                                    new String[]{SuggestionTable.TYPE_HISTORY});
                                     Snackbar snackbar = Snackbar.make(
                                             mActivity.findViewById(android.R.id.content),
-                                            mDatabase.clearHistory() ?
+                                            rowDeleted > 0 ?
                                                     R.string.message_clear_search_history_success :
                                                     R.string.message_clear_search_history_fail,
                                             Snackbar.LENGTH_SHORT);
@@ -274,8 +277,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
         public void onDestroy() {
             if (null != mReceiver)
                 mActivity.unregisterReceiver(mReceiver);
-            if (null != mDatabase)
-                mDatabase.close();
             super.onDestroy();
         }
 
@@ -336,7 +337,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                         if (resourceId == R.string.message_database_updating)
                             snackbar.setDuration(Snackbar.LENGTH_INDEFINITE);
                         else if (resourceId == R.string.message_database_updated) {
-                            Cursor cursor = mDatabase.getByType("%", SuggestionsDatabase.TYPE_DEFAULT);
+                            Cursor cursor = mActivity.getContentResolver().query(SuggestionProvider.CONTENT_URI,
+                                    null, SuggestionTable.COLUMN_TEXT + " LIKE '%%'" + " AND " +
+                                            SuggestionTable.COLUMN_TYPE + " = '" + SuggestionTable.TYPE_DEFAULT + "'",
+                                    null, null);
                             snackbar.setText(getString(resourceId) + " " +
                                     getString(R.string.message_total_routes, cursor == null ? 0 : cursor.getCount()));
                             if (cursor != null)

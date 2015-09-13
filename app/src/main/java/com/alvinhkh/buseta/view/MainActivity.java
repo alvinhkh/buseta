@@ -9,10 +9,10 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteCursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -43,9 +43,10 @@ import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.provider.FavouriteProvider;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteNews;
+import com.alvinhkh.buseta.provider.SuggestionProvider;
+import com.alvinhkh.buseta.provider.SuggestionTable;
 import com.alvinhkh.buseta.service.UpdateSuggestionService;
 import com.alvinhkh.buseta.view.adapter.SuggestionSimpleCursorAdapter;
-import com.alvinhkh.buseta.provider.SuggestionsDatabase;
 import com.alvinhkh.buseta.view.fragment.MainFragment;
 import com.alvinhkh.buseta.view.fragment.NoticeImageFragment;
 import com.alvinhkh.buseta.view.fragment.RouteBoundFragment;
@@ -65,7 +66,7 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = "MainActivity";
 
     private SharedPreferences mPrefs;
-    private SuggestionsDatabase mDatabase; // SearchView Suggestion, reference: http://stackoverflow.com/a/13773625
+    // SearchView Suggestion, reference: http://stackoverflow.com/a/13773625
     private MenuItem mSearchMenuItem;
     private SearchView mSearchView;
     private SuggestionSimpleCursorAdapter mAdapter;
@@ -79,7 +80,6 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mDatabase = new SuggestionsDatabase(getApplicationContext());
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         // Set up a listener whenever a key changes
         PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).registerOnSharedPreferenceChangeListener(this);
@@ -102,8 +102,8 @@ public class MainActivity extends AppCompatActivity
         registerReceiver(mReceiver, mFilter);
         // Set Suggestion Adapter
         String[] columns = new String[] {
-                SuggestionsDatabase.COLUMN_TEXT,
-                SuggestionsDatabase.COLUMN_TYPE,
+                SuggestionTable.COLUMN_TEXT,
+                SuggestionTable.COLUMN_TYPE,
         };
         int[] columnTextId = new int[] {
                 android.R.id.text1,
@@ -113,15 +113,15 @@ public class MainActivity extends AppCompatActivity
                 R.layout.row_route, mCursor, columns, columnTextId, 0);
         mAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             public boolean setViewValue(View aView, Cursor aCursor, int aColumnIndex) {
-                if (aColumnIndex == aCursor.getColumnIndexOrThrow(SuggestionsDatabase.COLUMN_TYPE)) {
+                if (aColumnIndex == aCursor.getColumnIndexOrThrow(SuggestionTable.COLUMN_TYPE)) {
                     String icon_text = aCursor.getString(aColumnIndex);
                     Integer image;
                     ImageView imageView = (ImageView) aView.findViewById(R.id.icon);
                     switch (icon_text) {
-                        case SuggestionsDatabase.TYPE_HISTORY:
+                        case SuggestionTable.TYPE_HISTORY:
                             image = R.drawable.ic_history_black_24dp;
                             break;
-                        case SuggestionsDatabase.TYPE_DEFAULT:
+                        case SuggestionTable.TYPE_DEFAULT:
                         default:
                             image = R.drawable.ic_directions_bus_black_24dp;
                             break;
@@ -249,8 +249,6 @@ public class MainActivity extends AppCompatActivity
             unregisterReceiver(mReceiver);
         if (null != mCursor)
             mCursor.close();
-        if (null != mDatabase)
-            mDatabase.close();
         Ion.getDefault(getBaseContext()).cancelAll(getBaseContext());
         // Clear Ion Image Cache
         Ion.getDefault(getBaseContext()).getCache().clear();
@@ -289,8 +287,8 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onSuggestionClick(int position) {
         collapseSearchView();
-        SQLiteCursor cursor = (SQLiteCursor) mSearchView.getSuggestionsAdapter().getItem(position);
-        int indexColumnSuggestion = cursor.getColumnIndex(SuggestionsDatabase.COLUMN_TEXT);
+        Cursor cursor = (Cursor) mSearchView.getSuggestionsAdapter().getItem(position);
+        int indexColumnSuggestion = cursor.getColumnIndex(SuggestionTable.COLUMN_TEXT);
         showRouteBoundFragment(cursor.getString(indexColumnSuggestion));
         cursor.close();
         return true;
@@ -344,9 +342,14 @@ public class MainActivity extends AppCompatActivity
     @Override
     public Cursor runQuery(CharSequence constraint) {
         if (null == constraint || constraint.length() < 1) {
-            mCursor = mDatabase.getHistory("5"); // avoid show too many results, show history only
+            // show history only
+            mCursor = getContentResolver().query(SuggestionProvider.CONTENT_URI,
+                    null, SuggestionTable.COLUMN_TEXT + " LIKE '%%'" + " AND " +
+                            SuggestionTable.COLUMN_TYPE + " = '" + SuggestionTable.TYPE_HISTORY + "'",
+                    null, SuggestionTable.COLUMN_DATE + " DESC LIMIT 5");
         } else {
-            mCursor = mDatabase.get(constraint.toString().trim().replace(" ", ""));
+            Uri suggestionUri = Uri.parse(SuggestionProvider.CONTENT_URI_SUGGESTIONS + "/" + constraint);
+            mCursor = getContentResolver().query(suggestionUri, null, null, null, null);
         }
         return mCursor;
     }
@@ -463,7 +466,10 @@ public class MainActivity extends AppCompatActivity
                     if (resourceId == R.string.message_database_updating)
                         mSnackbar.setDuration(Snackbar.LENGTH_INDEFINITE);
                     else if (resourceId == R.string.message_database_updated) {
-                        Cursor cursor = mDatabase.getByType("%", SuggestionsDatabase.TYPE_DEFAULT);
+                        Cursor cursor = getContentResolver().query(SuggestionProvider.CONTENT_URI,
+                                null, SuggestionTable.COLUMN_TEXT + " LIKE '%%'" + " AND " +
+                                        SuggestionTable.COLUMN_TYPE + " = '" + SuggestionTable.TYPE_DEFAULT + "'",
+                                null, null);
                         mSnackbar.setText(getString(resourceId) + " " +
                                 getString(R.string.message_total_routes, cursor == null ? 0 : cursor.getCount()));
                         if (cursor != null)

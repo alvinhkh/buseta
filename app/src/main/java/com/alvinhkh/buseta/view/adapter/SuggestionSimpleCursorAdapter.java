@@ -4,7 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.support.v4.widget.SimpleCursorAdapter;
 
-import com.alvinhkh.buseta.provider.SuggestionsDatabase;
+import com.alvinhkh.buseta.provider.SuggestionTable;
 
 public class SuggestionSimpleCursorAdapter extends SimpleCursorAdapter {
 
@@ -15,7 +15,7 @@ public class SuggestionSimpleCursorAdapter extends SimpleCursorAdapter {
 
     @Override
     public CharSequence convertToString(Cursor cursor) {
-        int indexColumnSuggestion = cursor.getColumnIndex(SuggestionsDatabase.COLUMN_TEXT);
+        int indexColumnSuggestion = cursor.getColumnIndex(SuggestionTable.COLUMN_TEXT);
         return cursor.getString(indexColumnSuggestion);
     }
 

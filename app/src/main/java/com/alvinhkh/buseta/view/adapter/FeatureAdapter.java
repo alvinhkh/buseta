@@ -20,11 +20,12 @@ import com.alvinhkh.buseta.holder.EtaAdapterHelper;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.holder.RouteStopETA;
+import com.alvinhkh.buseta.provider.SuggestionProvider;
+import com.alvinhkh.buseta.provider.SuggestionTable;
 import com.alvinhkh.buseta.view.MainActivity;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RecyclerViewHolder;
 import com.alvinhkh.buseta.holder.SearchHistory;
-import com.alvinhkh.buseta.provider.SuggestionsDatabase;
 import com.alvinhkh.buseta.view.dialog.RouteEtaDialog;
 
 import org.jsoup.Jsoup;
@@ -127,8 +128,8 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
     private SearchHistory getHistoryItem(int position) {
         mCursor_history.moveToPosition(position);
         // Load data from dataCursor and return it...
-        String text = mCursor_history.getString(mCursor_history.getColumnIndex(SuggestionsDatabase.COLUMN_TEXT));
-        String type = mCursor_history.getString(mCursor_history.getColumnIndex(SuggestionsDatabase.COLUMN_TYPE));
+        String text = mCursor_history.getString(mCursor_history.getColumnIndex(SuggestionTable.COLUMN_TEXT));
+        String type = mCursor_history.getString(mCursor_history.getColumnIndex(SuggestionTable.COLUMN_TYPE));
 
         SearchHistory searchHistory = new SearchHistory();
         searchHistory.route = text;
@@ -213,10 +214,10 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
             viewHolder.vRoute.setText(info.route);
             Integer image;
             switch (info.record_type) {
-                case SuggestionsDatabase.TYPE_HISTORY:
+                case SuggestionTable.TYPE_HISTORY:
                     image = R.drawable.ic_history_black_24dp;
                     break;
-                case SuggestionsDatabase.TYPE_DEFAULT:
+                case SuggestionTable.TYPE_DEFAULT:
                 default:
                     image = R.drawable.ic_directions_bus_black_24dp;
                     break;
@@ -305,9 +306,17 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
                             }})
                         .setPositiveButton(R.string.action_confirm, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialoginterface, int i) {
-                                SuggestionsDatabase mDatabase = new SuggestionsDatabase(mActivity.getApplicationContext());
-                                mDatabase.deleteHistory(_route_no);
-                                mCursor_history = mDatabase.getHistory();
+                                int rowDeleted =
+                                        mActivity.getContentResolver().delete(SuggestionProvider.CONTENT_URI,
+                                                SuggestionTable.COLUMN_TYPE + "=? AND " + SuggestionTable.COLUMN_TEXT + "=?",
+                                                new String[]{
+                                                        SuggestionTable.TYPE_HISTORY,
+                                                        _route_no
+                                                });
+                                mCursor_history = mActivity.getContentResolver().query(SuggestionProvider.CONTENT_URI,
+                                                null, SuggestionTable.COLUMN_TEXT + " LIKE '%%'" + " AND " +
+                                                        SuggestionTable.COLUMN_TYPE + " = '" + SuggestionTable.TYPE_HISTORY + "'",
+                                                null, SuggestionTable.COLUMN_DATE + " DESC");
                                 notifyDataSetChanged();
                             }
                         })

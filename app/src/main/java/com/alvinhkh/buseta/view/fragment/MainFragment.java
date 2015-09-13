@@ -40,9 +40,10 @@ import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.provider.FavouriteProvider;
 import com.alvinhkh.buseta.provider.FavouriteTable;
 import com.alvinhkh.buseta.holder.RouteStop;
+import com.alvinhkh.buseta.provider.SuggestionProvider;
+import com.alvinhkh.buseta.provider.SuggestionTable;
 import com.alvinhkh.buseta.service.CheckEtaService;
 import com.alvinhkh.buseta.view.adapter.FeatureAdapter;
-import com.alvinhkh.buseta.provider.SuggestionsDatabase;
 import com.koushikdutta.ion.Ion;
 
 import java.lang.ref.WeakReference;
@@ -54,7 +55,6 @@ public class MainFragment extends Fragment
     private static final String TAG = "MainFragment";
 
     private Context mContext = super.getActivity();
-    private SuggestionsDatabase mDatabase_suggestion;
     private FeatureAdapter mAdapter;
     private Cursor mCursor_history;
     private Cursor mCursor_favorite;
@@ -80,7 +80,6 @@ public class MainFragment extends Fragment
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         mContext = super.getActivity();
-        mDatabase_suggestion = new SuggestionsDatabase(mContext.getApplicationContext());
         // Overview task
         setTaskDescription(getString(R.string.launcher_name));
         // Toolbar
@@ -101,7 +100,10 @@ public class MainFragment extends Fragment
         mRecyclerView.setHasFixedSize(true);
         final GridLayoutManager manager = new GridLayoutManager(mContext, 2);
         mRecyclerView.setLayoutManager(manager);
-        mCursor_history = mDatabase_suggestion.getHistory();
+        mCursor_history = mContext.getContentResolver().query(SuggestionProvider.CONTENT_URI,
+                null, SuggestionTable.COLUMN_TEXT + " LIKE '%%'" + " AND " +
+                        SuggestionTable.COLUMN_TYPE + " = '" + SuggestionTable.TYPE_HISTORY + "'",
+                null, SuggestionTable.COLUMN_DATE + " DESC");
         mCursor_favorite = mContext.getContentResolver().query(
                 FavouriteProvider.CONTENT_URI, null, null, null,
                 FavouriteTable.COLUMN_DATE + " DESC");
@@ -156,7 +158,11 @@ public class MainFragment extends Fragment
             mActionBar.setSubtitle(null);
         }
         if (null != mAdapter) {
-            Cursor oldCursor = mAdapter.swapHistoryCursor(mDatabase_suggestion.getHistory());
+            Cursor oldCursor = mAdapter.swapHistoryCursor(
+                    mContext.getContentResolver().query(SuggestionProvider.CONTENT_URI,
+                    null, SuggestionTable.COLUMN_TEXT + " LIKE '%%'" + " AND " +
+                            SuggestionTable.COLUMN_TYPE + " = '" + SuggestionTable.TYPE_HISTORY + "'",
+                    null, SuggestionTable.COLUMN_DATE + " DESC"));
             if (null != oldCursor)
                 oldCursor.close();
         }
@@ -181,8 +187,6 @@ public class MainFragment extends Fragment
             mCursor_favorite.close();
         if (null != mCursor_history)
             mCursor_history.close();
-        if (null != mDatabase_suggestion)
-            mDatabase_suggestion.close();
         View view = getView();
         if (null != view)
             view.setVisibility(View.GONE);
@@ -274,7 +278,10 @@ public class MainFragment extends Fragment
             Bundle bundle = message.getData();
             Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.HISTORY_UPDATED);
             if (null != f.mAdapter && null != f.mContext && aBoolean) {
-                f.mCursor_history = f.mDatabase_suggestion.getHistory();
+                f.mCursor_history = f.mContext.getContentResolver().query(SuggestionProvider.CONTENT_URI,
+                        null, SuggestionTable.COLUMN_TEXT + " LIKE '%%'" + " AND " +
+                                SuggestionTable.COLUMN_TYPE + " = '" + SuggestionTable.TYPE_HISTORY + "'",
+                        null, SuggestionTable.COLUMN_DATE + " DESC");
                 Cursor oldCursor = f.mAdapter.swapHistoryCursor(f.mCursor_history);
                 if (null != oldCursor)
                     oldCursor.close();

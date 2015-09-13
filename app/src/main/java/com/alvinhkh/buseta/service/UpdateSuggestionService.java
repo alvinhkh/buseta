@@ -1,6 +1,7 @@
 package com.alvinhkh.buseta.service;
 
 import android.app.IntentService;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -11,7 +12,8 @@ import android.util.Log;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.provider.SuggestionsDatabase;
+import com.alvinhkh.buseta.provider.SuggestionProvider;
+import com.alvinhkh.buseta.provider.SuggestionTable;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.koushikdutta.async.future.FutureCallback;
@@ -22,7 +24,6 @@ public class UpdateSuggestionService extends IntentService {
     private static final String TAG = "UpdateSuggestion";
 
     SharedPreferences mPrefs;
-    SuggestionsDatabase mDatabase;
 
     public UpdateSuggestionService() {
         super("UpdateSuggestionService");
@@ -32,13 +33,10 @@ public class UpdateSuggestionService extends IntentService {
     public void onCreate() {
         super.onCreate();
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        mDatabase = new SuggestionsDatabase(getApplicationContext());
     }
 
     @Override
     public void onDestroy() {
-        if (null != mDatabase)
-            mDatabase.close();
         super.onDestroy();
     }
 
@@ -68,11 +66,22 @@ public class UpdateSuggestionService extends IntentService {
                         if (null != result && result.size() > 0) {
                             JsonObject object = result.get(0).getAsJsonObject();
                             if (null != object && object.has("r_no")) {
-                                mDatabase.clearDefault(); // clear existing suggested routes
+                                // clear existing suggested routes
+                                getContentResolver().delete(SuggestionProvider.CONTENT_URI,
+                                        SuggestionTable.COLUMN_TYPE + "=?",
+                                        new String[]{SuggestionTable.TYPE_DEFAULT});
                                 String routes = object.get("r_no").getAsString();
                                 String[] routeArray = routes.split(",");
-                                Boolean success = true;
-                                success = mDatabase.insertDefaults(routeArray);
+                                ContentValues[] contentValues = new ContentValues[routeArray.length];
+                                for (int i = 0; i < routeArray.length; i++) {
+                                    ContentValues values = new ContentValues();
+                                    values.put(SuggestionTable.COLUMN_TEXT, routeArray[i]);
+                                    values.put(SuggestionTable.COLUMN_TYPE, SuggestionTable.TYPE_DEFAULT);
+                                    values.put(SuggestionTable.COLUMN_DATE, "0");
+                                    contentValues[i] = values;
+                                }
+                                int insertedRows = getContentResolver().bulkInsert(
+                                        SuggestionProvider.CONTENT_URI, contentValues);
                                 if (null != mPrefs) {
                                     // update record version number
                                     // this number is to trigger update automatically
@@ -80,8 +89,8 @@ public class UpdateSuggestionService extends IntentService {
                                     editor.putInt(Constants.PREF.VERSION_RECORD, Constants.ROUTES.VERSION);
                                     editor.apply();
                                 }
-                                if (success) {
-                                    Log.d(TAG, "updated available routes suggestion");
+                                if (insertedRows > 0) {
+                                    Log.d(TAG, "updated available routes suggestion: " + insertedRows);
                                 } else {
                                     Log.d(TAG, "error when inserting available routes to database");
                                 }

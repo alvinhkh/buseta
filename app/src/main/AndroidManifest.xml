@@ -77,6 +77,10 @@
             android:name=".provider.FavouriteProvider"
             android:authorities="com.alvinhkh.buseta.FavouriteProvider"
             android:exported="true" />
+        <provider
+            android:name=".provider.SuggestionProvider"
+            android:authorities="com.alvinhkh.buseta.SuggestionProvider"
+            android:exported="true" />
 
         <!-- Broadcast Receiver -->
         <receiver android:name=".provider.EtaWidgetProvider" >
