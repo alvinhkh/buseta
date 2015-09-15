@@ -123,12 +123,9 @@ public class MainFragment extends Fragment
             @Override
             public void onClick(View v) {
                 if (null == mSearchMenuItem) return;
+                mSearchMenuItem.expandActionView();
                 SearchView mSearchView = (SearchView) mSearchMenuItem.getActionView();
-                if (mSearchMenuItem.isActionViewExpanded() && null != mSearchView) {
-                    mSearchView.requestFocus();
-                } else {
-                    mSearchMenuItem.expandActionView();
-                }
+                mSearchView.requestFocus();
             }
         });
         // Set up a listener whenever a key changes
@@ -199,6 +196,16 @@ public class MainFragment extends Fragment
         super.onCreateOptionsMenu(menu, inflater);
         menu.findItem(R.id.action_search).setVisible(false);
         mSearchMenuItem = menu.findItem(R.id.action_search);
+        SearchView mSearchView = (SearchView) mSearchMenuItem.getActionView();
+        mSearchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (hasFocus)
+                    mFab.hide();
+                else
+                    mFab.show();
+            }
+        });
     }
 
     @Override
