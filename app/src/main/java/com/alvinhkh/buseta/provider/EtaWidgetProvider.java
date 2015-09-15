@@ -138,7 +138,7 @@ public class EtaWidgetProvider extends AppWidgetProvider {
                     final Cursor c = r.query(
                             FavouriteProvider.CONTENT_URI_FAV, null, null, null,
                             FavouriteTable.COLUMN_DATE + " DESC");
-                    while (c.moveToNext()) {
+                    while (null != c && c.moveToNext()) {
                         RouteBound routeBound = new RouteBound();
                         routeBound.route_no = getColumnString(c, FavouriteTable.COLUMN_ROUTE);
                         routeBound.route_bound = getColumnString(c, FavouriteTable.COLUMN_BOUND);

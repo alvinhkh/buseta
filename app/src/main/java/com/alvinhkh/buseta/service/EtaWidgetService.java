@@ -110,17 +110,6 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
         RouteStop object = getItem(position);
         // Return a proper item
         RemoteViews rv = new RemoteViews(mContext.getPackageName(), R.layout.widget_item_eta);
-        final ConnectivityManager conMgr =
-                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
-        if (activeNetwork == null || !activeNetwork.isConnected()) {
-            rv.setViewVisibility(R.id.textView_text, View.VISIBLE);
-            rv.setTextViewText(R.id.textView_text,
-                    mContext.getString(R.string.message_no_internet_connection));
-        } else {
-            rv.setViewVisibility(R.id.textView_text, View.GONE);
-            rv.setTextViewText(R.id.textView_text, "");
-        }
         if (null != object&& null != object.route_bound) {
             // load data
             rv.setTextViewText(R.id.stop_code, object.code);

@@ -278,6 +278,8 @@ public class MainFragment extends Fragment
             Bundle bundle = message.getData();
             Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.HISTORY_UPDATED);
             if (null != f.mAdapter && null != f.mContext && aBoolean) {
+                if (null != f.mCursor_history)
+                    f.mCursor_history.close();
                 f.mCursor_history = f.mContext.getContentResolver().query(SuggestionProvider.CONTENT_URI,
                         null, SuggestionTable.COLUMN_TEXT + " LIKE '%%'" + " AND " +
                                 SuggestionTable.COLUMN_TYPE + " = '" + SuggestionTable.TYPE_HISTORY + "'",
@@ -320,6 +322,8 @@ public class MainFragment extends Fragment
             Bundle bundle = message.getData();
             Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.ETA_UPDATED);
             if (null != f.mAdapter && null != f.mContext && aBoolean) {
+                if (null != f.mCursor_favorite)
+                    f.mCursor_favorite.close();
                 f.mCursor_favorite = f.mContext.getContentResolver().query(
                         FavouriteProvider.CONTENT_URI, null, null, null,
                         FavouriteTable.COLUMN_DATE + " DESC");
