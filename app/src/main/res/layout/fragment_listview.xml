@@ -12,7 +12,7 @@
         android:fastScrollAlwaysVisible="false"
         android:fastScrollEnabled="false"
         android:clipToPadding="false"
-        android:scrollbarStyle="outsideInset"
+        android:scrollbarStyle="outsideOverlay"
         android:overScrollFooter="@android:color/transparent"
         android:footerDividersEnabled="false"
         android:visibility="gone" />

@@ -302,14 +302,14 @@ public class MainActivity extends AppCompatActivity
         if (null == query) return false;
         collapseSearchView();
         boolean showMessage = true;
-        if (query.toUpperCase().equals(Constants.PREF.AD_KEY) ||
-                query.toUpperCase().equals(Constants.PREF.AD_SHOW)) {
+        query = query.toUpperCase();
+        if (query.equals(Constants.PREF.AD_KEY) ||
+                query.equals(Constants.PREF.AD_SHOW)) {
+            mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             Boolean hidden = mPrefs.getBoolean(Constants.PREF.AD_HIDE, false);
             SharedPreferences.Editor editor = mPrefs.edit();
-            editor.putBoolean(Constants.PREF.AD_HIDE,
-                    query.equals(Constants.PREF.AD_KEY) ? true : false);
+            editor.putBoolean(Constants.PREF.AD_HIDE, query.equals(Constants.PREF.AD_KEY));
             editor.apply();
-            createAdView();
             if (showMessage) {
                 // show snack bar
                 int stringId = R.string.message_request_hide_ad;
@@ -385,9 +385,9 @@ public class MainActivity extends AppCompatActivity
         if (null != mAdView) {
             mAdView.destroy();
             mAdView.setVisibility(View.GONE);
+            mAdView = null;
         }
-        boolean hideAdView = mPrefs.getBoolean(Constants.PREF.AD_HIDE, false);
-        if (!hideAdView) {
+        if (!mPrefs.getBoolean(Constants.PREF.AD_HIDE, false)) {
             mAdView = new AdView(this);
             mAdView.setAdUnitId(getString(R.string.ad_banner_unit_id));
             mAdView.setAdSize(AdSize.SMART_BANNER);
