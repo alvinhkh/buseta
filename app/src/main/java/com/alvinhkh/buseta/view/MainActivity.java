@@ -43,6 +43,7 @@ import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.provider.FavouriteProvider;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteNews;
+import com.alvinhkh.buseta.provider.RouteProvider;
 import com.alvinhkh.buseta.provider.SuggestionProvider;
 import com.alvinhkh.buseta.provider.SuggestionTable;
 import com.alvinhkh.buseta.service.UpdateSuggestionService;
@@ -243,6 +244,8 @@ public class MainActivity extends AppCompatActivity
     public void onDestroy() {
         int rowsDeleted = getContentResolver().delete(FavouriteProvider.CONTENT_URI_ETA_JOIN, null, null);
         Log.d(TAG, "Deleted ETA Records: " + rowsDeleted);
+        int rowsDeleted_route = getContentResolver().delete(RouteProvider.CONTENT_URI, null, null);
+        Log.d(TAG, "Deleted Route Records: " + rowsDeleted_route);
         if (null != mAdView)
             mAdView.destroy();
         if (null != mReceiver)

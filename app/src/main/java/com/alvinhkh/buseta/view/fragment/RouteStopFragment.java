@@ -44,7 +44,10 @@ import com.alvinhkh.buseta.provider.FavouriteTable;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.holder.RouteStopETA;
+import com.alvinhkh.buseta.provider.RouteProvider;
+import com.alvinhkh.buseta.provider.RouteStopTable;
 import com.alvinhkh.buseta.service.CheckEtaService;
+import com.alvinhkh.buseta.service.RouteService;
 import com.alvinhkh.buseta.view.adapter.RouteStopAdapter;
 import com.alvinhkh.buseta.holder.RouteStopMap;
 import com.alvinhkh.buseta.view.dialog.RouteEtaDialog;
@@ -77,12 +80,11 @@ public class RouteStopFragment extends Fragment
     private TextView mEmptyText;
     private ProgressBar mProgressBar;
     private RouteStopAdapter mAdapter;
-    private UpdateViewReceiver mReceiver;
+    private UpdateViewReceiver mReceiver_view;
+    private UpdateItemReceiver mReceiver_item;
 
     private RouteBound _routeBound;
-    private String getRouteInfoApi = "";
     private Boolean fabHidden = true;
-    private SharedPreferences mPrefs;
 
     // Runnable to get all stops eta
     int iEta = 0;
@@ -134,7 +136,6 @@ public class RouteStopFragment extends Fragment
                              final Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_routestop, container, false);
         mContext = super.getActivity();
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext.getApplicationContext());
         // Get arguments
         _routeBound = getArguments().getParcelable("route");
         if (null != _routeBound) {
@@ -176,13 +177,17 @@ public class RouteStopFragment extends Fragment
         mListView.setOnItemClickListener(this);
         // Broadcast Receiver
         if (null != mContext) {
-            mReceiver = new UpdateViewReceiver();
-            IntentFilter mFilter = new IntentFilter(Constants.MESSAGE.STOP_UPDATED);
-            mFilter.addAction(Constants.MESSAGE.STOP_UPDATED);
+            mReceiver_view = new UpdateViewReceiver();
+            IntentFilter mFilter_view = new IntentFilter(Constants.MESSAGE.STOPS_UPDATED);
+            mFilter_view.addAction(Constants.MESSAGE.STOPS_UPDATED);
+            mContext.registerReceiver(mReceiver_view, mFilter_view);
+            mReceiver_item = new UpdateItemReceiver();
+            IntentFilter mFilter_item = new IntentFilter(Constants.MESSAGE.STOP_UPDATED);
+            mFilter_item.addAction(Constants.MESSAGE.STOP_UPDATED);
             IntentFilter mFilter_eta = new IntentFilter(Constants.MESSAGE.ETA_UPDATED);
             mFilter_eta.addAction(Constants.MESSAGE.ETA_UPDATED);
-            mContext.registerReceiver(mReceiver, mFilter);
-            mContext.registerReceiver(mReceiver, mFilter_eta);
+            mContext.registerReceiver(mReceiver_item, mFilter_item);
+            mContext.registerReceiver(mReceiver_item, mFilter_eta);
         }
         // FloatingActionButton
         mFab = (FloatingActionButton) view.findViewById(R.id.fab);
@@ -243,11 +248,27 @@ public class RouteStopFragment extends Fragment
                     .getParcelable(KEY_LIST_VIEW_STATE));
             mEmptyText.setText(savedInstanceState.getString("EmptyText", ""));
             fabHidden = false;
-            getRouteInfoApi = savedInstanceState.getString("getRouteInfoApi");
         } else {
-            getRouteInfoApi = Constants.URL.ROUTE_INFO;
-            // Get Route Stops
-            getRouteStops(_routeBound);
+            final Cursor c = mContext.getContentResolver().query(
+                    RouteProvider.CONTENT_URI,
+                    null,
+                    RouteStopTable.COLUMN_ROUTE + "=? AND " +
+                            RouteStopTable.COLUMN_BOUND + "=? ",
+                    new String[]{
+                            _routeBound.route_no,
+                            _routeBound.route_bound,
+                    }, RouteStopTable.COLUMN_STOP_SEQ + "* 1 ASC");
+            if (null != c && c.getCount() > 0) {
+                Intent intent = new Intent(Constants.MESSAGE.STOPS_UPDATED);
+                intent.putExtra(Constants.MESSAGE.STOPS_UPDATED, true);
+                intent.putExtra(Constants.BUNDLE.BOUND_OBJECT, _routeBound);
+                intent.putExtra(Constants.BUNDLE.UPDATE_MESSAGE, Constants.STATUS.UPDATED_ROUTE_STOPS);
+                mContext.sendBroadcast(intent);
+            } else {
+                requestRouteStop();
+            }
+            if (null != c)
+                c.close();
         }
         return view;
     }
@@ -262,7 +283,6 @@ public class RouteStopFragment extends Fragment
         if (null != mEmptyText)
             outState.putString("EmptyText", mEmptyText.getText().toString());
         outState.putParcelable("route", _routeBound);
-        outState.putString("getRouteInfoApi", getRouteInfoApi);
     }
 
     @Override
@@ -286,8 +306,10 @@ public class RouteStopFragment extends Fragment
     @Override
     public void onDestroyView() {
         Ion.getDefault(mContext).cancelAll(mContext);
-        if (null != mContext && null != mReceiver)
-            mContext.unregisterReceiver(mReceiver);
+        if (null != mContext && null != mReceiver_view)
+            mContext.unregisterReceiver(mReceiver_view);
+        if (null != mContext && null != mReceiver_item)
+            mContext.unregisterReceiver(mReceiver_item);
         if (null != mSwipeRefreshLayout)
             mSwipeRefreshLayout.setRefreshing(false);
         if (null != mFab)
@@ -344,7 +366,7 @@ public class RouteStopFragment extends Fragment
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            getRouteStops(_routeBound);
+            requestRouteStop();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -370,208 +392,18 @@ public class RouteStopFragment extends Fragment
         }
     }
 
-    private void getRouteStops(final RouteBound routeBound) {
-        if (null != mEtaHandler && null != mEtaRunnable)
-            mEtaHandler.removeCallbacks(mEtaRunnable);
+    private void requestRouteStop() {
         if (null != mAdapter) {
             mAdapter.clear();
             mAdapter.notifyDataSetChanged();
         }
-        if (null == routeBound.route_no || null == routeBound.route_bound) return;
-        // Check internet connection
-        final ConnectivityManager conMgr = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
-        if (activeNetwork == null || !activeNetwork.isConnected()) {
-            Snackbar snackbar = Snackbar.make(getActivity().findViewById(android.R.id.content),
-                    R.string.message_no_internet_connection, Snackbar.LENGTH_LONG);
-            TextView tv = (TextView)
-                    snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
-            tv.setTextColor(Color.WHITE);
-            snackbar.show();
-            if (mProgressBar != null)
-                mProgressBar.setVisibility(View.GONE);
-            if (mEmptyText != null)
-                mEmptyText.setText(R.string.message_fail_to_request);
-            if (null != mFab)
-                mFab.hide();
-            return;
-        }
-
-        if (mEmptyText != null)
+        if (null != mEmptyText)
             mEmptyText.setText(R.string.message_loading);
-        if (mProgressBar != null)
+        if (null != mProgressBar)
             mProgressBar.setVisibility(View.VISIBLE);
-
-        String _random_t = ((Double) Math.random()).toString();
-        Uri routeStopUri = Uri.parse(getRouteInfoApi)
-                .buildUpon()
-                .appendQueryParameter("t", _random_t)
-                .appendQueryParameter("chkroutebound", "true")
-                .appendQueryParameter("field9", routeBound.route_no)
-                .appendQueryParameter("routebound", routeBound.route_bound)
-                .build();
-
-        Ion.with(mContext)
-                .load(routeStopUri.toString())
-                //.setLogging("Ion", Log.DEBUG)
-                .progressBar(mProgressBar)
-                .setHeader("Referer", Constants.URL.REQUEST_REFERRER)
-                .setHeader("X-Requested-With", "XMLHttpRequest")
-                .setHeader("Pragma", "no-cache")
-                .setHeader("User-Agent", Constants.URL.REQUEST_UA)
-                .asJsonObject()
-                .withResponse()
-                .setCallback(new FutureCallback<Response<JsonObject>>() {
-                    @Override
-                    public void onCompleted(Exception e, Response<JsonObject> response) {
-                        // do stuff with the result or error
-                        if (e != null) {
-                            Log.e(TAG, e.toString());
-                            if (mEmptyText != null)
-                                mEmptyText.setText(R.string.message_fail_to_request);
-                        } else
-                        if (null != response && response.getHeaders().code() == 200) {
-                            JsonObject result = response.getResult();
-                            //Log.d(TAG, result.toString());
-                            mAdapter.clear();
-                            if (null != result)
-                            if (result.get("valid").getAsBoolean()) {
-                                //  Got Bus Line Stops
-                                JsonArray _bus_arr = result.getAsJsonArray("bus_arr");
-                                int seq = 0;
-                                for (JsonElement element : _bus_arr) {
-                                    Gson gson = new Gson();
-                                    RouteStop routeStop = gson.fromJson(element.getAsJsonObject(), RouteStop.class);
-                                    routeStop.route_bound = _routeBound;
-                                    routeStop.stop_seq = String.valueOf(seq);
-                                    Cursor cursor = getExistFavourite(routeStop);
-                                    routeStop.favourite = (null != cursor && cursor.getCount() > 0);
-                                    mAdapter.add(routeStop);
-                                    if (null != cursor)
-                                        cursor.close();
-                                    seq++;
-                                }
-                                getRouteFares(_routeBound);
-                                // Get ETA records in database
-                                Intent intent = new Intent(Constants.MESSAGE.ETA_UPDATED);
-                                intent.putExtra(Constants.MESSAGE.ETA_UPDATED, true);
-                                mContext.sendBroadcast(intent);
-
-                                if (mEmptyText != null)
-                                    mEmptyText.setText("");
-
-                                fabHidden = false;
-
-                            } else if (!result.get("valid").getAsBoolean() &&
-                                    !result.get("message").getAsString().equals("")) {
-                                // Invalid request with output message
-                                if (mEmptyText != null)
-                                    mEmptyText.setText(result.get("message").getAsString());
-                            }
-                        } else {
-                            switchGetRouteInfoApi();
-                            getRouteStops(routeBound);
-                        }
-                        if (mProgressBar != null)
-                            mProgressBar.setVisibility(View.GONE);
-                        if (null != mSwipeRefreshLayout)
-                            mSwipeRefreshLayout.setRefreshing(false);
-                    }
-                });
-
-    }
-
-    private Cursor getExistFavourite(RouteStop object) {
-        if (null == mContext) return null;
-        return mContext.getContentResolver().query(FavouriteProvider.CONTENT_URI_FAV,
-                null,
-                FavouriteTable.COLUMN_ROUTE + " =?" +
-                        " AND " + FavouriteTable.COLUMN_BOUND + " =?" +
-                        " AND " + FavouriteTable.COLUMN_STOP_CODE + " =?",
-                new String[] {
-                        object.route_bound.route_no,
-                        object.route_bound.route_bound,
-                        object.code
-                },
-                FavouriteTable.COLUMN_DATE + " DESC");
-    }
-
-    private void switchGetRouteInfoApi() {
-        if (getRouteInfoApi.equals(Constants.URL.ROUTE_INFO)) {
-            getRouteInfoApi = Constants.URL.ROUTE_INFO_V1;
-        } else {
-            getRouteInfoApi = Constants.URL.ROUTE_INFO;
-        }
-        SharedPreferences.Editor editor = mPrefs.edit();
-        editor.putString(Constants.PREF.REQUEST_API_INFO, getRouteInfoApi);
-        editor.apply();
-    }
-
-    private void getRouteFares(RouteBound routeBound) {
-        final String route_no = routeBound.route_no;
-        final String route_bound = routeBound.route_bound;
-        final String route_st = "01"; // TODO: selectable
-
-        if (mSwipeRefreshLayout != null)
-            mSwipeRefreshLayout.setRefreshing(true);
-        List<RouteStop> routeStopList = mAdapter.getAllItems();
-        for (int j = 0; j < routeStopList.size(); j++) {
-            RouteStop routeStop = routeStopList.get(j);
-            routeStop.fare = mContext.getString(R.string.dots);
-        }
-        mAdapter.notifyDataSetChanged();
-
-        Ion.with(mContext)
-                .load(Constants.URL.ROUTE_MAP)
-                .setHeader("Referer", Constants.URL.HTML_SEARCH)
-                .setHeader("X-Requested-With", "XMLHttpRequest")
-                .setHeader("Pragma", "no-cache")
-                .setHeader("User-Agent", Constants.URL.REQUEST_UA)
-                .setBodyParameter("bn", route_no)
-                .setBodyParameter("dir", route_bound)
-                .setBodyParameter("ST", route_st)
-                .asJsonArray()
-                .setCallback(new FutureCallback<JsonArray>() {
-                    @Override
-                    public void onCompleted(Exception e, JsonArray jsonArray) {
-                        // do stuff with the result or error
-                        if (e != null) {
-                            Log.e(TAG, e.toString());
-                        }
-                        List<RouteStop> routeStopList = mAdapter.getAllItems();
-                        if (null != jsonArray) {
-                            for (int i = 0; i < jsonArray.size(); i++) {
-                                JsonObject object = jsonArray.get(i).getAsJsonObject();
-                                if (null != object) {
-                                    Gson gson = new Gson();
-                                    RouteStopMap routeStopMap = gson.fromJson(object, RouteStopMap.class);
-                                    if (null != routeStopMap.subarea) {
-                                        for (int j = 0; j < routeStopList.size(); j++) {
-                                            RouteStop routeStop = routeStopList.get(j);
-                                            String stopCode = routeStop.code;
-                                            if (stopCode.equals(routeStopMap.subarea)) {
-                                                if (null != routeStopMap.air_cond_fare &&
-                                                        !routeStopMap.air_cond_fare.equals("") &&
-                                                        !routeStopMap.air_cond_fare.equals("0.00"))
-                                                routeStop.fare = mContext.getString(R.string.hkd, routeStopMap.air_cond_fare);
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            for (int j = 0; j < routeStopList.size(); j++) {
-                                RouteStop routeStop = routeStopList.get(j);
-                                if (null != routeStop.fare &&
-                                        routeStop.fare.equals(mContext.getString(R.string.dots)))
-                                    routeStop.fare = "";
-                            }
-                            mAdapter.notifyDataSetChanged();
-                            if (mSwipeRefreshLayout != null)
-                                mSwipeRefreshLayout.setRefreshing(false);
-                        }
-                    }
-                });
-
+        Intent intent = new Intent(mContext, RouteService.class);
+        intent.putExtra(Constants.BUNDLE.BOUND_OBJECT, _routeBound);
+        mContext.startService(intent);
     }
 
     UpdateViewHandler mViewHandler = new UpdateViewHandler(this);
@@ -579,7 +411,198 @@ public class RouteStopFragment extends Fragment
         WeakReference<RouteStopFragment> mFrag;
 
         UpdateViewHandler(RouteStopFragment aFragment) {
-            mFrag = new WeakReference<RouteStopFragment>(aFragment);
+            mFrag = new WeakReference<>(aFragment);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            RouteStopFragment f = mFrag.get();
+            if (null == f) return;
+            Bundle bundle = msg.getData();
+            Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.STOPS_UPDATED);
+            if (null != f.mAdapter && aBoolean) {
+                if (null != f.mEtaHandler && null != f.mEtaRunnable)
+                    f.mEtaHandler.removeCallbacks(f.mEtaRunnable);
+                final ConnectivityManager conMgr = (ConnectivityManager) f.mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+                final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
+                if (activeNetwork == null || !activeNetwork.isConnected()) {
+                    // Check internet connection
+                    if (null != f.getView()) {
+                        Snackbar snackbar = Snackbar.make(f.getView().findViewById(android.R.id.content),
+                                R.string.message_no_internet_connection, Snackbar.LENGTH_LONG);
+                        TextView tv = (TextView)
+                                snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
+                        tv.setTextColor(Color.WHITE);
+                        snackbar.show();
+                    }
+                    if (null != f.mProgressBar)
+                        f.mProgressBar.setVisibility(View.GONE);
+                    if (null != f.mEmptyText)
+                        f.mEmptyText.setText(R.string.message_fail_to_request);
+                    if (null != f.mFab)
+                        f.mFab.hide();
+                    return;
+                }
+                RouteBound object = bundle.getParcelable(Constants.BUNDLE.BOUND_OBJECT);
+                String message = bundle.getString(Constants.BUNDLE.UPDATE_MESSAGE, "");
+                switch (message) {
+                    case Constants.STATUS.UPDATED_ROUTE_STOPS:
+                        if (null != object && null != f._routeBound &&
+                                object.route_no.equals(f._routeBound.route_no) &&
+                                object.route_bound.equals(f._routeBound.route_bound)) {
+                            final Cursor c = f.mContext.getContentResolver().query(
+                                    RouteProvider.CONTENT_URI,
+                                    null,
+                                    RouteStopTable.COLUMN_ROUTE + "=? AND " +
+                                            RouteStopTable.COLUMN_BOUND + "=? ",
+                                    new String[]{
+                                            f._routeBound.route_no,
+                                            f._routeBound.route_bound,
+                                    }, RouteStopTable.COLUMN_STOP_SEQ + "* 1 ASC");
+                            f.mAdapter.clear();
+                            while (null != c && c.moveToNext()) {
+                                RouteStop routeStop = new RouteStop();
+                                routeStop.route_bound = f._routeBound;
+                                routeStop.stop_seq = getColumnString(c, RouteStopTable.COLUMN_STOP_SEQ);
+                                routeStop.name_tc = getColumnString(c, RouteStopTable.COLUMN_STOP_NAME);
+                                routeStop.name_en = getColumnString(c, RouteStopTable.COLUMN_STOP_NAME_EN);
+                                routeStop.code = getColumnString(c, RouteStopTable.COLUMN_STOP_CODE);
+                                Cursor cFav = f.mContext.getContentResolver().query(FavouriteProvider.CONTENT_URI_FAV,
+                                        null,
+                                        FavouriteTable.COLUMN_ROUTE + " =?" +
+                                                " AND " + FavouriteTable.COLUMN_BOUND + " =?" +
+                                                " AND " + FavouriteTable.COLUMN_STOP_CODE + " =?",
+                                        new String[]{
+                                                routeStop.route_bound.route_no,
+                                                routeStop.route_bound.route_bound,
+                                                routeStop.code
+                                        },
+                                        FavouriteTable.COLUMN_DATE + " DESC");
+                                routeStop.favourite = (null != cFav && cFav.getCount() > 0);
+                                routeStop.fare = getColumnString(c, RouteStopTable.COLUMN_STOP_FARE);
+                                if (null != cFav)
+                                    cFav.close();
+                                f.mAdapter.add(routeStop);
+                            }
+                            f.mAdapter.notifyDataSetChanged();
+                            // Get ETA records in database
+                            Intent intent = new Intent(Constants.MESSAGE.ETA_UPDATED);
+                            intent.putExtra(Constants.MESSAGE.ETA_UPDATED, true);
+                            f.mContext.sendBroadcast(intent);
+                            if (null != c)
+                                c.close();
+                            f.fabHidden = false;
+                            if (null != f.mFab)
+                                f.mFab.show();
+                            if (null != f.mEmptyText)
+                                f.mEmptyText.setText("");
+                            if (null != f.mProgressBar)
+                                f.mProgressBar.setVisibility(View.GONE);
+                            if (null != f.mSwipeRefreshLayout)
+                                f.mSwipeRefreshLayout.setRefreshing(false);
+                        }
+                        break;
+                    case Constants.STATUS.UPDATED_FARE:
+                        if (null != object && null != f._routeBound &&
+                                object.route_no.equals(f._routeBound.route_no) &&
+                                object.route_bound.equals(f._routeBound.route_bound)) {
+                            final Cursor c = f.mContext.getContentResolver().query(
+                                    RouteProvider.CONTENT_URI,
+                                    null,
+                                    RouteStopTable.COLUMN_ROUTE + "=? AND " +
+                                            RouteStopTable.COLUMN_BOUND + "=? ",
+                                    new String[]{
+                                            f._routeBound.route_no,
+                                            f._routeBound.route_bound,
+                                    }, RouteStopTable.COLUMN_STOP_SEQ + "* 1 ASC");
+                            while (null != c && c.moveToNext()) {
+                                String route_no = getColumnString(c, RouteStopTable.COLUMN_ROUTE);
+                                String route_bound = getColumnString(c, RouteStopTable.COLUMN_BOUND);
+                                String stop_seq = getColumnString(c, RouteStopTable.COLUMN_STOP_SEQ);
+                                String stop_code = getColumnString(c, RouteStopTable.COLUMN_STOP_CODE);
+                                for (int i = 0; i < f.mAdapter.getCount(); i++) {
+                                    RouteStop routeStop = f.mAdapter.getItem(i);
+                                    if (routeStop.route_bound.route_no.equals(route_no) &&
+                                            routeStop.route_bound.route_bound.equals(route_bound) &&
+                                            routeStop.stop_seq.equals(stop_seq) &&
+                                            routeStop.code.equals(stop_code)) {
+                                        routeStop.fare = getColumnString(c, RouteStopTable.COLUMN_STOP_FARE);
+                                    }
+                                }
+                            }
+                            f.mAdapter.notifyDataSetChanged();
+                            if (null != c)
+                                c.close();
+                            if (null != f.mEmptyText)
+                                f.mEmptyText.setText("");
+                            if (null != f.mSwipeRefreshLayout)
+                                f.mSwipeRefreshLayout.setRefreshing(false);
+                        }
+                        break;
+                    case Constants.STATUS.CONNECTIVITY_INVALID:
+                        if (null != f.mEmptyText)
+                            f.mEmptyText.setText(R.string.message_no_internet_connection);
+                        if (null != f.mProgressBar)
+                            f.mProgressBar.setVisibility(View.GONE);
+                        if (null != f.mSwipeRefreshLayout)
+                            f.mSwipeRefreshLayout.setRefreshing(false);
+                        break;
+                    case Constants.STATUS.CONNECT_FAIL:
+                    case Constants.STATUS.CONNECT_404:
+                        if (null != f.mEmptyText)
+                            f.mEmptyText.setText(R.string.message_fail_to_request);
+                        if (null != f.mProgressBar)
+                            f.mProgressBar.setVisibility(View.GONE);
+                        if (null != f.mSwipeRefreshLayout)
+                            f.mSwipeRefreshLayout.setRefreshing(false);
+                        break;
+                    case Constants.STATUS.UPDATING_FARE:
+                        if (null != f.mSwipeRefreshLayout)
+                            f.mSwipeRefreshLayout.setRefreshing(true);
+                    case Constants.STATUS.UPDATING_ROUTE_STOPS:
+                        if (null != f.mEmptyText)
+                            f.mEmptyText.setText(R.string.message_loading);
+                        break;
+                    default:
+                        if (null != f.mEmptyText)
+                            f.mEmptyText.setText(message);
+                        if (null != f.mProgressBar)
+                            f.mProgressBar.setVisibility(View.GONE);
+                        if (null != f.mSwipeRefreshLayout)
+                            f.mSwipeRefreshLayout.setRefreshing(false);
+                        break;
+                }
+            }
+        }
+
+        private String getColumnString(Cursor cursor, String column) {
+            int index = cursor.getColumnIndex(column);
+            return cursor.isNull(index) ? "" : cursor.getString(index);
+        }
+    }
+
+    class UpdateViewReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final Bundle bundle = intent.getExtras();
+            Thread thread = new Thread() {
+                @Override
+                public void run() {
+                    Message message = mViewHandler.obtainMessage();
+                    message.setData(bundle);
+                    mViewHandler.sendMessage(message);
+                }
+            };
+            thread.run();
+        }
+    }
+
+    UpdateItemHandler mItemHandler = new UpdateItemHandler(this);
+    static class UpdateItemHandler extends Handler {
+        WeakReference<RouteStopFragment> mFrag;
+
+        UpdateItemHandler(RouteStopFragment aFragment) {
+            mFrag = new WeakReference<>(aFragment);
         }
 
         @Override
@@ -660,16 +683,16 @@ public class RouteStopFragment extends Fragment
         }
     }
 
-    class UpdateViewReceiver extends BroadcastReceiver {
+    class UpdateItemReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             final Bundle bundle = intent.getExtras();
             Thread thread = new Thread() {
                 @Override
                 public void run() {
-                    Message message = mViewHandler.obtainMessage();
+                    Message message = mItemHandler.obtainMessage();
                     message.setData(bundle);
-                    mViewHandler.sendMessage(message);
+                    mItemHandler.sendMessage(message);
                 }
             };
             thread.run();

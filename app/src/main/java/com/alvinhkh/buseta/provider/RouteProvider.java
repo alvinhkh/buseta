@@ -14,34 +14,27 @@ import android.text.TextUtils;
 import java.util.Arrays;
 import java.util.HashSet;
 
-public class SuggestionProvider extends ContentProvider {
+public class RouteProvider extends ContentProvider {
 
-    private SuggestionOpenHelper mHelper;
+    private RouteOpenHelper mHelper;
 
-    private static final String AUTHORITY = "com.alvinhkh.buseta.SuggestionProvider";
-    private static final String BASE_PATH = "suggestion";
+    private static final String AUTHORITY = "com.alvinhkh.buseta.RouteProvider";
+    private static final String BASE_PATH = "route";
     public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY
             + "/" + BASE_PATH);
-    private static final String BASE_PATH_SUGGESTIONS = "query";
-    public static final Uri CONTENT_URI_SUGGESTIONS = Uri.parse("content://" + AUTHORITY
-            + "/" + BASE_PATH_SUGGESTIONS);
 
     // used for the UriMatcher
-    private static final int SUGGESTION = 10;
-    private static final int SUGGESTION_ID = 11;
-    private static final int SUGGESTIONS = 20;
-    private static final int SUGGESTIONS_ANY = 21;
+    private static final int ROUTES = 10;
+    private static final int ROUTE_ID = 11;
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     static {
-        sURIMatcher.addURI(AUTHORITY, BASE_PATH, SUGGESTION);
-        sURIMatcher.addURI(AUTHORITY, BASE_PATH + "/#", SUGGESTION_ID);
-        sURIMatcher.addURI(AUTHORITY, BASE_PATH_SUGGESTIONS, SUGGESTIONS_ANY);
-        sURIMatcher.addURI(AUTHORITY, BASE_PATH_SUGGESTIONS + "/*", SUGGESTIONS);
+        sURIMatcher.addURI(AUTHORITY, BASE_PATH, ROUTES);
+        sURIMatcher.addURI(AUTHORITY, BASE_PATH + "/#", ROUTE_ID);
     }
 
     @Override
     public boolean onCreate() {
-        mHelper = new SuggestionOpenHelper(getContext());
+        mHelper = new RouteOpenHelper(getContext());
         return false;
     }
 
@@ -55,55 +48,16 @@ public class SuggestionProvider extends ContentProvider {
         checkColumns(projection);
 
         int uriType = sURIMatcher.match(uri);
-        String queryText;
         switch (uriType) {
-            case SUGGESTIONS_ANY:
-                queryText = "%";
-                break;
-            default:
-                queryText = uri.getLastPathSegment();
-                break;
-        }
-        switch (uriType) {
-            case SUGGESTIONS:
-            case SUGGESTIONS_ANY:
-                queryText = queryText.trim().replace(" ", "");
+            case ROUTES:
                 // Set the table
-                queryBuilder.setTables("(" +
-                        // 3 history
-                        " SELECT * " + " FROM " + SuggestionTable.TABLE_NAME +
-                        " WHERE " + SuggestionTable.COLUMN_TEXT + " LIKE '" + queryText + "%'" +
-                        " AND " + SuggestionTable.COLUMN_TYPE + " = '" + SuggestionTable.TYPE_HISTORY + "'" +
-                        " ORDER BY " + SuggestionTable.COLUMN_DATE + " DESC" +
-                        " LIMIT 0,3" +
-                        " ) UNION SELECT * FROM (" +
-                        // All others
-                        " SELECT * FROM " + SuggestionTable.TABLE_NAME +
-                        " WHERE " + SuggestionTable.COLUMN_TEXT + " LIKE '" + queryText + "%'" +
-                        " AND " + SuggestionTable.COLUMN_TYPE + " = '" + SuggestionTable.TYPE_DEFAULT + "'" +
-                        " AND " + SuggestionTable.COLUMN_TEXT + " NOT IN (" +
-                        // exclude 3 history
-                        " SELECT " + SuggestionTable.COLUMN_TEXT + " FROM " + SuggestionTable.TABLE_NAME +
-                        " WHERE " + SuggestionTable.COLUMN_TEXT + " LIKE '" + queryText + "%'" +
-                        " AND " + SuggestionTable.COLUMN_TYPE + " = '" + SuggestionTable.TYPE_HISTORY + "'" +
-                        " ORDER BY " + SuggestionTable.COLUMN_DATE + " DESC" +
-                        " LIMIT 0,3" +
-                        " )" +
-                        " ORDER BY " + SuggestionTable.COLUMN_TEXT + " ASC" +
-                        " )");
-                if (null == sortOrder) {
-                    sortOrder = SuggestionTable.COLUMN_DATE + " DESC";
-                }
+                queryBuilder.setTables(RouteStopTable.TABLE_NAME);
                 break;
-            case SUGGESTION:
+            case ROUTE_ID:
                 // Set the table
-                queryBuilder.setTables(SuggestionTable.TABLE_NAME);
-                break;
-            case SUGGESTION_ID:
-                // Set the table
-                queryBuilder.setTables(SuggestionTable.TABLE_NAME);
+                queryBuilder.setTables(RouteStopTable.TABLE_NAME);
                 // adding the ID to the original query
-                queryBuilder.appendWhere(SuggestionTable.COLUMN_ID + "=" + uri.getLastPathSegment());
+                queryBuilder.appendWhere(RouteStopTable.COLUMN_ID + "=" + uri.getLastPathSegment());
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -129,15 +83,15 @@ public class SuggestionProvider extends ContentProvider {
         SQLiteDatabase sqlDB = mHelper.getWritableDatabase();
         long id;
         switch (uriType) {
-            case SUGGESTION:
-                id = sqlDB.insert(SuggestionTable.TABLE_NAME, null, values);
+            case ROUTES:
+                id = sqlDB.insert(RouteStopTable.TABLE_NAME, null, values);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
         getContext().getContentResolver().notifyChange(uri, null);
         switch (uriType) {
-            case SUGGESTION:
+            case ROUTES:
                 return Uri.parse(BASE_PATH + "/#" + id);
             default:
                 return null;
@@ -150,8 +104,8 @@ public class SuggestionProvider extends ContentProvider {
         int numInserted = 0;
         String tableName;
         switch (uriType) {
-            case SUGGESTION:
-                tableName = SuggestionTable.TABLE_NAME;
+            case ROUTES:
+                tableName = RouteStopTable.TABLE_NAME;
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -179,19 +133,19 @@ public class SuggestionProvider extends ContentProvider {
         SQLiteDatabase sqlDB = mHelper.getWritableDatabase();
         int rowsDeleted;
         switch (uriType) {
-            case SUGGESTION:
-                rowsDeleted = sqlDB.delete(SuggestionTable.TABLE_NAME, selection,
+            case ROUTES:
+                rowsDeleted = sqlDB.delete(RouteStopTable.TABLE_NAME, selection,
                         selectionArgs);
                 break;
-            case SUGGESTION_ID:
+            case ROUTE_ID:
                 String id = uri.getLastPathSegment();
                 if (TextUtils.isEmpty(selection)) {
-                    rowsDeleted = sqlDB.delete(SuggestionTable.TABLE_NAME,
-                            SuggestionTable.COLUMN_ID + "=" + id,
+                    rowsDeleted = sqlDB.delete(RouteStopTable.TABLE_NAME,
+                            RouteStopTable.COLUMN_ID + "=" + id,
                             null);
                 } else {
-                    rowsDeleted = sqlDB.delete(SuggestionTable.TABLE_NAME,
-                            SuggestionTable.COLUMN_ID + "=" + id
+                    rowsDeleted = sqlDB.delete(RouteStopTable.TABLE_NAME,
+                            RouteStopTable.COLUMN_ID + "=" + id
                                     + " and " + selection,
                             selectionArgs);
                 }
@@ -211,23 +165,23 @@ public class SuggestionProvider extends ContentProvider {
         SQLiteDatabase sqlDB = mHelper.getWritableDatabase();
         int rowsUpdated;
         switch (uriType) {
-            case SUGGESTION:
-                rowsUpdated = sqlDB.update(SuggestionTable.TABLE_NAME,
+            case ROUTES:
+                rowsUpdated = sqlDB.update(RouteStopTable.TABLE_NAME,
                         values,
                         selection,
                         selectionArgs);
                 break;
-            case SUGGESTION_ID:
+            case ROUTE_ID:
                 String id = uri.getLastPathSegment();
                 if (TextUtils.isEmpty(selection)) {
-                    rowsUpdated = sqlDB.update(SuggestionTable.TABLE_NAME,
+                    rowsUpdated = sqlDB.update(RouteStopTable.TABLE_NAME,
                             values,
-                            SuggestionTable.COLUMN_ID + "=" + id,
+                            RouteStopTable.COLUMN_ID + "=" + id,
                             null);
                 } else {
-                    rowsUpdated = sqlDB.update(SuggestionTable.TABLE_NAME,
+                    rowsUpdated = sqlDB.update(RouteStopTable.TABLE_NAME,
                             values,
-                            SuggestionTable.COLUMN_ID + "=" + id
+                            RouteStopTable.COLUMN_ID + "=" + id
                                     + " and "
                                     + selection,
                             selectionArgs);
@@ -242,10 +196,19 @@ public class SuggestionProvider extends ContentProvider {
 
     private void checkColumns(String[] projection) {
         String[] available = {
-                SuggestionTable.COLUMN_ID,
-                SuggestionTable.COLUMN_TEXT,
-                SuggestionTable.COLUMN_TYPE,
-                SuggestionTable.COLUMN_DATE,
+                RouteStopTable.COLUMN_ID,
+                RouteStopTable.COLUMN_DATE,
+                RouteStopTable.COLUMN_ROUTE,
+                RouteStopTable.COLUMN_BOUND,
+                RouteStopTable.COLUMN_ORIGIN,
+                RouteStopTable.COLUMN_ORIGIN_EN,
+                RouteStopTable.COLUMN_DESTINATION,
+                RouteStopTable.COLUMN_DESTINATION_EN,
+                RouteStopTable.COLUMN_STOP_SEQ,
+                RouteStopTable.COLUMN_STOP_CODE,
+                RouteStopTable.COLUMN_STOP_NAME,
+                RouteStopTable.COLUMN_STOP_NAME_EN,
+                RouteStopTable.COLUMN_STOP_FARE,
         };
         if (projection != null) {
             HashSet<String> requestedColumns = new HashSet<>(Arrays.asList(projection));

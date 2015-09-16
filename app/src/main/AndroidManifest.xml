@@ -33,7 +33,6 @@
                 android:resource="@xml/searchable"/>
         </activity>
 
-        <!-- Solve Sync Conflict -->
         <activity
             android:name=".view.dialog.RouteEtaDialog"
             android:excludeFromRecents="true"
@@ -63,6 +62,9 @@
 
         <!-- Services -->
         <service
+            android:name=".service.RouteService"
+            android:enabled="true" />
+        <service
             android:name=".service.CheckEtaService"
             android:enabled="true" />
         <service
@@ -81,6 +83,10 @@
         <provider
             android:name=".provider.SuggestionProvider"
             android:authorities="com.alvinhkh.buseta.SuggestionProvider"
+            android:exported="true" />
+        <provider
+            android:name=".provider.RouteProvider"
+            android:authorities="com.alvinhkh.buseta.RouteProvider"
             android:exported="true" />
 
         <!-- Broadcast Receiver -->

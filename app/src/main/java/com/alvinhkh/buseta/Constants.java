@@ -30,14 +30,27 @@ public class Constants {
     public interface MESSAGE {
         String HISTORY_UPDATED = "com.alvinhkh.buseta.HISTORY_UPDATED";
         String STOP_UPDATED = "com.alvinhkh.buseta.STOP_UPDATED";
+        String STOPS_UPDATED = "com.alvinhkh.buseta.STOPS_UPDATED";
         String ETA_UPDATED = "com.alvinhkh.buseta.ETA_UPDATED";
         String HIDE_STAR = "com.alvinhkh.buseta.HIDE_STAR";
         String WIDGET_UPDATE = "com.alvinhkh.buseta.WIDGET_UPDATE";
         String WIDGET_TRIGGER_UPDATE = "com.alvinhkh.buseta.WIDGET_TRIGGER_UPDATE";
     }
 
+    public interface STATUS {
+        String CONNECT_404 = "com.alvinhkh.buseta.CONNECT_404";
+        String CONNECT_FAIL = "com.alvinhkh.buseta.CONNECT_FAIL";
+        String CONNECTIVITY_INVALID = "com.alvinhkh.buseta.CONNECTIVITY_INVALID";
+        String UPDATED_ROUTE_STOPS = "com.alvinhkh.buseta.UPDATED_ROUTE_STOPS";
+        String UPDATED_FARE = "com.alvinhkh.buseta.UPDATED_FARE";
+        String UPDATING_ROUTE_STOPS = "com.alvinhkh.buseta.UPDATING_ROUTE_STOPS";
+        String UPDATING_FARE = "com.alvinhkh.buseta.UPDATING_FARE";
+    }
+
     public interface BUNDLE {
         String STOP_OBJECT = "com.alvinhkh.buseta.STOP_OBJECT";
+        String BOUND_OBJECT = "com.alvinhkh.buseta.BOUND_OBJECT";
+        String UPDATE_MESSAGE = "com.alvinhkh.buseta.UPDATE_MESSAGE";
     }
 
     public interface PREF {
