@@ -33,7 +33,7 @@ import java.util.concurrent.ExecutionException;
 
 public class RouteService extends IntentService {
 
-    private static final String TAG = RouteService.class.getName();
+    private static final String TAG = RouteService.class.getSimpleName();
 
     SharedPreferences mPrefs;
     SettingsHelper settingsHelper = null;
