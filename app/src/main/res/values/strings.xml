@@ -6,6 +6,7 @@
 
     <string name="action_settings">設定</string>
     <string name="action_search">搜尋</string>
+    <string name="action_share">分享</string>
     <string name="action_refresh">重新載入</string>
     <string name="action_yes">是</string>
     <string name="action_no">否</string>
@@ -82,6 +83,8 @@
     <string name="message_request_hide_ad_again">除咗設定嗰頁，其他廣告都已經隱藏晒，唔洗講咁多次!</string>
     <string name="message_request_show_ad">所有廣告都唔再隱藏喇 :)</string>
     <string name="message_route_not_support_eta">本站沒有抵站時間預報服務</string>
+    <string name="message_share_title">同朋友分享 BusETA</string>
+    <string name="message_share_text">快啲下載 BusETA 巴士到站時間預報 App :)\nhttp://buseta.alvinhkh.com</string>
     <string name="message_total_routes">(共 %s 條路線)</string>
 
     <string name="url_app" translatable="false">http://buseta.alvinhkh.com</string>

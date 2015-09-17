@@ -194,16 +194,27 @@ public class MainFragment extends Fragment
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
+        // Show Share button
+        final MenuItem itemShare = menu.findItem(R.id.action_share);
+        itemShare.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+        // Search button and SearchView
         menu.findItem(R.id.action_search).setVisible(false);
         mSearchMenuItem = menu.findItem(R.id.action_search);
         SearchView mSearchView = (SearchView) mSearchMenuItem.getActionView();
         mSearchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus)
-                    mFab.hide();
-                else
-                    mFab.show();
+                if (hasFocus) {
+                    if (null != mFab)
+                        mFab.hide();
+                    if (null != itemShare)
+                        itemShare.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_NEVER);
+                } else {
+                    if (null != mFab)
+                        mFab.show();
+                    if (null != itemShare)
+                        itemShare.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+                }
             }
         });
     }
