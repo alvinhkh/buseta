@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.ContentObserver;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -30,40 +31,9 @@ import com.alvinhkh.buseta.service.EtaWidgetAlarm;
 import com.alvinhkh.buseta.service.EtaWidgetService;
 import com.alvinhkh.buseta.view.MainActivity;
 
-/**
- * Our data observer just notifies an update for all weather widgets when it detects a change.
- */
-class EtaDataProviderObserver extends ContentObserver {
-    private AppWidgetManager mAppWidgetManager;
-    private ComponentName mComponentName;
-
-    EtaDataProviderObserver(AppWidgetManager mgr, ComponentName cn, Handler h) {
-        super(h);
-        mAppWidgetManager = mgr;
-        mComponentName = cn;
-    }
-
-    @Override
-    public void onChange(boolean selfChange) {
-        // The data has changed, so notify the widget that the collection view needs to be updated.
-        // In response, the factory's onDataSetChanged() will be called which will requery the
-        // cursor for the new data.
-        mAppWidgetManager.notifyAppWidgetViewDataChanged(
-                mAppWidgetManager.getAppWidgetIds(mComponentName), R.id.textView_title);
-        mAppWidgetManager.notifyAppWidgetViewDataChanged(
-                mAppWidgetManager.getAppWidgetIds(mComponentName), R.id.textView_text);
-        mAppWidgetManager.notifyAppWidgetViewDataChanged(
-                mAppWidgetManager.getAppWidgetIds(mComponentName), R.id.listView);
-    }
-}
-
 public class EtaWidgetProvider extends AppWidgetProvider {
 
     private static final String TAG = "EtaWidgetProvider";
-
-    private static HandlerThread sWorkerThread;
-    private static Handler sWorkerQueue;
-    private static EtaDataProviderObserver sDataObserver;
 
     RemoteViews rv;
     int intervalMinutes = 1;
@@ -71,26 +41,19 @@ public class EtaWidgetProvider extends AppWidgetProvider {
     private boolean mIsLargeLayout = true;
 
     public EtaWidgetProvider() {
-        // Start the worker thread
-        sWorkerThread = new HandlerThread("EtaWidgetProvider-worker");
-        sWorkerThread.start();
-        sWorkerQueue = new Handler(sWorkerThread.getLooper());
+    }
+
+    public static Intent getRefreshBroadcastIntent(Context context) {
+        Intent intent = new Intent(Constants.MESSAGE.ETA_UPDATED);
+        intent.setComponent(new ComponentName(context, EtaWidgetProvider.class));
+        intent.putExtra(Constants.MESSAGE.ETA_UPDATED, true);
+        intent.putExtra(Constants.MESSAGE.WIDGET_UPDATE, true);
+        return intent;
     }
 
     @Override
     public void onEnabled(Context context) {
         // Log.d(TAG, "onEnabled");
-        // Register for external updates to the data to trigger an update of the widget.  When using
-        // content providers, the data is often updated via a background service, or in response to
-        // user interaction in the main app.  To ensure that the widget always reflects the current
-        // state of the data, we must listen for changes and update ourselves accordingly.
-        final ContentResolver r = context.getContentResolver();
-        if (sDataObserver == null) {
-            final AppWidgetManager mgr = AppWidgetManager.getInstance(context);
-            final ComponentName cn = new ComponentName(context, EtaWidgetProvider.class);
-            sDataObserver = new EtaDataProviderObserver(mgr, cn, sWorkerQueue);
-            r.registerContentObserver(FavouriteProvider.CONTENT_URI, true, sDataObserver);
-        }
         // start alarm
         EtaWidgetAlarm alarm = new EtaWidgetAlarm(context.getApplicationContext());
         alarm.startAlarm(intervalMinutes);
@@ -110,104 +73,88 @@ public class EtaWidgetProvider extends AppWidgetProvider {
         final int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
                 AppWidgetManager.INVALID_APPWIDGET_ID);
         if (action.equals(Constants.MESSAGE.WIDGET_TRIGGER_UPDATE)) {
-            sWorkerQueue.removeMessages(0);
+            // Log.d(TAG, "WIDGET_TRIGGER_UPDATE");
             onRefresh(context);
         } else if (action.equals(Constants.MESSAGE.ETA_UPDATED)) {
             if (bundle.getBoolean(Constants.MESSAGE.WIDGET_UPDATE)) {
-                rv = new RemoteViews(context.getPackageName(), R.layout.widget_eta);
+                // Log.d(TAG, "WIDGET_UPDATE");
                 final AppWidgetManager mgr = AppWidgetManager.getInstance(context);
                 final ComponentName cn = new ComponentName(context, EtaWidgetProvider.class);
                 mgr.notifyAppWidgetViewDataChanged(mgr.getAppWidgetIds(cn), R.id.listView);
-                mgr.notifyAppWidgetViewDataChanged(mgr.getAppWidgetIds(cn), R.id.textView_text);
             }
         }
         super.onReceive(context, intent);
     }
 
-    private void onRefresh(Context ctx) {
+    private void onRefresh(final Context context) {
         // Log.d(TAG, "onRefresh");
-        final Context context = ctx;
-        sWorkerQueue.post(new Runnable() {
-            @Override
-            public void run() {
-                final ConnectivityManager conMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-                final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
-                // Check internet connection
-                if (activeNetwork != null && activeNetwork.isConnected()) {
-                    final ContentResolver r = context.getContentResolver();
-                    final Cursor c = r.query(
-                            FavouriteProvider.CONTENT_URI_FAV, null, null, null,
-                            FavouriteTable.COLUMN_DATE + " DESC");
-                    while (null != c && c.moveToNext()) {
-                        RouteBound routeBound = new RouteBound();
-                        routeBound.route_no = getColumnString(c, FavouriteTable.COLUMN_ROUTE);
-                        routeBound.route_bound = getColumnString(c, FavouriteTable.COLUMN_BOUND);
-                        routeBound.origin_tc = getColumnString(c, FavouriteTable.COLUMN_ORIGIN);
-                        routeBound.destination_tc = getColumnString(c, FavouriteTable.COLUMN_DESTINATION);
-                        RouteStop routeStop = new RouteStop();
-                        routeStop.route_bound = routeBound;
-                        routeStop.stop_seq = getColumnString(c, FavouriteTable.COLUMN_STOP_SEQ);
-                        routeStop.name_tc = getColumnString(c, FavouriteTable.COLUMN_STOP_NAME);
-                        routeStop.code = getColumnString(c, FavouriteTable.COLUMN_STOP_CODE);
-                        routeStop.favourite = true;
-                        Intent intent = new Intent(context, CheckEtaService.class);
-                        intent.putExtra(Constants.BUNDLE.STOP_OBJECT, routeStop);
-                        intent.putExtra(Constants.MESSAGE.WIDGET_UPDATE, true);
-                        context.startService(intent);
-                    }
-                    if (null != c)
-                        c.close();
-                } else {
-                    rv = new RemoteViews(context.getPackageName(), R.layout.widget_eta);
-                    rv.setViewVisibility(R.id.textView_text, View.VISIBLE);
-                    rv.setTextViewText(R.id.textView_text,
-                            context.getString(R.string.message_no_internet_connection));
-                    final AppWidgetManager mgr = AppWidgetManager.getInstance(context);
-                    final ComponentName cn = new ComponentName(context, EtaWidgetProvider.class);
-                    mgr.notifyAppWidgetViewDataChanged(mgr.getAppWidgetIds(cn), R.id.textView_text);
+        final ConnectivityManager conMgr =
+                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
+        // Check internet connection
+        if (activeNetwork != null && activeNetwork.isConnected()) {
+            try {
+                final Cursor c = context.getContentResolver().query(
+                        FavouriteProvider.CONTENT_URI_FAV, null, null, null,
+                        FavouriteTable.COLUMN_DATE + " DESC");
+                while (null != c && c.moveToNext()) {
+                    RouteBound routeBound = new RouteBound();
+                    routeBound.route_no = getColumnString(c, FavouriteTable.COLUMN_ROUTE);
+                    routeBound.route_bound = getColumnString(c, FavouriteTable.COLUMN_BOUND);
+                    routeBound.origin_tc = getColumnString(c, FavouriteTable.COLUMN_ORIGIN);
+                    routeBound.destination_tc = getColumnString(c, FavouriteTable.COLUMN_DESTINATION);
+                    RouteStop routeStop = new RouteStop();
+                    routeStop.route_bound = routeBound;
+                    routeStop.stop_seq = getColumnString(c, FavouriteTable.COLUMN_STOP_SEQ);
+                    routeStop.name_tc = getColumnString(c, FavouriteTable.COLUMN_STOP_NAME);
+                    routeStop.code = getColumnString(c, FavouriteTable.COLUMN_STOP_CODE);
+                    routeStop.favourite = true;
+                    Intent intent = new Intent(context, CheckEtaService.class);
+                    intent.putExtra(Constants.BUNDLE.STOP_OBJECT, routeStop);
+                    intent.putExtra(Constants.MESSAGE.WIDGET_UPDATE, true);
+                    context.startService(intent);
                 }
+                if (null != c)
+                    c.close();
+            } catch (SQLiteCantOpenDatabaseException e) {
+                Log.e(TAG, e.getMessage());
             }
-
-            private String getColumnString(Cursor cursor, String column) {
-                int index = cursor.getColumnIndex(column);
-                return cursor.isNull(index) ? "" : cursor.getString(index);
-            }
-        });
+        }
+    }
+    private String getColumnString(Cursor cursor, String column) {
+        int index = cursor.getColumnIndex(column);
+        return cursor.isNull(index) ? "" : cursor.getString(index);
     }
 
     private RemoteViews buildLayout(final Context context, final int appWidgetId, boolean largeLayout) {
+        // Log.d(TAG, "buildLayout");
         // Specify the service to provide data for the collection widget.  Note that we need to
         // embed the appWidgetId via the data otherwise it will be ignored.
         final Intent intent = new Intent(context, EtaWidgetService.class);
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
         intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
         rv = new RemoteViews(context.getPackageName(), R.layout.widget_eta);
-        rv.setRemoteAdapter(R.id.listView, intent);
-        sWorkerQueue.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                final AppWidgetManager mgr = AppWidgetManager.getInstance(context);
-                mgr.partiallyUpdateAppWidget(appWidgetId, rv);
+        if (null != rv) {
+            rv.setRemoteAdapter(R.id.listView, intent);
+            rv.setEmptyView(R.id.listView, R.id.emptyView);
+            // click open app intent
+            final Intent openAppIntent = new Intent(context, MainActivity.class);
+            PendingIntent openAppPendingIntent = PendingIntent.getActivity(context, 0, openAppIntent, 0);
+            // update intent
+            final Intent updateIntent = new Intent(context, EtaWidgetProvider.class);
+            updateIntent.setAction(Constants.MESSAGE.WIDGET_TRIGGER_UPDATE);
+            updateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+            // updateIntent.setData(Uri.parse(updateIntent.toUri(Intent.URI_INTENT_SCHEME)));
+            final PendingIntent updatePendingIntent = PendingIntent.getBroadcast(context, 0,
+                    updateIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            rv.setPendingIntentTemplate(R.id.listView, updatePendingIntent);
+            if (largeLayout) {
+                rv.setViewVisibility(R.id.headerLayout, View.VISIBLE);
+                rv.setOnClickPendingIntent(R.id.headerText, openAppPendingIntent);
+                rv.setOnClickPendingIntent(R.id.refreshButton, updatePendingIntent);
+            } else {
+                rv.setViewVisibility(R.id.headerLayout, View.GONE);
             }
-        }, 1000);
-        rv.setEmptyView(R.id.listView, R.id.emptyView);
-        // click open app intent
-        final Intent openAppIntent = new Intent(context, MainActivity.class);
-        PendingIntent openAppPendingIntent = PendingIntent.getActivity(context, 0, openAppIntent, 0);
-        // update intent
-        final Intent updateIntent = new Intent(context, EtaWidgetProvider.class);
-        updateIntent.setAction(Constants.MESSAGE.WIDGET_TRIGGER_UPDATE);
-        updateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-        // updateIntent.setData(Uri.parse(updateIntent.toUri(Intent.URI_INTENT_SCHEME)));
-        final PendingIntent updatePendingIntent = PendingIntent.getBroadcast(context, 0,
-                updateIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        rv.setPendingIntentTemplate(R.id.listView, updatePendingIntent);
-        if (largeLayout) {
-            rv.setViewVisibility(R.id.headerLayout, View.VISIBLE);
-            rv.setOnClickPendingIntent(R.id.headerText, openAppPendingIntent);
-            rv.setOnClickPendingIntent(R.id.refreshButton, updatePendingIntent);
-        } else {
-            rv.setViewVisibility(R.id.headerLayout, View.GONE);
         }
         return rv;
     }
@@ -215,7 +162,6 @@ public class EtaWidgetProvider extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
         // Log.d(TAG, "onUpdate");
-        onRefresh(context);
         boolean alarmUp = (PendingIntent.getBroadcast(context, 0,
                 new Intent(Constants.MESSAGE.WIDGET_TRIGGER_UPDATE),
                 PendingIntent.FLAG_NO_CREATE) != null);
@@ -241,8 +187,7 @@ public class EtaWidgetProvider extends AppWidgetProvider {
     public void onAppWidgetOptionsChanged(Context context, AppWidgetManager appWidgetManager,
                                           int appWidgetId, Bundle newOptions) {
         updateWidgetSize(newOptions);
-        RemoteViews layout;
-        layout = buildLayout(context, appWidgetId, mIsLargeLayout);
+        RemoteViews layout = buildLayout(context, appWidgetId, mIsLargeLayout);
         appWidgetManager.updateAppWidget(appWidgetId, layout);
     }
 

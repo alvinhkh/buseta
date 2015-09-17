@@ -301,8 +301,9 @@ public class MainActivity extends AppCompatActivity
         collapseSearchView();
         Cursor cursor = (Cursor) mSearchView.getSuggestionsAdapter().getItem(position);
         int indexColumnSuggestion = cursor.getColumnIndex(SuggestionTable.COLUMN_TEXT);
-        showRouteBoundFragment(cursor.getString(indexColumnSuggestion));
+        String route_no = cursor.getString(indexColumnSuggestion);
         cursor.close();
+        showRouteBoundFragment(route_no);
         return true;
     }
 
@@ -483,10 +484,13 @@ public class MainActivity extends AppCompatActivity
                                 null, SuggestionTable.COLUMN_TEXT + " LIKE '%%'" + " AND " +
                                         SuggestionTable.COLUMN_TYPE + " = '" + SuggestionTable.TYPE_DEFAULT + "'",
                                 null, null);
-                        mSnackbar.setText(getString(resourceId) + " " +
-                                getString(R.string.message_total_routes, cursor == null ? 0 : cursor.getCount()));
-                        if (cursor != null)
+                        int count = 0;
+                        if (cursor != null) {
+                            count = cursor.getCount();
                             cursor.close();
+                        }
+                        mSnackbar.setText(getString(resourceId) + " " +
+                                getString(R.string.message_total_routes, count));
                     }
                     mSnackbar.show();
                 }

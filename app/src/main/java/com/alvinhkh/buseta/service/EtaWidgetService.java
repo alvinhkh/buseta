@@ -106,10 +106,15 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
     }
 
     public RemoteViews getViewAt(int position) {
+        // Check internet connection
+        final ConnectivityManager conMgr =
+                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+        final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
         // Get the data for this position from the content provider
         RouteStop object = getItem(position);
         // Return a proper item
         RemoteViews rv = new RemoteViews(mContext.getPackageName(), R.layout.widget_item_eta);
+        if (null != rv)
         if (null != object&& null != object.route_bound) {
             // load data
             rv.setTextViewText(R.id.stop_code, object.code);
@@ -120,6 +125,11 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
             rv.setTextViewText(R.id.route_destination, object.route_bound.destination_tc);
             rv.setTextViewText(R.id.eta, "");
             rv.setTextViewText(R.id.eta_more, "");
+            if (activeNetwork == null || !activeNetwork.isConnected()) {
+                rv.setTextViewText(R.id.eta_more,
+                        mContext.getString(R.string.message_no_internet_connection));
+                return rv;
+            }
             // eta
             if (object.eta_loading != null && object.eta_loading) {
                 rv.setTextViewText(R.id.eta_more, mContext.getString(R.string.message_loading));
@@ -168,14 +178,20 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
                     }
                 }
             }
-            // Set the click intent
-            final Intent fillInIntent = new Intent();
-            final Bundle extras = new Bundle();
-            extras.putParcelable(Constants.BUNDLE.STOP_OBJECT, object);
-            fillInIntent.putExtras(extras);
-            rv.setOnClickFillInIntent(R.id.listView, fillInIntent);
+        } else {
+            rv.setTextViewText(R.id.stop_code, "");
+            rv.setTextViewText(R.id.stop_seq, "");
+            rv.setTextViewText(R.id.route_bound, "");
+            rv.setTextViewText(R.id.stop_name, "");
+            rv.setTextViewText(R.id.route_no, "");
+            rv.setTextViewText(R.id.route_destination, "");
+            rv.setTextViewText(R.id.eta, "");
+            rv.setTextViewText(R.id.eta_more, "");
+            if (activeNetwork == null || !activeNetwork.isConnected()) {
+                rv.setTextViewText(R.id.eta_more,
+                        mContext.getString(R.string.message_no_internet_connection));
+            }
         }
-
         return rv;
     }
     public RemoteViews getLoadingView() {
@@ -196,8 +212,6 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
 
     public void onDataSetChanged() {
         // Refresh the cursor
-        if (null != mCursor)
-            mCursor.close();
         mCursor = mContext.getContentResolver().query(
                 FavouriteProvider.CONTENT_URI, null, null, null,
                 FavouriteTable.COLUMN_DATE + " DESC");

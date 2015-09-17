@@ -5,6 +5,7 @@ import java.util.HashSet;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -132,14 +133,15 @@ public class FavouriteProvider extends ContentProvider {
         switch (uriType) {
             case FAV:
                 id = sqlDB.insert(FavouriteTable.TABLE_NAME, null, values);
+                notifyChange(uri, true);
                 break;
             case ETA:
                 id = sqlDB.insert(EtaTable.TABLE_NAME, null, values);
+                notifyChange(uri, false);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
-        getContext().getContentResolver().notifyChange(uri, null);
         switch (uriType) {
             case FAV:
                 return Uri.parse(BASE_PATH_FAV + "/#" + id);
@@ -172,6 +174,7 @@ public class FavouriteProvider extends ContentProvider {
             case FAV:
                 rowsDeleted = sqlDB.delete(FavouriteTable.TABLE_NAME, selection,
                         selectionArgs);
+                notifyChange(uri, true);
                 break;
             case FAV_ID:
                 String id = uri.getLastPathSegment();
@@ -185,10 +188,12 @@ public class FavouriteProvider extends ContentProvider {
                                     + " and " + selection,
                             selectionArgs);
                 }
+                notifyChange(uri, true);
                 break;
             case ETA:
                 rowsDeleted = sqlDB.delete(EtaTable.TABLE_NAME, selection,
                         selectionArgs);
+                notifyChange(uri, false);
                 break;
             case ETA_ID:
                 id = uri.getLastPathSegment();
@@ -202,11 +207,11 @@ public class FavouriteProvider extends ContentProvider {
                                     + " and " + selection,
                             selectionArgs);
                 }
+                notifyChange(uri, false);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
-        getContext().getContentResolver().notifyChange(uri, null);
         return rowsDeleted;
     }
 
@@ -223,6 +228,7 @@ public class FavouriteProvider extends ContentProvider {
                         values,
                         selection,
                         selectionArgs);
+                notifyChange(uri, true);
                 break;
             case FAV_ID:
                 String id = uri.getLastPathSegment();
@@ -239,12 +245,14 @@ public class FavouriteProvider extends ContentProvider {
                                     + selection,
                             selectionArgs);
                 }
+                notifyChange(uri, true);
                 break;
             case ETA:
                 rowsUpdated = sqlDB.update(EtaTable.TABLE_NAME,
                         values,
                         selection,
                         selectionArgs);
+                notifyChange(uri, false);
                 break;
             case ETA_ID:
                 id = uri.getLastPathSegment();
@@ -261,12 +269,21 @@ public class FavouriteProvider extends ContentProvider {
                                     + selection,
                             selectionArgs);
                 }
+                notifyChange(uri, false);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
-        getContext().getContentResolver().notifyChange(uri, null);
         return rowsUpdated;
+    }
+
+    private void notifyChange(Uri uri, Boolean widgetUpdate) {
+        Context context = getContext();
+        context.getContentResolver().notifyChange(uri, null);
+        if (widgetUpdate) {
+            // Widgets can't register content observers so we refresh widgets separately.
+            context.sendBroadcast(EtaWidgetProvider.getRefreshBroadcastIntent(context));
+        }
     }
 
     private void checkColumns(String[] projection) {
