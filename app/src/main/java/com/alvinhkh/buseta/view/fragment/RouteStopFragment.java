@@ -366,6 +366,14 @@ public class RouteStopFragment extends Fragment
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
+            if (null != mContext) {
+                int rowsDeleted = mContext.getContentResolver().delete(
+                        FavouriteProvider.CONTENT_URI_ETA_JOIN, null, null);
+                Log.d(TAG, "Deleted ETA Records: " + rowsDeleted);
+                int rowsDeleted_route = mContext.getContentResolver().delete(
+                        RouteProvider.CONTENT_URI, null, null);
+                Log.d(TAG, "Deleted Route Records: " + rowsDeleted_route);
+            }
             requestRouteStop();
             return true;
         }
