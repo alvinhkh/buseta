@@ -20,6 +20,8 @@ public class RouteStopTable {
     public final static String COLUMN_STOP_NAME = PREFIX + "stop_name";
     public final static String COLUMN_STOP_NAME_EN = PREFIX + "stop_name_en";
     public final static String COLUMN_STOP_FARE = PREFIX + "stop_fare";
+    public final static String COLUMN_STOP_LAT = PREFIX + "stop_latitude";
+    public final static String COLUMN_STOP_LONG = PREFIX + "stop_longitude";
 
     private static final String DATABASE_CREATE = "CREATE TABLE "
             + TABLE_NAME
@@ -37,6 +39,8 @@ public class RouteStopTable {
             + COLUMN_STOP_NAME + " TEXT not NULL, "
             + COLUMN_STOP_NAME_EN + " TEXT, "
             + COLUMN_STOP_FARE + " TEXT, "
+            + COLUMN_STOP_LAT + " TEXT, "
+            + COLUMN_STOP_LONG + " TEXT, "
             + "UNIQUE (" + COLUMN_ROUTE + ", " + COLUMN_BOUND + ", "
             + COLUMN_STOP_SEQ + ", " + COLUMN_STOP_CODE
             + ") ON CONFLICT REPLACE"

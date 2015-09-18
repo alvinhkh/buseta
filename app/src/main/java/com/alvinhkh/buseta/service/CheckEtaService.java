@@ -99,9 +99,7 @@ public class CheckEtaService extends IntentService {
             case 1:
                 try {
                     getETAv1(routeStop);
-                } catch (InterruptedException e) {
-                    Log.e(TAG, e.getMessage());
-                } catch (ExecutionException e) {
+                } catch (InterruptedException | ExecutionException e) {
                     Log.e(TAG, e.getMessage());
                 }
                 break;
@@ -118,13 +116,15 @@ public class CheckEtaService extends IntentService {
         sendUpdating(routeStop);
 
         String route_no = routeStop.route_bound.route_no.trim().replace(" ", "").toUpperCase();
+        String stop_code = routeStop.code;
+        if (null == stop_code) return;
         Uri routeEtaUri = Uri.parse(Constants.URL.ETA_MOBILE_API)
                 .buildUpon()
                 .appendQueryParameter("action", "geteta")
                 .appendQueryParameter("lang", "tc")
                 .appendQueryParameter("route", route_no)
                 .appendQueryParameter("bound", routeStop.route_bound.route_bound)
-                .appendQueryParameter("stop", routeStop.code.replaceAll("-", ""))
+                .appendQueryParameter("stop", stop_code.replaceAll("-", ""))
                 .appendQueryParameter("stop_seq", routeStop.stop_seq)
                 .build();
 

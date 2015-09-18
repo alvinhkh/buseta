@@ -70,9 +70,6 @@ public class RouteStopMap implements Parcelable {
     // Required method to write to Parcel
     @Override
     public void writeToParcel(Parcel p, int flags) {
-        //The parcelable object has to be the first one
-        p.writeString(this.name_tc);
-        p.writeString(this.name_en);
         p.writeString(this.lat);
         p.writeString(this.lng);
         p.writeString(this.area);

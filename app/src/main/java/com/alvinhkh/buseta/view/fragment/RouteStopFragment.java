@@ -5,19 +5,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -38,6 +35,7 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.holder.RouteStopMap;
 import com.alvinhkh.buseta.provider.EtaTable;
 import com.alvinhkh.buseta.provider.FavouriteProvider;
 import com.alvinhkh.buseta.provider.FavouriteTable;
@@ -49,20 +47,12 @@ import com.alvinhkh.buseta.provider.RouteStopTable;
 import com.alvinhkh.buseta.service.CheckEtaService;
 import com.alvinhkh.buseta.service.RouteService;
 import com.alvinhkh.buseta.view.adapter.RouteStopAdapter;
-import com.alvinhkh.buseta.holder.RouteStopMap;
 import com.alvinhkh.buseta.view.dialog.RouteEtaDialog;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
-import com.koushikdutta.ion.Response;
 import com.melnykov.fab.FloatingActionButton;
 import com.melnykov.fab.ScrollDirectionListener;
 
 import java.lang.ref.WeakReference;
-import java.util.List;
 
 public class RouteStopFragment extends Fragment
         implements AdapterView.OnItemClickListener,
@@ -335,11 +325,11 @@ public class RouteStopFragment extends Fragment
     public void onItemClick(AdapterView<?> parent, final View view,
                             final int position, long id) {
         if (view != null) {
-            RouteStop routeStop = mAdapter.getItem(position);
-            routeStop.eta_loading = true;
+            RouteStop object = mAdapter.getItem(position);
+            object.eta_loading = true;
             mAdapter.notifyDataSetChanged();
             Intent intent = new Intent(mContext, CheckEtaService.class);
-            intent.putExtra(Constants.BUNDLE.STOP_OBJECT, routeStop);
+            intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
             mContext.startService(intent);
         }
     }
@@ -487,7 +477,11 @@ public class RouteStopFragment extends Fragment
                                         },
                                         FavouriteTable.COLUMN_DATE + " DESC");
                                 routeStop.favourite = (null != cFav && cFav.getCount() > 0);
-                                routeStop.fare = getColumnString(c, RouteStopTable.COLUMN_STOP_FARE);
+                                RouteStopMap routeStopMap = new RouteStopMap();
+                                routeStopMap.air_cond_fare = getColumnString(c, RouteStopTable.COLUMN_STOP_FARE);
+                                routeStopMap.lat = getColumnString(c, RouteStopTable.COLUMN_STOP_LAT);
+                                routeStopMap.lng = getColumnString(c, RouteStopTable.COLUMN_STOP_LONG);
+                                routeStop.details = routeStopMap;
                                 if (null != cFav)
                                     cFav.close();
                                 f.mAdapter.add(routeStop);
@@ -534,7 +528,11 @@ public class RouteStopFragment extends Fragment
                                             routeStop.route_bound.route_bound.equals(route_bound) &&
                                             routeStop.stop_seq.equals(stop_seq) &&
                                             routeStop.code.equals(stop_code)) {
-                                        routeStop.fare = getColumnString(c, RouteStopTable.COLUMN_STOP_FARE);
+                                        if (null == routeStop.details)
+                                            routeStop.details = new RouteStopMap();
+                                        routeStop.details.air_cond_fare = getColumnString(c, RouteStopTable.COLUMN_STOP_FARE);
+                                        routeStop.details.lat = getColumnString(c, RouteStopTable.COLUMN_STOP_LAT);
+                                        routeStop.details.lng = getColumnString(c, RouteStopTable.COLUMN_STOP_LONG);
                                     }
                                 }
                             }

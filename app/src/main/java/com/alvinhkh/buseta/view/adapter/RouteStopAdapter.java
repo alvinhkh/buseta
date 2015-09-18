@@ -25,8 +25,10 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
 
     // View lookup cache
     private static class ViewHolder {
-        TextView stop_name;
         TextView stop_code;
+        TextView stop_lat;
+        TextView stop_lng;
+        TextView stop_name;
         TextView eta;
         TextView eta_more;
         TextView fare;
@@ -49,8 +51,10 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
             viewHolder = new ViewHolder();
             LayoutInflater inflater = LayoutInflater.from(getContext());
             convertView = inflater.inflate(R.layout.row_routestop, parent, false);
-            viewHolder.stop_name = (TextView) convertView.findViewById(R.id.stop_name);
             viewHolder.stop_code = (TextView) convertView.findViewById(R.id.stop_code);
+            viewHolder.stop_lat = (TextView) convertView.findViewById(R.id.stop_lat);
+            viewHolder.stop_lng = (TextView) convertView.findViewById(R.id.stop_lng);
+            viewHolder.stop_name = (TextView) convertView.findViewById(R.id.stop_name);
             viewHolder.eta = (TextView) convertView.findViewById(R.id.eta);
             viewHolder.eta_more = (TextView) convertView.findViewById(R.id.eta_more);
             viewHolder.fare = (TextView) convertView.findViewById(R.id.fare);
@@ -127,8 +131,14 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
                     }
                 }
             }
-            if (null != object.fare && !object.fare.equals("$0.00")) {
-                viewHolder.fare.setText(object.fare);
+            if (null != object.details) {
+                if (null != object.details.air_cond_fare &&
+                        !object.details.air_cond_fare.equals("$0.00"))
+                    viewHolder.fare.setText(object.details.air_cond_fare);
+                if (null != object.details.lat)
+                    viewHolder.stop_lat.setText(object.details.lat);
+                if (null != object.details.lat)
+                    viewHolder.stop_lng.setText(object.details.lng);
             }
         }
         // Return the completed view to render on screen

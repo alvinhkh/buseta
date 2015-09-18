@@ -29,9 +29,9 @@ public class RouteStop implements Parcelable {
 
     public Boolean eta_fail = false;
 
-    public String fare;
-
     public Boolean favourite = false;
+
+    public RouteStopMap details;
 
     // Parcelling
     /**
@@ -41,13 +41,13 @@ public class RouteStop implements Parcelable {
     public RouteStop(Parcel p) {
         this.route_bound = p.readParcelable(RouteBound.class.getClassLoader());
         this.eta = p.readParcelable(RouteStopETA.class.getClassLoader());
+        this.details = p.readParcelable(RouteStopMap.class.getClassLoader());
         this.stop_seq = p.readString();
         this.name_tc = p.readString();
         this.name_en = p.readString();
         this.code = p.readString();
         this.eta_loading = p.readByte() == 1;
         this.eta_fail = p.readByte() == 1;
-        this.fare = p.readString();
         this.favourite = p.readByte() == 1;
     }
 
@@ -62,13 +62,13 @@ public class RouteStop implements Parcelable {
         //The parcelable object has to be the first one
         p.writeParcelable(this.route_bound, flags);
         p.writeParcelable(this.eta, flags);
+        p.writeParcelable(this.details, flags);
         p.writeString(this.stop_seq);
         p.writeString(this.name_tc);
         p.writeString(this.name_en);
         p.writeString(this.code);
         p.writeByte((byte) (this.eta_loading ? 1 : 0));
         p.writeByte((byte) (this.eta_fail ? 1 : 0));
-        p.writeString(this.fare);
         p.writeByte((byte) (this.favourite ? 1 : 0));
     }
     // Method to recreate a RouteStop from a Parcel

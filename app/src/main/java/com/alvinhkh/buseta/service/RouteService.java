@@ -237,6 +237,10 @@ public class RouteService extends IntentService {
                                             !routeStopMap.air_cond_fare.equals("0.00"))
                                         values.put(RouteStopTable.COLUMN_STOP_FARE,
                                                 getString(R.string.hkd, routeStopMap.air_cond_fare));
+                                    if (null != routeStopMap.lat && !routeStopMap.lat.equals(""))
+                                        values.put(RouteStopTable.COLUMN_STOP_LAT, routeStopMap.lat);
+                                    if (null != routeStopMap.lng && !routeStopMap.lng.equals(""))
+                                        values.put(RouteStopTable.COLUMN_STOP_LONG, routeStopMap.lng);
                                 }
                             }
                         }
@@ -268,7 +272,11 @@ public class RouteService extends IntentService {
             values.put(RouteStopTable.COLUMN_STOP_CODE, object.code);
             values.put(RouteStopTable.COLUMN_STOP_NAME, object.name_tc);
             values.put(RouteStopTable.COLUMN_STOP_NAME_EN, object.name_en);
-            values.put(RouteStopTable.COLUMN_STOP_FARE, object.fare);
+            if (null != object.details) {
+                values.put(RouteStopTable.COLUMN_STOP_FARE, object.details.air_cond_fare);
+                values.put(RouteStopTable.COLUMN_STOP_LAT, object.details.lat);
+                values.put(RouteStopTable.COLUMN_STOP_LONG, object.details.lng);
+            }
             values.put(RouteStopTable.COLUMN_DATE, String.valueOf(System.currentTimeMillis() / 1000L));
         }
         return values;

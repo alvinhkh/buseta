@@ -20,7 +20,7 @@ public class Acra extends Application {
     public void onCreate() {
         super.onCreate();
 
-        // The following line triggers the initialization of ACRA
-        ACRA.init(this);
+        if (!BuildConfig.DEBUG) // filter out debugging
+            ACRA.init(this);
     }
 }

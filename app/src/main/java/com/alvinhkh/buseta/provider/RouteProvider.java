@@ -209,6 +209,8 @@ public class RouteProvider extends ContentProvider {
                 RouteStopTable.COLUMN_STOP_NAME,
                 RouteStopTable.COLUMN_STOP_NAME_EN,
                 RouteStopTable.COLUMN_STOP_FARE,
+                RouteStopTable.COLUMN_STOP_LAT,
+                RouteStopTable.COLUMN_STOP_LONG,
         };
         if (projection != null) {
             HashSet<String> requestedColumns = new HashSet<>(Arrays.asList(projection));
