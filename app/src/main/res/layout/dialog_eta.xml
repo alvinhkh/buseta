@@ -14,10 +14,10 @@
         android:orientation="horizontal">
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/stop_name"
@@ -38,6 +38,7 @@
             android:layout_height="36dp"
             android:layout_gravity="top"
             android:paddingLeft="8dp"
+            android:paddingStart="8dp"
             android:indeterminate="true"
             android:visibility="gone"/>
 
@@ -45,9 +46,9 @@
             android:id="@+id/refresh"
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:layout_centerVertical="true"
             android:layout_gravity="top"
             android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
             android:src="@drawable/ic_refresh_black_48dp"
             android:visibility="visible" />
 
@@ -55,9 +56,9 @@
             android:id="@+id/star"
             android:layout_width="36dp"
             android:layout_height="36dp"
-            android:layout_centerVertical="true"
             android:layout_gravity="top"
             android:layout_marginLeft="8dp"
+            android:layout_marginStart="8dp"
             android:src="@drawable/ic_star_border_black_48dp"
             android:visibility="visible" />
 
@@ -84,7 +85,7 @@
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:textColor="@color/primary_text"
-                android:text="00:00 ()\n00:00 ()\n00:00 ()" />
+                android:text="@string/eta" />
 
             <View
                 android:id="@+id/dividerContent"
@@ -99,8 +100,11 @@
                     android:id="@+id/label_serverTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
                     android:layout_alignParentStart="true"
+                    android:layout_marginRight="8dp"
                     android:layout_marginEnd="8dp"
+                    android:layout_toLeftOf="@+id/textView_serverTime"
                     android:layout_toStartOf="@+id/textView_serverTime"
                     android:labelFor="@+id/textView_serverTime"
                     android:textAppearance="@style/TextAppearance.XSmall"
@@ -111,10 +115,11 @@
                     android:id="@+id/textView_serverTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
                     android:layout_alignParentEnd="true"
                     android:textAppearance="@style/TextAppearance.XSmall"
                     android:textColor="@color/secondary_text"
-                    android:text="-" />
+                    android:text="@string/dots" />
 
             </RelativeLayout>
 
@@ -127,8 +132,11 @@
                     android:id="@+id/label_updated"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
                     android:layout_alignParentStart="true"
+                    android:layout_marginRight="8dp"
                     android:layout_marginEnd="8dp"
+                    android:layout_toLeftOf="@+id/textView_updated"
                     android:layout_toStartOf="@+id/textView_updated"
                     android:labelFor="@+id/textView_updated"
                     android:textAppearance="@style/TextAppearance.XSmall"
@@ -140,11 +148,31 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
                     android:textAppearance="@style/TextAppearance.XSmall"
                     android:textColor="@color/secondary_text"
-                    android:text="-" />
+                    android:text="@string/dots" />
 
             </RelativeLayout>
+
+            <LinearLayout
+                android:id="@+id/mapContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <View
+                    android:id="@+id/dividerMap"
+                    android:layout_width="match_parent"
+                    android:layout_height="16dp"/>
+
+                <fragment
+                    android:id="@+id/map"
+                    android:name="com.alvinhkh.buseta.view.fragment.ScrollMapFragment"
+                    android:layout_width="match_parent"
+                    android:layout_height="180dp" />
+
+            </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/imageContainer"

@@ -14,6 +14,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -23,6 +24,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
@@ -34,6 +36,15 @@ import com.alvinhkh.buseta.holder.EtaAdapterHelper;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.preference.SettingsHelper;
 import com.alvinhkh.buseta.service.CheckEtaService;
+import com.alvinhkh.buseta.view.fragment.ScrollMapFragment;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
 
@@ -42,9 +53,10 @@ import org.jsoup.Jsoup;
 import java.util.Date;
 
 
-public class RouteEtaDialog extends AppCompatActivity implements View.OnClickListener {
+public class RouteEtaDialog extends AppCompatActivity
+        implements View.OnClickListener, OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener {
 
-    private static final String TAG = "RouteEtaDialog";
+    private static final String TAG = RouteEtaDialog.class.getSimpleName();
 
     private Context mContext;
     private ImageView iStop;
@@ -59,11 +71,17 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
     private TextView tLastUpdated;
     private Animation animationRotate;
     private Bitmap mBitmap = null;
-    private int clickCount = 0;
+    private GoogleMap mMap;
+    private View mapContainer;
+    private View imageContainer;
 
     private RouteStop object = null;
     private Boolean favourite = false;
     private Boolean hideStar = false;
+    private int clickCount = 0;
+    private Boolean mapLoaded = false;
+    private int mapVisibility = View.VISIBLE;
+    private int imageVisibility = View.GONE;
 
     private Cursor mCursor;
     private UpdateEtaReceiver mReceiver;
@@ -88,8 +106,6 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
         // get context
         mContext = RouteEtaDialog.this;
         setTaskDescription(getString(R.string.launcher_name));
-        // set database
-        SettingsHelper settingsHelper = new SettingsHelper().parse(mContext.getApplicationContext());
         // get widgets
         iStop = (ImageView) findViewById(R.id.imageView);
         iStar = (ImageView) findViewById(R.id.star);
@@ -118,10 +134,13 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
 
             }
         });
+        mapContainer = findViewById(R.id.mapContainer);
+        imageContainer = findViewById(R.id.imageContainer);
         //
         tStopName.setOnClickListener(this);
         iStar.setOnClickListener(this);
         iRefresh.setOnClickListener(this);
+        imageContainer.setOnClickListener(this);
         // check from the saved Instance
         Bundle extras = getIntent().getExtras();
         // Or passed from the other activity
@@ -140,8 +159,23 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
         favourite = (null != mCursor && mCursor.getCount() > 0);
         iStar.setImageResource(favourite ?
                 R.drawable.ic_star_black_48dp : R.drawable.ic_star_border_black_48dp);
-        if (settingsHelper.getLoadStopImage())
-            getStopImage();
+        // Google Map
+        if (mMap == null) {
+            ScrollMapFragment mMapFragment =
+                    ((ScrollMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
+            mMap = mMapFragment.getMap();
+            mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+            mMap.getUiSettings().setZoomControlsEnabled(true);
+            final ScrollView mScrollView = (ScrollView) findViewById(R.id.scrollView);
+            ((ScrollMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+                    .setListener(new ScrollMapFragment.OnTouchListener() {
+                        @Override
+                        public void onTouch() {
+                            mScrollView.requestDisallowInterceptTouchEvent(true);
+                        }
+                    });
+            mMapFragment.getMapAsync(this);
+        }
     }
 
     @Override
@@ -210,7 +244,13 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
                 sendUpdate();
                 break;
             case R.id.stop_name:
+                mapContainer.setVisibility(View.GONE);
                 getStopImage();
+                break;
+            case R.id.imageContainer:
+                if (mapLoaded)
+                    mapContainer.setVisibility(View.VISIBLE);
+                imageContainer.setVisibility(View.GONE);
                 break;
         }
     }
@@ -255,17 +295,75 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
             outState.putParcelable(Constants.BUNDLE.STOP_OBJECT, object);
         mBitmap = Ion.with(iStop).getBitmap();
         outState.putParcelable("stop_image_bitmap", mBitmap);
+        outState.putBoolean("mapLoaded", mapLoaded);
+        outState.putInt("mapVisibility", mapContainer.getVisibility());
+        outState.putInt("imageVisibility", imageContainer.getVisibility());
     }
 
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
+    public void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        if (null == savedInstanceState) return;
         mBitmap = savedInstanceState.getParcelable("stop_image_bitmap");
+        mapLoaded = savedInstanceState.getBoolean("mapLoaded");
+        mapVisibility = savedInstanceState.getInt("mapVisibility", View.GONE);
+        imageVisibility = savedInstanceState.getInt("imageVisibility", View.GONE);
+        imageContainer.setVisibility(View.GONE);
         if (null != mBitmap) {
             iStop.setImageBitmap(mBitmap);
             iStop.setVisibility(View.VISIBLE);
-            View container = findViewById(R.id.imageContainer);
+            if (imageVisibility == View.VISIBLE) {
+                imageContainer.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
+    @Override
+    public void onMapReady(GoogleMap map) {
+        View container = findViewById(R.id.mapContainer);
+        if (null == object || null == object.details) {
+            mapContainer.setVisibility(View.GONE);
+            return;
+        }
+        map.setTrafficEnabled(true);
+        map.setOnInfoWindowClickListener(this);
+        // move
+        LatLng place = getStopLanLng();
+        CameraPosition cameraPosition =
+                new CameraPosition.Builder()
+                        .target(place)
+                        .zoom(16)
+                        .build();
+        map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        // map.animateCamera(CameraUpdateFactory.zoomTo(16), 1000, null);
+        // mark
+        Marker marker = map.addMarker(new MarkerOptions()
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_directions_bus_black_24dp))
+                .position(place)
+                .title(object.stop_seq + ": " + object.name_tc));
+        marker.showInfoWindow();
+        mapLoaded = true;
+        if (mapVisibility == View.VISIBLE)
             container.setVisibility(View.VISIBLE);
+        //
+        SettingsHelper settingsHelper = new SettingsHelper().parse(mContext.getApplicationContext());
+        if (settingsHelper.getLoadStopImage()) {
+            container.setVisibility(View.GONE);
+            getStopImage();
+        }
+    }
+
+    private LatLng getStopLanLng() {
+        if (null == object || null == object.details) return null;
+        Float lat = Float.valueOf(object.details.lat);
+        Float lng = Float.valueOf(object.details.lng);
+        return new LatLng(lat, lng);
+    }
+
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+        if (marker.getPosition().equals(getStopLanLng())) {
+            View container = findViewById(R.id.mapContainer);
+            container.setVisibility(View.GONE);
+            getStopImage();
         }
     }
 
@@ -388,12 +486,12 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
 
     private void getStopImage() {
         if (null == object) return;
+        final String stopCode = object.code;
         progressBar.setVisibility(View.VISIBLE);
         iStop.setVisibility(View.VISIBLE);
-        View container = findViewById(R.id.imageContainer);
-        container.setVisibility(View.VISIBLE);
+        imageContainer.setVisibility(View.VISIBLE);
         Ion.with(mContext)
-                .load(Constants.URL.ROUTE_STOP_IMAGE + object.code)
+                .load(Constants.URL.ROUTE_STOP_IMAGE + stopCode)
                 .progressBar(progressBar)
                 .withBitmap()
                 .error(R.drawable.ic_error_outline_black_48dp)
@@ -419,14 +517,19 @@ public class RouteEtaDialog extends AppCompatActivity implements View.OnClickLis
             Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.ETA_UPDATED);
             if (aBoolean) {
                 RouteStop routeStop = bundle.getParcelable(Constants.BUNDLE.STOP_OBJECT);
-                if (null != routeStop) {
-                    object.eta = routeStop.eta;
-                    object.eta_loading = routeStop.eta_loading;
-                    object.eta_fail = routeStop.eta_fail;
-                    parse();
+                if (null != routeStop && null != routeStop.route_bound) {
+                    if (object.route_bound.route_no.equals(routeStop.route_bound.route_no) &&
+                            object.route_bound.route_bound.equals(routeStop.route_bound.route_bound) &&
+                            object.stop_seq.equals(routeStop.stop_seq) &&
+                            object.code.equals(routeStop.code)){
+                        object.eta = routeStop.eta;
+                        object.eta_loading = routeStop.eta_loading;
+                        object.eta_fail = routeStop.eta_fail;
+                        parse();
+                        progressBar.setVisibility(View.GONE);
+                    }
                 }
                 iRefresh.setVisibility(View.VISIBLE);
-                progressBar.setVisibility(View.GONE);
             }
         }
     }
