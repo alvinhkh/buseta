@@ -58,7 +58,8 @@ import java.util.Date;
 
 
 public class RouteEtaDialog extends AppCompatActivity
-        implements View.OnClickListener, OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener {
+        implements View.OnClickListener, Animation.AnimationListener,
+        OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, GoogleMap.OnMapLongClickListener {
 
     private static final String TAG = RouteEtaDialog.class.getSimpleName();
 
@@ -78,6 +79,7 @@ public class RouteEtaDialog extends AppCompatActivity
     private GoogleMap mMap;
     private View mapContainer;
     private View imageContainer;
+    private Marker mStopMarker = null;
 
     private RouteStop object = null;
     private Boolean hideStar = false;
@@ -120,23 +122,9 @@ public class RouteEtaDialog extends AppCompatActivity
         lLastUpdated = (TextView) findViewById(R.id.label_updated);
         tLastUpdated = (TextView) findViewById(R.id.textView_updated);
         animationRotate = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.rotate_once);
-        animationRotate.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
+        animationRotate.setAnimationListener(this);
         mapContainer = findViewById(R.id.mapContainer);
+        mapContainer.setVisibility(View.GONE);
         imageContainer = findViewById(R.id.imageContainer);
         //
         tStopName.setOnClickListener(this);
@@ -149,17 +137,16 @@ public class RouteEtaDialog extends AppCompatActivity
         if (extras != null) {
             hideStar = extras.getBoolean(Constants.MESSAGE.HIDE_STAR);
             object = extras.getParcelable(Constants.BUNDLE.STOP_OBJECT);
-            // overview task
-            setTaskDescription(null == object || null == object.route_bound ? getString(R.string.launcher_name) :
-                    object.route_bound.route_no + getString(R.string.interpunct) + getString(R.string.launcher_name));
-            parse();
         } else {
             finish();
         }
+        // overview task
+        setTaskDescription(null == object || null == object.route_bound ? getString(R.string.launcher_name) :
+                object.route_bound.route_no + getString(R.string.interpunct) + getString(R.string.launcher_name));
         //
         object = getObject(object);
-        iStar.setImageResource(object.favourite ?
-                R.drawable.ic_star_black_48dp : R.drawable.ic_star_border_black_48dp);
+        object.eta_loading = true;
+        parse();
         // Google Map
         if (mMap == null) {
             ScrollMapFragment mMapFragment =
@@ -195,6 +182,7 @@ public class RouteEtaDialog extends AppCompatActivity
                 clickCount++;
                 break;
             case R.id.star:
+                // TODO: deal with situation where stop seq changed, a problem for favourite stops
                 if (null == object || null == object.route_bound) break;
                 Boolean org;
                 if (isFavourite(object)) {
@@ -314,38 +302,62 @@ public class RouteEtaDialog extends AppCompatActivity
 
     @Override
     public void onMapReady(GoogleMap map) {
+        mMap = map;
         View container = findViewById(R.id.mapContainer);
-        if (null == object || null == object.details) {
-            mapContainer.setVisibility(View.GONE);
+        container.setVisibility(View.GONE);
+        if (null == object || null == object.details)
             return;
-        }
         map.setTrafficEnabled(true);
         map.setOnInfoWindowClickListener(this);
-        // move
-        LatLng place = getStopLanLng();
+        map.setOnMapLongClickListener(this);
+        resetMap(map);
+        // mark
+        mStopMarker = map.addMarker(new MarkerOptions()
+                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_directions_bus_black_24dp))
+                .position(getStopLanLng())
+                .title(object.stop_seq + ": " + object.name_tc));
+        mStopMarker.showInfoWindow();
+        mapLoaded = true;
+        mapVisibility = View.VISIBLE;
+        //
+        SettingsHelper settingsHelper = new SettingsHelper().parse(mContext.getApplicationContext());
+        if (settingsHelper.getLoadStopImage()) {
+            mapVisibility = View.GONE;
+            getStopImage();
+        }
+        if (mapVisibility == View.VISIBLE)
+            container.setVisibility(View.VISIBLE);
+        else if (mapVisibility == View.GONE)
+            container.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onMapLongClick(LatLng latLng) {
+        if (null == mMap) return;
+        resetMap(mMap);
+    }
+
+    private void resetMap(GoogleMap map) {
+        if (null == map) return;
         CameraPosition cameraPosition =
                 new CameraPosition.Builder()
-                        .target(place)
+                        .target(getStopLanLng())
                         .zoom(16)
                         .build();
         map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         // map.animateCamera(CameraUpdateFactory.zoomTo(16), 1000, null);
-        // mark
-        Marker marker = map.addMarker(new MarkerOptions()
-                .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_directions_bus_black_24dp))
-                .position(place)
-                .title(object.stop_seq + ": " + object.name_tc));
-        marker.showInfoWindow();
-        mapLoaded = true;
-        if (mapVisibility == View.VISIBLE)
-            container.setVisibility(View.VISIBLE);
-        //
-        SettingsHelper settingsHelper = new SettingsHelper().parse(mContext.getApplicationContext());
-        if (settingsHelper.getLoadStopImage()) {
-            container.setVisibility(View.GONE);
-            getStopImage();
-        }
+        if (null != mStopMarker)
+            mStopMarker.showInfoWindow();
     }
+
+    @Override
+    public void onAnimationStart(Animation animation) {}
+
+    @Override
+    public void onAnimationEnd(Animation animation) {}
+
+    @Override
+    public void onAnimationRepeat(Animation animation) {}
 
     private LatLng getStopLanLng() {
         if (null == object || null == object.details) return null;
@@ -391,7 +403,7 @@ public class RouteEtaDialog extends AppCompatActivity
     }
 
     private Boolean isFavourite(RouteStop object) {
-        Cursor c = getContentResolver().query(FavouriteProvider.CONTENT_URI_FAV,
+        final Cursor c = getContentResolver().query(FavouriteProvider.CONTENT_URI_FAV,
                 null,
                 FavouriteTable.COLUMN_ROUTE + " =?" +
                         " AND " + FavouriteTable.COLUMN_BOUND + " =?" +
@@ -403,8 +415,10 @@ public class RouteEtaDialog extends AppCompatActivity
                 },
                 FavouriteTable.COLUMN_DATE + " DESC");
         Boolean isFavourite = false;
-        if (null != c) {
+        try {
+            c.moveToFirst();
             isFavourite = c.getCount() > 0;
+        } finally {
             c.close();
         }
         return isFavourite;
@@ -423,21 +437,23 @@ public class RouteEtaDialog extends AppCompatActivity
                         object.code
                 }, RouteStopTable.COLUMN_STOP_SEQ + "* 1 ASC");
         RouteStop routeStop = new RouteStop();
-        if (null != c && c.getCount() > 0) {
+        try {
             c.moveToFirst();
-            routeStop.route_bound = object.route_bound;
-            routeStop.stop_seq = getColumnString(c, RouteStopTable.COLUMN_STOP_SEQ);
-            routeStop.name_tc = getColumnString(c, RouteStopTable.COLUMN_STOP_NAME);
-            routeStop.name_en = getColumnString(c, RouteStopTable.COLUMN_STOP_NAME_EN);
-            routeStop.code = getColumnString(c, RouteStopTable.COLUMN_STOP_CODE);
-            RouteStopMap routeStopMap = new RouteStopMap();
-            routeStopMap.air_cond_fare = getColumnString(c, RouteStopTable.COLUMN_STOP_FARE);
-            routeStopMap.lat = getColumnString(c, RouteStopTable.COLUMN_STOP_LAT);
-            routeStopMap.lng = getColumnString(c, RouteStopTable.COLUMN_STOP_LONG);
-            routeStop.details = routeStopMap;
-        }
-        if (null != c)
+            if (c.getCount() > 0) {
+                routeStop.route_bound = object.route_bound;
+                routeStop.stop_seq = getColumnString(c, RouteStopTable.COLUMN_STOP_SEQ);
+                routeStop.name_tc = getColumnString(c, RouteStopTable.COLUMN_STOP_NAME);
+                routeStop.name_en = getColumnString(c, RouteStopTable.COLUMN_STOP_NAME_EN);
+                routeStop.code = getColumnString(c, RouteStopTable.COLUMN_STOP_CODE);
+                RouteStopMap routeStopMap = new RouteStopMap();
+                routeStopMap.air_cond_fare = getColumnString(c, RouteStopTable.COLUMN_STOP_FARE);
+                routeStopMap.lat = getColumnString(c, RouteStopTable.COLUMN_STOP_LAT);
+                routeStopMap.lng = getColumnString(c, RouteStopTable.COLUMN_STOP_LONG);
+                routeStop.details = routeStopMap;
+            }
+        } finally {
             c.close();
+        }
         routeStop.favourite = isFavourite(object);
         Cursor cEta = getContentResolver().query(FavouriteProvider.CONTENT_URI_ETA_JOIN,
                 null,
@@ -450,22 +466,25 @@ public class RouteEtaDialog extends AppCompatActivity
                         object.code
                 },
                 FavouriteTable.COLUMN_DATE + " DESC");
-        if (null != cEta && cEta.getCount() > 0) {
+        try {
             cEta.moveToFirst();
-            RouteStopETA routeStopETA = null;
-            String apiVersion = getColumnString(cEta, EtaTable.COLUMN_ETA_API);
-            if (null != apiVersion && !apiVersion.equals("")) {
-                routeStopETA = new RouteStopETA();
-                routeStopETA.api_version = Integer.valueOf(apiVersion);
-                routeStopETA.seq = getColumnString(cEta, EtaTable.COLUMN_STOP_SEQ);
-                routeStopETA.etas = getColumnString(cEta, EtaTable.COLUMN_ETA_TIME);
-                routeStopETA.expires = getColumnString(cEta, EtaTable.COLUMN_ETA_EXPIRE);
-                routeStopETA.server_time = getColumnString(cEta, EtaTable.COLUMN_SERVER_TIME);
-                routeStopETA.updated = getColumnString(cEta, EtaTable.COLUMN_UPDATED);
+            if (cEta.getCount() > 0) {
+                RouteStopETA routeStopETA = null;
+                String apiVersion = getColumnString(cEta, EtaTable.COLUMN_ETA_API);
+                if (null != apiVersion && !apiVersion.equals("")) {
+                    routeStopETA = new RouteStopETA();
+                    routeStopETA.api_version = Integer.valueOf(apiVersion);
+                    routeStopETA.seq = getColumnString(cEta, EtaTable.COLUMN_STOP_SEQ);
+                    routeStopETA.etas = getColumnString(cEta, EtaTable.COLUMN_ETA_TIME);
+                    routeStopETA.expires = getColumnString(cEta, EtaTable.COLUMN_ETA_EXPIRE);
+                    routeStopETA.server_time = getColumnString(cEta, EtaTable.COLUMN_SERVER_TIME);
+                    routeStopETA.updated = getColumnString(cEta, EtaTable.COLUMN_UPDATED);
+                }
+                routeStop.eta = routeStopETA;
+                routeStop.eta_loading = getColumnString(cEta, EtaTable.COLUMN_LOADING).equals("true");
+                routeStop.eta_fail = getColumnString(cEta, EtaTable.COLUMN_FAIL).equals("true");
             }
-            routeStop.eta = routeStopETA;
-            routeStop.eta_loading = getColumnString(cEta, EtaTable.COLUMN_LOADING).equals("true");
-            routeStop.eta_fail = getColumnString(cEta, EtaTable.COLUMN_FAIL).equals("true");
+        } finally {
             cEta.close();
         }
         return routeStop;
@@ -481,16 +500,25 @@ public class RouteEtaDialog extends AppCompatActivity
             finish();
             return;
         }
+        tEta.setVisibility(View.VISIBLE);
+        lServerTime.setVisibility(View.VISIBLE);
+        tServerTime.setVisibility(View.VISIBLE);
+        lLastUpdated.setVisibility(View.VISIBLE);
+        tLastUpdated.setVisibility(View.VISIBLE);
+        iStar.setImageResource(object.favourite ?
+                R.drawable.ic_star_black_48dp : R.drawable.ic_star_border_black_48dp);
         iStar.setVisibility(hideStar ? View.GONE : View.VISIBLE);
         tStopName.setText(object.name_tc);
-        tEta.setVisibility(View.VISIBLE);
         if (object.eta_loading != null && object.eta_loading) {
-            if (tEta.getText().equals(""))
-                tEta.setText(R.string.message_loading);
+            progressBar.setVisibility(View.VISIBLE);
+            if (null == object.eta || object.eta.etas.equals("") || tEta.getText().equals(""))
+                tEta.setText(getString(R.string.message_loading) + "\n\n\n");
         } else if (object.eta_fail != null && object.eta_fail) {
             tEta.setText(R.string.message_fail_to_request);
+            progressBar.setVisibility(View.GONE);
         } else if (null == object.eta || object.eta.etas.equals("")) {
             tEta.setText(R.string.message_no_data);
+            progressBar.setVisibility(View.GONE);
         }
         if (null == object.eta || object.eta.etas.equals("")) {
             lServerTime.setVisibility(View.GONE);
@@ -498,11 +526,6 @@ public class RouteEtaDialog extends AppCompatActivity
             lLastUpdated.setVisibility(View.GONE);
             tLastUpdated.setVisibility(View.GONE);
             return;
-        } else {
-            lServerTime.setVisibility(View.VISIBLE);
-            tServerTime.setVisibility(View.VISIBLE);
-            lLastUpdated.setVisibility(View.VISIBLE);
-            tLastUpdated.setVisibility(View.VISIBLE);
         }
         // Request Time
         String server_time = "";
@@ -550,6 +573,7 @@ public class RouteEtaDialog extends AppCompatActivity
             lLastUpdated.setVisibility(View.GONE);
             tLastUpdated.setVisibility(View.GONE);
         }
+        progressBar.setVisibility(View.GONE);
     }
 
     private void getStopImage() {

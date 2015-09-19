@@ -324,14 +324,13 @@ public class RouteStopFragment extends Fragment
     @Override
     public void onItemClick(AdapterView<?> parent, final View view,
                             final int position, long id) {
-        if (view != null) {
-            RouteStop object = mAdapter.getItem(position);
-            object.eta_loading = true;
-            mAdapter.notifyDataSetChanged();
-            Intent intent = new Intent(mContext, CheckEtaService.class);
-            intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
-            mContext.startService(intent);
-        }
+        if (view == null) return;
+        RouteStop object = mAdapter.getItem(position);
+        object.eta_loading = true;
+        mAdapter.notifyDataSetChanged();
+        Intent intent = new Intent(mContext, CheckEtaService.class);
+        intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
+        mContext.startService(intent);
     }
 
     @Override

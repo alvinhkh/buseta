@@ -179,6 +179,9 @@ public class MainActivity extends AppCompatActivity
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         if (key.matches(Constants.PREF.AD_HIDE)) {
             createAdView();
+        } else if (key.matches("eta_version")) {
+            int rowsDeleted = getContentResolver().delete(FavouriteProvider.CONTENT_URI_ETA_JOIN, null, null);
+            Log.d(TAG, "Deleted ETA Records: " + rowsDeleted);
         }
     }
 
