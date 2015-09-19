@@ -15,7 +15,7 @@ import android.text.TextUtils;
 
 public class FavouriteProvider extends ContentProvider {
 
-    private FavouriteOpenHelper mHelper;
+    private RouteOpenHelper mHelper;
 
     private static final String AUTHORITY = "com.alvinhkh.buseta.FavouriteProvider";
     private static final String BASE_PATH_LEFT_JOIN = "left_join";
@@ -50,7 +50,7 @@ public class FavouriteProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        mHelper = new FavouriteOpenHelper(getContext());
+        mHelper = new RouteOpenHelper(getContext());
         return false;
     }
 

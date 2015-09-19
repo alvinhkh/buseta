@@ -59,7 +59,7 @@ public class RouteStopFragment extends Fragment
         AdapterView.OnItemLongClickListener,
         SwipeRefreshLayout.OnRefreshListener {
 
-    private static final String TAG = "RouteStopFragment";
+    private static final String TAG = RouteStopFragment.class.getSimpleName();
     private static final String KEY_LIST_VIEW_STATE = "KEY_LIST_VIEW_STATE_ROUTE_STOP";
 
     private Context mContext = super.getActivity();
@@ -361,7 +361,7 @@ public class RouteStopFragment extends Fragment
                         FavouriteProvider.CONTENT_URI_ETA_JOIN, null, null);
                 Log.d(TAG, "Deleted ETA Records: " + rowsDeleted);
                 int rowsDeleted_route = mContext.getContentResolver().delete(
-                        RouteProvider.CONTENT_URI, null, null);
+                        RouteProvider.CONTENT_URI_FILTER, null, null);
                 Log.d(TAG, "Deleted Route Records: " + rowsDeleted_route);
             }
             requestRouteStop();
@@ -477,13 +477,13 @@ public class RouteStopFragment extends Fragment
                                         },
                                         FavouriteTable.COLUMN_DATE + " DESC");
                                 routeStop.favourite = (null != cFav && cFav.getCount() > 0);
+                                if (null != cFav)
+                                    cFav.close();
                                 RouteStopMap routeStopMap = new RouteStopMap();
                                 routeStopMap.air_cond_fare = getColumnString(c, RouteStopTable.COLUMN_STOP_FARE);
                                 routeStopMap.lat = getColumnString(c, RouteStopTable.COLUMN_STOP_LAT);
                                 routeStopMap.lng = getColumnString(c, RouteStopTable.COLUMN_STOP_LONG);
                                 routeStop.details = routeStopMap;
-                                if (null != cFav)
-                                    cFav.close();
                                 f.mAdapter.add(routeStop);
                             }
                             f.mAdapter.notifyDataSetChanged();

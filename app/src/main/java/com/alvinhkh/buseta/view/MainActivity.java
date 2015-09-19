@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener,
         SearchView.OnQueryTextListener, SearchView.OnSuggestionListener, FilterQueryProvider {
 
-    private static final String TAG = "MainActivity";
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     private SharedPreferences mPrefs;
     // SearchView Suggestion, reference: http://stackoverflow.com/a/13773625
@@ -244,7 +244,7 @@ public class MainActivity extends AppCompatActivity
     public void onDestroy() {
         int rowsDeleted = getContentResolver().delete(FavouriteProvider.CONTENT_URI_ETA_JOIN, null, null);
         Log.d(TAG, "Deleted ETA Records: " + rowsDeleted);
-        int rowsDeleted_route = getContentResolver().delete(RouteProvider.CONTENT_URI, null, null);
+        int rowsDeleted_route = getContentResolver().delete(RouteProvider.CONTENT_URI_FILTER, null, null);
         Log.d(TAG, "Deleted Route Records: " + rowsDeleted_route);
         if (null != mAdView)
             mAdView.destroy();

@@ -29,12 +29,16 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.holder.RouteStopETA;
+import com.alvinhkh.buseta.holder.RouteStopMap;
 import com.alvinhkh.buseta.provider.EtaTable;
 import com.alvinhkh.buseta.provider.FavouriteProvider;
 import com.alvinhkh.buseta.provider.FavouriteTable;
 import com.alvinhkh.buseta.holder.EtaAdapterHelper;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.preference.SettingsHelper;
+import com.alvinhkh.buseta.provider.RouteProvider;
+import com.alvinhkh.buseta.provider.RouteStopTable;
 import com.alvinhkh.buseta.service.CheckEtaService;
 import com.alvinhkh.buseta.view.fragment.ScrollMapFragment;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -76,14 +80,12 @@ public class RouteEtaDialog extends AppCompatActivity
     private View imageContainer;
 
     private RouteStop object = null;
-    private Boolean favourite = false;
     private Boolean hideStar = false;
     private int clickCount = 0;
     private Boolean mapLoaded = false;
     private int mapVisibility = View.VISIBLE;
     private int imageVisibility = View.GONE;
 
-    private Cursor mCursor;
     private UpdateEtaReceiver mReceiver;
 
     Handler mAutoRefreshHandler = new Handler();
@@ -155,9 +157,8 @@ public class RouteEtaDialog extends AppCompatActivity
             finish();
         }
         //
-        mCursor = getExistFavourite(object);
-        favourite = (null != mCursor && mCursor.getCount() > 0);
-        iStar.setImageResource(favourite ?
+        object = getObject(object);
+        iStar.setImageResource(object.favourite ?
                 R.drawable.ic_star_black_48dp : R.drawable.ic_star_border_black_48dp);
         // Google Map
         if (mMap == null) {
@@ -195,10 +196,8 @@ public class RouteEtaDialog extends AppCompatActivity
                 break;
             case R.id.star:
                 if (null == object || null == object.route_bound) break;
-                if (null != mCursor) mCursor.close();
-                mCursor = getExistFavourite(object);
                 Boolean org;
-                if (null != mCursor && mCursor.getCount() > 0) {
+                if (isFavourite(object)) {
                     // record exist
                     org = true;
                     int rowDeleted = mContext.getContentResolver().delete(
@@ -221,7 +220,7 @@ public class RouteEtaDialog extends AppCompatActivity
                                     object.route_bound.route_bound,
                                     object.code
                             });
-                    favourite = !(rowDeleted > 0);
+                    object.favourite = !(rowDeleted > 0);
                 } else {
                     org = false;
                     ContentValues values = new ContentValues();
@@ -234,13 +233,12 @@ public class RouteEtaDialog extends AppCompatActivity
                     values.put(FavouriteTable.COLUMN_STOP_NAME, object.name_tc);
                     values.put(FavouriteTable.COLUMN_DATE, String.valueOf(System.currentTimeMillis() / 1000L));
                     Uri favUri = getContentResolver().insert(FavouriteProvider.CONTENT_URI_FAV, values);
-                    favourite = (favUri != null);
+                    object.favourite = (favUri != null);
                 }
-                if (org != favourite)
+                if (org != object.favourite)
                     iStar.startAnimation(animationRotate);
-                iStar.setImageResource(favourite ?
+                iStar.setImageResource(object.favourite ?
                         R.drawable.ic_star_black_48dp : R.drawable.ic_star_border_black_48dp);
-                object.favourite = favourite;
                 sendUpdate();
                 break;
             case R.id.stop_name:
@@ -283,8 +281,6 @@ public class RouteEtaDialog extends AppCompatActivity
     public void onDestroy() {
         if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
             mAutoRefreshHandler.removeCallbacks(mAutoRefreshRunnable);
-        if (null != mCursor)
-            mCursor.close();
         Ion.getDefault(mContext).cancelAll(mContext);
         super.onDestroy();
     }
@@ -394,18 +390,90 @@ public class RouteEtaDialog extends AppCompatActivity
         getApplication().sendBroadcast(intent);
     }
 
-    private Cursor getExistFavourite(RouteStop object) {
-        return getContentResolver().query(FavouriteProvider.CONTENT_URI_FAV,
+    private Boolean isFavourite(RouteStop object) {
+        Cursor c = getContentResolver().query(FavouriteProvider.CONTENT_URI_FAV,
                 null,
                 FavouriteTable.COLUMN_ROUTE + " =?" +
                         " AND " + FavouriteTable.COLUMN_BOUND + " =?" +
                         " AND " + FavouriteTable.COLUMN_STOP_CODE + " =?",
-                new String[] {
+                new String[]{
                         object.route_bound.route_no,
                         object.route_bound.route_bound,
                         object.code
                 },
                 FavouriteTable.COLUMN_DATE + " DESC");
+        Boolean isFavourite = false;
+        if (null != c) {
+            isFavourite = c.getCount() > 0;
+            c.close();
+        }
+        return isFavourite;
+    }
+
+    private RouteStop getObject(RouteStop object) {
+       final Cursor c = getContentResolver().query(
+                RouteProvider.CONTENT_URI,
+                null,
+               RouteStopTable.COLUMN_ROUTE + " =?" +
+                       " AND " + RouteStopTable.COLUMN_BOUND + " =?" +
+                       " AND " + RouteStopTable.COLUMN_STOP_CODE + " =?",
+                new String[]{
+                        object.route_bound.route_no,
+                        object.route_bound.route_bound,
+                        object.code
+                }, RouteStopTable.COLUMN_STOP_SEQ + "* 1 ASC");
+        RouteStop routeStop = new RouteStop();
+        if (null != c && c.getCount() > 0) {
+            c.moveToFirst();
+            routeStop.route_bound = object.route_bound;
+            routeStop.stop_seq = getColumnString(c, RouteStopTable.COLUMN_STOP_SEQ);
+            routeStop.name_tc = getColumnString(c, RouteStopTable.COLUMN_STOP_NAME);
+            routeStop.name_en = getColumnString(c, RouteStopTable.COLUMN_STOP_NAME_EN);
+            routeStop.code = getColumnString(c, RouteStopTable.COLUMN_STOP_CODE);
+            RouteStopMap routeStopMap = new RouteStopMap();
+            routeStopMap.air_cond_fare = getColumnString(c, RouteStopTable.COLUMN_STOP_FARE);
+            routeStopMap.lat = getColumnString(c, RouteStopTable.COLUMN_STOP_LAT);
+            routeStopMap.lng = getColumnString(c, RouteStopTable.COLUMN_STOP_LONG);
+            routeStop.details = routeStopMap;
+        }
+        if (null != c)
+            c.close();
+        routeStop.favourite = isFavourite(object);
+        Cursor cEta = getContentResolver().query(FavouriteProvider.CONTENT_URI_ETA_JOIN,
+                null,
+                FavouriteTable.COLUMN_ROUTE + " =?" +
+                        " AND " + FavouriteTable.COLUMN_BOUND + " =?" +
+                        " AND " + FavouriteTable.COLUMN_STOP_CODE + " =?",
+                new String[]{
+                        object.route_bound.route_no,
+                        object.route_bound.route_bound,
+                        object.code
+                },
+                FavouriteTable.COLUMN_DATE + " DESC");
+        if (null != cEta && cEta.getCount() > 0) {
+            cEta.moveToFirst();
+            RouteStopETA routeStopETA = null;
+            String apiVersion = getColumnString(cEta, EtaTable.COLUMN_ETA_API);
+            if (null != apiVersion && !apiVersion.equals("")) {
+                routeStopETA = new RouteStopETA();
+                routeStopETA.api_version = Integer.valueOf(apiVersion);
+                routeStopETA.seq = getColumnString(cEta, EtaTable.COLUMN_STOP_SEQ);
+                routeStopETA.etas = getColumnString(cEta, EtaTable.COLUMN_ETA_TIME);
+                routeStopETA.expires = getColumnString(cEta, EtaTable.COLUMN_ETA_EXPIRE);
+                routeStopETA.server_time = getColumnString(cEta, EtaTable.COLUMN_SERVER_TIME);
+                routeStopETA.updated = getColumnString(cEta, EtaTable.COLUMN_UPDATED);
+            }
+            routeStop.eta = routeStopETA;
+            routeStop.eta_loading = getColumnString(cEta, EtaTable.COLUMN_LOADING).equals("true");
+            routeStop.eta_fail = getColumnString(cEta, EtaTable.COLUMN_FAIL).equals("true");
+            cEta.close();
+        }
+        return routeStop;
+    }
+
+    private String getColumnString(Cursor cursor, String column) {
+        int index = cursor.getColumnIndex(column);
+        return cursor.isNull(index) ? "" : cursor.getString(index);
     }
 
     private void parse() {
@@ -517,7 +585,8 @@ public class RouteEtaDialog extends AppCompatActivity
             Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.ETA_UPDATED);
             if (aBoolean) {
                 RouteStop routeStop = bundle.getParcelable(Constants.BUNDLE.STOP_OBJECT);
-                if (null != routeStop && null != routeStop.route_bound) {
+                if (null != routeStop && null != routeStop.route_bound
+                        && null != object && null != object.route_bound) {
                     if (object.route_bound.route_no.equals(routeStop.route_bound.route_no) &&
                             object.route_bound.route_bound.equals(routeStop.route_bound.route_bound) &&
                             object.stop_seq.equals(routeStop.stop_seq) &&

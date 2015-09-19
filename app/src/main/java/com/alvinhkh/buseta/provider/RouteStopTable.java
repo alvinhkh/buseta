@@ -51,7 +51,7 @@ public class RouteStopTable {
     }
 
     public static void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        Log.w(FavouriteOpenHelper.class.getName(),
+        Log.w(RouteOpenHelper.class.getName(),
                 "Upgrading database from version " + oldVersion + " to "
                         + newVersion + ", which will destroy all old data");
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);

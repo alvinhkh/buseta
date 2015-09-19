@@ -22,14 +22,19 @@ public class RouteProvider extends ContentProvider {
     private static final String BASE_PATH = "route";
     public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY
             + "/" + BASE_PATH);
+    private static final String BASE_PATH_FILTER = BASE_PATH + "/filter";
+    public static final Uri CONTENT_URI_FILTER = Uri.parse("content://" + AUTHORITY
+            + "/" + BASE_PATH_FILTER);
 
     // used for the UriMatcher
     private static final int ROUTES = 10;
     private static final int ROUTE_ID = 11;
+    private static final int FILTER = 20;
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     static {
         sURIMatcher.addURI(AUTHORITY, BASE_PATH, ROUTES);
         sURIMatcher.addURI(AUTHORITY, BASE_PATH + "/#", ROUTE_ID);
+        sURIMatcher.addURI(AUTHORITY, BASE_PATH_FILTER, FILTER);
     }
 
     @Override
@@ -149,6 +154,17 @@ public class RouteProvider extends ContentProvider {
                                     + " and " + selection,
                             selectionArgs);
                 }
+                break;
+            case FILTER:
+                rowsDeleted = sqlDB.delete(RouteStopTable.TABLE_NAME, RouteStopTable.COLUMN_ID +
+                                " IN ( " + "SELECT " + RouteStopTable.COLUMN_ID + " FROM " +
+                                RouteStopTable.TABLE_NAME +
+                                " LEFT JOIN " + FavouriteTable.TABLE_NAME +
+                                " ON (" +
+                                FavouriteTable.COLUMN_ROUTE + "=" + RouteStopTable.COLUMN_ROUTE + " AND " +
+                                FavouriteTable.COLUMN_BOUND + "=" + RouteStopTable.COLUMN_BOUND +
+                                ")" + " WHERE " + FavouriteTable.COLUMN_ID + " IS NULL)",
+                        null);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
