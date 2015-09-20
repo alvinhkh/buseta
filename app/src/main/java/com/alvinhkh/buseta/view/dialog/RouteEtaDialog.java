@@ -307,7 +307,7 @@ public class RouteEtaDialog extends AppCompatActivity
         container.setVisibility(View.GONE);
         if (null == object || null == object.details)
             return;
-        map.setTrafficEnabled(true);
+        map.setTrafficEnabled(false);
         map.setOnInfoWindowClickListener(this);
         map.setOnMapLongClickListener(this);
         resetMap(map);

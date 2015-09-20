@@ -104,7 +104,7 @@ public class RouteNewsFragment extends Fragment
         TextView mTextView_routeNo = (TextView) view.findViewById(R.id.route_no);
         mTextView_routeNo.setText(_route_no);
         //
-        mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh_route);
+        mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh);
         mSwipeRefreshLayout.setOnRefreshListener(this);
         mSwipeRefreshLayout.setEnabled(false);
         mSwipeRefreshLayout.setRefreshing(false);

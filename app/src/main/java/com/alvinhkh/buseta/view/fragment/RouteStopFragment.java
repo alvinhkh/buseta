@@ -150,7 +150,7 @@ public class RouteStopFragment extends Fragment
             mAdapter.onRestoreInstanceState(savedInstanceState);
         }
         // SwipeRefreshLayout
-        mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh_route);
+        mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh);
         mSwipeRefreshLayout.setOnRefreshListener(this);
         mSwipeRefreshLayout.setEnabled(false); // disable pull-to-refresh
         mSwipeRefreshLayout.setRefreshing(false);
