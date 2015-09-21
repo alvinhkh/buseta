@@ -26,6 +26,7 @@ import com.alvinhkh.buseta.view.MainActivity;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RecyclerViewHolder;
 import com.alvinhkh.buseta.holder.SearchHistory;
+import com.alvinhkh.buseta.view.dialog.RouteEtaActivity;
 import com.alvinhkh.buseta.view.dialog.RouteEtaDialog;
 
 import org.jsoup.Jsoup;
@@ -262,7 +263,8 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
                     ((MainActivity) mActivity).showRouteBoundFragment(routeStop.route_bound.route_no);
                     ((MainActivity) mActivity).showRouteStopFragment(routeStop.route_bound);
                     // Open stop dialog
-                    Intent intent = new Intent(caller.getContext(), RouteEtaDialog.class);
+                    Intent intent = new Intent(caller.getContext(), RouteEtaActivity.class);
+                    // Intent intent = new Intent(caller.getContext(), RouteEtaDialog.class);
                     intent.setAction(Intent.ACTION_VIEW);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.putExtra(Constants.BUNDLE.STOP_OBJECT, routeStop);
@@ -275,7 +277,8 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
                     // ((MainActivity) mActivity).showRouteBoundFragment(routeStop.route_bound.route_no);
                     // ((MainActivity) mActivity).showRouteStopFragment(routeStop.route_bound);
                     // Open stop dialog
-                    Intent intent = new Intent(caller.getContext(), RouteEtaDialog.class);
+                    Intent intent = new Intent(caller.getContext(), RouteEtaActivity.class);
+                    //Intent intent = new Intent(caller.getContext(), RouteEtaDialog.class);
                     intent.setAction(Intent.ACTION_VIEW);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     intent.putExtra(Constants.MESSAGE.HIDE_STAR, true);

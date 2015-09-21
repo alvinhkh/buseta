@@ -1,6 +1,5 @@
-package com.alvinhkh.buseta.view.dialog;
+package com.alvinhkh.buseta.view.fragment;
 
-import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -8,39 +7,41 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
-import android.support.v4.content.ContextCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.widget.NestedScrollView;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.holder.EtaAdapterHelper;
+import com.alvinhkh.buseta.holder.RouteBound;
+import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.holder.RouteStopETA;
 import com.alvinhkh.buseta.holder.RouteStopMap;
+import com.alvinhkh.buseta.preference.SettingsHelper;
 import com.alvinhkh.buseta.provider.EtaTable;
 import com.alvinhkh.buseta.provider.FavouriteProvider;
 import com.alvinhkh.buseta.provider.FavouriteTable;
-import com.alvinhkh.buseta.holder.EtaAdapterHelper;
-import com.alvinhkh.buseta.holder.RouteStop;
-import com.alvinhkh.buseta.preference.SettingsHelper;
 import com.alvinhkh.buseta.provider.RouteProvider;
 import com.alvinhkh.buseta.provider.RouteStopTable;
 import com.alvinhkh.buseta.service.CheckEtaService;
-import com.alvinhkh.buseta.view.fragment.ScrollMapFragment;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -56,104 +57,90 @@ import org.jsoup.Jsoup;
 
 import java.util.Date;
 
-
-public class RouteEtaDialog extends AppCompatActivity
-        implements View.OnClickListener, Animation.AnimationListener,
+public class RouteEtaFragment extends Fragment
+        implements SwipeRefreshLayout.OnRefreshListener,
         OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, GoogleMap.OnMapLongClickListener {
 
-    private static final String TAG = RouteEtaDialog.class.getSimpleName();
+    private static final String TAG = RouteEtaFragment.class.getSimpleName();
 
-    private Context mContext;
-    private ImageView iStop;
-    private ImageView iStar;
-    private ImageView iRefresh;
-    private ProgressBar progressBar;
-    private TextView tStopName;
+    private Context mContext = super.getActivity();
+    private ActionBar mActionBar = null;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
+    private View mImageContainer;
+    private ImageView mImageView;
+    private TextView tSubtitle;
     private TextView tEta;
     private TextView lServerTime;
     private TextView tServerTime;
     private TextView lLastUpdated;
     private TextView tLastUpdated;
-    private Animation animationRotate;
     private Bitmap mBitmap = null;
-    private View mapContainer;
-    private View imageContainer;
+    private Menu mMenu;
+    private MenuItem mRefresh;
+    private MenuItem mFollow;
+
+    private SettingsHelper settingsHelper;
     private GoogleMap mMap;
     private Marker mStopMarker = null;
-
-    private RouteStop object = null;
-    private Boolean hideStar = false;
+    private RouteStop object;
     private int clickCount = 0;
-    private Boolean mapLoaded = false;
-    private int mapVisibility = View.VISIBLE;
-    private int imageVisibility = View.GONE;
-
+    private boolean imageVisible = false;
     private UpdateEtaReceiver mReceiver;
 
-    Handler mAutoRefreshHandler = new Handler();
-    Runnable mAutoRefreshRunnable = new Runnable() {
-        @Override
-        public void run() {
-            onRefresh();
-            mAutoRefreshHandler.postDelayed(mAutoRefreshRunnable, 30 * 1000); // every half minute
-        }
-    };
+    public RouteEtaFragment() {
+    }
 
     @Override
-    protected void onCreate(Bundle bundle) {
-        super.onCreate(bundle);
-        setContentView(R.layout.dialog_eta);
-        getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        setFinishOnTouchOutside(true);
-        // get context
-        mContext = RouteEtaDialog.this;
-        setTaskDescription(getString(R.string.launcher_name));
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             final Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_route_eta, container, false);
+        mContext = super.getActivity();
         // get widgets
-        iStop = (ImageView) findViewById(R.id.imageView);
-        iStar = (ImageView) findViewById(R.id.star);
-        iRefresh = (ImageView) findViewById(R.id.refresh);
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        tStopName = (TextView) findViewById(R.id.stop_name);
-        tEta = (TextView) findViewById(android.R.id.text1);
-        lServerTime = (TextView) findViewById(R.id.label_serverTime);
-        tServerTime = (TextView) findViewById(R.id.textView_serverTime);
-        lLastUpdated = (TextView) findViewById(R.id.label_updated);
-        tLastUpdated = (TextView) findViewById(R.id.textView_updated);
-        animationRotate = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.rotate_once);
-        animationRotate.setAnimationListener(this);
-        mapContainer = findViewById(R.id.mapContainer);
-        mapContainer.setVisibility(View.GONE);
-        imageContainer = findViewById(R.id.imageContainer);
-        //
-        tStopName.setOnClickListener(this);
-        iStar.setOnClickListener(this);
-        iRefresh.setOnClickListener(this);
-        imageContainer.setOnClickListener(this);
-        // check from the saved Instance
-        Bundle extras = getIntent().getExtras();
-        // Or passed from the other activity
-        if (extras != null) {
-            hideStar = extras.getBoolean(Constants.MESSAGE.HIDE_STAR);
-            object = extras.getParcelable(Constants.BUNDLE.STOP_OBJECT);
+        if (null != view.getRootView())
+            mImageView = (ImageView) view.getRootView().findViewById(R.id.imageView);
+        tSubtitle = (TextView) view.findViewById(R.id.textView_subtitle);
+        tEta = (TextView) view.findViewById(android.R.id.text1);
+        lServerTime = (TextView) view.findViewById(R.id.label_serverTime);
+        tServerTime = (TextView) view.findViewById(R.id.textView_serverTime);
+        lLastUpdated = (TextView) view.findViewById(R.id.label_updated);
+        tLastUpdated = (TextView) view.findViewById(R.id.textView_updated);
+        mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh);
+        mSwipeRefreshLayout.setOnRefreshListener(this);
+        mSwipeRefreshLayout.setEnabled(false);
+        mSwipeRefreshLayout.setRefreshing(false);
+        // Get arguments
+        settingsHelper = new SettingsHelper().parse(mContext.getApplicationContext());
+        if (null != savedInstanceState) {
+            object = savedInstanceState.getParcelable(Constants.BUNDLE.STOP_OBJECT);
+            mBitmap = savedInstanceState.getParcelable("stop_image_bitmap");
+            imageVisible = savedInstanceState.getBoolean("imageVisibility", false);
         } else {
-            finish();
+            object = getArguments().getParcelable(Constants.BUNDLE.STOP_OBJECT);
+            if (null == object)
+                object = new RouteStop();
+            if (null == object.route_bound)
+                object.route_bound = new RouteBound();
+            object = getObject(object);
+            object.eta_loading = true;
+            parse();
         }
-        // overview task
-        setTaskDescription(null == object || null == object.route_bound ? getString(R.string.launcher_name) :
-                object.route_bound.route_no + getString(R.string.interpunct) + getString(R.string.launcher_name));
-        //
-        object = getObject(object);
-        object.eta_loading = true;
-        parse();
+        // Set Toolbar
+        mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        if (null != mActionBar) {
+            mActionBar.setTitle(object.name_tc);
+            mActionBar.setSubtitle(object.route_bound.route_no + " " +
+                    getString(R.string.destination, object.route_bound.destination_tc));
+            mActionBar.setDisplayHomeAsUpEnabled(false);
+        }
+        setHasOptionsMenu(true);
         // Google Map
         if (mMap == null) {
             ScrollMapFragment mMapFragment =
-                    ((ScrollMapFragment) getSupportFragmentManager().findFragmentById(R.id.map));
+                    ((ScrollMapFragment) getFragmentManager().findFragmentById(R.id.map));
             mMap = mMapFragment.getMap();
             mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-            mMap.getUiSettings().setZoomControlsEnabled(true);
-            final ScrollView mScrollView = (ScrollView) findViewById(R.id.scrollView);
-            ((ScrollMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+            final NestedScrollView mScrollView = (NestedScrollView) view.findViewById(R.id.NestedScrollView);
+            ((ScrollMapFragment) getFragmentManager().findFragmentById(R.id.map))
                     .setListener(new ScrollMapFragment.OnTouchListener() {
                         @Override
                         public void onTouch() {
@@ -162,15 +149,79 @@ public class RouteEtaDialog extends AppCompatActivity
                     });
             mMapFragment.getMapAsync(this);
         }
+        return view;
     }
 
     @Override
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.refresh:
+    public void onResume() {
+        super.onResume();
+        if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
+            mAutoRefreshHandler.post(mAutoRefreshRunnable);
+        if (null != mContext) {
+            IntentFilter mFilter_eta = new IntentFilter(Constants.MESSAGE.ETA_UPDATED);
+            mReceiver = new UpdateEtaReceiver();
+            mFilter_eta.addAction(Constants.MESSAGE.ETA_UPDATED);
+            mContext.registerReceiver(mReceiver, mFilter_eta);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (null != object)
+            outState.putParcelable(Constants.BUNDLE.STOP_OBJECT, object);
+        if (null != mImageContainer)
+            outState.putBoolean("imageVisibility", mImageContainer.getVisibility() == View.VISIBLE);
+        if (null != mImageView)
+            mBitmap = Ion.with(mImageView).getBitmap();
+        if (null != mBitmap)
+            outState.putParcelable("stop_image_bitmap", mBitmap);
+    }
+
+    @Override
+    public void onPause() {
+        if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
+            mAutoRefreshHandler.removeCallbacks(mAutoRefreshRunnable);
+        if (null != mContext && null != mReceiver)
+                mContext.unregisterReceiver(mReceiver);
+        super.onPause();
+    }
+
+    @Override
+    public void onDestroyView() {
+        if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
+            mAutoRefreshHandler.removeCallbacks(mAutoRefreshRunnable);
+        Ion.getDefault(mContext).cancelAll(mContext);
+        if (null != mMap)
+            mMap.clear();
+        View view = getView();
+        if (null != view)
+            view.setVisibility(View.GONE);
+        Ion.getDefault(mContext).cancelAll(mContext);
+        super.onDestroyView();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.menu_route_eta, menu);
+        mMenu = menu;
+        mRefresh = menu.findItem(R.id.action_refresh);
+        mFollow = menu.findItem(R.id.action_follow);
+        Boolean loadImage = null != settingsHelper && settingsHelper.getLoadStopImage();
+        menu.findItem(R.id.action_show_map).setVisible(loadImage);
+        menu.findItem(R.id.action_show_photo).setVisible(!loadImage);
+        getHeaderView(loadImage || imageVisible);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case R.id.action_refresh:
                 onRefresh();
                 if (clickCount == 0 || clickCount % 5 == 0) {
-                    final Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content),
+                    final Snackbar snackbar = Snackbar.make(getView().getRootView().findViewById(android.R.id.content),
                             R.string.message_reminder_auto_refresh, Snackbar.LENGTH_LONG);
                     TextView tv = (TextView)
                             snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
@@ -179,8 +230,18 @@ public class RouteEtaDialog extends AppCompatActivity
                 }
                 clickCount++;
                 break;
-            case R.id.star:
-                // TODO: deal with situation where stop seq changed, a problem for favourite stops
+            case R.id.action_show_map:
+            case R.id.action_show_photo:
+                getHeaderView(id == R.id.action_show_photo);
+                break;
+            case R.id.action_send:
+                if (null == object.details) break;
+                Uri uri = new Uri.Builder().scheme("geo").appendPath(object.details.lat +","+ object.details.lng)
+                        .appendQueryParameter("q", object.name_tc).build();
+                startActivity(new Intent(android.content.Intent.ACTION_VIEW, uri));
+                break;
+            case R.id.action_follow:
+                // TODO: deal with situation where stop seq changed, a problem for followed stops
                 if (null == object || null == object.route_bound) break;
                 Boolean org;
                 if (isFavourite(object)) {
@@ -218,115 +279,57 @@ public class RouteEtaDialog extends AppCompatActivity
                     values.put(FavouriteTable.COLUMN_STOP_CODE, object.code);
                     values.put(FavouriteTable.COLUMN_STOP_NAME, object.name_tc);
                     values.put(FavouriteTable.COLUMN_DATE, String.valueOf(System.currentTimeMillis() / 1000L));
-                    Uri favUri = getContentResolver().insert(FavouriteProvider.CONTENT_URI_FAV, values);
+                    Uri favUri = mContext.getContentResolver().insert(FavouriteProvider.CONTENT_URI_FAV, values);
                     object.favourite = (favUri != null);
                 }
-                if (org != object.favourite)
-                    iStar.startAnimation(animationRotate);
-                iStar.setImageResource(object.favourite ?
-                        R.drawable.ic_star_black_48dp : R.drawable.ic_star_border_black_48dp);
+                item.setIcon(object.favourite ?
+                        R.drawable.ic_star_white_24dp : R.drawable.ic_star_border_white_24dp);
+                LayoutInflater layoutInflater =
+                        (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                final ImageView iv = (ImageView) layoutInflater.inflate(R.layout.action_view_image, null);
+                iv.setImageResource(object.favourite ?
+                        R.drawable.ic_star_white_24dp : R.drawable.ic_star_border_white_24dp);
+                if (org != object.favourite) {
+                    Animation rotate = AnimationUtils.loadAnimation(getContext(), R.anim.rotate_once);
+                    iv.startAnimation(rotate);
+                }
+                mFollow.setActionView(iv);
+                new Handler().postDelayed(new Runnable() {
+                    public void run() {
+                        mFollow.setActionView(null);
+                    }
+                }, 500);
                 sendUpdate();
                 break;
-            case R.id.stop_name:
-                mapContainer.setVisibility(View.GONE);
-                getStopImage();
-                break;
-            case R.id.imageContainer:
-                if (mapLoaded)
-                    mapContainer.setVisibility(View.VISIBLE);
-                imageContainer.setVisibility(View.GONE);
-                break;
         }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
-            mAutoRefreshHandler.post(mAutoRefreshRunnable);
-        if (null != mContext) {
-            IntentFilter mFilter_eta = new IntentFilter(Constants.MESSAGE.ETA_UPDATED);
-            mReceiver = new UpdateEtaReceiver();
-            mFilter_eta.addAction(Constants.MESSAGE.ETA_UPDATED);
-            mContext.registerReceiver(mReceiver, mFilter_eta);
-        }
-    }
-
-    @Override
-    public void onPause() {
-        if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
-            mAutoRefreshHandler.removeCallbacks(mAutoRefreshRunnable);
-        if (null != mContext) {
-            if (null != mReceiver)
-                mContext.unregisterReceiver(mReceiver);
-        }
-        super.onPause();
-    }
-
-    @Override
-    public void onDestroy() {
-        if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
-            mAutoRefreshHandler.removeCallbacks(mAutoRefreshRunnable);
-        Ion.getDefault(mContext).cancelAll(mContext);
-        super.onDestroy();
-    }
-
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        if (null != object)
-            outState.putParcelable(Constants.BUNDLE.STOP_OBJECT, object);
-        mBitmap = Ion.with(iStop).getBitmap();
-        outState.putParcelable("stop_image_bitmap", mBitmap);
-        outState.putBoolean("mapLoaded", mapLoaded);
-        outState.putInt("mapVisibility", mapContainer.getVisibility());
-        outState.putInt("imageVisibility", imageContainer.getVisibility());
-    }
-
-    public void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        mBitmap = savedInstanceState.getParcelable("stop_image_bitmap");
-        mapLoaded = savedInstanceState.getBoolean("mapLoaded");
-        mapVisibility = savedInstanceState.getInt("mapVisibility", View.GONE);
-        imageVisibility = savedInstanceState.getInt("imageVisibility", View.GONE);
-        imageContainer.setVisibility(View.GONE);
-        if (null != mBitmap) {
-            iStop.setImageBitmap(mBitmap);
-            iStop.setVisibility(View.VISIBLE);
-            if (imageVisibility == View.VISIBLE) {
-                imageContainer.setVisibility(View.VISIBLE);
-            }
-        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
     public void onMapReady(GoogleMap map) {
         mMap = map;
-        View container = findViewById(R.id.mapContainer);
-        container.setVisibility(View.GONE);
         if (null == object || null == object.details)
             return;
         map.setTrafficEnabled(false);
+        map.setBuildingsEnabled(false);
+        map.setIndoorEnabled(false);
+        map.getUiSettings().setMapToolbarEnabled(true);
+        map.getUiSettings().setRotateGesturesEnabled(false);
+        map.getUiSettings().setScrollGesturesEnabled(true);
+        map.getUiSettings().setTiltGesturesEnabled(false);
+        map.getUiSettings().setCompassEnabled(true);
+        map.getUiSettings().setZoomControlsEnabled(true);
+        map.getUiSettings().setZoomGesturesEnabled(false);
         map.setOnInfoWindowClickListener(this);
         map.setOnMapLongClickListener(this);
-        resetMap(map);
         // mark
         mStopMarker = map.addMarker(new MarkerOptions()
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_directions_bus_black_24dp))
                 .position(getStopLanLng())
-                .title(object.stop_seq + ": " + object.name_tc));
-        mStopMarker.showInfoWindow();
-        mapLoaded = true;
-        mapVisibility = View.VISIBLE;
-        //
-        SettingsHelper settingsHelper = new SettingsHelper().parse(mContext.getApplicationContext());
-        if (settingsHelper.getLoadStopImage()) {
-            mapVisibility = View.GONE;
-            getStopImage();
-        }
-        if (mapVisibility == View.VISIBLE)
-            container.setVisibility(View.VISIBLE);
-        else if (mapVisibility == View.GONE)
-            container.setVisibility(View.GONE);
+                .title(object.name_tc)
+                .snippet(object.route_bound.route_no + " " +
+                        getString(R.string.destination, object.route_bound.destination_tc)));
+        resetMap(map);
     }
 
     @Override
@@ -335,7 +338,7 @@ public class RouteEtaDialog extends AppCompatActivity
         resetMap(mMap);
     }
 
-    private void resetMap(GoogleMap map) {
+    private void resetMap(final GoogleMap map) {
         if (null == map) return;
         CameraPosition cameraPosition =
                 new CameraPosition.Builder()
@@ -343,19 +346,10 @@ public class RouteEtaDialog extends AppCompatActivity
                         .zoom(16)
                         .build();
         map.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-        // map.animateCamera(CameraUpdateFactory.zoomTo(16), 1000, null);
+        map.moveCamera(CameraUpdateFactory.scrollBy(0, -128));
         if (null != mStopMarker)
             mStopMarker.showInfoWindow();
     }
-
-    @Override
-    public void onAnimationStart(Animation animation) {}
-
-    @Override
-    public void onAnimationEnd(Animation animation) {}
-
-    @Override
-    public void onAnimationRepeat(Animation animation) {}
 
     private LatLng getStopLanLng() {
         if (null == object || null == object.details) return null;
@@ -366,42 +360,27 @@ public class RouteEtaDialog extends AppCompatActivity
 
     @Override
     public void onInfoWindowClick(Marker marker) {
-        if (marker.getPosition().equals(getStopLanLng())) {
-            View container = findViewById(R.id.mapContainer);
-            container.setVisibility(View.GONE);
-            getStopImage();
-        }
+        // if (marker.getPosition().equals(getStopLanLng())) {}
     }
 
-    private void onRefresh() {
-        iRefresh.setVisibility(View.GONE);
-        progressBar.setVisibility(View.VISIBLE);
-
-        Intent intent = new Intent(this, CheckEtaService.class);
+    public void onRefresh() {
+        if (null != mRefresh)
+            mRefresh.setEnabled(false);
+        mSwipeRefreshLayout.setRefreshing(true);
+        Intent intent = new Intent(mContext, CheckEtaService.class);
         intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
-        startService(intent);
-    }
-
-    private void setTaskDescription(String title) {
-        // overview task
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
-            ActivityManager.TaskDescription taskDesc =
-                    new ActivityManager.TaskDescription(title, bm,
-                            ContextCompat.getColor(mContext, R.color.primary_600));
-            ((AppCompatActivity) mContext).setTaskDescription(taskDesc);
-        }
+        mContext.startService(intent);
     }
 
     private void sendUpdate() {
         Intent intent = new Intent(Constants.MESSAGE.STOP_UPDATED);
         intent.putExtra(Constants.MESSAGE.STOP_UPDATED, true);
         intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
-        getApplication().sendBroadcast(intent);
+        mContext.sendBroadcast(intent);
     }
 
     private Boolean isFavourite(RouteStop object) {
-        final Cursor c = getContentResolver().query(FavouriteProvider.CONTENT_URI_FAV,
+        final Cursor c = mContext.getContentResolver().query(FavouriteProvider.CONTENT_URI_FAV,
                 null,
                 FavouriteTable.COLUMN_ROUTE + " =?" +
                         " AND " + FavouriteTable.COLUMN_BOUND + " =?" +
@@ -413,29 +392,28 @@ public class RouteEtaDialog extends AppCompatActivity
                 },
                 FavouriteTable.COLUMN_DATE + " DESC");
         Boolean isFavourite = false;
-        try {
+        if (null != c) {
             c.moveToFirst();
             isFavourite = c.getCount() > 0;
-        } finally {
             c.close();
         }
         return isFavourite;
     }
 
     private RouteStop getObject(RouteStop object) {
-       final Cursor c = getContentResolver().query(
+        final Cursor c = mContext.getContentResolver().query(
                 RouteProvider.CONTENT_URI,
                 null,
-               RouteStopTable.COLUMN_ROUTE + " =?" +
-                       " AND " + RouteStopTable.COLUMN_BOUND + " =?" +
-                       " AND " + RouteStopTable.COLUMN_STOP_CODE + " =?",
+                RouteStopTable.COLUMN_ROUTE + " =?" +
+                        " AND " + RouteStopTable.COLUMN_BOUND + " =?" +
+                        " AND " + RouteStopTable.COLUMN_STOP_CODE + " =?",
                 new String[]{
                         object.route_bound.route_no,
                         object.route_bound.route_bound,
                         object.code
                 }, RouteStopTable.COLUMN_STOP_SEQ + "* 1 ASC");
         RouteStop routeStop = new RouteStop();
-        try {
+        if (null != c) {
             c.moveToFirst();
             if (c.getCount() > 0) {
                 routeStop.route_bound = object.route_bound;
@@ -449,11 +427,10 @@ public class RouteEtaDialog extends AppCompatActivity
                 routeStopMap.lng = getColumnString(c, RouteStopTable.COLUMN_STOP_LONG);
                 routeStop.details = routeStopMap;
             }
-        } finally {
             c.close();
         }
         routeStop.favourite = isFavourite(object);
-        Cursor cEta = getContentResolver().query(FavouriteProvider.CONTENT_URI_ETA_JOIN,
+        Cursor cEta = mContext.getContentResolver().query(FavouriteProvider.CONTENT_URI_ETA_JOIN,
                 null,
                 FavouriteTable.COLUMN_ROUTE + " =?" +
                         " AND " + FavouriteTable.COLUMN_BOUND + " =?" +
@@ -464,7 +441,7 @@ public class RouteEtaDialog extends AppCompatActivity
                         object.code
                 },
                 FavouriteTable.COLUMN_DATE + " DESC");
-        try {
+        if (null != c) {
             cEta.moveToFirst();
             if (cEta.getCount() > 0) {
                 RouteStopETA routeStopETA = null;
@@ -482,7 +459,6 @@ public class RouteEtaDialog extends AppCompatActivity
                 routeStop.eta_loading = getColumnString(cEta, EtaTable.COLUMN_LOADING).equals("true");
                 routeStop.eta_fail = getColumnString(cEta, EtaTable.COLUMN_FAIL).equals("true");
             }
-        } finally {
             cEta.close();
         }
         return routeStop;
@@ -494,29 +470,28 @@ public class RouteEtaDialog extends AppCompatActivity
     }
 
     private void parse() {
-        if (null == object) {
-            finish();
-            return;
-        }
+        if (null == object || null == object.route_bound) return;
         tEta.setVisibility(View.VISIBLE);
         lServerTime.setVisibility(View.VISIBLE);
         tServerTime.setVisibility(View.VISIBLE);
         lLastUpdated.setVisibility(View.VISIBLE);
         tLastUpdated.setVisibility(View.VISIBLE);
-        iStar.setImageResource(object.favourite ?
-                R.drawable.ic_star_black_48dp : R.drawable.ic_star_border_black_48dp);
-        iStar.setVisibility(hideStar ? View.GONE : View.VISIBLE);
-        tStopName.setText(object.name_tc);
+        tSubtitle.setText(object.route_bound.route_no + " " +
+                getString(R.string.destination, object.route_bound.destination_tc) + " " +
+                object.name_tc);
+        if (null != mFollow)
+            mFollow.setIcon(object.favourite ?
+                    R.drawable.ic_star_white_24dp : R.drawable.ic_star_border_white_24dp);
         if (object.eta_loading != null && object.eta_loading) {
-            progressBar.setVisibility(View.VISIBLE);
+            mSwipeRefreshLayout.setRefreshing(true);
             if (null == object.eta || object.eta.etas.equals("") || tEta.getText().equals(""))
                 tEta.setText(getString(R.string.message_loading) + "\n\n\n");
         } else if (object.eta_fail != null && object.eta_fail) {
             tEta.setText(R.string.message_fail_to_request);
-            progressBar.setVisibility(View.GONE);
+            mSwipeRefreshLayout.setRefreshing(false);
         } else if (null == object.eta || object.eta.etas.equals("")) {
             tEta.setText(R.string.message_no_data);
-            progressBar.setVisibility(View.GONE);
+            mSwipeRefreshLayout.setRefreshing(false);
         }
         if (null == object.eta || object.eta.etas.equals("")) {
             lServerTime.setVisibility(View.GONE);
@@ -549,13 +524,6 @@ public class RouteEtaDialog extends AppCompatActivity
             sb.append(etas[i]);
             String estimate = EtaAdapterHelper.etaEstimate(object, etas, i, server_date, null, null, null);
             sb.append(estimate);
-            if (i == 0) {
-                String text = etas[i].replaceAll(" ?　?預定班次", "");
-                setTaskDescription(null == object || null == object.route_bound ?
-                        getString(R.string.launcher_name) :
-                        text + " " + object.route_bound.route_no + " " + object.name_tc +
-                                getString(R.string.interpunct) + getString(R.string.launcher_name));
-            }
             if (i < etas.length - 1)
                 sb.append("\n");
         }
@@ -571,33 +539,53 @@ public class RouteEtaDialog extends AppCompatActivity
             lLastUpdated.setVisibility(View.GONE);
             tLastUpdated.setVisibility(View.GONE);
         }
-        progressBar.setVisibility(View.GONE);
+        mSwipeRefreshLayout.setRefreshing(false);
     }
 
-    private void getStopImage() {
-        if (null == object) return;
-        final String stopCode = object.code;
-        progressBar.setVisibility(View.VISIBLE);
-        iStop.setVisibility(View.VISIBLE);
-        imageContainer.setVisibility(View.VISIBLE);
-        Ion.with(mContext)
-                .load(Constants.URL.ROUTE_STOP_IMAGE + stopCode)
-                .progressBar(progressBar)
-                .withBitmap()
-                .error(R.drawable.ic_error_outline_black_48dp)
-                .resize(340, 255)
-                .centerCrop()
-                .animateLoad(R.anim.fade_in)
-                .intoImageView(iStop)
-                .setCallback(new FutureCallback<ImageView>() {
-                    @Override
-                    public void onCompleted(Exception e, ImageView result) {
-                        mBitmap = Ion.with(iStop).getBitmap();
-                        iStop.setVisibility(View.VISIBLE);
-                        if (null != progressBar)
-                            progressBar.setVisibility(View.GONE);
-                    }
-                });
+    private void getHeaderView(Boolean showPhoto) {
+        if (null != getView() && null != getView().getRootView() && null != mContext) {
+            final View root = getView().getRootView();
+            final View mapContainer = root.findViewById(R.id.mapContainer);
+            mImageContainer = root.findViewById(R.id.imageContainer);
+            mImageView = (ImageView) root.findViewById(R.id.imageView);
+            Animation fadeIn = AnimationUtils.loadAnimation(mContext, R.anim.fade_in);
+            if (showPhoto) {
+                if (null != mMenu) {
+                    mMenu.findItem(R.id.action_show_map).setVisible(true);
+                    mMenu.findItem(R.id.action_show_photo).setVisible(false);
+                }
+                mapContainer.setVisibility(View.GONE);
+                mImageContainer.setVisibility(View.VISIBLE);
+                if (null != mBitmap) {
+                    mImageView.setImageBitmap(mBitmap);
+                    mImageView.setAnimation(fadeIn);
+                } else {
+                    if (null != object)
+                    Ion.with(mContext)
+                            .load(Constants.URL.ROUTE_STOP_IMAGE + object.code)
+                            .withBitmap()
+                            .error(R.drawable.ic_error_outline_black_48dp)
+                            .resize(340, 255)
+                            .centerCrop()
+                            .animateLoad(R.anim.fade_in)
+                            .intoImageView(mImageView)
+                            .setCallback(new FutureCallback<ImageView>() {
+                                @Override
+                                public void onCompleted(Exception e, ImageView result) {
+                                    mBitmap = Ion.with(mImageView).getBitmap();
+                                }
+                            });
+                }
+            } else {
+                if (null != mMenu) {
+                    mMenu.findItem(R.id.action_show_map).setVisible(false);
+                    mMenu.findItem(R.id.action_show_photo).setVisible(true);
+                }
+                mapContainer.setVisibility(View.VISIBLE);
+                mapContainer.setAnimation(fadeIn);
+                mImageContainer.setVisibility(View.GONE);
+            }
+        }
     }
 
     public class UpdateEtaReceiver extends BroadcastReceiver {
@@ -617,12 +605,23 @@ public class RouteEtaDialog extends AppCompatActivity
                         object.eta_loading = routeStop.eta_loading;
                         object.eta_fail = routeStop.eta_fail;
                         parse();
-                        progressBar.setVisibility(View.GONE);
                     }
                 }
-                iRefresh.setVisibility(View.VISIBLE);
+                if (null != mSwipeRefreshLayout)
+                    mSwipeRefreshLayout.setRefreshing(false);
+                if (null != mRefresh)
+                    mRefresh.setEnabled(true);
             }
         }
     }
+
+    Handler mAutoRefreshHandler = new Handler();
+    Runnable mAutoRefreshRunnable = new Runnable() {
+        @Override
+        public void run() {
+            onRefresh();
+            mAutoRefreshHandler.postDelayed(mAutoRefreshRunnable, 30 * 1000); // every half minute
+        }
+    };
 
 }

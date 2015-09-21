@@ -46,7 +46,9 @@ import com.alvinhkh.buseta.provider.RouteProvider;
 import com.alvinhkh.buseta.provider.RouteStopTable;
 import com.alvinhkh.buseta.service.CheckEtaService;
 import com.alvinhkh.buseta.service.RouteService;
+import com.alvinhkh.buseta.view.MainActivity;
 import com.alvinhkh.buseta.view.adapter.RouteStopAdapter;
+import com.alvinhkh.buseta.view.dialog.RouteEtaActivity;
 import com.alvinhkh.buseta.view.dialog.RouteEtaDialog;
 import com.koushikdutta.ion.Ion;
 import com.melnykov.fab.FloatingActionButton;
@@ -338,11 +340,12 @@ public class RouteStopFragment extends Fragment
         RouteStop object = mAdapter.getItem(position);
         if (null == object)
             return false;
-        Intent intent = new Intent(mContext, RouteEtaDialog.class);
+        Intent intent = new Intent(mContext, RouteEtaActivity.class);
+        // Intent intent = new Intent(mContext, RouteEtaDialog.class);
         intent.setAction(Intent.ACTION_VIEW);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
-        startActivity(intent);
+        getActivity().startActivity(intent);
         return true;
     }
 

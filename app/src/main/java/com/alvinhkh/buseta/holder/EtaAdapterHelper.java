@@ -104,6 +104,11 @@ public class EtaAdapterHelper {
                         // minutes should be 0 to within a day
                         etaMinutes = String.valueOf(minutes);
                     }
+                    if (minutes >= 60) {
+                        // calculation error
+                        // they only provide eta within 60 minutes
+                        etaMinutes = "";
+                    }
                     // grey out
                     if (null != context && null != tEta && null != tEtaMore)
                     if (i == 0)

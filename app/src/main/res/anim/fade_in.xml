@@ -2,6 +2,6 @@
 <alpha xmlns:android="http://schemas.android.com/apk/res/android"
     android:fromAlpha="0.0"
     android:toAlpha="1.0"
-    android:duration="1000"
-    android:repeatCount="1"
+    android:duration="500"
+    android:repeatCount="0"
     />

@@ -70,8 +70,7 @@ public class EtaWidgetProvider extends AppWidgetProvider {
     public void onReceive(Context context, Intent intent) {
         final String action = intent.getAction();
         final Bundle bundle = intent.getExtras();
-        final int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
-                AppWidgetManager.INVALID_APPWIDGET_ID);
+        // final int appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
         if (action.equals(Constants.MESSAGE.WIDGET_TRIGGER_UPDATE)) {
             // Log.d(TAG, "WIDGET_TRIGGER_UPDATE");
             onRefresh(context);

@@ -43,6 +43,12 @@
         </activity>
 
         <activity
+            android:name=".view.dialog.RouteEtaActivity"
+            android:excludeFromRecents="true"
+            android:theme="@style/AppTheme.BottomSheet" >
+        </activity>
+
+        <activity
             android:name=".view.dialog.RouteEtaDialog"
             android:excludeFromRecents="true"
             android:label="@string/eta"

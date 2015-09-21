@@ -136,9 +136,12 @@ public class MainFragment extends Fragment
             mReceiver_history = new UpdateHistoryReceiver();
             mFilter_history.addAction(Constants.MESSAGE.HISTORY_UPDATED);
             mContext.registerReceiver(mReceiver_history, mFilter_history);
-            IntentFilter mFilter_eta = new IntentFilter(Constants.MESSAGE.ETA_UPDATED);
             mReceiver_eta = new UpdateEtaReceiver();
+            IntentFilter mFilter_item = new IntentFilter(Constants.MESSAGE.STOP_UPDATED);
+            mFilter_item.addAction(Constants.MESSAGE.STOP_UPDATED);
+            IntentFilter mFilter_eta = new IntentFilter(Constants.MESSAGE.ETA_UPDATED);
             mFilter_eta.addAction(Constants.MESSAGE.ETA_UPDATED);
+            mContext.registerReceiver(mReceiver_eta, mFilter_item);
             mContext.registerReceiver(mReceiver_eta, mFilter_eta);
         }
         if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
@@ -207,13 +210,11 @@ public class MainFragment extends Fragment
                 if (hasFocus) {
                     if (null != mFab)
                         mFab.hide();
-                    if (null != itemShare)
-                        itemShare.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_NEVER);
+                    itemShare.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_NEVER);
                 } else {
                     if (null != mFab)
                         mFab.show();
-                    if (null != itemShare)
-                        itemShare.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+                    itemShare.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
                 }
             }
         });
@@ -286,7 +287,7 @@ public class MainFragment extends Fragment
         WeakReference<MainFragment> mFrag;
 
         UpdateHistoryHandler(MainFragment aFragment) {
-            mFrag = new WeakReference<MainFragment>(aFragment);
+            mFrag = new WeakReference<>(aFragment);
         }
 
         @Override
@@ -296,8 +297,6 @@ public class MainFragment extends Fragment
             Bundle bundle = message.getData();
             Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.HISTORY_UPDATED);
             if (null != f.mAdapter && null != f.mContext && aBoolean) {
-                if (null != f.mCursor_history)
-                    f.mCursor_history.close();
                 f.mCursor_history = f.mContext.getContentResolver().query(SuggestionProvider.CONTENT_URI,
                         null, SuggestionTable.COLUMN_TEXT + " LIKE '%%'" + " AND " +
                                 SuggestionTable.COLUMN_TYPE + " = '" + SuggestionTable.TYPE_HISTORY + "'",
@@ -330,7 +329,7 @@ public class MainFragment extends Fragment
         WeakReference<MainFragment> mFrag;
 
         UpdateViewHandler(MainFragment aFragment) {
-            mFrag = new WeakReference<MainFragment>(aFragment);
+            mFrag = new WeakReference<>(aFragment);
         }
 
         @Override
@@ -338,16 +337,18 @@ public class MainFragment extends Fragment
             MainFragment f = mFrag.get();
             if (null == f) return;
             Bundle bundle = message.getData();
-            Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.ETA_UPDATED);
-            if (null != f.mAdapter && null != f.mContext && aBoolean) {
-                if (null != f.mCursor_favorite)
-                    f.mCursor_favorite.close();
+            Boolean aBoolean_stop = bundle.getBoolean(Constants.MESSAGE.STOP_UPDATED);
+            Boolean aBoolean_eta = bundle.getBoolean(Constants.MESSAGE.ETA_UPDATED);
+            if (null != f.mAdapter && null != f.mContext && (aBoolean_stop || aBoolean_eta)) {
                 f.mCursor_favorite = f.mContext.getContentResolver().query(
                         FavouriteProvider.CONTENT_URI, null, null, null,
                         FavouriteTable.COLUMN_DATE + " DESC");
                 Cursor oldCursor = f.mAdapter.swapFavouriteCursor(f.mCursor_favorite);
                 if (null != oldCursor)
                     oldCursor.close();
+                if (aBoolean_stop) {
+                    f.mContext.sendBroadcast(new Intent(Constants.MESSAGE.WIDGET_TRIGGER_UPDATE));
+                }
             }
         }
     }

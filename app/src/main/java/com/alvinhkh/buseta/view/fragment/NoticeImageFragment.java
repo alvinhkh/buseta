@@ -82,7 +82,7 @@ public class NoticeImageFragment extends Fragment {
         mProgressBar = (ProgressBar) view.findViewById(R.id.progressBar);
         mProgressBar.setVisibility(View.GONE);
         // Set PhotoView
-        mPhotoView = (PhotoView) view.findViewById(R.id.photoView);
+        mPhotoView = (PhotoView) view.findViewById(R.id.imageView);
         mPhotoView.setMaximumScale(4);
         // Text View
         TextView mTextView = (TextView) view.findViewById(android.R.id.text1);

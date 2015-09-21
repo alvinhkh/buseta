@@ -4,4 +4,7 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
 
     <dimen name="widget_corner_radius">3dp</dimen>
+
+    <dimen name="sheet_text_scrim_height_top">64dp</dimen>
+    <dimen name="sheet_text_scrim_height_bottom">100dp</dimen>
 </resources>

@@ -21,6 +21,18 @@
         <item name="android:windowBackground">@color/bright_foreground_material_dark</item>
     </style>
 
+    <style name="AppTheme.BottomSheet" parent="AppTheme.Base">
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowAnimationStyle">@style/AppTheme.BottomSheet.Animation</item>
+    </style>
+
+    <style name="AppTheme.BottomSheet.Animation">
+        <item name="android:windowEnterAnimation">@anim/slide_up</item>
+        <item name="android:windowExitAnimation">@anim/slide_down</item>
+    </style>
+
     <!-- Application theme. -->
     <style name="AppTheme" parent="AppTheme.Base">
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
