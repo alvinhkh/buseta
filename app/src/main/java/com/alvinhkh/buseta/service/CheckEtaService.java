@@ -42,6 +42,7 @@ public class CheckEtaService extends IntentService {
     SettingsHelper settingsHelper = null;
     String _id = null;
     String _token = null;
+    Boolean sendUpdating = true;
     Boolean isWidget = false;
 
     public CheckEtaService() {
@@ -76,6 +77,7 @@ public class CheckEtaService extends IntentService {
         Bundle extras = intent.getExtras();
         if (extras == null) return;
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        sendUpdating = extras.getBoolean(Constants.MESSAGE.SEND_UPDATING, true);
         isWidget = extras.getBoolean(Constants.MESSAGE.WIDGET_UPDATE, false);
 
         RouteStop object = extras.getParcelable(Constants.BUNDLE.STOP_OBJECT);
@@ -429,7 +431,7 @@ public class CheckEtaService extends IntentService {
     }
 
     private void sendUpdating(RouteStop object) {
-        if (isWidget) return;
+        if (!sendUpdating || isWidget) return;
         sendUpdate(object);
     }
 

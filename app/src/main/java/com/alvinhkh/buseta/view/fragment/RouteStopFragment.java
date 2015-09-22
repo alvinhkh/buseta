@@ -87,11 +87,12 @@ public class RouteStopFragment extends Fragment
                 routeStop.eta_loading = true;
                 mAdapter.notifyDataSetChanged();
                 Intent intent = new Intent(mContext, CheckEtaService.class);
+                intent.putExtra(Constants.MESSAGE.SEND_UPDATING, false);
                 intent.putExtra(Constants.BUNDLE.STOP_OBJECT, routeStop);
                 mContext.startService(intent);
                 iEta++;
                 if (iEta < mAdapter.getCount() - 1) {
-                    mEtaHandler.postDelayed(mEtaRunnable, 100);
+                    mEtaHandler.postDelayed(mEtaRunnable, 120);
                 } else {
                     if (mSwipeRefreshLayout != null)
                         mSwipeRefreshLayout.setRefreshing(false);
@@ -171,8 +172,8 @@ public class RouteStopFragment extends Fragment
             mFilter_view.addAction(Constants.MESSAGE.STOPS_UPDATED);
             mContext.registerReceiver(mReceiver_view, mFilter_view);
             mReceiver_item = new UpdateItemReceiver();
-            IntentFilter mFilter_item = new IntentFilter(Constants.MESSAGE.STOP_UPDATED);
-            mFilter_item.addAction(Constants.MESSAGE.STOP_UPDATED);
+            IntentFilter mFilter_item = new IntentFilter(Constants.MESSAGE.FOLLOW_UPDATED);
+            mFilter_item.addAction(Constants.MESSAGE.FOLLOW_UPDATED);
             IntentFilter mFilter_eta = new IntentFilter(Constants.MESSAGE.ETA_UPDATED);
             mFilter_eta.addAction(Constants.MESSAGE.ETA_UPDATED);
             mContext.registerReceiver(mReceiver_item, mFilter_item);
@@ -619,9 +620,9 @@ public class RouteStopFragment extends Fragment
             RouteStopFragment f = mFrag.get();
             if (null == f) return;
             Bundle bundle = message.getData();
-            Boolean aBoolean_stop = bundle.getBoolean(Constants.MESSAGE.STOP_UPDATED);
+            Boolean aBoolean_follow = bundle.getBoolean(Constants.MESSAGE.FOLLOW_UPDATED);
             Boolean aBoolean_eta = bundle.getBoolean(Constants.MESSAGE.ETA_UPDATED);
-            if (null != f.mAdapter && (aBoolean_stop || aBoolean_eta)) {
+            if (null != f.mAdapter && (aBoolean_follow || aBoolean_eta)) {
                 RouteStop newObject = bundle.getParcelable(Constants.BUNDLE.STOP_OBJECT);
                 if (null != newObject) {
                     int position = Integer.parseInt(newObject.stop_seq);
@@ -675,9 +676,9 @@ public class RouteStopFragment extends Fragment
                                     object.eta = routeStopETA;
                                     object.eta_loading = getColumnString(cursor, EtaTable.COLUMN_LOADING).equals("true");
                                     object.eta_fail = getColumnString(cursor, EtaTable.COLUMN_FAIL).equals("true");
-                                    f.mAdapter.notifyDataSetChanged();
                                 }
                             }
+                            f.mAdapter.notifyDataSetChanged();
                         }
                         cursor.close();
                     }

@@ -315,7 +315,10 @@ public class RouteEtaFragment extends Fragment
                         mFollow.setActionView(null);
                     }
                 }, 500);
-                sendUpdate();
+                Intent intent = new Intent(Constants.MESSAGE.FOLLOW_UPDATED);
+                intent.putExtra(Constants.MESSAGE.FOLLOW_UPDATED, true);
+                intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
+                mContext.sendBroadcast(intent);
                 break;
         }
         return super.onOptionsItemSelected(item);
@@ -396,13 +399,6 @@ public class RouteEtaFragment extends Fragment
         Intent intent = new Intent(mContext, CheckEtaService.class);
         intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
         mContext.startService(intent);
-    }
-
-    private void sendUpdate() {
-        Intent intent = new Intent(Constants.MESSAGE.STOP_UPDATED);
-        intent.putExtra(Constants.MESSAGE.STOP_UPDATED, true);
-        intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
-        mContext.sendBroadcast(intent);
     }
 
     private Boolean isFollowing(RouteStop object) {
