@@ -36,7 +36,7 @@ import java.util.regex.Pattern;
 
 public class CheckEtaService extends IntentService {
 
-    private static final String TAG = "CheckEtaService";
+    private static final String TAG = CheckEtaService.class.getSimpleName();
 
     SharedPreferences mPrefs;
     SettingsHelper settingsHelper = null;

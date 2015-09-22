@@ -54,7 +54,7 @@ public class MainFragment extends Fragment
         implements SharedPreferences.OnSharedPreferenceChangeListener,
         SwipeRefreshLayout.OnRefreshListener {
 
-    private static final String TAG = "MainFragment";
+    private static final String TAG = MainFragment.class.getSimpleName();
 
     private Context mContext = super.getActivity();
     private FeatureAdapter mAdapter;
@@ -66,6 +66,7 @@ public class MainFragment extends Fragment
     private MenuItem mSearchMenuItem;
     private UpdateHistoryReceiver mReceiver_history;
     private UpdateEtaReceiver mReceiver_eta;
+    private UpdateFollowReceiver mReceiver_follow;
 
     public MainFragment() {
     }
@@ -145,6 +146,10 @@ public class MainFragment extends Fragment
             mFilter_eta.addAction(Constants.MESSAGE.ETA_UPDATED);
             mContext.registerReceiver(mReceiver_eta, mFilter_item);
             mContext.registerReceiver(mReceiver_eta, mFilter_eta);
+            IntentFilter mFilter_follow = new IntentFilter(Constants.MESSAGE.FOLLOW_UPDATED);
+            mReceiver_follow = new UpdateFollowReceiver();
+            mFilter_follow.addAction(Constants.MESSAGE.FOLLOW_UPDATED);
+            mContext.registerReceiver(mReceiver_follow, mFilter_follow);
         }
         if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
             mAutoRefreshHandler.postDelayed(mAutoRefreshRunnable, 100);
@@ -185,6 +190,8 @@ public class MainFragment extends Fragment
                 mContext.unregisterReceiver(mReceiver_history);
             if (null != mReceiver_eta)
                 mContext.unregisterReceiver(mReceiver_eta);
+            if (null != mReceiver_follow)
+                mContext.unregisterReceiver(mReceiver_follow);
         }
         // Unregister the listener whenever a key changes
         PreferenceManager.getDefaultSharedPreferences(mContext).unregisterOnSharedPreferenceChangeListener(this);
@@ -264,7 +271,6 @@ public class MainFragment extends Fragment
                 snackbar.show();
             }
         }
-        mSwipeRefreshLayout.setRefreshing(false);
     }
 
     private void setTaskDescription(String title) {
@@ -329,11 +335,11 @@ public class MainFragment extends Fragment
         }
     }
 
-    UpdateViewHandler mViewHandler = new UpdateViewHandler(this);
-    static class UpdateViewHandler extends Handler {
+    UpdateEtaHandler mEtaHandler = new UpdateEtaHandler(this);
+    static class UpdateEtaHandler extends Handler {
         WeakReference<MainFragment> mFrag;
 
-        UpdateViewHandler(MainFragment aFragment) {
+        UpdateEtaHandler(MainFragment aFragment) {
             mFrag = new WeakReference<>(aFragment);
         }
 
@@ -354,6 +360,7 @@ public class MainFragment extends Fragment
                 if (aBoolean_stop) {
                     f.mContext.sendBroadcast(new Intent(Constants.MESSAGE.WIDGET_TRIGGER_UPDATE));
                 }
+                f.mSwipeRefreshLayout.setRefreshing(false);
             }
         }
     }
@@ -365,9 +372,59 @@ public class MainFragment extends Fragment
             Thread thread = new Thread() {
                 @Override
                 public void run() {
-                    Message message = mViewHandler.obtainMessage();
+                    Message message = mEtaHandler.obtainMessage();
                     message.setData(bundle);
-                    mViewHandler.sendMessage(message);
+                    mEtaHandler.sendMessage(message);
+                }
+            };
+            thread.run();
+        }
+    }
+
+    UpdateFollowHandler mFollowHandler = new UpdateFollowHandler(this);
+    static class UpdateFollowHandler extends Handler {
+        WeakReference<MainFragment> mFrag;
+
+        UpdateFollowHandler(MainFragment aFragment) {
+            mFrag = new WeakReference<>(aFragment);
+        }
+
+        @Override
+        public void handleMessage(Message message) {
+            MainFragment f = mFrag.get();
+            if (null == f) return;
+            Bundle bundle = message.getData();
+            Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.FOLLOW_UPDATED);
+            if (null != f.mAdapter && null != f.mContext && aBoolean) {
+                f.mCursor_follow = f.mContext.getContentResolver().query(
+                        FollowProvider.CONTENT_URI, null, null, null,
+                        FollowTable.COLUMN_DATE + " DESC");
+                Cursor oldCursor = f.mAdapter.swapFollowCursor(f.mCursor_follow);
+                if (null != oldCursor)
+                    oldCursor.close();
+                int rowsDeleted_route = f.mContext.getContentResolver().delete(
+                        RouteProvider.CONTENT_URI_BOUND_FILTER, null, null);
+                Log.d(TAG, "Deleted Route Records: " + rowsDeleted_route);
+                int rowsDeleted_routeStop = f.mContext.getContentResolver().delete(
+                        RouteProvider.CONTENT_URI_STOP_FILTER, null, null);
+                Log.d(TAG, "Deleted Stops Records: " + rowsDeleted_routeStop);
+                int rowsDeleted_eta = f.mContext.getContentResolver().delete(
+                        FollowProvider.CONTENT_URI_ETA_JOIN, null, null);
+                Log.d(TAG, "Deleted ETA Records: " + rowsDeleted_eta);
+            }
+        }
+    }
+
+    public class UpdateFollowReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final Bundle bundle = intent.getExtras();
+            Thread thread = new Thread() {
+                @Override
+                public void run() {
+                    Message message = mFollowHandler.obtainMessage();
+                    message.setData(bundle);
+                    mFollowHandler.sendMessage(message);
                 }
             };
             thread.run();

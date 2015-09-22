@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.provider.EtaTable;
+import com.alvinhkh.buseta.provider.FollowProvider;
 import com.alvinhkh.buseta.provider.FollowTable;
 import com.alvinhkh.buseta.holder.EtaAdapterHelper;
 import com.alvinhkh.buseta.holder.RouteBound;
@@ -153,9 +154,9 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
                 viewHolder.eta.setText("");
                 viewHolder.eta_more.setText("");
                 // eta
-                if (object.eta_loading != null && object.eta_loading == true) {
+                if (object.eta_loading != null && object.eta_loading) {
                     viewHolder.eta_more.setText(R.string.message_loading);
-                } else if (object.eta_fail != null && object.eta_fail == true) {
+                } else if (object.eta_fail != null && object.eta_fail) {
                     viewHolder.eta_more.setText(R.string.message_fail_to_request);
                 } else if (null != object.eta) {
                     if (object.eta.etas.equals("") && object.eta.expires.equals("")) {
@@ -271,18 +272,35 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
                 }
                 public boolean onLongClickView(View caller) {
                     if (null == mActivity) return false;
-                    RouteStop routeStop = getObject(caller);
-                    // Go to route stop fragment
-                    // ((MainActivity) mActivity).showRouteBoundFragment(routeStop.route_bound.route_no);
-                    // ((MainActivity) mActivity).showRouteStopFragment(routeStop.route_bound);
-                    // Open stop dialog
-                    Intent intent = new Intent(caller.getContext(), RouteEtaActivity.class);
-                    //Intent intent = new Intent(caller.getContext(), RouteEtaDialog.class);
-                    intent.setAction(Intent.ACTION_VIEW);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.putExtra(Constants.MESSAGE.HIDE_STAR, true);
-                    intent.putExtra(Constants.BUNDLE.STOP_OBJECT, routeStop);
-                    mActivity.startActivity(intent);
+                    final RouteStop object = getObject(caller);
+                    if (null == object || null == object.route_bound) return false;
+                    new AlertDialog.Builder(mActivity)
+                            .setTitle(object.route_bound.destination_tc + " " +
+                                    object.route_bound.route_no + "?")
+                            .setMessage(mActivity.getString(R.string.message_remove_from_follow_list))
+                            .setNegativeButton(R.string.action_cancel, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialoginterface, int i) {
+                                    dialoginterface.cancel();
+                                }
+                            })
+                            .setPositiveButton(R.string.action_confirm, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialoginterface, int i) {
+                                    mActivity.getContentResolver().delete(
+                                            FollowProvider.CONTENT_URI_FOLLOW,
+                                            FollowTable.COLUMN_ROUTE + " = ?" +
+                                                    " AND " + FollowTable.COLUMN_BOUND + " = ?" +
+                                                    " AND " + FollowTable.COLUMN_STOP_CODE + " = ?",
+                                            new String[]{
+                                                    object.route_bound.route_no,
+                                                    object.route_bound.route_bound,
+                                                    object.code
+                                            });
+                                    Intent intent = new Intent(Constants.MESSAGE.FOLLOW_UPDATED);
+                                    intent.putExtra(Constants.MESSAGE.FOLLOW_UPDATED, true);
+                                    mActivity.sendBroadcast(intent);
+                                }
+                            })
+                            .show();
                     return true;
                 }
             });
@@ -308,18 +326,15 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
                             }})
                         .setPositiveButton(R.string.action_confirm, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialoginterface, int i) {
-                                int rowDeleted =
-                                        mActivity.getContentResolver().delete(SuggestionProvider.CONTENT_URI,
-                                                SuggestionTable.COLUMN_TYPE + "=? AND " + SuggestionTable.COLUMN_TEXT + "=?",
-                                                new String[]{
-                                                        SuggestionTable.TYPE_HISTORY,
-                                                        _route_no
-                                                });
-                                mCursor_history = mActivity.getContentResolver().query(SuggestionProvider.CONTENT_URI,
-                                                null, SuggestionTable.COLUMN_TEXT + " LIKE '%%'" + " AND " +
-                                                        SuggestionTable.COLUMN_TYPE + " = '" + SuggestionTable.TYPE_HISTORY + "'",
-                                                null, SuggestionTable.COLUMN_DATE + " DESC");
-                                notifyDataSetChanged();
+                                mActivity.getContentResolver().delete(SuggestionProvider.CONTENT_URI,
+                                        SuggestionTable.COLUMN_TYPE + "=? AND " + SuggestionTable.COLUMN_TEXT + "=?",
+                                        new String[]{
+                                                SuggestionTable.TYPE_HISTORY,
+                                                _route_no
+                                        });
+                                Intent intent = new Intent(Constants.MESSAGE.HISTORY_UPDATED);
+                                intent.putExtra(Constants.MESSAGE.HISTORY_UPDATED, true);
+                                mActivity.sendBroadcast(intent);
                             }
                         })
                         .show();

@@ -64,7 +64,6 @@ public class RouteEtaFragment extends Fragment
     private static final String TAG = RouteEtaFragment.class.getSimpleName();
 
     private Context mContext = super.getActivity();
-    private ActionBar mActionBar = null;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private View mImageContainer;
     private ImageView mImageView;
@@ -87,8 +86,7 @@ public class RouteEtaFragment extends Fragment
     private boolean imageVisible = false;
     private UpdateEtaReceiver mReceiver;
 
-    public RouteEtaFragment() {
-    }
+    public RouteEtaFragment() {}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -125,7 +123,7 @@ public class RouteEtaFragment extends Fragment
             parse();
         }
         // Set Toolbar
-        mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        ActionBar mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (null != mActionBar) {
             mActionBar.setTitle(object.name_tc);
             mActionBar.setSubtitle(object.route_bound.route_no + " " +
@@ -221,12 +219,14 @@ public class RouteEtaFragment extends Fragment
             case R.id.action_refresh:
                 onRefresh();
                 if (clickCount == 0 || clickCount % 5 == 0) {
-                    final Snackbar snackbar = Snackbar.make(getView().getRootView().findViewById(android.R.id.content),
-                            R.string.message_reminder_auto_refresh, Snackbar.LENGTH_LONG);
-                    TextView tv = (TextView)
-                            snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
-                    tv.setTextColor(Color.WHITE);
-                    snackbar.show();
+                    if (null != getView() && null != getView().getRootView()) {
+                        final Snackbar snackbar = Snackbar.make(getView().getRootView().findViewById(android.R.id.content),
+                                R.string.message_reminder_auto_refresh, Snackbar.LENGTH_LONG);
+                        TextView tv = (TextView)
+                                snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
+                        tv.setTextColor(Color.WHITE);
+                        snackbar.show();
+                    }
                 }
                 clickCount++;
                 break;
@@ -252,16 +252,6 @@ public class RouteEtaFragment extends Fragment
                             FollowTable.COLUMN_ROUTE + " = ?" +
                                     " AND " + FollowTable.COLUMN_BOUND + " = ?" +
                                     " AND " + FollowTable.COLUMN_STOP_CODE + " = ?",
-                            new String[] {
-                                    object.route_bound.route_no,
-                                    object.route_bound.route_bound,
-                                    object.code
-                            });
-                    mContext.getContentResolver().delete(
-                            FollowProvider.CONTENT_URI_ETA,
-                            EtaTable.COLUMN_ROUTE + " = ?" +
-                                    " AND " + EtaTable.COLUMN_BOUND + " = ?" +
-                                    " AND " + EtaTable.COLUMN_STOP_CODE + " = ?",
                             new String[] {
                                     object.route_bound.route_no,
                                     object.route_bound.route_bound,
