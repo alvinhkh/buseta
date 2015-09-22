@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
@@ -72,6 +73,7 @@ public class RouteEtaFragment extends Fragment
 
     private Context mContext = super.getActivity();
     private SwipeRefreshLayout mSwipeRefreshLayout;
+    private ActionBar mActionBar;
     private View mImageContainer;
     private ImageView mImageView;
     private TextView tSubtitle;
@@ -130,12 +132,13 @@ public class RouteEtaFragment extends Fragment
             parse();
         }
         // Set Toolbar
-        ActionBar mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (null != mActionBar) {
             mActionBar.setTitle(object.name_tc);
             mActionBar.setSubtitle(object.route_bound.route_no + " " +
                     getString(R.string.destination, object.route_bound.destination_tc));
             mActionBar.setDisplayHomeAsUpEnabled(true);
+            mActionBar.setHomeAsUpIndicator(R.drawable.ic_star_border_white_24dp);
         }
         setHasOptionsMenu(true);
         if (mMap == null) {
@@ -220,12 +223,9 @@ public class RouteEtaFragment extends Fragment
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(final MenuItem item) {
         int id = item.getItemId();
         switch (id) {
-            case android.R.id.home:
-                getActivity().onBackPressed();
-                break;
             case R.id.action_refresh:
                 onRefresh();
                 if (clickCount == 0 || clickCount % 5 == 0) {
@@ -256,6 +256,7 @@ public class RouteEtaFragment extends Fragment
                         .appendQueryParameter("q", object.name_tc).build();
                 startActivity(new Intent(android.content.Intent.ACTION_VIEW, uri));
                 break;
+            case android.R.id.home:
             case R.id.action_follow:
                 // TODO: deal with situation where stop seq changed, a problem for followed stops
                 if (null == object || null == object.route_bound) break;
@@ -288,8 +289,6 @@ public class RouteEtaFragment extends Fragment
                     Uri followUri = mContext.getContentResolver().insert(FollowProvider.CONTENT_URI_FOLLOW, values);
                     object.follow = (followUri != null);
                 }
-                item.setIcon(object.follow ?
-                        R.drawable.ic_star_white_24dp : R.drawable.ic_star_border_white_24dp);
                 LayoutInflater layoutInflater =
                         (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
                 final ImageView iv = (ImageView) layoutInflater.inflate(R.layout.action_view_image, null);
@@ -309,10 +308,15 @@ public class RouteEtaFragment extends Fragment
                         snackbar.show();
                     }
                 }
-                mFollow.setActionView(iv);
+                if (null != mActionBar)
+                    mActionBar.setHomeAsUpIndicator(object.follow ?
+                            R.drawable.ic_star_white_24dp : R.drawable.ic_star_border_white_24dp);
+                mFollow.setIcon(object.follow ?
+                        R.drawable.ic_star_white_24dp : R.drawable.ic_star_border_white_24dp);
+                MenuItemCompat.setActionView(mFollow, iv);
                 new Handler().postDelayed(new Runnable() {
                     public void run() {
-                        mFollow.setActionView(null);
+                        MenuItemCompat.setActionView(mFollow, null);
                     }
                 }, 500);
                 Intent intent = new Intent(Constants.MESSAGE.FOLLOW_UPDATED);
@@ -503,6 +507,9 @@ public class RouteEtaFragment extends Fragment
         if (null != mFollow)
             mFollow.setIcon(object.follow ?
                     R.drawable.ic_star_white_24dp : R.drawable.ic_star_border_white_24dp);
+        if (null != mActionBar)
+            mActionBar.setHomeAsUpIndicator(object.follow ?
+                    R.drawable.ic_star_white_24dp : R.drawable.ic_star_border_white_24dp);
         if (object.eta_loading != null && object.eta_loading) {
             mSwipeRefreshLayout.setRefreshing(true);
             if (null == object.eta || object.eta.etas.equals("") || tEta.getText().equals(""))
@@ -568,6 +575,13 @@ public class RouteEtaFragment extends Fragment
             final View root = getView().getRootView();
             final View mapContainer = root.findViewById(R.id.mapContainer);
             mImageContainer = root.findViewById(R.id.imageContainer);
+            mImageContainer.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    getHeaderView(false);
+                    return true;
+                }
+            });
             mImageView = (ImageView) root.findViewById(R.id.imageView);
             Animation fadeIn = AnimationUtils.loadAnimation(mContext, R.anim.fade_in);
             if (showPhoto) {

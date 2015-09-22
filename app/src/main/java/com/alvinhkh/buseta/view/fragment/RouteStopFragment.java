@@ -322,19 +322,28 @@ public class RouteStopFragment extends Fragment
     }
 
     @Override
-    public void onItemClick(AdapterView<?> parent, final View view,
-                            final int position, long id) {
-        if (view == null) return;
+    public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
+        requestEta(position);
+    }
+
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+        return openInfoWindow(position);
+    }
+
+    private boolean requestEta(int position) {
         RouteStop object = mAdapter.getItem(position);
+        if (null == object)
+            return false;
         object.eta_loading = true;
         mAdapter.notifyDataSetChanged();
         Intent intent = new Intent(mContext, CheckEtaService.class);
         intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
         mContext.startService(intent);
+        return true;
     }
 
-    @Override
-    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+    private boolean openInfoWindow(int position) {
         RouteStop object = mAdapter.getItem(position);
         if (null == object)
             return false;
