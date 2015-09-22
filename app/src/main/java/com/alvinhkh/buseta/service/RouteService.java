@@ -134,7 +134,7 @@ public class RouteService extends IntentService {
                     // token and id
                     String id = result.get("id").getAsString();
                     String token = result.get("token").getAsString();
-                    Log.d(TAG, "id: " + id + " token: " + token);
+                    // Log.d(TAG, "id: " + id + " token: " + token);
                     SharedPreferences.Editor editor = mPrefs.edit();
                     editor.putString(Constants.PREF.REQUEST_ID, id);
                     editor.putString(Constants.PREF.REQUEST_TOKEN, token);

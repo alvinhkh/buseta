@@ -269,7 +269,13 @@ public class MainFragment extends Fragment
                         snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
                 tv.setTextColor(Color.WHITE);
                 snackbar.show();
+                mSwipeRefreshLayout.setRefreshing(false);
             }
+            if (mAdapter.getFollowCount() == 0) {
+                mSwipeRefreshLayout.setRefreshing(false);
+            }
+        } else {
+            mSwipeRefreshLayout.setRefreshing(false);
         }
     }
 
@@ -404,13 +410,13 @@ public class MainFragment extends Fragment
                     oldCursor.close();
                 int rowsDeleted_route = f.mContext.getContentResolver().delete(
                         RouteProvider.CONTENT_URI_BOUND_FILTER, null, null);
-                Log.d(TAG, "Deleted Route Records: " + rowsDeleted_route);
+                // Log.d(TAG, "Deleted Route Records: " + rowsDeleted_route);
                 int rowsDeleted_routeStop = f.mContext.getContentResolver().delete(
                         RouteProvider.CONTENT_URI_STOP_FILTER, null, null);
-                Log.d(TAG, "Deleted Stops Records: " + rowsDeleted_routeStop);
+                // Log.d(TAG, "Deleted Stops Records: " + rowsDeleted_routeStop);
                 int rowsDeleted_eta = f.mContext.getContentResolver().delete(
                         FollowProvider.CONTENT_URI_ETA_JOIN, null, null);
-                Log.d(TAG, "Deleted ETA Records: " + rowsDeleted_eta);
+                // Log.d(TAG, "Deleted ETA Records: " + rowsDeleted_eta);
             }
         }
     }

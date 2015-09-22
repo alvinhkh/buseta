@@ -1,5 +1,6 @@
 package com.alvinhkh.buseta.view.fragment;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Context;
@@ -17,6 +18,7 @@ import android.support.v4.widget.NestedScrollView;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -27,6 +29,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
@@ -42,6 +45,8 @@ import com.alvinhkh.buseta.provider.FollowTable;
 import com.alvinhkh.buseta.provider.RouteProvider;
 import com.alvinhkh.buseta.provider.RouteStopTable;
 import com.alvinhkh.buseta.service.CheckEtaService;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -131,12 +136,11 @@ public class RouteEtaFragment extends Fragment
             mActionBar.setDisplayHomeAsUpEnabled(false);
         }
         setHasOptionsMenu(true);
-        // Google Map
         if (mMap == null) {
+            // Google Map
             ScrollMapFragment mMapFragment =
                     ((ScrollMapFragment) getFragmentManager().findFragmentById(R.id.map));
             mMap = mMapFragment.getMap();
-            mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
             final NestedScrollView mScrollView = (NestedScrollView) view.findViewById(R.id.NestedScrollView);
             ((ScrollMapFragment) getFragmentManager().findFragmentById(R.id.map))
                     .setListener(new ScrollMapFragment.OnTouchListener() {
@@ -147,6 +151,7 @@ public class RouteEtaFragment extends Fragment
                     });
             mMapFragment.getMapAsync(this);
         }
+        checkGooglePlayServices(getActivity());
         return view;
     }
 
@@ -300,6 +305,7 @@ public class RouteEtaFragment extends Fragment
         mMap = map;
         if (null == object || null == object.details)
             return;
+        map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         map.setTrafficEnabled(false);
         map.setBuildingsEnabled(false);
         map.setIndoorEnabled(false);
@@ -466,9 +472,8 @@ public class RouteEtaFragment extends Fragment
         tServerTime.setVisibility(View.VISIBLE);
         lLastUpdated.setVisibility(View.VISIBLE);
         tLastUpdated.setVisibility(View.VISIBLE);
-        tSubtitle.setText(object.route_bound.route_no + " " +
-                getString(R.string.destination, object.route_bound.destination_tc) + " " +
-                object.name_tc);
+        tSubtitle.setText(object.name_tc + " " + object.route_bound.route_no + " " +
+                getString(R.string.destination, object.route_bound.destination_tc));
         if (null != mFollow)
             mFollow.setIcon(object.follow ?
                     R.drawable.ic_star_white_24dp : R.drawable.ic_star_border_white_24dp);
@@ -576,6 +581,27 @@ public class RouteEtaFragment extends Fragment
                 mImageContainer.setVisibility(View.GONE);
             }
         }
+    }
+
+    public static boolean checkGooglePlayServices(final Activity activity) {
+        final int available = GooglePlayServicesUtil.isGooglePlayServicesAvailable(activity);
+        switch (available) {
+            case ConnectionResult.SUCCESS:
+                return true;
+            case ConnectionResult.SERVICE_DISABLED:
+            case ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED:
+            case ConnectionResult.SERVICE_INVALID:
+            case ConnectionResult.SERVICE_MISSING:
+                if (GooglePlayServicesUtil.isUserRecoverableError(available)) {
+                    Toast.makeText(activity,
+                            GooglePlayServicesUtil.getErrorString(available), Toast.LENGTH_SHORT)
+                            .show();
+                } else {
+                    Log.d(TAG, GooglePlayServicesUtil.getErrorString(available));
+                }
+                break;
+        }
+        return false;
     }
 
     public class UpdateEtaReceiver extends BroadcastReceiver {
