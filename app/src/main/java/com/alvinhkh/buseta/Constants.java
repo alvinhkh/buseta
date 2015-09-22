@@ -34,7 +34,6 @@ public class Constants {
         String STOPS_UPDATED = "com.alvinhkh.buseta.STOPS_UPDATED";
         String ETA_UPDATED = "com.alvinhkh.buseta.ETA_UPDATED";
         String FOLLOW_UPDATED = "com.alvinhkh.buseta.FOLLOW_UPDATED";
-        String HIDE_STAR = "com.alvinhkh.buseta.HIDE_STAR";
         String SEND_UPDATING = "com.alvinhkh.buseta.SEND_UPDATING";
         String WIDGET_UPDATE = "com.alvinhkh.buseta.WIDGET_UPDATE";
         String WIDGET_TRIGGER_UPDATE = "com.alvinhkh.buseta.WIDGET_TRIGGER_UPDATE";

@@ -348,7 +348,6 @@ public class RouteStopFragment extends Fragment
         if (null == object)
             return false;
         Intent intent = new Intent(mContext, RouteEtaActivity.class);
-        // Intent intent = new Intent(mContext, RouteEtaDialog.class);
         intent.setAction(Intent.ACTION_VIEW);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
