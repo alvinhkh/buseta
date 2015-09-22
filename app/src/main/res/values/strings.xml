@@ -72,6 +72,7 @@
     <string name="message_database_updating">數據庫更新中</string>
     <string name="message_database_updated">數據庫經已更新</string>
     <string name="message_fail_to_request">未能載入，請再試一次</string>
+    <string name="message_follow">已加到追蹤名單</string>
     <string name="message_hide_ad">除設定頁面，其他廣告經已隱藏</string>
     <string name="message_hide_ad_smile">:)</string>
     <string name="message_hide_ad_tip">試下SEARCH “%1$s”同“%2$s”</string>
@@ -90,6 +91,7 @@
     <string name="message_share_title">同朋友分享 BusETA</string>
     <string name="message_share_text">快啲下載 BusETA 巴士到站時間預報 App :)\nhttp://buseta.alvinhkh.com</string>
     <string name="message_total_routes">(共 %s 條路線)</string>
+    <string name="message_unfollow">從追蹤名單中移除</string>
 
     <string name="url_app" translatable="false">http://buseta.alvinhkh.com</string>
     <string name="url_developer" translatable="false">http://www.alvinhkh.com</string>

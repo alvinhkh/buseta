@@ -16,8 +16,8 @@
     <color name="icons">#FFFFFF</color>
     <color name="divider">#B6B6B6</color>
 
-    <color name="translucent_scrim_top">#1A000000</color>
-    <color name="translucent_scrim_top_center">#0A000000</color>
-    <color name="translucent_scrim_bottom">#3C000000</color>
-    <color name="translucent_scrim_bottom_center">#1F000000</color>
+    <color name="translucent_scrim_top">#3D000000</color>
+    <color name="translucent_scrim_top_center">#2A000000</color>
+    <color name="translucent_scrim_bottom">#3A000000</color>
+    <color name="translucent_scrim_bottom_center">#1A000000</color>
 </resources>

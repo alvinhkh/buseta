@@ -45,6 +45,7 @@ import com.alvinhkh.buseta.provider.FollowTable;
 import com.alvinhkh.buseta.provider.RouteProvider;
 import com.alvinhkh.buseta.provider.RouteStopTable;
 import com.alvinhkh.buseta.service.CheckEtaService;
+import com.alvinhkh.buseta.view.ControllableAppBarLayout;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -64,7 +65,8 @@ import java.util.Date;
 
 public class RouteEtaFragment extends Fragment
         implements SwipeRefreshLayout.OnRefreshListener,
-        OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, GoogleMap.OnMapLongClickListener {
+        OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener,
+        GoogleMap.OnMapLongClickListener, GoogleMap.OnMarkerClickListener {
 
     private static final String TAG = RouteEtaFragment.class.getSimpleName();
 
@@ -133,7 +135,7 @@ public class RouteEtaFragment extends Fragment
             mActionBar.setTitle(object.name_tc);
             mActionBar.setSubtitle(object.route_bound.route_no + " " +
                     getString(R.string.destination, object.route_bound.destination_tc));
-            mActionBar.setDisplayHomeAsUpEnabled(false);
+            mActionBar.setDisplayHomeAsUpEnabled(true);
         }
         setHasOptionsMenu(true);
         if (mMap == null) {
@@ -221,6 +223,9 @@ public class RouteEtaFragment extends Fragment
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         switch (id) {
+            case android.R.id.home:
+                getActivity().onBackPressed();
+                break;
             case R.id.action_refresh:
                 onRefresh();
                 if (clickCount == 0 || clickCount % 5 == 0) {
@@ -237,6 +242,12 @@ public class RouteEtaFragment extends Fragment
                 break;
             case R.id.action_show_map:
             case R.id.action_show_photo:
+                if (null != getView() && null != getView().getRootView()) {
+                    ControllableAppBarLayout appBarLayout =
+                            (ControllableAppBarLayout) getView().getRootView().findViewById(R.id.AppBar);
+                    if (null != appBarLayout)
+                        appBarLayout.expandToolbar(true);
+                }
                 getHeaderView(id == R.id.action_show_photo);
                 break;
             case R.id.action_send:
@@ -287,6 +298,16 @@ public class RouteEtaFragment extends Fragment
                 if (org != object.follow) {
                     Animation rotate = AnimationUtils.loadAnimation(getContext(), R.anim.rotate_once);
                     iv.startAnimation(rotate);
+                    if (null != getView() && null != getView().getRootView()) {
+                        final Snackbar snackbar = Snackbar.make(
+                                getView().getRootView().findViewById(android.R.id.content),
+                                object.follow ? R.string.message_follow : R.string.message_unfollow,
+                                Snackbar.LENGTH_SHORT);
+                        TextView tv = (TextView)
+                                snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
+                        tv.setTextColor(Color.WHITE);
+                        snackbar.show();
+                    }
                 }
                 mFollow.setActionView(iv);
                 new Handler().postDelayed(new Runnable() {
@@ -311,13 +332,14 @@ public class RouteEtaFragment extends Fragment
         map.setIndoorEnabled(false);
         map.getUiSettings().setMapToolbarEnabled(true);
         map.getUiSettings().setRotateGesturesEnabled(false);
-        map.getUiSettings().setScrollGesturesEnabled(true);
+        map.getUiSettings().setScrollGesturesEnabled(false);
         map.getUiSettings().setTiltGesturesEnabled(false);
         map.getUiSettings().setCompassEnabled(true);
         map.getUiSettings().setZoomControlsEnabled(true);
         map.getUiSettings().setZoomGesturesEnabled(false);
         map.setOnInfoWindowClickListener(this);
         map.setOnMapLongClickListener(this);
+        map.setOnMarkerClickListener(this);
         // mark
         mStopMarker = map.addMarker(new MarkerOptions()
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_directions_bus_black_24dp))
@@ -329,9 +351,22 @@ public class RouteEtaFragment extends Fragment
     }
 
     @Override
+    public void onInfoWindowClick(Marker marker) {
+        if (marker.getPosition().equals(getStopLanLng())) {
+            getHeaderView(true);
+        }
+    }
+
+    @Override
     public void onMapLongClick(LatLng latLng) {
         if (null == mMap) return;
         resetMap(mMap);
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        marker.showInfoWindow();
+        return true;
     }
 
     private void resetMap(final GoogleMap map) {
@@ -352,11 +387,6 @@ public class RouteEtaFragment extends Fragment
         Float lat = Float.valueOf(object.details.lat);
         Float lng = Float.valueOf(object.details.lng);
         return new LatLng(lat, lng);
-    }
-
-    @Override
-    public void onInfoWindowClick(Marker marker) {
-        // if (marker.getPosition().equals(getStopLanLng())) {}
     }
 
     public void onRefresh() {
@@ -472,7 +502,7 @@ public class RouteEtaFragment extends Fragment
         tServerTime.setVisibility(View.VISIBLE);
         lLastUpdated.setVisibility(View.VISIBLE);
         tLastUpdated.setVisibility(View.VISIBLE);
-        tSubtitle.setText(object.name_tc + " " + object.route_bound.route_no + " " +
+        tSubtitle.setText(object.name_tc + "\n" + object.route_bound.route_no + " " +
                 getString(R.string.destination, object.route_bound.destination_tc));
         if (null != mFollow)
             mFollow.setIcon(object.follow ?
