@@ -94,8 +94,8 @@
 
         <!-- Content Provider -->
         <provider
-            android:name=".provider.FavouriteProvider"
-            android:authorities="com.alvinhkh.buseta.FavouriteProvider"
+            android:name=".provider.FollowProvider"
+            android:authorities="com.alvinhkh.buseta.FollowProvider"
             android:exported="true" />
         <provider
             android:name=".provider.SuggestionProvider"

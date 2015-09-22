@@ -32,8 +32,8 @@ import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RouteStopETA;
 import com.alvinhkh.buseta.holder.RouteStopMap;
 import com.alvinhkh.buseta.provider.EtaTable;
-import com.alvinhkh.buseta.provider.FavouriteProvider;
-import com.alvinhkh.buseta.provider.FavouriteTable;
+import com.alvinhkh.buseta.provider.FollowProvider;
+import com.alvinhkh.buseta.provider.FollowTable;
 import com.alvinhkh.buseta.holder.EtaAdapterHelper;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.preference.SettingsHelper;
@@ -180,24 +180,24 @@ public class RouteEtaDialog extends AppCompatActivity
                 clickCount++;
                 break;
             case R.id.star:
-                // TODO: deal with situation where stop seq changed, a problem for favourite stops
+                // TODO: deal with situation where stop seq changed, a problem for follow stops
                 if (null == object || null == object.route_bound) break;
                 Boolean org;
-                if (isFavourite(object)) {
+                if (isFollowing(object)) {
                     // record exist
                     org = true;
                     int rowDeleted = mContext.getContentResolver().delete(
-                            FavouriteProvider.CONTENT_URI_FAV,
-                            FavouriteTable.COLUMN_ROUTE + " = ?" +
-                                    " AND " + FavouriteTable.COLUMN_BOUND + " = ?" +
-                                    " AND " + FavouriteTable.COLUMN_STOP_CODE + " = ?",
+                            FollowProvider.CONTENT_URI_FOLLOW,
+                            FollowTable.COLUMN_ROUTE + " = ?" +
+                                    " AND " + FollowTable.COLUMN_BOUND + " = ?" +
+                                    " AND " + FollowTable.COLUMN_STOP_CODE + " = ?",
                             new String[] {
                                     object.route_bound.route_no,
                                     object.route_bound.route_bound,
                                     object.code
                             });
                     mContext.getContentResolver().delete(
-                            FavouriteProvider.CONTENT_URI_ETA,
+                            FollowProvider.CONTENT_URI_ETA,
                             EtaTable.COLUMN_ROUTE + " = ?" +
                                     " AND " + EtaTable.COLUMN_BOUND + " = ?" +
                                     " AND " + EtaTable.COLUMN_STOP_CODE + " = ?",
@@ -206,24 +206,24 @@ public class RouteEtaDialog extends AppCompatActivity
                                     object.route_bound.route_bound,
                                     object.code
                             });
-                    object.favourite = !(rowDeleted > 0);
+                    object.follow = !(rowDeleted > 0);
                 } else {
                     org = false;
                     ContentValues values = new ContentValues();
-                    values.put(FavouriteTable.COLUMN_ROUTE, object.route_bound.route_no);
-                    values.put(FavouriteTable.COLUMN_BOUND, object.route_bound.route_bound);
-                    values.put(FavouriteTable.COLUMN_ORIGIN, object.route_bound.origin_tc);
-                    values.put(FavouriteTable.COLUMN_DESTINATION, object.route_bound.destination_tc);
-                    values.put(FavouriteTable.COLUMN_STOP_SEQ, object.stop_seq);
-                    values.put(FavouriteTable.COLUMN_STOP_CODE, object.code);
-                    values.put(FavouriteTable.COLUMN_STOP_NAME, object.name_tc);
-                    values.put(FavouriteTable.COLUMN_DATE, String.valueOf(System.currentTimeMillis() / 1000L));
-                    Uri favUri = getContentResolver().insert(FavouriteProvider.CONTENT_URI_FAV, values);
-                    object.favourite = (favUri != null);
+                    values.put(FollowTable.COLUMN_ROUTE, object.route_bound.route_no);
+                    values.put(FollowTable.COLUMN_BOUND, object.route_bound.route_bound);
+                    values.put(FollowTable.COLUMN_ORIGIN, object.route_bound.origin_tc);
+                    values.put(FollowTable.COLUMN_DESTINATION, object.route_bound.destination_tc);
+                    values.put(FollowTable.COLUMN_STOP_SEQ, object.stop_seq);
+                    values.put(FollowTable.COLUMN_STOP_CODE, object.code);
+                    values.put(FollowTable.COLUMN_STOP_NAME, object.name_tc);
+                    values.put(FollowTable.COLUMN_DATE, String.valueOf(System.currentTimeMillis() / 1000L));
+                    Uri followUri = getContentResolver().insert(FollowProvider.CONTENT_URI_FOLLOW, values);
+                    object.follow = (followUri != null);
                 }
-                if (org != object.favourite)
+                if (org != object.follow)
                     iStar.startAnimation(animationRotate);
-                iStar.setImageResource(object.favourite ?
+                iStar.setImageResource(object.follow ?
                         R.drawable.ic_star_black_48dp : R.drawable.ic_star_border_black_48dp);
                 sendUpdate();
                 break;
@@ -400,26 +400,26 @@ public class RouteEtaDialog extends AppCompatActivity
         getApplication().sendBroadcast(intent);
     }
 
-    private Boolean isFavourite(RouteStop object) {
-        final Cursor c = getContentResolver().query(FavouriteProvider.CONTENT_URI_FAV,
+    private Boolean isFollowing(RouteStop object) {
+        final Cursor c = getContentResolver().query(FollowProvider.CONTENT_URI_FOLLOW,
                 null,
-                FavouriteTable.COLUMN_ROUTE + " =?" +
-                        " AND " + FavouriteTable.COLUMN_BOUND + " =?" +
-                        " AND " + FavouriteTable.COLUMN_STOP_CODE + " =?",
+                FollowTable.COLUMN_ROUTE + " =?" +
+                        " AND " + FollowTable.COLUMN_BOUND + " =?" +
+                        " AND " + FollowTable.COLUMN_STOP_CODE + " =?",
                 new String[]{
                         object.route_bound.route_no,
                         object.route_bound.route_bound,
                         object.code
                 },
-                FavouriteTable.COLUMN_DATE + " DESC");
-        Boolean isFavourite = false;
+                FollowTable.COLUMN_DATE + " DESC");
+        Boolean isFollowing = false;
         try {
             c.moveToFirst();
-            isFavourite = c.getCount() > 0;
+            isFollowing = c.getCount() > 0;
         } finally {
             c.close();
         }
-        return isFavourite;
+        return isFollowing;
     }
 
     private RouteStop getObject(RouteStop object) {
@@ -452,18 +452,18 @@ public class RouteEtaDialog extends AppCompatActivity
         } finally {
             c.close();
         }
-        routeStop.favourite = isFavourite(object);
-        Cursor cEta = getContentResolver().query(FavouriteProvider.CONTENT_URI_ETA_JOIN,
+        routeStop.follow = isFollowing(object);
+        Cursor cEta = getContentResolver().query(FollowProvider.CONTENT_URI_ETA_JOIN,
                 null,
-                FavouriteTable.COLUMN_ROUTE + " =?" +
-                        " AND " + FavouriteTable.COLUMN_BOUND + " =?" +
-                        " AND " + FavouriteTable.COLUMN_STOP_CODE + " =?",
+                FollowTable.COLUMN_ROUTE + " =?" +
+                        " AND " + FollowTable.COLUMN_BOUND + " =?" +
+                        " AND " + FollowTable.COLUMN_STOP_CODE + " =?",
                 new String[]{
                         object.route_bound.route_no,
                         object.route_bound.route_bound,
                         object.code
                 },
-                FavouriteTable.COLUMN_DATE + " DESC");
+                FollowTable.COLUMN_DATE + " DESC");
         try {
             cEta.moveToFirst();
             if (cEta.getCount() > 0) {
@@ -503,7 +503,7 @@ public class RouteEtaDialog extends AppCompatActivity
         tServerTime.setVisibility(View.VISIBLE);
         lLastUpdated.setVisibility(View.VISIBLE);
         tLastUpdated.setVisibility(View.VISIBLE);
-        iStar.setImageResource(object.favourite ?
+        iStar.setImageResource(object.follow ?
                 R.drawable.ic_star_black_48dp : R.drawable.ic_star_border_black_48dp);
         iStar.setVisibility(hideStar ? View.GONE : View.VISIBLE);
         tStopName.setText(object.name_tc);

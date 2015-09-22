@@ -41,7 +41,7 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.provider.FavouriteProvider;
+import com.alvinhkh.buseta.provider.FollowProvider;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteNews;
 import com.alvinhkh.buseta.provider.RouteProvider;
@@ -180,7 +180,7 @@ public class MainActivity extends AppCompatActivity
         if (key.matches(Constants.PREF.AD_HIDE)) {
             createAdView();
         } else if (key.matches("eta_version")) {
-            int rowsDeleted = getContentResolver().delete(FavouriteProvider.CONTENT_URI_ETA_JOIN, null, null);
+            int rowsDeleted = getContentResolver().delete(FollowProvider.CONTENT_URI_ETA_JOIN, null, null);
             Log.d(TAG, "Deleted ETA Records: " + rowsDeleted);
         }
     }
@@ -245,7 +245,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onDestroy() {
-        int rowsDeleted = getContentResolver().delete(FavouriteProvider.CONTENT_URI_ETA_JOIN, null, null);
+        int rowsDeleted = getContentResolver().delete(FollowProvider.CONTENT_URI_ETA_JOIN, null, null);
         Log.d(TAG, "Deleted ETA Records: " + rowsDeleted);
         int rowsDeleted_route = getContentResolver().delete(RouteProvider.CONTENT_URI_FILTER, null, null);
         Log.d(TAG, "Deleted Route Records: " + rowsDeleted_route);

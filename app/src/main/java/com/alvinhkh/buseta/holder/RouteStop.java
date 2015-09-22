@@ -29,7 +29,7 @@ public class RouteStop implements Parcelable {
 
     public Boolean eta_fail = false;
 
-    public Boolean favourite = false;
+    public Boolean follow = false;
 
     public RouteStopMap details;
 
@@ -48,7 +48,7 @@ public class RouteStop implements Parcelable {
         this.code = p.readString();
         this.eta_loading = p.readByte() == 1;
         this.eta_fail = p.readByte() == 1;
-        this.favourite = p.readByte() == 1;
+        this.follow = p.readByte() == 1;
     }
 
     @Override
@@ -69,7 +69,7 @@ public class RouteStop implements Parcelable {
         p.writeString(this.code);
         p.writeByte((byte) (this.eta_loading ? 1 : 0));
         p.writeByte((byte) (this.eta_fail ? 1 : 0));
-        p.writeByte((byte) (this.favourite ? 1 : 0));
+        p.writeByte((byte) (this.follow ? 1 : 0));
     }
     // Method to recreate a RouteStop from a Parcel
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {

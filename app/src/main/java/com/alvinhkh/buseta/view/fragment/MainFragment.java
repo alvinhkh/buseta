@@ -37,8 +37,8 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.provider.FavouriteProvider;
-import com.alvinhkh.buseta.provider.FavouriteTable;
+import com.alvinhkh.buseta.provider.FollowProvider;
+import com.alvinhkh.buseta.provider.FollowTable;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.provider.SuggestionProvider;
 import com.alvinhkh.buseta.provider.SuggestionTable;
@@ -57,7 +57,7 @@ public class MainFragment extends Fragment
     private Context mContext = super.getActivity();
     private FeatureAdapter mAdapter;
     private Cursor mCursor_history;
-    private Cursor mCursor_favorite;
+    private Cursor mCursor_follow;
     private ActionBar mActionBar = null;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private FloatingActionButton mFab;
@@ -104,15 +104,15 @@ public class MainFragment extends Fragment
                 null, SuggestionTable.COLUMN_TEXT + " LIKE '%%'" + " AND " +
                         SuggestionTable.COLUMN_TYPE + " = '" + SuggestionTable.TYPE_HISTORY + "'",
                 null, SuggestionTable.COLUMN_DATE + " DESC");
-        mCursor_favorite = mContext.getContentResolver().query(
-                FavouriteProvider.CONTENT_URI, null, null, null,
-                FavouriteTable.COLUMN_DATE + " DESC");
-        mAdapter = new FeatureAdapter(getActivity(), mCursor_history, mCursor_favorite);
+        mCursor_follow = mContext.getContentResolver().query(
+                FollowProvider.CONTENT_URI, null, null, null,
+                FollowTable.COLUMN_DATE + " DESC");
+        mAdapter = new FeatureAdapter(getActivity(), mCursor_history, mCursor_follow);
         mRecyclerView.setAdapter(mAdapter);
         manager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
-                return position < mAdapter.getFavouriteCount() ? manager.getSpanCount() : 1;
+                return position < mAdapter.getFollowCount() ? manager.getSpanCount() : 1;
             }
         });
         View mEmptyView = view.findViewById(android.R.id.empty);
@@ -183,8 +183,8 @@ public class MainFragment extends Fragment
         }
         // Unregister the listener whenever a key changes
         PreferenceManager.getDefaultSharedPreferences(mContext).unregisterOnSharedPreferenceChangeListener(this);
-        if (null != mCursor_favorite)
-            mCursor_favorite.close();
+        if (null != mCursor_follow)
+            mCursor_follow.close();
         if (null != mCursor_history)
             mCursor_history.close();
         View view = getView();
@@ -244,8 +244,8 @@ public class MainFragment extends Fragment
             final ConnectivityManager conMgr = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
             final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
             if (activeNetwork != null && activeNetwork.isConnected()) {
-                for (int i = 0; i < mAdapter.getFavouriteCount(); i++) {
-                    RouteStop object = mAdapter.getFavouriteItem(i);
+                for (int i = 0; i < mAdapter.getFollowCount(); i++) {
+                    RouteStop object = mAdapter.getFollowItem(i);
                     Intent intent = new Intent(mContext, CheckEtaService.class);
                     intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
                     mContext.startService(intent);
@@ -340,10 +340,10 @@ public class MainFragment extends Fragment
             Boolean aBoolean_stop = bundle.getBoolean(Constants.MESSAGE.STOP_UPDATED);
             Boolean aBoolean_eta = bundle.getBoolean(Constants.MESSAGE.ETA_UPDATED);
             if (null != f.mAdapter && null != f.mContext && (aBoolean_stop || aBoolean_eta)) {
-                f.mCursor_favorite = f.mContext.getContentResolver().query(
-                        FavouriteProvider.CONTENT_URI, null, null, null,
-                        FavouriteTable.COLUMN_DATE + " DESC");
-                Cursor oldCursor = f.mAdapter.swapFavouriteCursor(f.mCursor_favorite);
+                f.mCursor_follow = f.mContext.getContentResolver().query(
+                        FollowProvider.CONTENT_URI, null, null, null,
+                        FollowTable.COLUMN_DATE + " DESC");
+                Cursor oldCursor = f.mAdapter.swapFollowCursor(f.mCursor_follow);
                 if (null != oldCursor)
                     oldCursor.close();
                 if (aBoolean_stop) {

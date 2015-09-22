@@ -14,7 +14,7 @@ import android.util.Log;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.provider.EtaTable;
-import com.alvinhkh.buseta.provider.FavouriteProvider;
+import com.alvinhkh.buseta.provider.FollowProvider;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.holder.RouteStopETA;
 import com.alvinhkh.buseta.preference.SettingsHelper;
@@ -450,7 +450,7 @@ public class CheckEtaService extends IntentService {
                 values.put(EtaTable.COLUMN_UPDATED, object.eta.updated);
             }
             values.put(EtaTable.COLUMN_DATE, String.valueOf(System.currentTimeMillis() / 1000L));
-            Uri etaUri = getContentResolver().insert(FavouriteProvider.CONTENT_URI_ETA, values);
+            Uri etaUri = getContentResolver().insert(FollowProvider.CONTENT_URI_ETA, values);
             Boolean inserted = (null != etaUri);
             if (inserted) {
                 Intent intent = new Intent(Constants.MESSAGE.ETA_UPDATED);

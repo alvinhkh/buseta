@@ -16,14 +16,14 @@ public class RouteOpenHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase database) {
         RouteStopTable.onCreate(database);
-        FavouriteTable.onCreate(database);
+        FollowTable.onCreate(database);
         EtaTable.onCreate(database);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
         RouteStopTable.onUpgrade(database, oldVersion, newVersion);
-        FavouriteTable.onUpgrade(database, oldVersion, newVersion);
+        FollowTable.onUpgrade(database, oldVersion, newVersion);
         EtaTable.onUpgrade(database, oldVersion, newVersion);
     }
 

@@ -5,10 +5,8 @@ import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.database.ContentObserver;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCantOpenDatabaseException;
 import android.net.ConnectivityManager;
@@ -16,8 +14,6 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
@@ -94,20 +90,20 @@ public class EtaWidgetProvider extends AppWidgetProvider {
         if (activeNetwork != null && activeNetwork.isConnected()) {
             try {
                 final Cursor c = context.getContentResolver().query(
-                        FavouriteProvider.CONTENT_URI_FAV, null, null, null,
-                        FavouriteTable.COLUMN_DATE + " DESC");
+                        FollowProvider.CONTENT_URI_FOLLOW, null, null, null,
+                        FollowTable.COLUMN_DATE + " DESC");
                 while (null != c && c.moveToNext()) {
                     RouteBound routeBound = new RouteBound();
-                    routeBound.route_no = getColumnString(c, FavouriteTable.COLUMN_ROUTE);
-                    routeBound.route_bound = getColumnString(c, FavouriteTable.COLUMN_BOUND);
-                    routeBound.origin_tc = getColumnString(c, FavouriteTable.COLUMN_ORIGIN);
-                    routeBound.destination_tc = getColumnString(c, FavouriteTable.COLUMN_DESTINATION);
+                    routeBound.route_no = getColumnString(c, FollowTable.COLUMN_ROUTE);
+                    routeBound.route_bound = getColumnString(c, FollowTable.COLUMN_BOUND);
+                    routeBound.origin_tc = getColumnString(c, FollowTable.COLUMN_ORIGIN);
+                    routeBound.destination_tc = getColumnString(c, FollowTable.COLUMN_DESTINATION);
                     RouteStop routeStop = new RouteStop();
                     routeStop.route_bound = routeBound;
-                    routeStop.stop_seq = getColumnString(c, FavouriteTable.COLUMN_STOP_SEQ);
-                    routeStop.name_tc = getColumnString(c, FavouriteTable.COLUMN_STOP_NAME);
-                    routeStop.code = getColumnString(c, FavouriteTable.COLUMN_STOP_CODE);
-                    routeStop.favourite = true;
+                    routeStop.stop_seq = getColumnString(c, FollowTable.COLUMN_STOP_SEQ);
+                    routeStop.name_tc = getColumnString(c, FollowTable.COLUMN_STOP_NAME);
+                    routeStop.code = getColumnString(c, FollowTable.COLUMN_STOP_CODE);
+                    routeStop.follow = true;
                     Intent intent = new Intent(context, CheckEtaService.class);
                     intent.putExtra(Constants.BUNDLE.STOP_OBJECT, routeStop);
                     intent.putExtra(Constants.MESSAGE.WIDGET_UPDATE, true);

@@ -15,7 +15,7 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.provider.EtaTable;
-import com.alvinhkh.buseta.provider.FavouriteTable;
+import com.alvinhkh.buseta.provider.FollowTable;
 import com.alvinhkh.buseta.holder.EtaAdapterHelper;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
@@ -27,7 +27,6 @@ import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RecyclerViewHolder;
 import com.alvinhkh.buseta.holder.SearchHistory;
 import com.alvinhkh.buseta.view.dialog.RouteEtaActivity;
-import com.alvinhkh.buseta.view.dialog.RouteEtaDialog;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -37,37 +36,37 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /*
- * An adapter that handle both favourite stop and search history
- * show favourite in front of search history
+ * An adapter that handle both follow stop and search history
+ * show follow in front of search history
  */
 public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHolder> {
 
-    private static final String TAG = "FeatureAdapter";
+    private static final String TAG = FeatureAdapter.class.getSimpleName();
 
-    private static final int ITEM_VIEW_TYPE_FAVOURITE = 0;
+    private static final int ITEM_VIEW_TYPE_FOLLOW = 0;
     private static final int ITEM_VIEW_TYPE_HISTORY = 1;
 
     private Activity mActivity;
     private Cursor mCursor_history;
-    private Cursor mCursor_favourite;
+    private Cursor mCursor_follow;
 
-    public FeatureAdapter(Activity activity, Cursor cursor_history, Cursor cursor_favourite) {
+    public FeatureAdapter(Activity activity, Cursor cursor_history, Cursor cursor_follow) {
         mActivity = activity;
         mCursor_history = cursor_history;
-        mCursor_favourite = cursor_favourite;
+        mCursor_follow = cursor_follow;
     }
 
     @Override
     public int getItemCount() {
-        return getHistoryCount() + getFavouriteCount();
+        return getHistoryCount() + getFollowCount();
     }
 
     public int getHistoryCount() {
         return (mCursor_history == null) ? 0 : mCursor_history.getCount();
     }
 
-    public int getFavouriteCount() {
-        return (mCursor_favourite == null) ? 0 : mCursor_favourite.getCount();
+    public int getFollowCount() {
+        return (mCursor_follow == null) ? 0 : mCursor_follow.getCount();
     }
 
     public Cursor swapHistoryCursor(Cursor cursor) {
@@ -80,49 +79,49 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
         return oldCursor;
     }
 
-    public Cursor swapFavouriteCursor(Cursor cursor) {
-        if (mCursor_favourite == cursor)
+    public Cursor swapFollowCursor(Cursor cursor) {
+        if (mCursor_follow == cursor)
             return null;
-        Cursor oldCursor = mCursor_favourite;
-        this.mCursor_favourite = cursor;
+        Cursor oldCursor = mCursor_follow;
+        this.mCursor_follow = cursor;
         if (cursor != null)
             this.notifyDataSetChanged();
         return oldCursor;
     }
 
-    private String getFavouriteColumnString(Cursor cursor, String column) {
+    private String getFollowColumnString(Cursor cursor, String column) {
         int index = cursor.getColumnIndex(column);
         return cursor.isNull(index) ? "" : cursor.getString(index);
     }
 
-    public RouteStop getFavouriteItem(int position) {
-        mCursor_favourite.moveToPosition(position);
+    public RouteStop getFollowItem(int position) {
+        mCursor_follow.moveToPosition(position);
         // Load data from dataCursor and return it...
         RouteBound routeBound = new RouteBound();
-        routeBound.route_no = getFavouriteColumnString(mCursor_favourite, FavouriteTable.COLUMN_ROUTE);
-        routeBound.route_bound = getFavouriteColumnString(mCursor_favourite, FavouriteTable.COLUMN_BOUND);
-        routeBound.origin_tc = getFavouriteColumnString(mCursor_favourite, FavouriteTable.COLUMN_ORIGIN);
-        routeBound.destination_tc = getFavouriteColumnString(mCursor_favourite, FavouriteTable.COLUMN_DESTINATION);
+        routeBound.route_no = getFollowColumnString(mCursor_follow, FollowTable.COLUMN_ROUTE);
+        routeBound.route_bound = getFollowColumnString(mCursor_follow, FollowTable.COLUMN_BOUND);
+        routeBound.origin_tc = getFollowColumnString(mCursor_follow, FollowTable.COLUMN_ORIGIN);
+        routeBound.destination_tc = getFollowColumnString(mCursor_follow, FollowTable.COLUMN_DESTINATION);
         RouteStopETA routeStopETA = null;
-        String apiVersion = getFavouriteColumnString(mCursor_favourite, EtaTable.COLUMN_ETA_API);
+        String apiVersion = getFollowColumnString(mCursor_follow, EtaTable.COLUMN_ETA_API);
         if (null != apiVersion && !apiVersion.equals("")) {
             routeStopETA = new RouteStopETA();
             routeStopETA.api_version = Integer.valueOf(apiVersion);
-            routeStopETA.seq = getFavouriteColumnString(mCursor_favourite, EtaTable.COLUMN_STOP_SEQ);
-            routeStopETA.etas = getFavouriteColumnString(mCursor_favourite, EtaTable.COLUMN_ETA_TIME);
-            routeStopETA.expires = getFavouriteColumnString(mCursor_favourite, EtaTable.COLUMN_ETA_EXPIRE);
-            routeStopETA.server_time = getFavouriteColumnString(mCursor_favourite, EtaTable.COLUMN_SERVER_TIME);
-            routeStopETA.updated = getFavouriteColumnString(mCursor_favourite, EtaTable.COLUMN_UPDATED);
+            routeStopETA.seq = getFollowColumnString(mCursor_follow, EtaTable.COLUMN_STOP_SEQ);
+            routeStopETA.etas = getFollowColumnString(mCursor_follow, EtaTable.COLUMN_ETA_TIME);
+            routeStopETA.expires = getFollowColumnString(mCursor_follow, EtaTable.COLUMN_ETA_EXPIRE);
+            routeStopETA.server_time = getFollowColumnString(mCursor_follow, EtaTable.COLUMN_SERVER_TIME);
+            routeStopETA.updated = getFollowColumnString(mCursor_follow, EtaTable.COLUMN_UPDATED);
         }
         RouteStop routeStop = new RouteStop();
         routeStop.route_bound = routeBound;
-        routeStop.stop_seq = getFavouriteColumnString(mCursor_favourite, FavouriteTable.COLUMN_STOP_SEQ);
-        routeStop.name_tc = getFavouriteColumnString(mCursor_favourite, FavouriteTable.COLUMN_STOP_NAME);
-        routeStop.code = getFavouriteColumnString(mCursor_favourite, FavouriteTable.COLUMN_STOP_CODE);
-        routeStop.favourite = true;
+        routeStop.stop_seq = getFollowColumnString(mCursor_follow, FollowTable.COLUMN_STOP_SEQ);
+        routeStop.name_tc = getFollowColumnString(mCursor_follow, FollowTable.COLUMN_STOP_NAME);
+        routeStop.code = getFollowColumnString(mCursor_follow, FollowTable.COLUMN_STOP_CODE);
+        routeStop.follow = true;
         routeStop.eta = routeStopETA;
-        routeStop.eta_loading = getFavouriteColumnString(mCursor_favourite, EtaTable.COLUMN_LOADING).equals("true");
-        routeStop.eta_fail = getFavouriteColumnString(mCursor_favourite, EtaTable.COLUMN_FAIL).equals("true");
+        routeStop.eta_loading = getFollowColumnString(mCursor_follow, EtaTable.COLUMN_LOADING).equals("true");
+        routeStop.eta_fail = getFollowColumnString(mCursor_follow, EtaTable.COLUMN_FAIL).equals("true");
         return routeStop;
     }
 
@@ -141,9 +140,9 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
     @Override
     public void onBindViewHolder(ViewHolder vh, int position) {
         vh.vPosition.setText(String.valueOf(position));
-        if (vh instanceof FavouriteViewHolder) {
-            FavouriteViewHolder viewHolder =  (FavouriteViewHolder) vh;
-            RouteStop object = getFavouriteItem(position);
+        if (vh instanceof FollowViewHolder) {
+            FollowViewHolder viewHolder =  (FollowViewHolder) vh;
+            RouteStop object = getFollowItem(position);
             if (null != object && null != object.route_bound) {
                 viewHolder.stop_code.setText(object.code);
                 viewHolder.stop_seq.setText(object.stop_seq);
@@ -210,7 +209,7 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
             }
         }
         if (vh instanceof HistoryViewHolder) {
-            SearchHistory info = getHistoryItem(position - getFavouriteCount());
+            SearchHistory info = getHistoryItem(position - getFollowCount());
             HistoryViewHolder viewHolder = (HistoryViewHolder) vh;
             viewHolder.vRoute.setText(info.route);
             Integer image;
@@ -231,10 +230,10 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        if (viewType == ITEM_VIEW_TYPE_FAVOURITE) {
+        if (viewType == ITEM_VIEW_TYPE_FOLLOW) {
             View v = LayoutInflater.from(viewGroup.getContext()).
-                    inflate(R.layout.card_favourite, viewGroup, false);
-            return new FavouriteViewHolder(v, new RecyclerViewHolder.ViewHolderClicks() {
+                    inflate(R.layout.card_follow, viewGroup, false);
+            return new FollowViewHolder(v, new RecyclerViewHolder.ViewHolderClicks() {
                 private RouteStop getObject(View caller) {
                     TextView tRouteNo = (TextView) caller.findViewById(R.id.route_no);
                     TextView tRouteBound = (TextView) caller.findViewById(R.id.route_bound);
@@ -253,7 +252,7 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
                     routeStop.stop_seq = tStopSeq.getText().toString();
                     routeStop.code = tStopCode.getText().toString();
                     routeStop.name_tc = tStopName.getText().toString();
-                    routeStop.favourite = true;
+                    routeStop.follow = true;
                     return routeStop;
                 }
                 public void onClickView(View caller) {
@@ -331,10 +330,10 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
 
     @Override
     public int getItemViewType(int position) {
-        return position < getFavouriteCount() ? ITEM_VIEW_TYPE_FAVOURITE : ITEM_VIEW_TYPE_HISTORY;
+        return position < getFollowCount() ? ITEM_VIEW_TYPE_FOLLOW : ITEM_VIEW_TYPE_HISTORY;
     }
 
-    public static class FavouriteViewHolder extends ViewHolder {
+    public static class FollowViewHolder extends ViewHolder {
 
         protected TextView stop_code;
         protected TextView stop_seq;
@@ -345,7 +344,7 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
         protected TextView route_destination;
         protected TextView eta_more;
 
-        public FavouriteViewHolder(View v, ViewHolderClicks clicks) {
+        public FollowViewHolder(View v, ViewHolderClicks clicks) {
             super(v, clicks);
             stop_code = (TextView) v.findViewById(R.id.stop_code);
             stop_seq = (TextView) v.findViewById(R.id.stop_seq);

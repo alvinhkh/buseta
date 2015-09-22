@@ -13,37 +13,37 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.text.TextUtils;
 
-public class FavouriteProvider extends ContentProvider {
+public class FollowProvider extends ContentProvider {
 
     private RouteOpenHelper mHelper;
 
-    private static final String AUTHORITY = "com.alvinhkh.buseta.FavouriteProvider";
+    private static final String AUTHORITY = "com.alvinhkh.buseta.FollowProvider";
     private static final String BASE_PATH_LEFT_JOIN = "left_join";
     public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY
             + "/" + BASE_PATH_LEFT_JOIN);
     private static final String BASE_PATH_RIGHT_JOIN = "right_join";
     public static final Uri CONTENT_URI_ETA_JOIN = Uri.parse("content://" + AUTHORITY
             + "/" + BASE_PATH_RIGHT_JOIN);
-    private static final String BASE_PATH_FAV = "favs";
-    public static final Uri CONTENT_URI_FAV = Uri.parse("content://" + AUTHORITY
-            + "/" + BASE_PATH_FAV);
+    private static final String BASE_PATH_FOLLOW = "follows";
+    public static final Uri CONTENT_URI_FOLLOW = Uri.parse("content://" + AUTHORITY
+            + "/" + BASE_PATH_FOLLOW);
     private static final String BASE_PATH_ETA = "etas";
     public static final Uri CONTENT_URI_ETA = Uri.parse("content://" + AUTHORITY
             + "/" + BASE_PATH_ETA);
 
     // used for the UriMatcher
-    private static final int FAV_FIRST = 10;
+    private static final int FOLLOW_FIRST = 10;
     private static final int ETA_FIRST = 11;
-    private static final int FAV = 20;
-    private static final int FAV_ID = 21;
+    private static final int FOLLOW = 20;
+    private static final int FOLLOW_ID = 21;
     private static final int ETA = 30;
     private static final int ETA_ID = 31;
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     static {
-        sURIMatcher.addURI(AUTHORITY, BASE_PATH_LEFT_JOIN, FAV_FIRST);
+        sURIMatcher.addURI(AUTHORITY, BASE_PATH_LEFT_JOIN, FOLLOW_FIRST);
         sURIMatcher.addURI(AUTHORITY, BASE_PATH_RIGHT_JOIN, ETA_FIRST);
-        sURIMatcher.addURI(AUTHORITY, BASE_PATH_FAV, FAV);
-        sURIMatcher.addURI(AUTHORITY, BASE_PATH_FAV + "/#", FAV_ID);
+        sURIMatcher.addURI(AUTHORITY, BASE_PATH_FOLLOW, FOLLOW);
+        sURIMatcher.addURI(AUTHORITY, BASE_PATH_FOLLOW + "/#", FOLLOW_ID);
         sURIMatcher.addURI(AUTHORITY, BASE_PATH_ETA, ETA);
         sURIMatcher.addURI(AUTHORITY, BASE_PATH_ETA + "/#", ETA_ID);
     }
@@ -65,41 +65,41 @@ public class FavouriteProvider extends ContentProvider {
 
         int uriType = sURIMatcher.match(uri);
         switch (uriType) {
-            case FAV_FIRST:
+            case FOLLOW_FIRST:
                 // Set the table
-                queryBuilder.setTables(FavouriteTable.TABLE_NAME +
+                queryBuilder.setTables(FollowTable.TABLE_NAME +
                         " LEFT JOIN " + EtaTable.TABLE_NAME +
                         " ON (" +
-                        FavouriteTable.COLUMN_ROUTE + "=" + EtaTable.COLUMN_ROUTE + " AND " +
-                        FavouriteTable.COLUMN_BOUND + "=" + EtaTable.COLUMN_BOUND + " AND " +
-                        FavouriteTable.COLUMN_STOP_SEQ + "=" + EtaTable.COLUMN_STOP_SEQ + " AND " +
-                        FavouriteTable.COLUMN_STOP_CODE + "=" + EtaTable.COLUMN_STOP_CODE +
+                        FollowTable.COLUMN_ROUTE + "=" + EtaTable.COLUMN_ROUTE + " AND " +
+                        FollowTable.COLUMN_BOUND + "=" + EtaTable.COLUMN_BOUND + " AND " +
+                        FollowTable.COLUMN_STOP_SEQ + "=" + EtaTable.COLUMN_STOP_SEQ + " AND " +
+                        FollowTable.COLUMN_STOP_CODE + "=" + EtaTable.COLUMN_STOP_CODE +
                         ")");
                 break;
             case ETA_FIRST:
                 // Set the table
                 queryBuilder.setTables(EtaTable.TABLE_NAME +
-                        " LEFT JOIN " + FavouriteTable.TABLE_NAME +
+                        " LEFT JOIN " + FollowTable.TABLE_NAME +
                         " ON (" +
-                        FavouriteTable.COLUMN_ROUTE + "=" + EtaTable.COLUMN_ROUTE + " AND " +
-                        FavouriteTable.COLUMN_BOUND + "=" + EtaTable.COLUMN_BOUND + " AND " +
-                        FavouriteTable.COLUMN_STOP_SEQ + "=" + EtaTable.COLUMN_STOP_SEQ + " AND " +
-                        FavouriteTable.COLUMN_STOP_CODE + "=" + EtaTable.COLUMN_STOP_CODE +
+                        FollowTable.COLUMN_ROUTE + "=" + EtaTable.COLUMN_ROUTE + " AND " +
+                        FollowTable.COLUMN_BOUND + "=" + EtaTable.COLUMN_BOUND + " AND " +
+                        FollowTable.COLUMN_STOP_SEQ + "=" + EtaTable.COLUMN_STOP_SEQ + " AND " +
+                        FollowTable.COLUMN_STOP_CODE + "=" + EtaTable.COLUMN_STOP_CODE +
                         ")");
                 break;
-            case FAV:
+            case FOLLOW:
                 // Set the table
-                queryBuilder.setTables(FavouriteTable.TABLE_NAME);
+                queryBuilder.setTables(FollowTable.TABLE_NAME);
                 break;
             case ETA:
                 // Set the table
                 queryBuilder.setTables(EtaTable.TABLE_NAME);
                 break;
-            case FAV_ID:
+            case FOLLOW_ID:
                 // Set the table
-                queryBuilder.setTables(FavouriteTable.TABLE_NAME);
+                queryBuilder.setTables(FollowTable.TABLE_NAME);
                 // adding the ID to the original query
-                queryBuilder.appendWhere(FavouriteTable.COLUMN_ID + "=" + uri.getLastPathSegment());
+                queryBuilder.appendWhere(FollowTable.COLUMN_ID + "=" + uri.getLastPathSegment());
                 break;
             case ETA_ID:
                 // Set the table
@@ -131,8 +131,8 @@ public class FavouriteProvider extends ContentProvider {
         SQLiteDatabase sqlDB = mHelper.getWritableDatabase();
         long id;
         switch (uriType) {
-            case FAV:
-                id = sqlDB.insert(FavouriteTable.TABLE_NAME, null, values);
+            case FOLLOW:
+                id = sqlDB.insert(FollowTable.TABLE_NAME, null, values);
                 notifyChange(uri, true);
                 break;
             case ETA:
@@ -143,8 +143,8 @@ public class FavouriteProvider extends ContentProvider {
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
         switch (uriType) {
-            case FAV:
-                return Uri.parse(BASE_PATH_FAV + "/#" + id);
+            case FOLLOW:
+                return Uri.parse(BASE_PATH_FOLLOW + "/#" + id);
             case ETA:
                 return Uri.parse(BASE_PATH_ETA + "/#" + id);
             default:
@@ -162,29 +162,29 @@ public class FavouriteProvider extends ContentProvider {
                 rowsDeleted = sqlDB.delete(EtaTable.TABLE_NAME, EtaTable.COLUMN_ID +
                                 " IN ( " + "SELECT " + EtaTable.COLUMN_ID + " FROM " +
                                 EtaTable.TABLE_NAME +
-                                " LEFT JOIN " + FavouriteTable.TABLE_NAME +
+                                " LEFT JOIN " + FollowTable.TABLE_NAME +
                                 " ON (" +
-                                FavouriteTable.COLUMN_ROUTE + "=" + EtaTable.COLUMN_ROUTE + " AND " +
-                                FavouriteTable.COLUMN_BOUND + "=" + EtaTable.COLUMN_BOUND + " AND " +
-                                FavouriteTable.COLUMN_STOP_SEQ + "=" + EtaTable.COLUMN_STOP_SEQ + " AND " +
-                                FavouriteTable.COLUMN_STOP_CODE + "=" + EtaTable.COLUMN_STOP_CODE +
-                                ")" + " WHERE " + FavouriteTable.COLUMN_ID + " IS NULL)",
+                                FollowTable.COLUMN_ROUTE + "=" + EtaTable.COLUMN_ROUTE + " AND " +
+                                FollowTable.COLUMN_BOUND + "=" + EtaTable.COLUMN_BOUND + " AND " +
+                                FollowTable.COLUMN_STOP_SEQ + "=" + EtaTable.COLUMN_STOP_SEQ + " AND " +
+                                FollowTable.COLUMN_STOP_CODE + "=" + EtaTable.COLUMN_STOP_CODE +
+                                ")" + " WHERE " + FollowTable.COLUMN_ID + " IS NULL)",
                         null);
                 break;
-            case FAV:
-                rowsDeleted = sqlDB.delete(FavouriteTable.TABLE_NAME, selection,
+            case FOLLOW:
+                rowsDeleted = sqlDB.delete(FollowTable.TABLE_NAME, selection,
                         selectionArgs);
                 notifyChange(uri, true);
                 break;
-            case FAV_ID:
+            case FOLLOW_ID:
                 String id = uri.getLastPathSegment();
                 if (TextUtils.isEmpty(selection)) {
-                    rowsDeleted = sqlDB.delete(FavouriteTable.TABLE_NAME,
-                            FavouriteTable.COLUMN_ID + "=" + id,
+                    rowsDeleted = sqlDB.delete(FollowTable.TABLE_NAME,
+                            FollowTable.COLUMN_ID + "=" + id,
                             null);
                 } else {
-                    rowsDeleted = sqlDB.delete(FavouriteTable.TABLE_NAME,
-                            FavouriteTable.COLUMN_ID + "=" + id
+                    rowsDeleted = sqlDB.delete(FollowTable.TABLE_NAME,
+                            FollowTable.COLUMN_ID + "=" + id
                                     + " and " + selection,
                             selectionArgs);
                 }
@@ -223,24 +223,24 @@ public class FavouriteProvider extends ContentProvider {
         SQLiteDatabase sqlDB = mHelper.getWritableDatabase();
         int rowsUpdated;
         switch (uriType) {
-            case FAV:
-                rowsUpdated = sqlDB.update(FavouriteTable.TABLE_NAME,
+            case FOLLOW:
+                rowsUpdated = sqlDB.update(FollowTable.TABLE_NAME,
                         values,
                         selection,
                         selectionArgs);
                 notifyChange(uri, true);
                 break;
-            case FAV_ID:
+            case FOLLOW_ID:
                 String id = uri.getLastPathSegment();
                 if (TextUtils.isEmpty(selection)) {
-                    rowsUpdated = sqlDB.update(FavouriteTable.TABLE_NAME,
+                    rowsUpdated = sqlDB.update(FollowTable.TABLE_NAME,
                             values,
-                            FavouriteTable.COLUMN_ID + "=" + id,
+                            FollowTable.COLUMN_ID + "=" + id,
                             null);
                 } else {
-                    rowsUpdated = sqlDB.update(FavouriteTable.TABLE_NAME,
+                    rowsUpdated = sqlDB.update(FollowTable.TABLE_NAME,
                             values,
-                            FavouriteTable.COLUMN_ID + "=" + id
+                            FollowTable.COLUMN_ID + "=" + id
                                     + " and "
                                     + selection,
                             selectionArgs);
@@ -288,15 +288,15 @@ public class FavouriteProvider extends ContentProvider {
 
     private void checkColumns(String[] projection) {
         String[] available = {
-                FavouriteTable.COLUMN_ID,
-                FavouriteTable.COLUMN_DATE,
-                FavouriteTable.COLUMN_ROUTE,
-                FavouriteTable.COLUMN_BOUND,
-                FavouriteTable.COLUMN_ORIGIN,
-                FavouriteTable.COLUMN_DESTINATION,
-                FavouriteTable.COLUMN_STOP_SEQ,
-                FavouriteTable.COLUMN_STOP_CODE,
-                FavouriteTable.COLUMN_STOP_NAME,
+                FollowTable.COLUMN_ID,
+                FollowTable.COLUMN_DATE,
+                FollowTable.COLUMN_ROUTE,
+                FollowTable.COLUMN_BOUND,
+                FollowTable.COLUMN_ORIGIN,
+                FollowTable.COLUMN_DESTINATION,
+                FollowTable.COLUMN_STOP_SEQ,
+                FollowTable.COLUMN_STOP_CODE,
+                FollowTable.COLUMN_STOP_NAME,
 
                 EtaTable.COLUMN_ID,
                 EtaTable.COLUMN_DATE,

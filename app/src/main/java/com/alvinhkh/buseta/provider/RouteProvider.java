@@ -159,11 +159,11 @@ public class RouteProvider extends ContentProvider {
                 rowsDeleted = sqlDB.delete(RouteStopTable.TABLE_NAME, RouteStopTable.COLUMN_ID +
                                 " IN ( " + "SELECT " + RouteStopTable.COLUMN_ID + " FROM " +
                                 RouteStopTable.TABLE_NAME +
-                                " LEFT JOIN " + FavouriteTable.TABLE_NAME +
+                                " LEFT JOIN " + FollowTable.TABLE_NAME +
                                 " ON (" +
-                                FavouriteTable.COLUMN_ROUTE + "=" + RouteStopTable.COLUMN_ROUTE + " AND " +
-                                FavouriteTable.COLUMN_BOUND + "=" + RouteStopTable.COLUMN_BOUND +
-                                ")" + " WHERE " + FavouriteTable.COLUMN_ID + " IS NULL)",
+                                FollowTable.COLUMN_ROUTE + "=" + RouteStopTable.COLUMN_ROUTE + " AND " +
+                                FollowTable.COLUMN_BOUND + "=" + RouteStopTable.COLUMN_BOUND +
+                                ")" + " WHERE " + FollowTable.COLUMN_ID + " IS NULL)",
                         null);
                 break;
             default:

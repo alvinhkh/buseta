@@ -82,7 +82,7 @@
     <string name="message_please_click_once_again">請再按多一次</string>
     <string name="message_reminder_auto_refresh">提示：每分鐘會自動更新</string>
     <string name="message_remove_from_search_history">從搜尋記錄中移除</string>
-    <string name="message_remove_from_favourite">從記錄中移除</string>
+    <string name="message_remove_from_follow">從記錄中移除</string>
     <string name="message_request_hide_ad">收到! 除咗設定嗰頁，其他廣告都隱藏晒</string>
     <string name="message_request_hide_ad_again">除咗設定嗰頁，其他廣告都已經隱藏晒，唔洗講咁多次!</string>
     <string name="message_request_show_ad">所有廣告都唔再隱藏喇 :)</string>

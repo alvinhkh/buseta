@@ -6,16 +6,13 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Bundle;
-import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
-import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.provider.EtaTable;
-import com.alvinhkh.buseta.provider.FavouriteProvider;
-import com.alvinhkh.buseta.provider.FavouriteTable;
+import com.alvinhkh.buseta.provider.FollowProvider;
+import com.alvinhkh.buseta.provider.FollowTable;
 import com.alvinhkh.buseta.holder.EtaAdapterHelper;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
@@ -77,10 +74,10 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
         if (mCursor.moveToPosition(position)) {
             // Load data from cursor and return it...
             RouteBound routeBound = new RouteBound();
-            routeBound.route_no = getColumnString(mCursor, FavouriteTable.COLUMN_ROUTE);
-            routeBound.route_bound = getColumnString(mCursor, FavouriteTable.COLUMN_BOUND);
-            routeBound.origin_tc = getColumnString(mCursor, FavouriteTable.COLUMN_ORIGIN);
-            routeBound.destination_tc = getColumnString(mCursor, FavouriteTable.COLUMN_DESTINATION);
+            routeBound.route_no = getColumnString(mCursor, FollowTable.COLUMN_ROUTE);
+            routeBound.route_bound = getColumnString(mCursor, FollowTable.COLUMN_BOUND);
+            routeBound.origin_tc = getColumnString(mCursor, FollowTable.COLUMN_ORIGIN);
+            routeBound.destination_tc = getColumnString(mCursor, FollowTable.COLUMN_DESTINATION);
             RouteStopETA routeStopETA = null;
             String apiVersion = getColumnString(mCursor, EtaTable.COLUMN_ETA_API);
             if (null != apiVersion && !apiVersion.equals("")) {
@@ -94,10 +91,10 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
             }
             routeStop = new RouteStop();
             routeStop.route_bound = routeBound;
-            routeStop.stop_seq = getColumnString(mCursor, FavouriteTable.COLUMN_STOP_SEQ);
-            routeStop.name_tc = getColumnString(mCursor, FavouriteTable.COLUMN_STOP_NAME);
-            routeStop.code = getColumnString(mCursor, FavouriteTable.COLUMN_STOP_CODE);
-            routeStop.favourite = true;
+            routeStop.stop_seq = getColumnString(mCursor, FollowTable.COLUMN_STOP_SEQ);
+            routeStop.name_tc = getColumnString(mCursor, FollowTable.COLUMN_STOP_NAME);
+            routeStop.code = getColumnString(mCursor, FollowTable.COLUMN_STOP_CODE);
+            routeStop.follow = true;
             routeStop.eta = routeStopETA;
             routeStop.eta_loading = getColumnString(mCursor, EtaTable.COLUMN_LOADING).equals("true");
             routeStop.eta_fail = getColumnString(mCursor, EtaTable.COLUMN_FAIL).equals("true");
@@ -213,8 +210,8 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
     public void onDataSetChanged() {
         // Refresh the cursor
         mCursor = mContext.getContentResolver().query(
-                FavouriteProvider.CONTENT_URI, null, null, null,
-                FavouriteTable.COLUMN_DATE + " DESC");
+                FollowProvider.CONTENT_URI, null, null, null,
+                FollowTable.COLUMN_DATE + " DESC");
     }
 
 }

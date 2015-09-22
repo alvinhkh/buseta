@@ -3,7 +3,7 @@ package com.alvinhkh.buseta.provider;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-public class FavouriteTable {
+public class FollowTable {
 
     public final static String TABLE_NAME = "favourite";
     public final static String COLUMN_ID = "_id";

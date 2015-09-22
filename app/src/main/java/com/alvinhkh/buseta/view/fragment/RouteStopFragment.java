@@ -37,8 +37,8 @@ import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RouteStopMap;
 import com.alvinhkh.buseta.provider.EtaTable;
-import com.alvinhkh.buseta.provider.FavouriteProvider;
-import com.alvinhkh.buseta.provider.FavouriteTable;
+import com.alvinhkh.buseta.provider.FollowProvider;
+import com.alvinhkh.buseta.provider.FollowTable;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.holder.RouteStopETA;
@@ -46,10 +46,8 @@ import com.alvinhkh.buseta.provider.RouteProvider;
 import com.alvinhkh.buseta.provider.RouteStopTable;
 import com.alvinhkh.buseta.service.CheckEtaService;
 import com.alvinhkh.buseta.service.RouteService;
-import com.alvinhkh.buseta.view.MainActivity;
 import com.alvinhkh.buseta.view.adapter.RouteStopAdapter;
 import com.alvinhkh.buseta.view.dialog.RouteEtaActivity;
-import com.alvinhkh.buseta.view.dialog.RouteEtaDialog;
 import com.koushikdutta.ion.Ion;
 import com.melnykov.fab.FloatingActionButton;
 import com.melnykov.fab.ScrollDirectionListener;
@@ -360,7 +358,7 @@ public class RouteStopFragment extends Fragment
         if (id == R.id.action_refresh) {
             if (null != mContext) {
                 int rowsDeleted = mContext.getContentResolver().delete(
-                        FavouriteProvider.CONTENT_URI_ETA_JOIN, null, null);
+                        FollowProvider.CONTENT_URI_ETA_JOIN, null, null);
                 Log.d(TAG, "Deleted ETA Records: " + rowsDeleted);
                 int rowsDeleted_route = mContext.getContentResolver().delete(
                         RouteProvider.CONTENT_URI_FILTER, null, null);
@@ -467,20 +465,20 @@ public class RouteStopFragment extends Fragment
                                 routeStop.name_tc = getColumnString(c, RouteStopTable.COLUMN_STOP_NAME);
                                 routeStop.name_en = getColumnString(c, RouteStopTable.COLUMN_STOP_NAME_EN);
                                 routeStop.code = getColumnString(c, RouteStopTable.COLUMN_STOP_CODE);
-                                Cursor cFav = f.mContext.getContentResolver().query(FavouriteProvider.CONTENT_URI_FAV,
+                                Cursor cFollow = f.mContext.getContentResolver().query(FollowProvider.CONTENT_URI_FOLLOW,
                                         null,
-                                        FavouriteTable.COLUMN_ROUTE + " =?" +
-                                                " AND " + FavouriteTable.COLUMN_BOUND + " =?" +
-                                                " AND " + FavouriteTable.COLUMN_STOP_CODE + " =?",
+                                        FollowTable.COLUMN_ROUTE + " =?" +
+                                                " AND " + FollowTable.COLUMN_BOUND + " =?" +
+                                                " AND " + FollowTable.COLUMN_STOP_CODE + " =?",
                                         new String[]{
                                                 routeStop.route_bound.route_no,
                                                 routeStop.route_bound.route_bound,
                                                 routeStop.code
                                         },
-                                        FavouriteTable.COLUMN_DATE + " DESC");
-                                routeStop.favourite = (null != cFav && cFav.getCount() > 0);
-                                if (null != cFav)
-                                    cFav.close();
+                                        FollowTable.COLUMN_DATE + " DESC");
+                                routeStop.follow = (null != cFollow && cFollow.getCount() > 0);
+                                if (null != cFollow)
+                                    cFollow.close();
                                 RouteStopMap routeStopMap = new RouteStopMap();
                                 routeStopMap.air_cond_fare = getColumnString(c, RouteStopTable.COLUMN_STOP_FARE);
                                 routeStopMap.lat = getColumnString(c, RouteStopTable.COLUMN_STOP_LAT);
@@ -630,7 +628,7 @@ public class RouteStopFragment extends Fragment
                                 oldObject.route_bound.route_bound.equals(newObject.route_bound.route_bound) &&
                                 oldObject.stop_seq.equals(newObject.stop_seq) &&
                                 oldObject.code.equals(newObject.code)) {
-                            oldObject.favourite = newObject.favourite;
+                            oldObject.follow = newObject.follow;
                             oldObject.eta = newObject.eta;
                             oldObject.eta_loading = newObject.eta_loading;
                             oldObject.eta_fail = newObject.eta_fail;
@@ -639,7 +637,7 @@ public class RouteStopFragment extends Fragment
                     }
                 } else {
 
-                    Cursor cursor = f.mContext.getContentResolver().query(FavouriteProvider.CONTENT_URI_ETA_JOIN,
+                    Cursor cursor = f.mContext.getContentResolver().query(FollowProvider.CONTENT_URI_ETA_JOIN,
                             null,
                             EtaTable.COLUMN_ROUTE + " =?" + " AND " + EtaTable.COLUMN_BOUND + " =?",
                             new String[]{

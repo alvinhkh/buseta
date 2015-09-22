@@ -33,7 +33,7 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
         TextView eta_more;
         TextView fare;
         TextView updated_time;
-        ImageView favourite;
+        ImageView follow;
     }
 
     public RouteStopAdapter(Context context) {
@@ -59,7 +59,7 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
             viewHolder.eta_more = (TextView) convertView.findViewById(R.id.eta_more);
             viewHolder.fare = (TextView) convertView.findViewById(R.id.fare);
             viewHolder.updated_time = (TextView) convertView.findViewById(R.id.updated_time);
-            viewHolder.favourite = (ImageView) convertView.findViewById(R.id.favourite);
+            viewHolder.follow = (ImageView) convertView.findViewById(R.id.follow);
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
@@ -68,7 +68,7 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
         if (object != null) {
             viewHolder.stop_name.setText(object.name_tc);
             viewHolder.stop_code.setText(object.code);
-            viewHolder.favourite.setVisibility(object.favourite ? View.VISIBLE : View.GONE);
+            viewHolder.follow.setVisibility(object.follow ? View.VISIBLE : View.GONE);
             viewHolder.eta.setText("");
             viewHolder.eta.setTextColor(ContextCompat.getColor(mContext, R.color.highlighted_text));
             viewHolder.eta_more.setText("");
