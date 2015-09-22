@@ -245,10 +245,15 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onDestroy() {
-        int rowsDeleted = getContentResolver().delete(FollowProvider.CONTENT_URI_ETA_JOIN, null, null);
-        Log.d(TAG, "Deleted ETA Records: " + rowsDeleted);
-        int rowsDeleted_route = getContentResolver().delete(RouteProvider.CONTENT_URI_FILTER, null, null);
+        int rowsDeleted_route = getContentResolver().delete(
+                RouteProvider.CONTENT_URI_BOUND_FILTER, null, null);
         Log.d(TAG, "Deleted Route Records: " + rowsDeleted_route);
+        int rowsDeleted_routeStop = getContentResolver().delete(
+                RouteProvider.CONTENT_URI_STOP_FILTER, null, null);
+        Log.d(TAG, "Deleted Stops Records: " + rowsDeleted_routeStop);
+        int rowsDeleted_eta = getContentResolver().delete(
+                FollowProvider.CONTENT_URI_ETA_JOIN, null, null);
+        Log.d(TAG, "Deleted ETA Records: " + rowsDeleted_eta);
         if (null != mAdView)
             mAdView.destroy();
         if (null != mReceiver)

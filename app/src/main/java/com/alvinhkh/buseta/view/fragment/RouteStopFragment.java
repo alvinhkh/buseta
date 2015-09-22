@@ -110,8 +110,7 @@ public class RouteStopFragment extends Fragment
         }
     };
 
-    public RouteStopFragment() {
-    }
+    public RouteStopFragment() {}
 
     public static RouteStopFragment newInstance(RouteBound routeBound) {
         RouteStopFragment f = new RouteStopFragment();
@@ -240,7 +239,7 @@ public class RouteStopFragment extends Fragment
             fabHidden = false;
         } else {
             final Cursor c = mContext.getContentResolver().query(
-                    RouteProvider.CONTENT_URI,
+                    RouteProvider.CONTENT_URI_STOP,
                     null,
                     RouteStopTable.COLUMN_ROUTE + "=? AND " +
                             RouteStopTable.COLUMN_BOUND + "=? ",
@@ -252,7 +251,7 @@ public class RouteStopFragment extends Fragment
                 Intent intent = new Intent(Constants.MESSAGE.STOPS_UPDATED);
                 intent.putExtra(Constants.MESSAGE.STOPS_UPDATED, true);
                 intent.putExtra(Constants.BUNDLE.BOUND_OBJECT, _routeBound);
-                intent.putExtra(Constants.BUNDLE.UPDATE_MESSAGE, Constants.STATUS.UPDATED_ROUTE_STOPS);
+                intent.putExtra(Constants.BUNDLE.UPDATE_MESSAGE, Constants.STATUS.UPDATED_STOPS);
                 mContext.sendBroadcast(intent);
             } else {
                 requestRouteStop();
@@ -357,12 +356,15 @@ public class RouteStopFragment extends Fragment
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
             if (null != mContext) {
-                int rowsDeleted = mContext.getContentResolver().delete(
-                        FollowProvider.CONTENT_URI_ETA_JOIN, null, null);
-                Log.d(TAG, "Deleted ETA Records: " + rowsDeleted);
                 int rowsDeleted_route = mContext.getContentResolver().delete(
-                        RouteProvider.CONTENT_URI_FILTER, null, null);
+                        RouteProvider.CONTENT_URI_BOUND_FILTER, null, null);
                 Log.d(TAG, "Deleted Route Records: " + rowsDeleted_route);
+                int rowsDeleted_routeStop = mContext.getContentResolver().delete(
+                        RouteProvider.CONTENT_URI_STOP_FILTER, null, null);
+                Log.d(TAG, "Deleted Stops Records: " + rowsDeleted_routeStop);
+                int rowsDeleted_eta = mContext.getContentResolver().delete(
+                        FollowProvider.CONTENT_URI_ETA_JOIN, null, null);
+                Log.d(TAG, "Deleted ETA Records: " + rowsDeleted_eta);
             }
             requestRouteStop();
             return true;
@@ -421,7 +423,8 @@ public class RouteStopFragment extends Fragment
             if (null != f.mAdapter && aBoolean) {
                 if (null != f.mEtaHandler && null != f.mEtaRunnable)
                     f.mEtaHandler.removeCallbacks(f.mEtaRunnable);
-                final ConnectivityManager conMgr = (ConnectivityManager) f.mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+                final ConnectivityManager conMgr =
+                        (ConnectivityManager) f.mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
                 final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
                 if (activeNetwork == null || !activeNetwork.isConnected()) {
                     // Check internet connection
@@ -444,12 +447,12 @@ public class RouteStopFragment extends Fragment
                 RouteBound object = bundle.getParcelable(Constants.BUNDLE.BOUND_OBJECT);
                 String message = bundle.getString(Constants.BUNDLE.UPDATE_MESSAGE, "");
                 switch (message) {
-                    case Constants.STATUS.UPDATED_ROUTE_STOPS:
+                    case Constants.STATUS.UPDATED_STOPS:
                         if (null != object && null != f._routeBound &&
                                 object.route_no.equals(f._routeBound.route_no) &&
                                 object.route_bound.equals(f._routeBound.route_bound)) {
                             final Cursor c = f.mContext.getContentResolver().query(
-                                    RouteProvider.CONTENT_URI,
+                                    RouteProvider.CONTENT_URI_STOP,
                                     null,
                                     RouteStopTable.COLUMN_ROUTE + "=? AND " +
                                             RouteStopTable.COLUMN_BOUND + "=? ",
@@ -509,7 +512,7 @@ public class RouteStopFragment extends Fragment
                                 object.route_no.equals(f._routeBound.route_no) &&
                                 object.route_bound.equals(f._routeBound.route_bound)) {
                             final Cursor c = f.mContext.getContentResolver().query(
-                                    RouteProvider.CONTENT_URI,
+                                    RouteProvider.CONTENT_URI_STOP,
                                     null,
                                     RouteStopTable.COLUMN_ROUTE + "=? AND " +
                                             RouteStopTable.COLUMN_BOUND + "=? ",
@@ -565,7 +568,7 @@ public class RouteStopFragment extends Fragment
                     case Constants.STATUS.UPDATING_FARE:
                         if (null != f.mSwipeRefreshLayout)
                             f.mSwipeRefreshLayout.setRefreshing(true);
-                    case Constants.STATUS.UPDATING_ROUTE_STOPS:
+                    case Constants.STATUS.UPDATING_STOPS:
                         if (null != f.mEmptyText)
                             f.mEmptyText.setText(R.string.message_loading);
                         break;

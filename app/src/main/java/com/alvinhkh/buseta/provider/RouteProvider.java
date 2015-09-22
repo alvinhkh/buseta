@@ -19,22 +19,34 @@ public class RouteProvider extends ContentProvider {
     private RouteOpenHelper mHelper;
 
     private static final String AUTHORITY = "com.alvinhkh.buseta.RouteProvider";
-    private static final String BASE_PATH = "route";
-    public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY
-            + "/" + BASE_PATH);
-    private static final String BASE_PATH_FILTER = BASE_PATH + "/filter";
-    public static final Uri CONTENT_URI_FILTER = Uri.parse("content://" + AUTHORITY
-            + "/" + BASE_PATH_FILTER);
+    private static final String BASE_PATH_STOP = "stop";
+    public static final Uri CONTENT_URI_STOP = Uri.parse("content://" + AUTHORITY
+            + "/" + BASE_PATH_STOP);
+    private static final String BASE_PATH_STOP_FILTER = BASE_PATH_STOP + "/filter";
+    public static final Uri CONTENT_URI_STOP_FILTER = Uri.parse("content://" + AUTHORITY
+            + "/" + BASE_PATH_STOP_FILTER);
+    private static final String BASE_PATH_BOUND = "bound";
+    public static final Uri CONTENT_URI_BOUND = Uri.parse("content://" + AUTHORITY
+            + "/" + BASE_PATH_BOUND);
+    private static final String BASE_PATH_BOUND_FILTER = BASE_PATH_BOUND + "/filter";
+    public static final Uri CONTENT_URI_BOUND_FILTER = Uri.parse("content://" + AUTHORITY
+            + "/" + BASE_PATH_BOUND_FILTER);
 
     // used for the UriMatcher
-    private static final int ROUTES = 10;
-    private static final int ROUTE_ID = 11;
-    private static final int FILTER = 20;
+    private static final int STOPS = 10;
+    private static final int STOP_ID = 11;
+    private static final int STOP_FILTER = 20;
+    private static final int BOUNDS = 30;
+    private static final int BOUND_ID = 31;
+    private static final int BOUND_FILTER = 40;
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     static {
-        sURIMatcher.addURI(AUTHORITY, BASE_PATH, ROUTES);
-        sURIMatcher.addURI(AUTHORITY, BASE_PATH + "/#", ROUTE_ID);
-        sURIMatcher.addURI(AUTHORITY, BASE_PATH_FILTER, FILTER);
+        sURIMatcher.addURI(AUTHORITY, BASE_PATH_STOP, STOPS);
+        sURIMatcher.addURI(AUTHORITY, BASE_PATH_STOP + "/#", STOP_ID);
+        sURIMatcher.addURI(AUTHORITY, BASE_PATH_STOP_FILTER, STOP_FILTER);
+        sURIMatcher.addURI(AUTHORITY, BASE_PATH_BOUND, BOUNDS);
+        sURIMatcher.addURI(AUTHORITY, BASE_PATH_BOUND + "/#", BOUND_ID);
+        sURIMatcher.addURI(AUTHORITY, BASE_PATH_BOUND_FILTER, BOUND_FILTER);
     }
 
     @Override
@@ -54,15 +66,25 @@ public class RouteProvider extends ContentProvider {
 
         int uriType = sURIMatcher.match(uri);
         switch (uriType) {
-            case ROUTES:
+            case STOPS:
                 // Set the table
                 queryBuilder.setTables(RouteStopTable.TABLE_NAME);
                 break;
-            case ROUTE_ID:
+            case STOP_ID:
                 // Set the table
                 queryBuilder.setTables(RouteStopTable.TABLE_NAME);
                 // adding the ID to the original query
                 queryBuilder.appendWhere(RouteStopTable.COLUMN_ID + "=" + uri.getLastPathSegment());
+                break;
+            case BOUNDS:
+                // Set the table
+                queryBuilder.setTables(RouteBoundTable.TABLE_NAME);
+                break;
+            case BOUND_ID:
+                // Set the table
+                queryBuilder.setTables(RouteBoundTable.TABLE_NAME);
+                // adding the ID to the original query
+                queryBuilder.appendWhere(RouteBoundTable.COLUMN_ID + "=" + uri.getLastPathSegment());
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -88,16 +110,21 @@ public class RouteProvider extends ContentProvider {
         SQLiteDatabase sqlDB = mHelper.getWritableDatabase();
         long id;
         switch (uriType) {
-            case ROUTES:
+            case STOPS:
                 id = sqlDB.insert(RouteStopTable.TABLE_NAME, null, values);
+                break;
+            case BOUNDS:
+                id = sqlDB.insert(RouteBoundTable.TABLE_NAME, null, values);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
         getContext().getContentResolver().notifyChange(uri, null);
         switch (uriType) {
-            case ROUTES:
-                return Uri.parse(BASE_PATH + "/#" + id);
+            case STOPS:
+                return Uri.parse(BASE_PATH_STOP + "/#" + id);
+            case BOUNDS:
+                return Uri.parse(BASE_PATH_BOUND + "/#" + id);
             default:
                 return null;
         }
@@ -109,8 +136,11 @@ public class RouteProvider extends ContentProvider {
         int numInserted = 0;
         String tableName;
         switch (uriType) {
-            case ROUTES:
+            case STOPS:
                 tableName = RouteStopTable.TABLE_NAME;
+                break;
+            case BOUNDS:
+                tableName = RouteBoundTable.TABLE_NAME;
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -138,11 +168,11 @@ public class RouteProvider extends ContentProvider {
         SQLiteDatabase sqlDB = mHelper.getWritableDatabase();
         int rowsDeleted;
         switch (uriType) {
-            case ROUTES:
+            case STOPS:
                 rowsDeleted = sqlDB.delete(RouteStopTable.TABLE_NAME, selection,
                         selectionArgs);
                 break;
-            case ROUTE_ID:
+            case STOP_ID:
                 String id = uri.getLastPathSegment();
                 if (TextUtils.isEmpty(selection)) {
                     rowsDeleted = sqlDB.delete(RouteStopTable.TABLE_NAME,
@@ -155,7 +185,7 @@ public class RouteProvider extends ContentProvider {
                             selectionArgs);
                 }
                 break;
-            case FILTER:
+            case STOP_FILTER:
                 rowsDeleted = sqlDB.delete(RouteStopTable.TABLE_NAME, RouteStopTable.COLUMN_ID +
                                 " IN ( " + "SELECT " + RouteStopTable.COLUMN_ID + " FROM " +
                                 RouteStopTable.TABLE_NAME +
@@ -163,6 +193,33 @@ public class RouteProvider extends ContentProvider {
                                 " ON (" +
                                 FollowTable.COLUMN_ROUTE + "=" + RouteStopTable.COLUMN_ROUTE + " AND " +
                                 FollowTable.COLUMN_BOUND + "=" + RouteStopTable.COLUMN_BOUND +
+                                ")" + " WHERE " + FollowTable.COLUMN_ID + " IS NULL)",
+                        null);
+                break;
+            case BOUNDS:
+                rowsDeleted = sqlDB.delete(RouteBoundTable.TABLE_NAME, selection,
+                        selectionArgs);
+                break;
+            case BOUND_ID:
+                id = uri.getLastPathSegment();
+                if (TextUtils.isEmpty(selection)) {
+                    rowsDeleted = sqlDB.delete(RouteBoundTable.TABLE_NAME,
+                            RouteBoundTable.COLUMN_ID + "=" + id,
+                            null);
+                } else {
+                    rowsDeleted = sqlDB.delete(RouteBoundTable.TABLE_NAME,
+                            RouteBoundTable.COLUMN_ID + "=" + id
+                                    + " and " + selection,
+                            selectionArgs);
+                }
+                break;
+            case BOUND_FILTER:
+                rowsDeleted = sqlDB.delete(RouteBoundTable.TABLE_NAME, RouteBoundTable.COLUMN_ID +
+                                " IN ( " + "SELECT " + RouteBoundTable.COLUMN_ID + " FROM " +
+                                RouteBoundTable.TABLE_NAME +
+                                " LEFT JOIN " + FollowTable.TABLE_NAME +
+                                " ON (" +
+                                FollowTable.COLUMN_ROUTE + "=" + RouteBoundTable.COLUMN_ROUTE +
                                 ")" + " WHERE " + FollowTable.COLUMN_ID + " IS NULL)",
                         null);
                 break;
@@ -181,13 +238,13 @@ public class RouteProvider extends ContentProvider {
         SQLiteDatabase sqlDB = mHelper.getWritableDatabase();
         int rowsUpdated;
         switch (uriType) {
-            case ROUTES:
+            case STOPS:
                 rowsUpdated = sqlDB.update(RouteStopTable.TABLE_NAME,
                         values,
                         selection,
                         selectionArgs);
                 break;
-            case ROUTE_ID:
+            case STOP_ID:
                 String id = uri.getLastPathSegment();
                 if (TextUtils.isEmpty(selection)) {
                     rowsUpdated = sqlDB.update(RouteStopTable.TABLE_NAME,
@@ -198,6 +255,28 @@ public class RouteProvider extends ContentProvider {
                     rowsUpdated = sqlDB.update(RouteStopTable.TABLE_NAME,
                             values,
                             RouteStopTable.COLUMN_ID + "=" + id
+                                    + " and "
+                                    + selection,
+                            selectionArgs);
+                }
+                break;
+            case BOUNDS:
+                rowsUpdated = sqlDB.update(RouteBoundTable.TABLE_NAME,
+                        values,
+                        selection,
+                        selectionArgs);
+                break;
+            case BOUND_ID:
+                id = uri.getLastPathSegment();
+                if (TextUtils.isEmpty(selection)) {
+                    rowsUpdated = sqlDB.update(RouteBoundTable.TABLE_NAME,
+                            values,
+                            RouteBoundTable.COLUMN_ID + "=" + id,
+                            null);
+                } else {
+                    rowsUpdated = sqlDB.update(RouteBoundTable.TABLE_NAME,
+                            values,
+                            RouteBoundTable.COLUMN_ID + "=" + id
                                     + " and "
                                     + selection,
                             selectionArgs);
@@ -227,6 +306,15 @@ public class RouteProvider extends ContentProvider {
                 RouteStopTable.COLUMN_STOP_FARE,
                 RouteStopTable.COLUMN_STOP_LAT,
                 RouteStopTable.COLUMN_STOP_LONG,
+
+                RouteBoundTable.COLUMN_ID,
+                RouteBoundTable.COLUMN_DATE,
+                RouteBoundTable.COLUMN_ROUTE,
+                RouteBoundTable.COLUMN_BOUND,
+                RouteBoundTable.COLUMN_ORIGIN,
+                RouteBoundTable.COLUMN_ORIGIN_EN,
+                RouteBoundTable.COLUMN_DESTINATION,
+                RouteBoundTable.COLUMN_DESTINATION_EN,
         };
         if (projection != null) {
             HashSet<String> requestedColumns = new HashSet<>(Arrays.asList(projection));

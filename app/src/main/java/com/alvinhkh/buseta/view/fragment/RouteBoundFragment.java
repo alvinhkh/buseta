@@ -1,18 +1,20 @@
 package com.alvinhkh.buseta.view.fragment;
 
 import android.app.ActivityManager;
-import android.content.ContentValues;
+import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.SharedPreferences;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
+import android.os.Handler;
+import android.os.Message;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -31,19 +33,17 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.alvinhkh.buseta.Constants;
-import com.alvinhkh.buseta.provider.SuggestionProvider;
-import com.alvinhkh.buseta.provider.SuggestionTable;
+import com.alvinhkh.buseta.provider.FollowProvider;
+import com.alvinhkh.buseta.provider.RouteProvider;
+import com.alvinhkh.buseta.provider.RouteBoundTable;
+import com.alvinhkh.buseta.service.RouteService;
 import com.alvinhkh.buseta.view.MainActivity;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.view.adapter.RouteBoundAdapter;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.ion.Ion;
-import com.koushikdutta.ion.Response;
+
+import java.lang.ref.WeakReference;
 
 
 public class RouteBoundFragment extends Fragment
@@ -51,7 +51,7 @@ public class RouteBoundFragment extends Fragment
         AdapterView.OnItemLongClickListener,
         SwipeRefreshLayout.OnRefreshListener {
 
-    private static final String TAG = "RouteBoundFragment";
+    private static final String TAG = RouteBoundFragment.class.getSimpleName();
     private static final String KEY_LIST_VIEW_STATE = "KEY_LIST_VIEW_STATE_ROUTE_BOUND";
 
     private Context mContext = super.getActivity();
@@ -62,13 +62,10 @@ public class RouteBoundFragment extends Fragment
     private ProgressBar mProgressBar;
 
     private RouteBoundAdapter mAdapter;
-    private String _route_no = null;
-    private String getRouteInfoApi = "";
+    private UpdateViewReceiver mReceiver_view;
+    private String _routeNo = null;
 
-    private SharedPreferences mPrefs;
-
-    public RouteBoundFragment() {
-    }
+    public RouteBoundFragment() {}
 
     public static RouteBoundFragment newInstance(String _route_no) {
         RouteBoundFragment f = new RouteBoundFragment();
@@ -84,10 +81,7 @@ public class RouteBoundFragment extends Fragment
         View view = inflater.inflate(R.layout.fragment_route, container, false);
         mContext = super.getActivity();
         // Get arguments
-        _route_no = getArguments().getString("route_no");
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext.getApplicationContext());
-        // Overview task
-        setTaskDescription(_route_no + getString(R.string.interpunct) + getString(R.string.launcher_name));
+        _routeNo = getArguments().getString("route_no");
         // Set Toolbar
         mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (null != mActionBar) {
@@ -95,6 +89,7 @@ public class RouteBoundFragment extends Fragment
             mActionBar.setSubtitle(null);
             mActionBar.setDisplayHomeAsUpEnabled(false);
         }
+        setTaskDescription(_routeNo + getString(R.string.interpunct) + getString(R.string.launcher_name));
         setHasOptionsMenu(true);
         // Set List Adapter
         mAdapter = new RouteBoundAdapter(mContext);
@@ -103,7 +98,15 @@ public class RouteBoundFragment extends Fragment
         }
         //
         TextView mTextView_routeNo = (TextView) view.findViewById(R.id.route_no);
-        mTextView_routeNo.setText(_route_no);
+        mTextView_routeNo.setText(_routeNo);
+        // Button
+        Button mButton_routeNews = (Button) view.findViewById(R.id.button_news);
+        mButton_routeNews.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((MainActivity) getActivity()).showRouteNewsFragment(_routeNo);
+            }
+        });
         //
         mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh);
         mSwipeRefreshLayout.setOnRefreshListener(this);
@@ -117,37 +120,48 @@ public class RouteBoundFragment extends Fragment
         mEmptyText = (TextView) view.findViewById(android.R.id.empty);
         mEmptyText.setText("");
         mListView.setEmptyView(view.findViewById(R.id.empty));
+        mListView.setAdapter(mAdapter);
+        mListView.setOnItemClickListener(this);
+        // mListView.setOnItemLongClickListener(this);
+        // Broadcast Receiver
+        if (null != mContext) {
+            mReceiver_view = new UpdateViewReceiver();
+            IntentFilter mFilter_view = new IntentFilter(Constants.MESSAGE.BOUNDS_UPDATED);
+            mFilter_view.addAction(Constants.MESSAGE.BOUNDS_UPDATED);
+            mContext.registerReceiver(mReceiver_view, mFilter_view);
+        }
         if (savedInstanceState != null
                 && savedInstanceState.containsKey(KEY_LIST_VIEW_STATE)) {
             mListView.onRestoreInstanceState(savedInstanceState
                     .getParcelable(KEY_LIST_VIEW_STATE));
             mEmptyText.setText(savedInstanceState.getString("EmptyText", ""));
-            getRouteInfoApi = savedInstanceState.getString("getRouteInfoApi");
-        } else {
-            getRouteInfoApi = Constants.URL.ROUTE_INFO;
-            // Get Route Bounds
-            getRouteBounds(_route_no);
-        }
-        mListView.setAdapter(mAdapter);
-        mListView.setOnItemClickListener(this);
-        // mListView.setOnItemLongClickListener(this);
-        // Button
-        Button mButton_routeNews = (Button) view.findViewById(R.id.button_news);
-        mButton_routeNews.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ((MainActivity) getActivity()).showRouteNewsFragment(_route_no);
+        } else if (null != mContext) {
+            final Cursor c = mContext.getContentResolver().query(
+                    RouteProvider.CONTENT_URI_BOUND,
+                    null,
+                    RouteBoundTable.COLUMN_ROUTE + "=? ",
+                    new String[]{
+                            _routeNo,
+                    }, RouteBoundTable.COLUMN_BOUND + "* 1 ASC");
+            if (null != c && c.getCount() > 0) {
+                Intent intent = new Intent(Constants.MESSAGE.BOUNDS_UPDATED);
+                intent.putExtra(Constants.MESSAGE.BOUNDS_UPDATED, true);
+                intent.putExtra(Constants.BUNDLE.ROUTE_NO, _routeNo);
+                intent.putExtra(Constants.BUNDLE.UPDATE_MESSAGE, Constants.STATUS.UPDATED_BOUNDS);
+                mContext.sendBroadcast(intent);
+            } else {
+                requestRouteBound();
             }
-        });
-
+            if (null != c)
+                c.close();
+        }
         return view;
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString("_route_no", _route_no);
-        outState.putString("getRouteInfoApi", getRouteInfoApi);
+        outState.putString("_route_no", _routeNo);
         if (null != mAdapter) {
             mAdapter.onSaveInstanceState(outState);
             outState.putParcelable(KEY_LIST_VIEW_STATE, mListView.onSaveInstanceState());
@@ -168,6 +182,8 @@ public class RouteBoundFragment extends Fragment
     @Override
     public void onDestroyView() {
         Ion.getDefault(mContext).cancelAll(mContext);
+        if (null != mContext && null != mReceiver_view)
+            mContext.unregisterReceiver(mReceiver_view);
         if (null != mSwipeRefreshLayout)
             mSwipeRefreshLayout.setRefreshing(false);
         if (null != mListView)
@@ -187,7 +203,18 @@ public class RouteBoundFragment extends Fragment
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_refresh) {
-            onRefresh();
+            if (null != mContext) {
+                int rowsDeleted_route = mContext.getContentResolver().delete(
+                        RouteProvider.CONTENT_URI_BOUND_FILTER, null, null);
+                Log.d(TAG, "Deleted Route Records: " + rowsDeleted_route);
+                int rowsDeleted_routeStop = mContext.getContentResolver().delete(
+                        RouteProvider.CONTENT_URI_STOP_FILTER, null, null);
+                Log.d(TAG, "Deleted Stops Records: " + rowsDeleted_routeStop);
+                int rowsDeleted_eta = mContext.getContentResolver().delete(
+                        FollowProvider.CONTENT_URI_ETA_JOIN, null, null);
+                Log.d(TAG, "Deleted ETA Records: " + rowsDeleted_eta);
+            }
+            requestRouteBound();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -199,7 +226,7 @@ public class RouteBoundFragment extends Fragment
             TextView textView_origin_tc = (TextView) view.findViewById(R.id.origin);
             TextView textView_destination_tc = (TextView) view.findViewById(R.id.destination);
             RouteBound routeBound = new RouteBound();
-            routeBound.route_no = _route_no;
+            routeBound.route_no = _routeNo;
             routeBound.route_bound = String.valueOf(position + 1);
             routeBound.origin_tc = textView_origin_tc.getText().toString();
             routeBound.destination_tc = textView_destination_tc.getText().toString();
@@ -213,11 +240,7 @@ public class RouteBoundFragment extends Fragment
     }
 
     @Override
-    public void onRefresh() {
-        if (null != mSwipeRefreshLayout)
-            mSwipeRefreshLayout.setRefreshing(true);
-        getRouteBounds(_route_no);
-    }
+    public void onRefresh() {}
 
     private void setTaskDescription(String title) {
         // overview task
@@ -230,109 +253,141 @@ public class RouteBoundFragment extends Fragment
         }
     }
 
-    private void getRouteBounds(final String _route_no) {
-
+    private void requestRouteBound() {
         if (null != mAdapter) {
             mAdapter.clear();
             mAdapter.notifyDataSetChanged();
         }
-
-        // Check internet connection
-        final ConnectivityManager conMgr = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
-        if (activeNetwork == null || !activeNetwork.isConnected()) {
-            Snackbar snackbar = Snackbar.make(getActivity().findViewById(android.R.id.content),
-                    R.string.message_no_internet_connection, Snackbar.LENGTH_LONG);
-            TextView tv = (TextView)
-                    snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
-            tv.setTextColor(Color.WHITE);
-            snackbar.show();
-            if (mProgressBar != null)
-                mProgressBar.setVisibility(View.GONE);
-            if (mEmptyText != null)
-                mEmptyText.setText(R.string.message_fail_to_request);
-            return;
-        }
-
-        if (mEmptyText != null)
+        if (null != mEmptyText)
             mEmptyText.setText(R.string.message_loading);
-        if (mProgressBar != null)
+        if (null != mProgressBar)
             mProgressBar.setVisibility(View.VISIBLE);
-
-        String _random_t = ((Double) Math.random()).toString();
-        Uri routeInfoUri = Uri.parse(getRouteInfoApi)
-                .buildUpon()
-                .appendQueryParameter("t", _random_t)
-                .appendQueryParameter("field9", _route_no)
-                .build();
-
-        Ion.with(mContext)
-                .load(routeInfoUri.toString())
-                //.setLogging("Ion", Log.DEBUG)
-                .progressBar(mProgressBar)
-                .setHeader("Referer", Constants.URL.REQUEST_REFERRER)
-                .setHeader("X-Requested-With", "XMLHttpRequest")
-                .setHeader("Pragma", "no-cache")
-                .setHeader("User-Agent", Constants.URL.REQUEST_UA)
-                .asJsonObject()
-                .withResponse()
-                .setCallback(new FutureCallback<Response<JsonObject>>() {
-                    @Override
-                    public void onCompleted(Exception e, Response<JsonObject> response) {
-                        // do stuff with the result or error
-                        if (e != null) {
-                            Log.d(TAG, e.toString());
-                            if (null != mEmptyText)
-                                mEmptyText.setText(R.string.message_fail_to_request);
-                        } else
-                        if (null != response && response.getHeaders().code() == 200) {
-                            JsonObject result = response.getResult();
-                            //Log.d(TAG, result.toString());
-                            if (null != result)
-                            if (result.get("valid").getAsBoolean()) {
-                                //  Got Bus Routes
-                                JsonArray _bus_arr = result.getAsJsonArray("bus_arr");
-                                for (JsonElement element : _bus_arr) {
-                                    Gson gson = new Gson();
-                                    RouteBound routeBound = gson.fromJson(element.getAsJsonObject(), RouteBound.class);
-                                    mAdapter.add(routeBound);
-                                }
-                                if (null != mEmptyText)
-                                    mEmptyText.setText("");
-                                if (null != mContext) {
-                                    ContentValues values = new ContentValues();
-                                    values.put(SuggestionTable.COLUMN_TEXT, _route_no);
-                                    values.put(SuggestionTable.COLUMN_TYPE, SuggestionTable.TYPE_HISTORY);
-                                    values.put(SuggestionTable.COLUMN_DATE, String.valueOf(System.currentTimeMillis() / 1000L));
-                                    mContext.getContentResolver().insert(SuggestionProvider.CONTENT_URI, values);
-                                }
-                            } else if (!result.get("valid").getAsBoolean() &&
-                                    !result.get("message").getAsString().equals("")) {
-                                // Invalid request with output message
-                                if (null != mEmptyText)
-                                    mEmptyText.setText(result.get("message").getAsString());
-                            }
-                        } else {
-                            switchGetRouteInfoApi();
-                            getRouteBounds(_route_no);
-                        }
-                        if (mProgressBar != null)
-                            mProgressBar.setVisibility(View.GONE);
-                        if (mSwipeRefreshLayout != null)
-                            mSwipeRefreshLayout.setRefreshing(false);
-                    }
-                });
+        Intent intent = new Intent(mContext, RouteService.class);
+        intent.putExtra(Constants.BUNDLE.ROUTE_NO, _routeNo);
+        mContext.startService(intent);
     }
 
-    private void switchGetRouteInfoApi() {
-        if (getRouteInfoApi.equals(Constants.URL.ROUTE_INFO)) {
-            getRouteInfoApi = Constants.URL.ROUTE_INFO_V1;
-        } else {
-            getRouteInfoApi = Constants.URL.ROUTE_INFO;
+    UpdateViewHandler mViewHandler = new UpdateViewHandler(this);
+    static class UpdateViewHandler extends Handler {
+        WeakReference<RouteBoundFragment> mFrag;
+
+        UpdateViewHandler(RouteBoundFragment aFragment) {
+            mFrag = new WeakReference<>(aFragment);
         }
-        SharedPreferences.Editor editor = mPrefs.edit();
-        editor.putString(Constants.PREF.REQUEST_API_INFO, getRouteInfoApi);
-        editor.apply();
+
+        @Override
+        public void handleMessage(Message msg) {
+            RouteBoundFragment f = mFrag.get();
+            if (null == f) return;
+            Bundle bundle = msg.getData();
+            Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.BOUNDS_UPDATED);
+            if (null != f.mAdapter && aBoolean) {
+                final ConnectivityManager conMgr =
+                        (ConnectivityManager) f.mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
+                final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
+                if (activeNetwork == null || !activeNetwork.isConnected()) {
+                    // Check internet connection
+                    if (null != f.getView()) {
+                        Snackbar snackbar = Snackbar.make(f.getView().findViewById(android.R.id.content),
+                                R.string.message_no_internet_connection, Snackbar.LENGTH_LONG);
+                        TextView tv = (TextView)
+                                snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
+                        tv.setTextColor(Color.WHITE);
+                        snackbar.show();
+                    }
+                    if (null != f.mProgressBar)
+                        f.mProgressBar.setVisibility(View.GONE);
+                    if (null != f.mEmptyText)
+                        f.mEmptyText.setText(R.string.message_fail_to_request);
+                    return;
+                }
+                String routeNo = bundle.getString(Constants.BUNDLE.ROUTE_NO);
+                String message = bundle.getString(Constants.BUNDLE.UPDATE_MESSAGE, "");
+                switch (message) {
+                    case Constants.STATUS.UPDATED_BOUNDS:
+                        if (null != routeNo && null != f._routeNo && routeNo.equals(f._routeNo)) {
+                            final Cursor c = f.mContext.getContentResolver().query(
+                                    RouteProvider.CONTENT_URI_BOUND,
+                                    null,
+                                    RouteBoundTable.COLUMN_ROUTE + "=? ",
+                                    new String[]{
+                                            f._routeNo,
+                                    }, RouteBoundTable.COLUMN_BOUND + "* 1 ASC");
+                            f.mAdapter.clear();
+                            while (null != c && c.moveToNext()) {
+                                RouteBound object = new RouteBound();
+                                object.route_no = getColumnString(c, RouteBoundTable.COLUMN_ROUTE);
+                                object.route_bound = getColumnString(c, RouteBoundTable.COLUMN_BOUND);
+                                object.destination_tc = getColumnString(c, RouteBoundTable.COLUMN_DESTINATION);
+                                object.destination_en = getColumnString(c, RouteBoundTable.COLUMN_DESTINATION_EN);
+                                object.origin_tc = getColumnString(c, RouteBoundTable.COLUMN_ORIGIN);
+                                object.origin_en = getColumnString(c, RouteBoundTable.COLUMN_ORIGIN_EN);
+                                f.mAdapter.add(object);
+                            }
+                            f.mAdapter.notifyDataSetChanged();
+                            if (null != c)
+                                c.close();
+                            if (null != f.mEmptyText)
+                                f.mEmptyText.setText("");
+                            if (null != f.mProgressBar)
+                                f.mProgressBar.setVisibility(View.GONE);
+                            if (null != f.mSwipeRefreshLayout)
+                                f.mSwipeRefreshLayout.setRefreshing(false);
+                        }
+                        break;
+                    case Constants.STATUS.CONNECTIVITY_INVALID:
+                        if (null != f.mEmptyText)
+                            f.mEmptyText.setText(R.string.message_no_internet_connection);
+                        if (null != f.mProgressBar)
+                            f.mProgressBar.setVisibility(View.GONE);
+                        if (null != f.mSwipeRefreshLayout)
+                            f.mSwipeRefreshLayout.setRefreshing(false);
+                        break;
+                    case Constants.STATUS.CONNECT_FAIL:
+                    case Constants.STATUS.CONNECT_404:
+                        if (null != f.mEmptyText)
+                            f.mEmptyText.setText(R.string.message_fail_to_request);
+                        if (null != f.mProgressBar)
+                            f.mProgressBar.setVisibility(View.GONE);
+                        if (null != f.mSwipeRefreshLayout)
+                            f.mSwipeRefreshLayout.setRefreshing(false);
+                        break;
+                    case Constants.STATUS.UPDATING_BOUNDS:
+                        if (null != f.mEmptyText)
+                            f.mEmptyText.setText(R.string.message_loading);
+                        break;
+                    default:
+                        if (null != f.mEmptyText)
+                            f.mEmptyText.setText(message);
+                        if (null != f.mProgressBar)
+                            f.mProgressBar.setVisibility(View.GONE);
+                        if (null != f.mSwipeRefreshLayout)
+                            f.mSwipeRefreshLayout.setRefreshing(false);
+                        break;
+                }
+            }
+        }
+
+        private String getColumnString(Cursor cursor, String column) {
+            int index = cursor.getColumnIndex(column);
+            return cursor.isNull(index) ? "" : cursor.getString(index);
+        }
+    }
+
+    class UpdateViewReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final Bundle bundle = intent.getExtras();
+            Thread thread = new Thread() {
+                @Override
+                public void run() {
+                    Message message = mViewHandler.obtainMessage();
+                    message.setData(bundle);
+                    mViewHandler.sendMessage(message);
+                }
+            };
+            thread.run();
+        }
     }
 
 }

@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class RouteOpenHelper extends SQLiteOpenHelper {
 
     public static final String DATABASE_NAME = "route.db";
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
 
     public RouteOpenHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -15,6 +15,7 @@ public class RouteOpenHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase database) {
+        RouteBoundTable.onCreate(database);
         RouteStopTable.onCreate(database);
         FollowTable.onCreate(database);
         EtaTable.onCreate(database);
@@ -22,9 +23,12 @@ public class RouteOpenHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
-        RouteStopTable.onUpgrade(database, oldVersion, newVersion);
-        FollowTable.onUpgrade(database, oldVersion, newVersion);
-        EtaTable.onUpgrade(database, oldVersion, newVersion);
+        RouteBoundTable.onUpgrade(database, oldVersion, newVersion);
+        if (oldVersion < 3) {
+            RouteStopTable.onUpgrade(database, oldVersion, newVersion);
+            FollowTable.onUpgrade(database, oldVersion, newVersion);
+            EtaTable.onUpgrade(database, oldVersion, newVersion);
+        }
     }
 
 }

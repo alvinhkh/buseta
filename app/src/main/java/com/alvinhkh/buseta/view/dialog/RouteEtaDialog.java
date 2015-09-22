@@ -424,7 +424,7 @@ public class RouteEtaDialog extends AppCompatActivity
 
     private RouteStop getObject(RouteStop object) {
        final Cursor c = getContentResolver().query(
-                RouteProvider.CONTENT_URI,
+                RouteProvider.CONTENT_URI_STOP,
                 null,
                RouteStopTable.COLUMN_ROUTE + " =?" +
                        " AND " + RouteStopTable.COLUMN_BOUND + " =?" +

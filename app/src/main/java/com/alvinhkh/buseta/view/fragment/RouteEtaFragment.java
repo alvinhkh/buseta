@@ -402,7 +402,7 @@ public class RouteEtaFragment extends Fragment
 
     private RouteStop getObject(RouteStop object) {
         final Cursor c = mContext.getContentResolver().query(
-                RouteProvider.CONTENT_URI,
+                RouteProvider.CONTENT_URI_STOP,
                 null,
                 RouteStopTable.COLUMN_ROUTE + " =?" +
                         " AND " + RouteStopTable.COLUMN_BOUND + " =?" +

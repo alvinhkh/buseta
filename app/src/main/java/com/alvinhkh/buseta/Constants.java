@@ -28,6 +28,7 @@ public class Constants {
     }
 
     public interface MESSAGE {
+        String BOUNDS_UPDATED = "com.alvinhkh.buseta.BOUNDS_UPDATED";
         String HISTORY_UPDATED = "com.alvinhkh.buseta.HISTORY_UPDATED";
         String STOP_UPDATED = "com.alvinhkh.buseta.STOP_UPDATED";
         String STOPS_UPDATED = "com.alvinhkh.buseta.STOPS_UPDATED";
@@ -41,13 +42,16 @@ public class Constants {
         String CONNECT_404 = "com.alvinhkh.buseta.CONNECT_404";
         String CONNECT_FAIL = "com.alvinhkh.buseta.CONNECT_FAIL";
         String CONNECTIVITY_INVALID = "com.alvinhkh.buseta.CONNECTIVITY_INVALID";
-        String UPDATED_ROUTE_STOPS = "com.alvinhkh.buseta.UPDATED_ROUTE_STOPS";
         String UPDATED_FARE = "com.alvinhkh.buseta.UPDATED_FARE";
-        String UPDATING_ROUTE_STOPS = "com.alvinhkh.buseta.UPDATING_ROUTE_STOPS";
+        String UPDATED_BOUNDS = "com.alvinhkh.buseta.UPDATED_BOUNDS";
+        String UPDATED_STOPS = "com.alvinhkh.buseta.UPDATED_STOPS";
         String UPDATING_FARE = "com.alvinhkh.buseta.UPDATING_FARE";
+        String UPDATING_BOUNDS = "com.alvinhkh.buseta.UPDATING_BOUNDS";
+        String UPDATING_STOPS = "com.alvinhkh.buseta.UPDATING_STOPS";
     }
 
     public interface BUNDLE {
+        String ROUTE_NO = "com.alvinhkh.buseta.ROUTE_NO";
         String STOP_OBJECT = "com.alvinhkh.buseta.STOP_OBJECT";
         String BOUND_OBJECT = "com.alvinhkh.buseta.BOUND_OBJECT";
         String UPDATE_MESSAGE = "com.alvinhkh.buseta.UPDATE_MESSAGE";

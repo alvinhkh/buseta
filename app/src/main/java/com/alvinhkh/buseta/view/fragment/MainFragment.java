@@ -27,6 +27,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -40,6 +41,7 @@ import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.provider.FollowProvider;
 import com.alvinhkh.buseta.provider.FollowTable;
 import com.alvinhkh.buseta.holder.RouteStop;
+import com.alvinhkh.buseta.provider.RouteProvider;
 import com.alvinhkh.buseta.provider.SuggestionProvider;
 import com.alvinhkh.buseta.provider.SuggestionTable;
 import com.alvinhkh.buseta.service.CheckEtaService;
@@ -168,6 +170,9 @@ public class MainFragment extends Fragment
         }
         if (null != mFab)
             mFab.show();
+        int rowsDeleted_route = mContext.getContentResolver().delete(
+                RouteProvider.CONTENT_URI_BOUND_FILTER, null, null);
+        Log.d(TAG, "Deleted Route Records: " + rowsDeleted_route);
     }
 
     @Override
