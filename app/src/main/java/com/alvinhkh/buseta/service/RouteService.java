@@ -110,7 +110,7 @@ public class RouteService extends IntentService {
     }
 
     private void getRouteBound(final String routeNo) throws ExecutionException, InterruptedException {
-        sendUpdate(routeNo, Constants.STATUS.UPDATED_BOUNDS);
+        sendUpdate(routeNo, Constants.STATUS.UPDATING_BOUNDS);
         Uri routeStopUri = Uri.parse(mPrefs.getString(Constants.PREF.REQUEST_API_INFO, Constants.URL.ROUTE_INFO))
                 .buildUpon()
                 .appendQueryParameter("t", ((Double) Math.random()).toString())

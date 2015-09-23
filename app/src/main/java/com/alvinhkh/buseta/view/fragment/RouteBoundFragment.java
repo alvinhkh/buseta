@@ -353,6 +353,8 @@ public class RouteBoundFragment extends Fragment
                             f.mSwipeRefreshLayout.setRefreshing(false);
                         break;
                     case Constants.STATUS.UPDATING_BOUNDS:
+                        if (null != f.mProgressBar)
+                            f.mProgressBar.setVisibility(View.VISIBLE);
                         if (null != f.mEmptyText)
                             f.mEmptyText.setText(R.string.message_loading);
                         break;
