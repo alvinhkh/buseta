@@ -12,6 +12,12 @@
             android:summary="@string/summary_clear_history"
             android:persistent="false" />
 
+        <Preference
+            android:key="clear_follow"
+            android:title="@string/title_clear_follow"
+            android:summary="@string/summary_clear_follow"
+            android:persistent="false" />
+
         <SwitchPreference
             android:key="load_stop_image"
             android:title="@string/title_load_stop_image"

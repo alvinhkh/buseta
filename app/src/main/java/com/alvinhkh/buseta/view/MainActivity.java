@@ -86,7 +86,7 @@ public class MainActivity extends AppCompatActivity
         // Set up a listener whenever a key changes
         PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).registerOnSharedPreferenceChangeListener(this);
         // Overview task
-        setTaskDescription(getString(R.string.launcher_name));
+        setTaskDescription(getString(R.string.app_name));
         // Set Toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

@@ -2,7 +2,7 @@
 <resources>
 
     <string name="app_name">BusETA</string>
-    <string name="launcher_name">BusETA</string>
+    <string name="launcher_name">巴士ETA</string>
 
     <string name="action_settings">設定</string>
     <string name="action_search">搜尋</string>
@@ -43,32 +43,37 @@
     <string name="title_settings">設定</string>
     <string name="category_general">一般</string>
     <string name="title_clear_history">清除搜尋記錄</string>
-    <string name="summary_clear_history"></string>
+    <string name="summary_clear_history">@null</string>
+    <string name="title_clear_follow">清除追蹤名單</string>
+    <string name="summary_clear_follow">@null</string>
     <string name="title_load_stop_image">顯示車站圖片</string>
     <string name="summary_on_load_stop_image">自動載入車站圖片</string>
-    <string name="summary_off_load_stop_image">手動點擊站名載入圖片</string>
+    <string name="summary_off_load_stop_image">預設顯示車站位置，可手動切換顯示圖片</string>
     <string name="category_debug">測試</string>
     <string name="title_eta_version">到站時間預報系統</string>
     <string name="title_update_route_suggestion">更新建議路線</string>
     <string name="summary_update_route_suggestion">手動更新有提供到站時間預報的路線資料</string>
     <string name="title_hide_ad">隱藏廣告</string>
     <string name="summary_on_hide_ad">除設定頁面，不顯示其他廣告</string>
-    <string name="summary_off_hide_ad"></string>
+    <string name="summary_off_hide_ad">@null</string>
     <string name="category_about">關於</string>
     <string name="title_app_name" translatable="false">%s \u00A9 2015</string>
-    <string name="summary_app_name">@string/url_app</string>
+    <string name="summary_app_name" translatable="false">@string/url_app</string>
     <string name="title_app_version">版本</string>
     <string name="summary_app_version" translatable="false">%1$s (%2$s)</string>
     <string name="title_developer">開發者</string>
     <string name="summary_developer" translatable="false">AlvinHKH</string>
     <string name="title_open_source_license">開放原始碼授權</string>
-    <string name="summary_open_source_license"></string>
+    <string name="summary_open_source_license">@null</string>
     <string name="category_statement">聲明</string>
     <string name="summary_statement">All data come from official website. \nNo guarantee that the accuracy or timeliness of information provided.</string>
 
+    <string name="message_confirm_clear_follow">你確定要清除追蹤名單？</string>
     <string name="message_confirm_clear_search_history">你確定要清除搜尋記錄？</string>
-    <string name="message_clear_search_history_fail">沒有清除任何記錄</string>
-    <string name="message_clear_search_history_success">成功清除搜尋記錄</string>
+    <string name="message_clear_fail_follow">沒有清除任何記錄</string>
+    <string name="message_clear_fail_search_history">沒有清除任何記錄</string>
+    <string name="message_clear_success_follow">成功清除追蹤名單</string>
+    <string name="message_clear_success_search_history">成功清除搜尋記錄</string>
     <string name="message_database_updating">數據庫更新中</string>
     <string name="message_database_updated">數據庫經已更新</string>
     <string name="message_fail_to_request">未能載入，請再試一次</string>

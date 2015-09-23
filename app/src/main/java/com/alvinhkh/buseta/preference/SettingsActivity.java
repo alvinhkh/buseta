@@ -44,6 +44,8 @@ import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.Utils;
+import com.alvinhkh.buseta.provider.FollowProvider;
+import com.alvinhkh.buseta.provider.RouteProvider;
 import com.alvinhkh.buseta.provider.SuggestionProvider;
 import com.alvinhkh.buseta.provider.SuggestionTable;
 import com.alvinhkh.buseta.service.UpdateSuggestionService;
@@ -51,6 +53,7 @@ import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
+import com.koushikdutta.ion.Ion;
 
 public class SettingsActivity extends AppCompatPreferenceActivity {
 
@@ -166,9 +169,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                             })
                             .setPositiveButton(R.string.action_confirm, new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialoginterface, int i) {
-                                    Intent intent = new Intent(Constants.MESSAGE.HISTORY_UPDATED);
-                                    intent.putExtra(Constants.MESSAGE.HISTORY_UPDATED, true);
-                                    mActivity.sendBroadcast(intent);
+                                    if (null == mActivity) return;
                                     int rowDeleted =
                                             mActivity.getContentResolver().delete(SuggestionProvider.CONTENT_URI,
                                                     SuggestionTable.COLUMN_TYPE + "=?",
@@ -176,13 +177,63 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                                     Snackbar snackbar = Snackbar.make(
                                             mActivity.findViewById(android.R.id.content),
                                             rowDeleted > 0 ?
-                                                    R.string.message_clear_search_history_success :
-                                                    R.string.message_clear_search_history_fail,
+                                                    R.string.message_clear_success_search_history :
+                                                    R.string.message_clear_fail_search_history,
                                             Snackbar.LENGTH_SHORT);
                                     TextView tv = (TextView)
                                             snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
                                     tv.setTextColor(Color.WHITE);
                                     snackbar.show();
+                                    Intent intent = new Intent(Constants.MESSAGE.HISTORY_UPDATED);
+                                    intent.putExtra(Constants.MESSAGE.HISTORY_UPDATED, true);
+                                    mActivity.sendBroadcast(intent);
+                                }
+                            })
+                            .show();
+                    return true;
+                }
+            });
+            // Clear Follow / Clear All Route Data
+            Preference clearFollow = getPreferenceScreen().findPreference("clear_follow");
+            clearFollow.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                public boolean onPreferenceClick(Preference preference) {
+                    new AlertDialog.Builder(mActivity)
+                            .setTitle(mActivity.getString(R.string.message_confirm_clear_follow))
+                            .setNegativeButton(R.string.action_cancel, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialoginterface, int i) {
+                                    dialoginterface.cancel();
+                                }
+                            })
+                            .setPositiveButton(R.string.action_confirm, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialoginterface, int i) {
+                                    if (null == mActivity) return;
+                                    // delete all follow
+                                    int rowDeleted = mActivity.getContentResolver().delete(
+                                            FollowProvider.CONTENT_URI_FOLLOW, null, null);
+                                    // delete all bound, stop, eta
+                                    mActivity.getContentResolver().delete(
+                                            RouteProvider.CONTENT_URI_BOUND, null, null);
+                                    mActivity.getContentResolver().delete(
+                                            RouteProvider.CONTENT_URI_STOP, null, null);
+                                    mActivity.getContentResolver().delete(
+                                            FollowProvider.CONTENT_URI_ETA, null, null);
+                                    Snackbar snackbar = Snackbar.make(
+                                            mActivity.findViewById(android.R.id.content),
+                                            rowDeleted > 0 ?
+                                                    R.string.message_clear_success_follow :
+                                                    R.string.message_clear_fail_follow,
+                                            Snackbar.LENGTH_SHORT);
+                                    // Clear All Ion Request
+                                    Ion.getDefault(mActivity.getBaseContext()).cancelAll(mActivity.getBaseContext());
+                                    Ion.getDefault(mActivity.getBaseContext()).getCache().clear();
+                                    Ion.getDefault(mActivity.getBaseContext()).getBitmapCache().clear();
+                                    TextView tv = (TextView)
+                                            snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
+                                    tv.setTextColor(Color.WHITE);
+                                    snackbar.show();
+                                    Intent intent = new Intent(Constants.MESSAGE.FOLLOW_UPDATED);
+                                    intent.putExtra(Constants.MESSAGE.FOLLOW_UPDATED, true);
+                                    mActivity.sendBroadcast(intent);
                                 }
                             })
                             .show();
@@ -247,7 +298,6 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                         new Handler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                if (snackbar == null) return;
                                 snackbar.dismiss();
                             }
                         }, 6000);

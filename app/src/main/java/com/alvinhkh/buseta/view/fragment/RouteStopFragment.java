@@ -135,7 +135,7 @@ public class RouteStopFragment extends Fragment
         }
         // Overview task
         setTaskDescription(_routeBound.route_no +
-                getString(R.string.interpunct) + getString(R.string.launcher_name));
+                getString(R.string.interpunct) + getString(R.string.app_name));
         // Set Toolbar
         mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (null != mActionBar) {

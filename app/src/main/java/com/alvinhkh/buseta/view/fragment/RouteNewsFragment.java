@@ -86,7 +86,7 @@ public class RouteNewsFragment extends Fragment
         _route_no = getArguments().getString("route_no");
         // Overview task
         setTaskDescription(_route_no + " " + getString(R.string.passenger_notice) +
-                getString(R.string.interpunct) + getString(R.string.launcher_name));
+                getString(R.string.interpunct) + getString(R.string.app_name));
         // Set Toolbar
         mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (null != mActionBar) {

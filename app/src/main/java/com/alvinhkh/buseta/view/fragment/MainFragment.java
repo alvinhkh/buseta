@@ -84,7 +84,7 @@ public class MainFragment extends Fragment
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         mContext = super.getActivity();
         // Overview task
-        setTaskDescription(getString(R.string.launcher_name));
+        setTaskDescription(getString(R.string.app_name));
         // Toolbar
         mActionBar = ((AppCompatActivity) mContext).getSupportActionBar();
         if (null != mActionBar) {

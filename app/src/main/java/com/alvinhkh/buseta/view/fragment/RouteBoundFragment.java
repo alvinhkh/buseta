@@ -89,7 +89,7 @@ public class RouteBoundFragment extends Fragment
             mActionBar.setSubtitle(null);
             mActionBar.setDisplayHomeAsUpEnabled(false);
         }
-        setTaskDescription(_routeNo + getString(R.string.interpunct) + getString(R.string.launcher_name));
+        setTaskDescription(_routeNo + getString(R.string.interpunct) + getString(R.string.app_name));
         setHasOptionsMenu(true);
         // Set List Adapter
         mAdapter = new RouteBoundAdapter(mContext);
