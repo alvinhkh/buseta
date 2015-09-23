@@ -38,6 +38,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.Constants;
@@ -222,18 +223,18 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             appName.setTitle(getString(R.string.title_app_name, getString(R.string.app_name)));
             // App Version
             Preference appVersion = getPreferenceScreen().findPreference("app_version");
-            int versionCode = BuildConfig.VERSION_CODE;
-            String versionName = BuildConfig.VERSION_NAME;
-            appVersion.setSummary(getString(R.string.summary_app_version, versionName, versionCode));
+            final int versionCode = BuildConfig.VERSION_CODE;
+            final String versionName = BuildConfig.VERSION_NAME;
+            appVersion.setSummary(versionName);
             // hide ad tips
             appVersion.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 int clickCounter = 0;
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
                     clickCounter++;
-                    if (clickCounter == 3 || clickCounter == 6 || clickCounter >= 10) {
+                    if (clickCounter % 3 == 0) {
                         String msg;
-                        if (clickCounter >= 10)
+                        if (clickCounter > 10)
                             msg = getString(R.string.message_hide_ad_tip, Constants.PREF.AD_KEY, Constants.PREF.AD_SHOW);
                         else
                             msg = getString(R.string.message_hide_ad_smile);
@@ -250,6 +251,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                                 snackbar.dismiss();
                             }
                         }, 6000);
+                    } else {
+                        Toast.makeText(mActivity, getString(R.string.title_app_version) + " " +
+                                getString(R.string.summary_app_version, versionName, versionCode),
+                                Toast.LENGTH_SHORT).show();
                     }
                     return true;
                 }
