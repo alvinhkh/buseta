@@ -362,15 +362,13 @@ public class RouteEtaFragment extends Fragment
 
     @Override
     public void onInfoWindowClick(Marker marker) {
-        if (marker.getPosition().equals(getStopLanLng())) {
-            getHeaderView(true);
-        }
+        if (null == mMap) return;
+        resetMap(mMap);
     }
 
     @Override
     public void onMapLongClick(LatLng latLng) {
-        if (null == mMap) return;
-        resetMap(mMap);
+        getHeaderView(true);
     }
 
     @Override
@@ -621,6 +619,8 @@ public class RouteEtaFragment extends Fragment
                     mMenu.findItem(R.id.action_show_map).setVisible(false);
                     mMenu.findItem(R.id.action_show_photo).setVisible(true);
                 }
+                if (null != mMap)
+                    resetMap(mMap);
                 mapContainer.setVisibility(View.VISIBLE);
                 mapContainer.setAnimation(fadeIn);
                 mImageContainer.setVisibility(View.GONE);
