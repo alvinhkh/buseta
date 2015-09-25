@@ -311,14 +311,17 @@ public class RouteEtaFragment extends Fragment
                 if (null != mActionBar)
                     mActionBar.setHomeAsUpIndicator(object.follow ?
                             R.drawable.ic_star_white_24dp : R.drawable.ic_star_border_white_24dp);
-                mFollow.setIcon(object.follow ?
-                        R.drawable.ic_star_white_24dp : R.drawable.ic_star_border_white_24dp);
-                MenuItemCompat.setActionView(mFollow, iv);
-                new Handler().postDelayed(new Runnable() {
-                    public void run() {
-                        MenuItemCompat.setActionView(mFollow, null);
-                    }
-                }, 500);
+                if (null != mFollow) {
+                    mFollow.setTitle(object.follow ? R.string.action_unfollow : R.string.action_follow);
+                    mFollow.setIcon(object.follow ?
+                            R.drawable.ic_star_white_24dp : R.drawable.ic_star_border_white_24dp);
+                    MenuItemCompat.setActionView(mFollow, iv);
+                    new Handler().postDelayed(new Runnable() {
+                        public void run() {
+                            MenuItemCompat.setActionView(mFollow, null);
+                        }
+                    }, 500);
+                }
                 Intent intent = new Intent(Constants.MESSAGE.FOLLOW_UPDATED);
                 intent.putExtra(Constants.MESSAGE.FOLLOW_UPDATED, true);
                 intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
@@ -504,9 +507,11 @@ public class RouteEtaFragment extends Fragment
         tLastUpdated.setVisibility(View.VISIBLE);
         tSubtitle.setText(object.name_tc + "\n" + object.route_bound.route_no + " " +
                 getString(R.string.destination, object.route_bound.destination_tc));
-        if (null != mFollow)
+        if (null != mFollow) {
+            mFollow.setTitle(object.follow ? R.string.action_unfollow : R.string.action_follow);
             mFollow.setIcon(object.follow ?
                     R.drawable.ic_star_white_24dp : R.drawable.ic_star_border_white_24dp);
+        }
         if (null != mActionBar)
             mActionBar.setHomeAsUpIndicator(object.follow ?
                     R.drawable.ic_star_white_24dp : R.drawable.ic_star_border_white_24dp);

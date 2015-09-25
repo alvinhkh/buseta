@@ -9,6 +9,7 @@
     <string name="action_share">分享</string>
     <string name="action_refresh">重新載入</string>
     <string name="action_follow">追蹤</string>
+    <string name="action_unfollow">停止追蹤</string>
     <string name="action_show_map">顯示地圖</string>
     <string name="action_show_photo">顯示圖片</string>
     <string name="action_open_map">打開地圖</string>
