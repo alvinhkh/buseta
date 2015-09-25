@@ -307,7 +307,9 @@ public class CheckEtaService extends IntentService {
                 Matcher m = p.matcher(result);
                 if (m.find()) {
                     etaJs = Constants.URL.KMB + m.group(1);
-                    Log.d(TAG, "etaJs: " + etaJs);
+                    // Log.d(TAG, "etaJs: " + etaJs);
+                } else {
+                    Log.e(TAG, "etaJs: fail " + result);
                 }
             }
         }
