@@ -178,11 +178,13 @@ public class CheckEtaService extends IntentService {
                 });
     }
 
-    private void getETAv1(final RouteStop routeStop) throws ExecutionException, InterruptedException {
+    private void getETAv1(final RouteStop routeStop)
+            throws ExecutionException, InterruptedException {
         getETAv1(routeStop, 0);
     }
 
-    private void getETAv1(final RouteStop routeStop, int attempt) throws ExecutionException, InterruptedException {
+    private void getETAv1(final RouteStop routeStop, int attempt)
+            throws ExecutionException, InterruptedException {
         if (null == routeStop || null == routeStop.route_bound) return;
         routeStop.eta_loading = true;
         sendUpdating(routeStop);
@@ -191,7 +193,8 @@ public class CheckEtaService extends IntentService {
         _token = mPrefs.getString(Constants.PREF.REQUEST_TOKEN, null);
         String etaApi = mPrefs.getString(Constants.PREF.REQUEST_API_ETA, null);
         if (null == _id || null == _token || _id.equals("") || _token.equals("")) {
-            findToken(routeStop, mPrefs.getString(Constants.PREF.REQUEST_API_INFO, Constants.URL.ROUTE_INFO));
+            findToken(routeStop,
+                    mPrefs.getString(Constants.PREF.REQUEST_API_INFO, Constants.URL.ROUTE_INFO));
             etaApi = null;
         }
         String route_no = routeStop.route_bound.route_no.trim().replace(" ", "").toUpperCase();
@@ -308,7 +311,7 @@ public class CheckEtaService extends IntentService {
                 }
             }
         }
-        if (null == etaJs || etaJs.equals("")) return "";
+        if (null == etaJs || etaJs.equals("")) return null;
         String etaApi = "";
         // Find ETA API Url in found JS file
         Response<String> response2 = Ion.with(getApplicationContext())
@@ -328,7 +331,18 @@ public class CheckEtaService extends IntentService {
                     Matcher m = p.matcher(result);
                     if (m.find()) {
                         etaApi = Constants.URL.KMB + m.group(1);
-                        Log.d(TAG, "etaApi: easy found " + etaApi);
+                        Log.d(TAG, "etaApi: easy " + etaApi);
+                    }
+                }
+
+                if (etaApi.equals("")) {
+                    // 25 Sept 2015
+                    Pattern p = Pattern.compile("\\|([^\\|]*)\\|eq\\|(t[a-zA-Z0-9_.]*)\\|");
+                    Matcher m = p.matcher(result);
+                    if (m.find() && m.groupCount() == 2) {
+                        etaApi = Constants.URL.KMB + Constants.URL.PATH_ETA_API
+                                + m.group(1) + ".php?" + m.group(2);
+                        Log.d(TAG, "etaApi: found-0925 " + etaApi);
                     }
                 }
 
@@ -339,7 +353,7 @@ public class CheckEtaService extends IntentService {
                     if (m.find() && m.groupCount() == 2) {
                         etaApi = Constants.URL.KMB + Constants.URL.PATH_ETA_API
                                 + m.group(1) + ".php?" + m.group(2);
-                        Log.d(TAG, "etaApi: found-th " + etaApi);
+                        Log.d(TAG, "etaApi: found-0905 " + etaApi);
                     }
                 }
 
@@ -364,7 +378,8 @@ public class CheckEtaService extends IntentService {
                 }
 
                 if (etaApi.equals("")) {
-                    Log.d(TAG, "etaApi: fail " + etaApi);
+                    Log.e(TAG, "etaApi: fail " + etaApi);
+                    etaApi = null;
                 }
 
             }
