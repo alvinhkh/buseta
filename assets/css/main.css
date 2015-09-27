@@ -4151,6 +4151,10 @@ table.alt tbody tr td {
 	background: #FFCDD2; /* Gecko Browsers */
 }
 
+#image-screenshot {
+	display: none;
+	width: 100%;
+}
 .f-like, .g-plus, .t-tweet {
 	display: block;
 	margin: 8px 0;
