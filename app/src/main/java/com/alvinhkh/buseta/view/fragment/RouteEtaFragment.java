@@ -457,7 +457,7 @@ public class RouteEtaFragment extends Fragment
             c.close();
         }
         routeStop.follow = isFollowing(object);
-        Cursor cEta = mContext.getContentResolver().query(FollowProvider.CONTENT_URI_ETA_JOIN,
+        final Cursor cEta = mContext.getContentResolver().query(FollowProvider.CONTENT_URI_ETA_JOIN,
                 null,
                 FollowTable.COLUMN_ROUTE + " =?" +
                         " AND " + FollowTable.COLUMN_BOUND + " =?" +
