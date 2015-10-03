@@ -350,6 +350,8 @@ public class RouteEtaFragment extends Fragment
         map.setOnInfoWindowClickListener(this);
         map.setOnMapLongClickListener(this);
         map.setOnMarkerClickListener(this);
+        if (null == getStopLanLng())
+            return;
         // mark
         mStopMarker = map.addMarker(new MarkerOptions()
                 .icon(BitmapDescriptorFactory.fromResource(R.drawable.ic_directions_bus_black_24dp))
@@ -379,6 +381,7 @@ public class RouteEtaFragment extends Fragment
 
     private void resetMap(final GoogleMap map) {
         if (null == map) return;
+        if (null == getStopLanLng()) return;
         CameraPosition cameraPosition =
                 new CameraPosition.Builder()
                         .target(getStopLanLng())
@@ -392,6 +395,8 @@ public class RouteEtaFragment extends Fragment
 
     private LatLng getStopLanLng() {
         if (null == object || null == object.details) return null;
+        if (null == object.details.lat || object.details.lat.equals("")) return null;
+        if (null == object.details.lng || object.details.lng.equals("")) return null;
         Float lat = Float.valueOf(object.details.lat);
         Float lng = Float.valueOf(object.details.lng);
         return new LatLng(lat, lng);
