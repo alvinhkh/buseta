@@ -32,6 +32,7 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
@@ -438,12 +439,18 @@ public class RouteStopFragment extends Fragment
                 if (activeNetwork == null || !activeNetwork.isConnected()) {
                     // Check internet connection
                     if (null != f.getView()) {
-                        Snackbar snackbar = Snackbar.make(f.getView().findViewById(android.R.id.content),
-                                R.string.message_no_internet_connection, Snackbar.LENGTH_LONG);
-                        TextView tv = (TextView)
-                                snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
-                        tv.setTextColor(Color.WHITE);
-                        snackbar.show();
+                        if (null != f.getView().findViewById(android.R.id.content)) {
+                            Snackbar snackbar = Snackbar.make(f.getView().findViewById(android.R.id.content),
+                                    R.string.message_no_internet_connection, Snackbar.LENGTH_LONG);
+                            TextView tv = (TextView)
+                                    snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
+                            tv.setTextColor(Color.WHITE);
+                            snackbar.show();
+                        } else if (null != f.getView().getContext()) {
+                            Toast.makeText(f.getView().getContext(),
+                                    R.string.message_no_internet_connection,
+                                    Toast.LENGTH_LONG).show();
+                        }
                     }
                     if (null != f.mProgressBar)
                         f.mProgressBar.setVisibility(View.GONE);

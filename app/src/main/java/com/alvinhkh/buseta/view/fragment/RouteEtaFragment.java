@@ -119,6 +119,7 @@ public class RouteEtaFragment extends Fragment
         settingsHelper = new SettingsHelper().parse(mContext.getApplicationContext());
         if (null != savedInstanceState) {
             object = savedInstanceState.getParcelable(Constants.BUNDLE.STOP_OBJECT);
+            object = getObject(object);
             mBitmap = savedInstanceState.getParcelable("stop_image_bitmap");
             imageVisible = savedInstanceState.getBoolean("imageVisibility", false);
         } else {
@@ -134,9 +135,13 @@ public class RouteEtaFragment extends Fragment
         // Set Toolbar
         mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (null != mActionBar) {
-            mActionBar.setTitle(object.name_tc);
-            mActionBar.setSubtitle(object.route_bound.route_no + " " +
-                    getString(R.string.destination, object.route_bound.destination_tc));
+            if (null != object) {
+                mActionBar.setTitle(object.name_tc);
+                if (null != object.route_bound) {
+                    mActionBar.setSubtitle(object.route_bound.route_no + " " +
+                            getString(R.string.destination, object.route_bound.destination_tc));
+                }
+            }
             mActionBar.setDisplayHomeAsUpEnabled(true);
             mActionBar.setHomeAsUpIndicator(R.drawable.ic_star_border_white_24dp);
         }
@@ -473,7 +478,7 @@ public class RouteEtaFragment extends Fragment
                         object.code
                 },
                 FollowTable.COLUMN_DATE + " DESC");
-        if (null != c) {
+        if (null != cEta) {
             cEta.moveToFirst();
             if (cEta.getCount() > 0) {
                 RouteStopETA routeStopETA = null;
