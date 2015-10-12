@@ -123,7 +123,9 @@ public class RouteEtaFragment extends Fragment
             mBitmap = savedInstanceState.getParcelable("stop_image_bitmap");
             imageVisible = savedInstanceState.getBoolean("imageVisibility", false);
         } else {
-            object = getArguments().getParcelable(Constants.BUNDLE.STOP_OBJECT);
+            if (null != getArguments()) {
+                object = getArguments().getParcelable(Constants.BUNDLE.STOP_OBJECT);
+            }
             if (null == object)
                 object = new RouteStop();
             if (null == object.route_bound)

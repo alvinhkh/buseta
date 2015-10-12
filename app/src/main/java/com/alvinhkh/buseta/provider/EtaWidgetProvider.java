@@ -71,6 +71,7 @@ public class EtaWidgetProvider extends AppWidgetProvider {
             // Log.d(TAG, "WIDGET_TRIGGER_UPDATE");
             onRefresh(context);
         } else if (action.equals(Constants.MESSAGE.ETA_UPDATED)) {
+            if (null != bundle)
             if (bundle.getBoolean(Constants.MESSAGE.WIDGET_UPDATE)) {
                 // Log.d(TAG, "WIDGET_UPDATE");
                 final AppWidgetManager mgr = AppWidgetManager.getInstance(context);
