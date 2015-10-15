@@ -46,6 +46,12 @@
             android:summary="@string/summary_update_route_suggestion"
             android:persistent="false" />
 
+        <Preference
+            android:key="check_app_update"
+            android:title="@string/title_check_app_update"
+            android:summary="@string/summary_check_app_update"
+            android:persistent="false" />
+
         <SwitchPreference
             android:key="com.alvinhkh.buseta.AD_HIDE"
             android:title="@string/title_hide_ad"

@@ -80,7 +80,7 @@
             android:name=".service.CheckEtaService"
             android:enabled="true" />
         <service
-            android:name=".service.UpdateSuggestionService"
+            android:name=".service.CheckUpdateService"
             android:enabled="true" />
         <service
             android:name=".service.EtaWidgetService"

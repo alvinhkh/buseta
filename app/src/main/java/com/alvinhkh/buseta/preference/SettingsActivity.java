@@ -13,6 +13,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -44,11 +45,12 @@ import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.Utils;
+import com.alvinhkh.buseta.holder.AppUpdate;
 import com.alvinhkh.buseta.provider.FollowProvider;
 import com.alvinhkh.buseta.provider.RouteProvider;
 import com.alvinhkh.buseta.provider.SuggestionProvider;
 import com.alvinhkh.buseta.provider.SuggestionTable;
-import com.alvinhkh.buseta.service.UpdateSuggestionService;
+import com.alvinhkh.buseta.service.CheckUpdateService;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
@@ -138,7 +140,7 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             OnSharedPreferenceChangeListener {
 
         private Activity mActivity;
-        private UpdateSuggestionReceiver mReceiver;
+        private CheckUpdateReceiver mReceiver;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -152,9 +154,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // Set Summary
             initSummary(getPreferenceScreen());
             // Broadcast Receiver
-            IntentFilter mFilter = new IntentFilter(Constants.ROUTES.SUGGESTION_UPDATE);
-            mReceiver = new UpdateSuggestionReceiver();
-            mFilter.addAction(Constants.ROUTES.SUGGESTION_UPDATE);
+            IntentFilter mFilter = new IntentFilter(Constants.MESSAGE.CHECKING_UPDATED);
+            mReceiver = new CheckUpdateReceiver();
+            mFilter.addAction(Constants.MESSAGE.CHECKING_UPDATED);
             mActivity.registerReceiver(mReceiver, mFilter);
             // Clear History
             Preference clearHistory = getPreferenceScreen().findPreference("clear_history");
@@ -245,7 +247,18 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             updateSuggestion.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    Intent intent = new Intent(mActivity, UpdateSuggestionService.class);
+                    Intent intent = new Intent(mActivity, CheckUpdateService.class);
+                    intent.putExtra(Constants.MESSAGE.SUGGESTION_FORCE_UPDATE, true);
+                    mActivity.startService(intent);
+                    return true;
+                }
+            });
+            // check app update
+            Preference appUpdate = getPreferenceScreen().findPreference("check_app_update");
+            appUpdate.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    Intent intent = new Intent(mActivity, CheckUpdateService.class);
                     mActivity.startService(intent);
                     return true;
                 }
@@ -375,13 +388,16 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             }
         }
 
-        public class UpdateSuggestionReceiver extends BroadcastReceiver {
+        public class CheckUpdateReceiver extends BroadcastReceiver {
             @Override
-            public void onReceive(Context context, Intent intent) {
+            public void onReceive(final Context context, final Intent intent) {
                 Bundle bundle = intent.getExtras();
-                Boolean aBoolean = bundle.getBoolean(Constants.ROUTES.SUGGESTION_UPDATE);
-                if (aBoolean) {
-                    int resourceId = bundle.getInt(Constants.ROUTES.MESSAGE_ID);
+                final Boolean aBoolean_suggestion =
+                        bundle.getBoolean(Constants.STATUS.UPDATED_SUGGESTION, false);
+                final Boolean aBoolean_app =
+                        bundle.getBoolean(Constants.STATUS.UPDATED_APP_FOUND, false);
+                if (aBoolean_suggestion) {
+                    int resourceId = bundle.getInt(Constants.BUNDLE.MESSAGE_ID);
                     String name = getResources().getResourceName(resourceId);
                     if (name != null && name.startsWith(mActivity.getPackageName())) {
                         final Snackbar snackbar = Snackbar.make(mActivity.findViewById(android.R.id.content),
@@ -402,6 +418,66 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                                 cursor.close();
                         }
                         snackbar.show();
+                    }
+                }
+
+                if (aBoolean_app) {
+                    SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+                    final AppUpdate appUpdate = bundle.getParcelable(Constants.BUNDLE.APP_UPDATE_OBJECT);
+                    if (null != appUpdate) {
+                        final int versionCode = appUpdate.version_code;
+                        final String versionName = appUpdate.version_name;
+                        final String content = appUpdate.content;
+                        final String updated = appUpdate.updated;
+                        final String url = appUpdate.url;
+                        final Boolean isForced = appUpdate.force;
+                        final Boolean isDownload = appUpdate.download;
+                        final int oVersionCode = mPrefs.getInt(Constants.PREF.APP_UPDATE_VERSION,
+                                BuildConfig.VERSION_CODE);
+                        final StringBuilder message = new StringBuilder();
+                        message.append(updated);
+                        message.append("\n");
+                        message.append(content);
+                        Log.d(TAG, "AppVersion: " + versionCode + " " + oVersionCode + " " + BuildConfig.VERSION_CODE);
+                        if (BuildConfig.VERSION_CODE >= versionCode) {
+                            final Snackbar snackbar = Snackbar.make(mActivity.findViewById(android.R.id.content),
+                                    R.string.message_no_app_update, Snackbar.LENGTH_LONG);
+                            TextView tv = (TextView)
+                                    snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
+                            tv.setTextColor(Color.WHITE);
+                            snackbar.show();
+                        } else {
+                            new AlertDialog.Builder(context)
+                                    .setTitle(getString(R.string.message_app_update, versionName))
+                                    .setMessage(message)
+                                    .setNegativeButton(R.string.action_cancel,
+                                            new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialoginterface, int i) {
+                                                    dialoginterface.cancel();
+                                                }
+                                            })
+                                    .setPositiveButton(R.string.action_update,
+                                            new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialoginterface, int i) {
+                                                    Uri link = Uri.parse(url);
+                                                    if (!isDownload) {
+                                                        if (null == link) {
+                                                            link = Uri.parse(getString(R.string.url_app));
+                                                        }
+                                                        Intent intent = new Intent(Intent.ACTION_VIEW, link);
+                                                        if (intent.resolveActivity(context.getPackageManager()) != null) {
+                                                            startActivity(intent);
+                                                        }
+                                                    } else {
+                                                        // TODO: implement download apk
+                                                    }
+                                                }
+                                            })
+                                    .show();
+                        }
+                        SharedPreferences.Editor editor = mPrefs.edit();
+                        editor.putInt(Constants.PREF.APP_UPDATE_VERSION, versionCode);
+                        editor.apply();
                     }
                 }
             }

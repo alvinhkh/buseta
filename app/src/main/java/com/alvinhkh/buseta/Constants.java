@@ -3,6 +3,7 @@ package com.alvinhkh.buseta;
 public class Constants {
 
     public interface URL {
+        String RELEASE = "http://buseta.alvinhkh.com/release.json";
         String KMB = "http://www.kmb.hk";
         String PATH_ETA_API = "/ajax/eta_api/prod/";
         String PATH_ETA_JS = "/js/services/eta/";
@@ -22,12 +23,11 @@ public class Constants {
     }
 
     public interface ROUTES {
-        Integer VERSION = 4;
-        String SUGGESTION_UPDATE = "com.alvinhkh.buseta.ROUTES.SUGGESTION_UPDATE";
-        String MESSAGE_ID = "com.alvinhkh.buseta.ROUTES.MESSAGE_ID";
+        Integer VERSION = 20151015;
     }
 
     public interface MESSAGE {
+        String CHECKING_UPDATED = "com.alvinhkh.buseta.CHECKING_UPDATED";
         String BOUNDS_UPDATED = "com.alvinhkh.buseta.BOUNDS_UPDATED";
         String HISTORY_UPDATED = "com.alvinhkh.buseta.HISTORY_UPDATED";
         String STOP_UPDATED = "com.alvinhkh.buseta.STOP_UPDATED";
@@ -37,21 +37,26 @@ public class Constants {
         String SEND_UPDATING = "com.alvinhkh.buseta.SEND_UPDATING";
         String WIDGET_UPDATE = "com.alvinhkh.buseta.WIDGET_UPDATE";
         String WIDGET_TRIGGER_UPDATE = "com.alvinhkh.buseta.WIDGET_TRIGGER_UPDATE";
+        String SUGGESTION_FORCE_UPDATE = "com.alvinhkh.buseta.SUGGESTION_FORCE_UPDATE";
     }
 
     public interface STATUS {
         String CONNECT_404 = "com.alvinhkh.buseta.CONNECT_404";
         String CONNECT_FAIL = "com.alvinhkh.buseta.CONNECT_FAIL";
         String CONNECTIVITY_INVALID = "com.alvinhkh.buseta.CONNECTIVITY_INVALID";
+        String UPDATED_APP_FOUND = "com.alvinhkh.buseta.UPDATED_APP_FOUND";
         String UPDATED_FARE = "com.alvinhkh.buseta.UPDATED_FARE";
         String UPDATED_BOUNDS = "com.alvinhkh.buseta.UPDATED_BOUNDS";
         String UPDATED_STOPS = "com.alvinhkh.buseta.UPDATED_STOPS";
+        String UPDATED_SUGGESTION = "com.alvinhkh.buseta.UPDATED_SUGGESTION";
         String UPDATING_FARE = "com.alvinhkh.buseta.UPDATING_FARE";
         String UPDATING_BOUNDS = "com.alvinhkh.buseta.UPDATING_BOUNDS";
         String UPDATING_STOPS = "com.alvinhkh.buseta.UPDATING_STOPS";
     }
 
     public interface BUNDLE {
+        String APP_UPDATE_OBJECT = "com.alvinhkh.buseta.APP_UPDATE_OBJECT";
+        String MESSAGE_ID = "com.alvinhkh.buseta.MESSAGE_ID";
         String ROUTE_NO = "com.alvinhkh.buseta.ROUTE_NO";
         String STOP_OBJECT = "com.alvinhkh.buseta.STOP_OBJECT";
         String BOUND_OBJECT = "com.alvinhkh.buseta.BOUND_OBJECT";
@@ -59,6 +64,7 @@ public class Constants {
     }
 
     public interface PREF {
+        String APP_UPDATE_VERSION = "com.alvinhkh.buseta.APP_UPDATE_VERSION";
         String VERSION_RECORD = "com.alvinhkh.buseta.VERSION_RECORD";
         String REQUEST_ID = "com.alvinhkh.buseta.REQUEST_ID";
         String REQUEST_TOKEN = "com.alvinhkh.buseta.REQUEST_TOKEN";

@@ -4,6 +4,7 @@ import android.app.ActivityManager;
 import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -23,6 +24,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SimpleCursorAdapter;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
@@ -39,15 +41,17 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.holder.AppUpdate;
 import com.alvinhkh.buseta.provider.FollowProvider;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteNews;
 import com.alvinhkh.buseta.provider.RouteProvider;
 import com.alvinhkh.buseta.provider.SuggestionProvider;
 import com.alvinhkh.buseta.provider.SuggestionTable;
-import com.alvinhkh.buseta.service.UpdateSuggestionService;
+import com.alvinhkh.buseta.service.CheckUpdateService;
 import com.alvinhkh.buseta.view.adapter.SuggestionSimpleCursorAdapter;
 import com.alvinhkh.buseta.view.fragment.MainFragment;
 import com.alvinhkh.buseta.view.fragment.NoticeImageFragment;
@@ -73,7 +77,7 @@ public class MainActivity extends AppCompatActivity
     private SearchView mSearchView;
     private SuggestionSimpleCursorAdapter mAdapter;
     private Cursor mCursor;
-    private UpdateSuggestionReceiver mReceiver;
+    private CheckUpdateReceiver mReceiver;
     private Snackbar mSnackbar;
     private AdView mAdView;
 
@@ -98,9 +102,9 @@ public class MainActivity extends AppCompatActivity
             }
         });
         // Broadcast Receiver
-        IntentFilter mFilter = new IntentFilter(Constants.ROUTES.SUGGESTION_UPDATE);
-        mReceiver = new UpdateSuggestionReceiver();
-        mFilter.addAction(Constants.ROUTES.SUGGESTION_UPDATE);
+        IntentFilter mFilter = new IntentFilter(Constants.MESSAGE.CHECKING_UPDATED);
+        mReceiver = new CheckUpdateReceiver();
+        mFilter.addAction(Constants.MESSAGE.CHECKING_UPDATED);
         registerReceiver(mReceiver, mFilter);
         // Set Suggestion Adapter
         String[] columns = new String[] {
@@ -158,12 +162,9 @@ public class MainActivity extends AppCompatActivity
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.fragment_container, mainFragment, "Home").commit();
         }
-        // update available route records
-        int routeVersion = mPrefs.getInt(Constants.PREF.VERSION_RECORD, 0);
-        if (Constants.ROUTES.VERSION > routeVersion) {
-            Intent intent = new Intent(this, UpdateSuggestionService.class);
-            startService(intent);
-        }
+        // check app and suggestion database updates
+        Intent intent = new Intent(this, CheckUpdateService.class);
+        startService(intent);
 
         createAdView();
     }
@@ -468,39 +469,95 @@ public class MainActivity extends AppCompatActivity
         t.commit();
     }
 
-    public class UpdateSuggestionReceiver extends BroadcastReceiver {
+    public class CheckUpdateReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             Bundle bundle = intent.getExtras();
-            Boolean aBoolean = bundle.getBoolean(Constants.ROUTES.SUGGESTION_UPDATE);
-            if (aBoolean) {
-                int resourceId = bundle.getInt(Constants.ROUTES.MESSAGE_ID);
-                String name = getResources().getResourceName(resourceId);
+            final Boolean aBoolean_suggestion =
+                    bundle.getBoolean(Constants.STATUS.UPDATED_SUGGESTION, false);
+            final Boolean aBoolean_app =
+                    bundle.getBoolean(Constants.STATUS.UPDATED_APP_FOUND, false);
+            if (aBoolean_suggestion) {
+                final int messageId = bundle.getInt(Constants.BUNDLE.MESSAGE_ID);
+                String name = getResources().getResourceName(messageId);
                 if (name != null && name.startsWith(getPackageName())) {
                     if (null != mSnackbar)
                         mSnackbar.dismiss();
                     mSnackbar = Snackbar.make(findViewById(R.id.coordinator) != null ?
                                     findViewById(R.id.coordinator) : findViewById(R.id.main_content),
-                            resourceId, Snackbar.LENGTH_LONG);
+                            messageId, Snackbar.LENGTH_LONG);
                     TextView tv = (TextView)
                             mSnackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
                     tv.setTextColor(Color.WHITE);
-                    if (resourceId == R.string.message_database_updating)
+                    if (messageId == R.string.message_database_updating)
                         mSnackbar.setDuration(Snackbar.LENGTH_INDEFINITE);
-                    else if (resourceId == R.string.message_database_updated) {
+                    else if (messageId == R.string.message_database_updated) {
                         Cursor cursor = getContentResolver().query(SuggestionProvider.CONTENT_URI,
                                 null, SuggestionTable.COLUMN_TEXT + " LIKE '%%'" + " AND " +
-                                        SuggestionTable.COLUMN_TYPE + " = '" + SuggestionTable.TYPE_DEFAULT + "'",
+                                        SuggestionTable.COLUMN_TYPE + " = '" +
+                                        SuggestionTable.TYPE_DEFAULT + "'",
                                 null, null);
                         int count = 0;
                         if (cursor != null) {
                             count = cursor.getCount();
                             cursor.close();
                         }
-                        mSnackbar.setText(getString(resourceId) + " " +
+                        mSnackbar.setText(getString(messageId) + " " +
                                 getString(R.string.message_total_routes, count));
                     }
                     mSnackbar.show();
+                }
+            }
+            if (aBoolean_app) {
+                final AppUpdate appUpdate = bundle.getParcelable(Constants.BUNDLE.APP_UPDATE_OBJECT);
+                if (null != appUpdate) {
+                    final int versionCode = appUpdate.version_code;
+                    final String versionName = appUpdate.version_name;
+                    final String content = appUpdate.content;
+                    final String updated = appUpdate.updated;
+                    final String url = appUpdate.url;
+                    final Boolean notify = appUpdate.notify;
+                    final Boolean isForced = appUpdate.force;
+                    final Boolean isDownload = appUpdate.download;
+                    final int oVersionCode = mPrefs.getInt(Constants.PREF.APP_UPDATE_VERSION,
+                            BuildConfig.VERSION_CODE);
+                    final StringBuilder message = new StringBuilder();
+                    message.append(updated);
+                    message.append("\n");
+                    message.append(content);
+                    Log.d(TAG, "AppVersion: " + versionCode + " " + oVersionCode + " " + BuildConfig.VERSION_CODE);
+                    if (notify)
+                    if (versionCode > oVersionCode || (isForced && versionCode > BuildConfig.VERSION_CODE))
+                        new AlertDialog.Builder(context)
+                                .setTitle(getString(R.string.message_app_update, versionName))
+                                .setMessage(message)
+                                .setNegativeButton(R.string.action_cancel,
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialoginterface, int i) {
+                                                dialoginterface.cancel();
+                                            }
+                                        })
+                                .setPositiveButton(R.string.action_update,
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialoginterface, int i) {
+                                                Uri link = Uri.parse(url);
+                                                if (!isDownload) {
+                                                    if (null == link) {
+                                                        link = Uri.parse(getString(R.string.url_app));
+                                                    }
+                                                    Intent intent = new Intent(Intent.ACTION_VIEW, link);
+                                                    if (intent.resolveActivity(getPackageManager()) != null) {
+                                                        startActivity(intent);
+                                                    }
+                                                } else {
+                                                    // TODO: implement download apk
+                                                }
+                                            }
+                                        })
+                                .show();
+                    SharedPreferences.Editor editor = mPrefs.edit();
+                    editor.putInt(Constants.PREF.APP_UPDATE_VERSION, versionCode);
+                    editor.apply();
                 }
             }
         }
