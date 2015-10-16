@@ -18,6 +18,7 @@
     <string name="action_confirm">確認</string>
     <string name="action_cancel">取消</string>
     <string name="action_update">更新</string>
+    <string name="action_notification">顯示在通知欄</string>
 
     <string name="dest">往</string>
     <string name="destination">往%s</string>

@@ -79,6 +79,7 @@ public class CheckEtaService extends IntentService {
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         sendUpdating = extras.getBoolean(Constants.MESSAGE.SEND_UPDATING, true);
         isWidget = extras.getBoolean(Constants.MESSAGE.WIDGET_UPDATE, false);
+        int nId = extras.getInt(Constants.MESSAGE.NOTIFICATION_UPDATE);
 
         RouteStop object = extras.getParcelable(Constants.BUNDLE.STOP_OBJECT);
         if (null != object) {
@@ -89,33 +90,33 @@ public class CheckEtaService extends IntentService {
             if (activeNetwork == null || !activeNetwork.isConnected()) {
                 object.eta_loading = false;
                 object.eta_fail = true;
-                sendUpdate(object);
+                sendUpdate(object, nId);
                 return;
             }
-            getETA(object);
+            getETA(object, nId);
         }
     }
 
-    private void getETA(RouteStop routeStop) {
+    private void getETA(final RouteStop routeStop, final int nId) {
         switch (settingsHelper.getEtaApi()) {
             case 1:
                 try {
-                    getETAv1(routeStop);
+                    getETAv1(routeStop, nId);
                 } catch (InterruptedException | ExecutionException e) {
                     Log.e(TAG, e.getMessage());
                 }
                 break;
             case 2:
             default:
-                getETAv2(routeStop);
+                getETAv2(routeStop, nId);
                 break;
         }
     }
 
-    private void getETAv2(final RouteStop routeStop) {
+    private void getETAv2(final RouteStop routeStop, final int nId) {
         if (null == routeStop || null == routeStop.route_bound) return;
         routeStop.eta_loading = true;
-        sendUpdating(routeStop);
+        sendUpdating(routeStop, nId);
 
         String route_no = routeStop.route_bound.route_no.trim().replace(" ", "").toUpperCase();
         String stop_code = routeStop.code;
@@ -148,7 +149,7 @@ public class CheckEtaService extends IntentService {
                                 routeStop.eta_loading = false;
                                 routeStop.eta_fail = !result.has("generated");
                                 routeStop.eta = result.has("generated") ? new RouteStopETA() : null;
-                                sendUpdate(routeStop);
+                                sendUpdate(routeStop, nId);
                                 return;
                             }
                             JsonArray jsonArray = result.get("response").getAsJsonArray();
@@ -173,21 +174,21 @@ public class CheckEtaService extends IntentService {
                             routeStop.eta = routeStopETA;
                         }
                         routeStop.eta_loading = false;
-                        sendUpdate(routeStop);
+                        sendUpdate(routeStop, nId);
                     }
                 });
     }
 
-    private void getETAv1(final RouteStop routeStop)
+    private void getETAv1(final RouteStop routeStop, int nId)
             throws ExecutionException, InterruptedException {
-        getETAv1(routeStop, 0);
+        getETAv1(routeStop, nId, 0);
     }
 
-    private void getETAv1(final RouteStop routeStop, int attempt)
+    private void getETAv1(final RouteStop routeStop, int nId, int attempt)
             throws ExecutionException, InterruptedException {
         if (null == routeStop || null == routeStop.route_bound) return;
         routeStop.eta_loading = true;
-        sendUpdating(routeStop);
+        sendUpdating(routeStop, nId);
 
         _id = mPrefs.getString(Constants.PREF.REQUEST_ID, null);
         _token = mPrefs.getString(Constants.PREF.REQUEST_TOKEN, null);
@@ -204,7 +205,7 @@ public class CheckEtaService extends IntentService {
         if (etaApi == null) {
             routeStop.eta_loading = false;
             routeStop.eta_fail = true;
-            sendUpdate(routeStop);
+            sendUpdate(routeStop, nId);
             return;
         }
         Response<String> response = Ion.with(getApplicationContext())
@@ -238,7 +239,7 @@ public class CheckEtaService extends IntentService {
             } else {
                 routeStop.eta_loading = false;
                 routeStop.eta_fail = false;
-                sendUpdate(routeStop);
+                sendUpdate(routeStop, nId);
             }
         } else if (null != response && response.getHeaders().code() == 200) {
             String result = response.getResult();
@@ -254,7 +255,7 @@ public class CheckEtaService extends IntentService {
                     } else {
                         routeStop.eta_loading = false;
                         routeStop.eta_fail = true;
-                        sendUpdate(routeStop);
+                        sendUpdate(routeStop, nId);
                     }
                     return;
                 }
@@ -285,7 +286,7 @@ public class CheckEtaService extends IntentService {
                 }
                 routeStop.eta = routeStopETA;
                 routeStop.eta_loading = false;
-                sendUpdate(routeStop);
+                sendUpdate(routeStop, nId);
             }
         }
     }
@@ -446,13 +447,13 @@ public class CheckEtaService extends IntentService {
             findToken(routeStop, routeInfoApi);
         }
     }
-
-    private void sendUpdating(RouteStop object) {
-        if (!sendUpdating || isWidget) return;
-        sendUpdate(object);
+    
+    private void sendUpdating(RouteStop object, int nId) {
+        if (!sendUpdating || isWidget || nId > 0) return;
+        sendUpdate(object, nId);
     }
 
-    private void sendUpdate(RouteStop object) {
+    private void sendUpdate(RouteStop object, int nId) {
         if (null != object && null != object.route_bound) {
             ContentValues values = new ContentValues();
             values.put(EtaTable.COLUMN_LOADING, object.eta_loading);
@@ -477,6 +478,8 @@ public class CheckEtaService extends IntentService {
                 intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
                 if (isWidget)
                     intent.putExtra(Constants.MESSAGE.WIDGET_UPDATE, true);
+                if (nId > 0)
+                    intent.putExtra(Constants.MESSAGE.NOTIFICATION_UPDATE, nId);
                 sendBroadcast(intent);
             }
         }

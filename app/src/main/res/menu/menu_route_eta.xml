@@ -25,6 +25,12 @@
         android:orderInCategory="22"
         app:showAsAction="ifRoom" />
 
+    <item
+        android:id="@+id/action_notification"
+        android:title="@string/action_notification"
+        android:icon="@drawable/ic_open_in_browser_white_24dp"
+        android:orderInCategory="30"
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_follow"

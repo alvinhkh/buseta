@@ -10,9 +10,9 @@ public class RouteBound implements Parcelable {
     public RouteBound() {
     }
 
-    public String route_no;
+    public String route_no = "";
 
-    public String route_bound;
+    public String route_bound = "";
 
     @SerializedName("destination_chi")
     public String destination_tc;

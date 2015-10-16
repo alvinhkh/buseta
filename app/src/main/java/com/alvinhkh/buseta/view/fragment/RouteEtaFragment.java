@@ -46,6 +46,7 @@ import com.alvinhkh.buseta.provider.FollowTable;
 import com.alvinhkh.buseta.provider.RouteProvider;
 import com.alvinhkh.buseta.provider.RouteStopTable;
 import com.alvinhkh.buseta.service.CheckEtaService;
+import com.alvinhkh.buseta.service.NotificationService;
 import com.alvinhkh.buseta.view.ControllableAppBarLayout;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -333,6 +334,11 @@ public class RouteEtaFragment extends Fragment
                 intent.putExtra(Constants.MESSAGE.FOLLOW_UPDATED, true);
                 intent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
                 mContext.sendBroadcast(intent);
+                break;
+            case R.id.action_notification:
+                Intent notificationIntent = new Intent(mContext, NotificationService.class);
+                notificationIntent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
+                mContext.startService(notificationIntent);
                 break;
         }
         return super.onOptionsItemSelected(item);

@@ -262,7 +262,7 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
                     // Go to route stop fragment
                     ((MainActivity) mActivity).showRouteBoundFragment(routeStop.route_bound.route_no);
                     ((MainActivity) mActivity).showRouteStopFragment(routeStop.route_bound);
-                    // Open stop dialog
+                    // Open dialog
                     Intent intent = new Intent(caller.getContext(), RouteEtaActivity.class);
                     intent.setAction(Intent.ACTION_VIEW);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

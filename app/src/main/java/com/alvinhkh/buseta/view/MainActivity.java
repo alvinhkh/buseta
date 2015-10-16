@@ -45,6 +45,7 @@ import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.AppUpdate;
+import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.provider.FollowProvider;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteNews;
@@ -53,6 +54,7 @@ import com.alvinhkh.buseta.provider.SuggestionProvider;
 import com.alvinhkh.buseta.provider.SuggestionTable;
 import com.alvinhkh.buseta.service.CheckUpdateService;
 import com.alvinhkh.buseta.view.adapter.SuggestionSimpleCursorAdapter;
+import com.alvinhkh.buseta.view.dialog.RouteEtaActivity;
 import com.alvinhkh.buseta.view.fragment.MainFragment;
 import com.alvinhkh.buseta.view.fragment.NoticeImageFragment;
 import com.alvinhkh.buseta.view.fragment.RouteBoundFragment;
@@ -165,8 +167,38 @@ public class MainActivity extends AppCompatActivity
         // check app and suggestion database updates
         Intent intent = new Intent(this, CheckUpdateService.class);
         startService(intent);
-
+        // Ad
         createAdView();
+        //
+        if (null != getIntent()) {
+            RouteStop object = getIntent().getParcelableExtra(Constants.BUNDLE.STOP_OBJECT);
+            if (null != object) {
+                // Go to route stop fragment
+                showRouteBoundFragment(object.route_bound.route_no);
+                showRouteStopFragment(object.route_bound);
+                // Open dialog
+                Intent dialogIntent = new Intent(getApplicationContext(), RouteEtaActivity.class);
+                dialogIntent.setAction(Intent.ACTION_VIEW);
+                dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                dialogIntent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
+                startActivity(dialogIntent);
+            }
+        }
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (null == intent) return;
+        RouteStop object = intent.getParcelableExtra(Constants.BUNDLE.STOP_OBJECT);
+        if (null == object) return;
+        showRouteBoundFragment(object.route_bound.route_no);
+        showRouteStopFragment(object.route_bound);
+        Intent dialogIntent = new Intent(getApplicationContext(), RouteEtaActivity.class);
+        dialogIntent.setAction(Intent.ACTION_VIEW);
+        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        dialogIntent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
+        startActivity(dialogIntent);
     }
 
     @Override
