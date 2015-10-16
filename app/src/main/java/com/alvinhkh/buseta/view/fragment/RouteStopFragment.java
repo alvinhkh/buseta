@@ -688,7 +688,13 @@ public class RouteStopFragment extends Fragment
                                         object.route_bound.route_bound.equals(route_bound) &&
                                         object.stop_seq.equals(stop_seq) &&
                                         object.code.equals(stop_code)) {
-                                    object.eta = routeStopETA;
+                                    String dateText = getColumnString(cursor, EtaTable.COLUMN_DATE);
+                                    if ((System.currentTimeMillis() / 1000L) > (Long.valueOf(dateText) + 3600)) {
+                                        // show nothing if obtain time is over an hour ago
+                                        object.eta = null;
+                                    } else {
+                                        object.eta = routeStopETA;
+                                    }
                                     object.eta_loading = getColumnString(cursor, EtaTable.COLUMN_LOADING).equals("true");
                                     object.eta_fail = getColumnString(cursor, EtaTable.COLUMN_FAIL).equals("true");
                                 }

@@ -506,6 +506,8 @@ public class RouteEtaFragment extends Fragment
             }
             cEta.close();
         }
+        if (null == routeStop.code || !routeStop.code.equals(object.code))
+            return object;
         return routeStop;
     }
 
