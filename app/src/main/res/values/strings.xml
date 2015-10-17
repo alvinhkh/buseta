@@ -102,6 +102,7 @@
     <string name="message_route_not_support_eta">本站沒有抵站時間預報服務</string>
     <string name="message_share_title">同朋友分享 BusETA</string>
     <string name="message_share_text">快啲下載 BusETA 巴士到站時間預報 App :)\nhttp://buseta.alvinhkh.com</string>
+    <string name="message_shown_as_notification">已顯示在通知欄</string>
     <string name="message_total_routes">(共 %s 條路線)</string>
     <string name="message_unfollow">已從追蹤名單中移除</string>
 

@@ -339,6 +339,14 @@ public class RouteEtaFragment extends Fragment
                 Intent notificationIntent = new Intent(mContext, NotificationService.class);
                 notificationIntent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
                 mContext.startService(notificationIntent);
+                if (null != getView() && null != getView().getRootView()) {
+                    final Snackbar snackbar = Snackbar.make(getView().getRootView().findViewById(android.R.id.content),
+                            R.string.message_shown_as_notification, Snackbar.LENGTH_SHORT);
+                    TextView tv = (TextView)
+                            snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
+                    tv.setTextColor(Color.WHITE);
+                    snackbar.show();
+                }
                 break;
         }
         return super.onOptionsItemSelected(item);
