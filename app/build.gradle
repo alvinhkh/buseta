@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 def versionMajor = 0
 def versionMinor = 1
 def versionPatch = 5
-def versionBuild = 0
+def versionBuild = 1
 
 android {
     compileSdkVersion 23
@@ -39,6 +39,7 @@ dependencies {
     compile 'com.google.code.gson:gson:2.3.1'
     compile 'com.google.android.gms:play-services-ads:8.1.0'
     compile 'com.google.android.gms:play-services-maps:8.1.0'
+    compile 'com.google.android.gms:play-services-appindexing:8.1.0'
     compile 'com.koushikdutta.ion:ion:2.1.6'
     compile 'org.jsoup:jsoup:1.8.3'
     compile 'com.github.chrisbanes.photoview:library:1.2.4'

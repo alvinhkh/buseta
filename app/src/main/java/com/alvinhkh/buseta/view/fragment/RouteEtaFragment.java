@@ -260,8 +260,10 @@ public class RouteEtaFragment extends Fragment
                 break;
             case R.id.action_send:
                 if (null == object.details) break;
-                Uri uri = new Uri.Builder().scheme("geo").appendPath(object.details.lat +","+ object.details.lng)
-                        .appendQueryParameter("q", object.name_tc).build();
+                Uri uri = new Uri.Builder().scheme("geo")
+                        .appendPath(object.details.lat + "," + object.details.lng)
+                        .appendQueryParameter("q", object.details.lat + "," + object.details.lng)
+                        .build();
                 startActivity(new Intent(android.content.Intent.ACTION_VIEW, uri));
                 break;
             case android.R.id.home:

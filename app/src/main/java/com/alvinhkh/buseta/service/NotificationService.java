@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -190,8 +191,8 @@ public class NotificationService extends Service {
         int color = ContextCompat.getColor(context, R.color.primary);
         if (null == mBuilder)
             mBuilder = new NotificationCompat.Builder(context);
-        Intent notificationIntent = new Intent(context, MainActivity.class);
-        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        Intent notificationIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.URI.STOP));
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         notificationIntent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
         PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),
                 notificationId, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);

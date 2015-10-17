@@ -25,19 +25,29 @@
         <activity
             android:name=".view.MainActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
-            android:label="@string/app_name" >
+            android:label="@string/app_name"
+            android:launchMode="singleTask">
             <intent-filter
                 android:label="@string/launcher_name">
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
-
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
-
+            <intent-filter
+                android:label="@string/app_name">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "buseta://route" -->
+                <data
+                    android:scheme="buseta"
+                    android:host="route"
+                    android:pathPrefix="/"
+                    android:pathPattern=".*" />
+            </intent-filter>
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
@@ -61,7 +71,6 @@
             android:label="@string/open_source_license" >
             <intent-filter>
                 <action android:name="com.alvinhkh.buseta.OpenSourceLicenses.OPEN" />
-
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>

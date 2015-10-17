@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
@@ -259,13 +260,8 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
                 public void onClickView(View caller) {
                     if (null == mActivity) return;
                     RouteStop routeStop = getObject(caller);
-                    // Go to route stop fragment
-                    ((MainActivity) mActivity).showRouteBoundFragment(routeStop.route_bound.route_no);
-                    ((MainActivity) mActivity).showRouteStopFragment(routeStop.route_bound);
-                    // Open dialog
-                    Intent intent = new Intent(caller.getContext(), RouteEtaActivity.class);
-                    intent.setAction(Intent.ACTION_VIEW);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.URI.STOP));
+                    intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     intent.putExtra(Constants.BUNDLE.STOP_OBJECT, routeStop);
                     mActivity.startActivity(intent);
                 }
@@ -308,9 +304,11 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
                 inflate(R.layout.card_history, viewGroup, false);
         return new HistoryViewHolder(v, new RecyclerViewHolder.ViewHolderClicks() {
             public void onClickView(View caller) {
+                if (null == mActivity) return;
                 TextView textView = (TextView) caller.findViewById(android.R.id.text1);
                 String _route_no = textView.getText().toString();
-                ((MainActivity) mActivity).showRouteBoundFragment(_route_no);
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.URI.ROUTE + _route_no));
+                mActivity.startActivity(intent);
             }
 
             public boolean onLongClickView(View caller) {

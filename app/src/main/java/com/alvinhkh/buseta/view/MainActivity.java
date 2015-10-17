@@ -65,7 +65,16 @@ import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.koushikdutta.ion.Ion;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener,
@@ -82,12 +91,13 @@ public class MainActivity extends AppCompatActivity
     private CheckUpdateReceiver mReceiver;
     private Snackbar mSnackbar;
     private AdView mAdView;
+    private GoogleApiClient mClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        mClient = new GoogleApiClient.Builder(this).addApi(AppIndex.APP_INDEX_API).build();
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         // Set up a listener whenever a key changes
         PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).registerOnSharedPreferenceChangeListener(this);
@@ -167,38 +177,111 @@ public class MainActivity extends AppCompatActivity
         // check app and suggestion database updates
         Intent intent = new Intent(this, CheckUpdateService.class);
         startService(intent);
-        // Ad
-        createAdView();
-        //
-        if (null != getIntent()) {
-            RouteStop object = getIntent().getParcelableExtra(Constants.BUNDLE.STOP_OBJECT);
-            if (null != object) {
-                // Go to route stop fragment
-                showRouteBoundFragment(object.route_bound.route_no);
-                showRouteStopFragment(object.route_bound);
-                // Open dialog
-                Intent dialogIntent = new Intent(getApplicationContext(), RouteEtaActivity.class);
-                dialogIntent.setAction(Intent.ACTION_VIEW);
-                dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                dialogIntent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
-                startActivity(dialogIntent);
-            }
-        }
+        createAdView(); // Ad
+        onNewIntent(getIntent());
     }
+
+    private String routeNo;
 
     @Override
     public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         if (null == intent) return;
-        RouteStop object = intent.getParcelableExtra(Constants.BUNDLE.STOP_OBJECT);
-        if (null == object) return;
-        showRouteBoundFragment(object.route_bound.route_no);
-        showRouteStopFragment(object.route_bound);
-        Intent dialogIntent = new Intent(getApplicationContext(), RouteEtaActivity.class);
-        dialogIntent.setAction(Intent.ACTION_VIEW);
-        dialogIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        dialogIntent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
-        startActivity(dialogIntent);
+        String action = intent.getAction();
+        String data = intent.getDataString();
+
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            String query = intent.getStringExtra(SearchManager.QUERY);
+            showRouteBoundFragment(query);
+            return;
+        }
+        if (Intent.ACTION_VIEW.equals(action) && data != null) {
+            RouteStop routeStop = intent.getParcelableExtra(Constants.BUNDLE.STOP_OBJECT);
+            if (null != routeStop) {
+                // with stop object to open dialog
+                showRouteBoundFragment(routeStop.route_bound.route_no);
+                showRouteStopFragment(routeStop.route_bound);
+                Intent dialogIntent = new Intent(getApplicationContext(), RouteEtaActivity.class);
+                dialogIntent.setAction(Intent.ACTION_VIEW);
+                dialogIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                dialogIntent.putExtra(Constants.BUNDLE.STOP_OBJECT, routeStop);
+                startActivity(dialogIntent);
+                return;
+            }
+            RouteBound routeBound = intent.getParcelableExtra(Constants.BUNDLE.BOUND_OBJECT);
+            if (null != routeBound) {
+                showRouteBoundFragment(routeBound.route_no);
+                showRouteStopFragment(routeBound);
+                return;
+            }
+            if (null != routeNo && !routeNo.equals(""))
+                appIndexStop(routeNo);
+            String regex = "/route/(.*)/?";
+            Pattern regexPattern = Pattern.compile(regex);
+            Matcher match = regexPattern.matcher(data);
+            if (match.find()) {
+                routeNo = match.group(1);
+            } else {
+                routeNo = data.substring(data.lastIndexOf("/") + 1);
+            }
+            showRouteBoundFragment(routeNo);
+            appIndexStart(routeNo);
+        }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        appIndexStart(routeNo);
+    }
+
+    @Override
+    public void onStop() {
+        appIndexStop(routeNo);
+        super.onStop();
+    }
+
+    private void appIndexStart(final String routeNo) {
+        if (null == routeNo || routeNo.equals("")) return;
+        final String route = routeNo.trim().replace(" ", "");
+        if (!mClient.isConnected())
+            mClient.connect();
+        final String TITLE = route;
+        final Uri APP_URI = Uri.parse(Constants.URI.APP).buildUpon().appendPath(route).build();
+        // Log.d(TAG, APP_URI.toString());
+        Action viewAction = Action.newAction(Action.TYPE_VIEW, TITLE, APP_URI);
+        PendingResult<Status> result = AppIndex.AppIndexApi.start(mClient, viewAction);
+        result.setResultCallback(new ResultCallback<Status>() {
+            @Override
+            public void onResult(Status status) {
+                if (status.isSuccess()) {
+                    Log.d(TAG, "App Indexing: Recorded " + route + " view successfully.");
+                } else {
+                    Log.e(TAG, "App Indexing: " + status.toString());
+                }
+            }
+        });
+    }
+
+    private void appIndexStop(final String routeNo) {
+        if (null == routeNo || routeNo.equals("")) return;
+        // Call end() and disconnect the client
+        final String TITLE = routeNo;
+        final String route = routeNo.trim().replace(" ", "");
+        final Uri APP_URI = Uri.parse(Constants.URI.APP).buildUpon().appendPath(route).build();
+        Action viewAction = Action.newAction(Action.TYPE_VIEW, TITLE, APP_URI);
+        PendingResult<Status> result = AppIndex.AppIndexApi.end(mClient, viewAction);
+        result.setResultCallback(new ResultCallback<Status>() {
+            @Override
+            public void onResult(Status status) {
+                if (status.isSuccess()) {
+                    Log.d(TAG, "App Indexing: Recorded " + route + " view end successfully.");
+                } else {
+                    Log.e(TAG, "App Indexing: " + status.toString());
+                }
+            }
+        });
+        mClient.disconnect();
     }
 
     @Override
@@ -344,7 +427,8 @@ public class MainActivity extends AppCompatActivity
         int indexColumnSuggestion = cursor.getColumnIndex(SuggestionTable.COLUMN_TEXT);
         String route_no = cursor.getString(indexColumnSuggestion);
         cursor.close();
-        showRouteBoundFragment(route_no);
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.URI.ROUTE + route_no));
+        startActivity(intent);
         return true;
     }
 
@@ -383,7 +467,8 @@ public class MainActivity extends AppCompatActivity
                 }, 5000);
             }
         } else {
-            showRouteBoundFragment(query);
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.URI.ROUTE + query));
+            startActivity(intent);
         }
         return true;
     }

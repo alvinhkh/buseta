@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -231,7 +232,10 @@ public class RouteBoundFragment extends Fragment
             routeBound.route_bound = String.valueOf(position + 1);
             routeBound.origin_tc = textView_origin_tc.getText().toString();
             routeBound.destination_tc = textView_destination_tc.getText().toString();
-            ((MainActivity) getActivity()).showRouteStopFragment(routeBound);
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.URI.BOUND));
+            intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            intent.putExtra(Constants.BUNDLE.BOUND_OBJECT, routeBound);
+            getActivity().startActivity(intent);
         }
     }
 

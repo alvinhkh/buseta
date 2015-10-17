@@ -22,8 +22,15 @@ public class Constants {
         String REQUEST_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2478.0 Safari/537.36";
     }
 
+    public interface URI {
+        String APP = "android-app://com.alvinhkh.buseta/buseta/route";
+        String ROUTE = "buseta://route/";
+        String BOUND = "buseta://route/bound/";
+        String STOP = "buseta://route/stop/";
+    }
+
     public interface ROUTES {
-        Integer VERSION = 20151015;
+        Integer VERSION = 20151018;
     }
 
     public interface MESSAGE {
