@@ -1,0 +1,12 @@
+[{
+	"suggestion_check": false,
+	"suggestion_database": 20151018,
+	"version_code": 1501,
+	"version_name": "0.1.5",
+	"content": "- 在通知欄顯示抵站時間預報\n- App Indexing",
+	"updated": "2015-10-18",
+	"url": "https://play.google.com/store/apps/details?id=com.alvinhkh.buseta",
+	"notify": false,
+	"force": false,
+	"download": false
+}]
