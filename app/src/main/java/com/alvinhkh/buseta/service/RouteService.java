@@ -155,12 +155,6 @@ public class RouteService extends IntentService {
                     if (rowInserted > 0) {
                         // Log.d(TAG, "Route Bound: " + rowInserted);
                         sendUpdate(routeNo, Constants.STATUS.UPDATED_BOUNDS);
-                        // save history
-                        ContentValues values = new ContentValues();
-                        values.put(SuggestionTable.COLUMN_TEXT, routeNo);
-                        values.put(SuggestionTable.COLUMN_TYPE, SuggestionTable.TYPE_HISTORY);
-                        values.put(SuggestionTable.COLUMN_DATE, String.valueOf(System.currentTimeMillis() / 1000L));
-                        getContentResolver().insert(SuggestionProvider.CONTENT_URI, values);
                     }
                 } else if (!result.get("valid").getAsBoolean() &&
                         !result.get("message").getAsString().equals("")) {

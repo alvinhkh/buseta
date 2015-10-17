@@ -2,6 +2,7 @@ package com.alvinhkh.buseta.view.fragment;
 
 import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -38,6 +39,8 @@ import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.provider.FollowProvider;
 import com.alvinhkh.buseta.provider.RouteProvider;
 import com.alvinhkh.buseta.provider.RouteBoundTable;
+import com.alvinhkh.buseta.provider.SuggestionProvider;
+import com.alvinhkh.buseta.provider.SuggestionTable;
 import com.alvinhkh.buseta.service.RouteService;
 import com.alvinhkh.buseta.view.MainActivity;
 import com.alvinhkh.buseta.R;
@@ -338,6 +341,12 @@ public class RouteBoundFragment extends Fragment
                             f.mAdapter.notifyDataSetChanged();
                             if (null != c)
                                 c.close();
+                            // save history
+                            ContentValues values = new ContentValues();
+                            values.put(SuggestionTable.COLUMN_TEXT, routeNo);
+                            values.put(SuggestionTable.COLUMN_TYPE, SuggestionTable.TYPE_HISTORY);
+                            values.put(SuggestionTable.COLUMN_DATE, String.valueOf(System.currentTimeMillis() / 1000L));
+                            f.mContext.getContentResolver().insert(SuggestionProvider.CONTENT_URI, values);
                             if (null != f.mEmptyText)
                                 f.mEmptyText.setText("");
                             if (null != f.mProgressBar)
