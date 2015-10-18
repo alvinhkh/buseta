@@ -1,11 +1,14 @@
 package com.alvinhkh.buseta;
 
+import android.content.Context;
+import android.content.pm.PackageManager;
+
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class Utils {
 
-    public static final String md5(final String s) {
+    public static String md5(final String s) {
         // Reference: http://stackoverflow.com/a/18114634/2411672
         try {
             // Create MD5 Hash
@@ -28,6 +31,17 @@ public class Utils {
             e.printStackTrace();
         }
         return "";
+    }
+
+    public static boolean isPackageInstalled(String name, Context context) {
+        if (null == context) return false;
+        PackageManager pm = context.getPackageManager();
+        try {
+            pm.getPackageInfo(name, PackageManager.GET_ACTIVITIES);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
     }
 
 }

@@ -20,6 +20,7 @@ public class Constants {
         String ETA_MOBILE_API = "http://etav2.kmb.hk";
         String REQUEST_REFERRER = HTML_ETA;
         String REQUEST_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2478.0 Safari/537.36";
+        String STATIC_MAP = "http://maps.google.com/maps/api/staticmap?zoom=16&size=320x320&sensor=false&center=";
     }
 
     public interface URI {
@@ -67,6 +68,7 @@ public class Constants {
         String MESSAGE_ID = "com.alvinhkh.buseta.MESSAGE_ID";
         String ROUTE_NO = "com.alvinhkh.buseta.ROUTE_NO";
         String STOP_OBJECT = "com.alvinhkh.buseta.STOP_OBJECT";
+        String STOP_BITMAP = "com.alvinhkh.buseta.STOP_BITMAP";
         String BOUND_OBJECT = "com.alvinhkh.buseta.BOUND_OBJECT";
         String UPDATE_MESSAGE = "com.alvinhkh.buseta.UPDATE_MESSAGE";
     }

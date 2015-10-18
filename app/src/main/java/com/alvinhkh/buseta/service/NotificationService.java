@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta.service;
 
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -12,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.util.SparseArray;
@@ -20,7 +20,6 @@ import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.EtaAdapterHelper;
 import com.alvinhkh.buseta.holder.RouteStop;
-import com.alvinhkh.buseta.view.MainActivity;
 
 import org.jsoup.Jsoup;
 
@@ -32,7 +31,7 @@ public class NotificationService extends Service {
     private static final String ACTION_CANCEL = "ACTION_CANCEL";
     private static final String NOTIFICATION_ID = "NOTIFICATION_ID";
 
-    protected NotificationManager mNotifyManager;
+    protected NotificationManagerCompat mNotifyManager;
     protected NotificationCompat.Builder mBuilder;
 
     private SparseArray<RouteStop> routeStopArray;
@@ -75,7 +74,7 @@ public class NotificationService extends Service {
             // Log.d(TAG, "Remove: " + notificationId);
             if (null != routeStopArray)
                 routeStopArray.delete(notificationId);
-            mNotifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            mNotifyManager = NotificationManagerCompat.from(this);
             mNotifyManager.cancel(notificationId);
             if (routeStopArray.size() < 1)
                 stopSelf();
@@ -106,7 +105,7 @@ public class NotificationService extends Service {
         Log.d(TAG, "onDestroy");
         if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
             mAutoRefreshHandler.removeCallbacks(mAutoRefreshRunnable);
-        mNotifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotifyManager = NotificationManagerCompat.from(this);
         mNotifyManager.cancelAll();
         if (null != routeStopArray)
             routeStopArray.clear();
@@ -116,6 +115,7 @@ public class NotificationService extends Service {
     }
 
     private int parse(RouteStop object) {
+        if (null == object || null == object.route_bound) return -1;
         StringBuilder smallContentTitle = new StringBuilder();
         StringBuilder smallText = new StringBuilder();
         StringBuilder bigText = new StringBuilder();
@@ -189,6 +189,25 @@ public class NotificationService extends Service {
         notificationId -= object.name_tc.codePointAt(object.name_tc.length()-1);
         notificationId += object.route_bound.destination_tc.codePointAt(0);
         int color = ContextCompat.getColor(context, R.color.primary);
+        NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender();
+        wearableExtender.setHintScreenTimeout(NotificationCompat.WearableExtender.SCREEN_TIMEOUT_LONG);
+        if (null != object.bitmap)
+            wearableExtender.setBackground(object.bitmap);
+        if (null != object.details) {
+            Uri uri = new Uri.Builder().scheme("geo")
+                    .appendPath(object.details.lat + "," + object.details.lng)
+                    .appendQueryParameter("q", object.details.lat + "," + object.details.lng +
+                            "(" + object.name_tc + ")")
+                    .build();
+            Intent mapIntent = new Intent(Intent.ACTION_VIEW, uri);
+            PendingIntent pendingIntent =
+                    PendingIntent.getActivity(this, 0, mapIntent, 0);
+            NotificationCompat.Action action =
+                    new NotificationCompat.Action.Builder(R.drawable.ic_map_white_48dp,
+                            getString(R.string.action_open_map), pendingIntent)
+                            .build();
+            wearableExtender.addAction(action);
+        }
         if (null == mBuilder)
             mBuilder = new NotificationCompat.Builder(context);
         Intent notificationIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.URI.STOP));
@@ -207,9 +226,12 @@ public class NotificationService extends Service {
                 .setSmallIcon(R.drawable.ic_directions_bus_white_24dp)
                 .setColor(color)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setCategory(NotificationCompat.CATEGORY_STATUS)
                 .setContentIntent(pendingIntent)
-                .setDeleteIntent(createDeleteIntent(context, notificationId));
-        mNotifyManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+                .setDeleteIntent(createDeleteIntent(context, notificationId))
+                .extend(wearableExtender);
+        mNotifyManager = NotificationManagerCompat.from(this);
         mNotifyManager.notify(notificationId, mBuilder.build());
         routeStopArray.put(notificationId, object);
         // Log.d(TAG, "Add: " + notificationId + " " + object.name_tc);

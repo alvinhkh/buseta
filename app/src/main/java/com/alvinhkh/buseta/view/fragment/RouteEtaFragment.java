@@ -34,6 +34,7 @@ import android.widget.Toast;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.Utils;
 import com.alvinhkh.buseta.holder.EtaAdapterHelper;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
@@ -68,7 +69,8 @@ import java.util.Date;
 public class RouteEtaFragment extends Fragment
         implements SwipeRefreshLayout.OnRefreshListener,
         OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener,
-        GoogleMap.OnMapLongClickListener, GoogleMap.OnMarkerClickListener {
+        GoogleMap.OnMapLongClickListener, GoogleMap.OnMarkerClickListener,
+        GoogleMap.SnapshotReadyCallback {
 
     private static final String TAG = RouteEtaFragment.class.getSimpleName();
 
@@ -83,7 +85,8 @@ public class RouteEtaFragment extends Fragment
     private TextView tServerTime;
     private TextView lLastUpdated;
     private TextView tLastUpdated;
-    private Bitmap mBitmap = null;
+    private Bitmap mImageBitmap = null;
+    private Bitmap mMapBitmap = null;
     private Menu mMenu;
     private MenuItem mRefresh;
     private MenuItem mFollow;
@@ -121,7 +124,7 @@ public class RouteEtaFragment extends Fragment
         if (null != savedInstanceState) {
             object = savedInstanceState.getParcelable(Constants.BUNDLE.STOP_OBJECT);
             object = getObject(object);
-            mBitmap = savedInstanceState.getParcelable("stop_image_bitmap");
+            mImageBitmap = savedInstanceState.getParcelable("stop_image_bitmap");
             imageVisible = savedInstanceState.getBoolean("imageVisibility", false);
         } else {
             if (null != getArguments()) {
@@ -189,9 +192,9 @@ public class RouteEtaFragment extends Fragment
         if (null != mImageContainer)
             outState.putBoolean("imageVisibility", mImageContainer.getVisibility() == View.VISIBLE);
         if (null != mImageView)
-            mBitmap = Ion.with(mImageView).getBitmap();
-        if (null != mBitmap)
-            outState.putParcelable("stop_image_bitmap", mBitmap);
+            mImageBitmap = Ion.with(mImageView).getBitmap();
+        if (null != mImageBitmap)
+            outState.putParcelable("stop_image_bitmap", mImageBitmap);
     }
 
     @Override
@@ -258,13 +261,15 @@ public class RouteEtaFragment extends Fragment
                 }
                 getHeaderView(id == R.id.action_show_photo);
                 break;
-            case R.id.action_send:
+            case R.id.action_open_map:
                 if (null == object.details) break;
                 Uri uri = new Uri.Builder().scheme("geo")
                         .appendPath(object.details.lat + "," + object.details.lng)
-                        .appendQueryParameter("q", object.details.lat + "," + object.details.lng)
+                        .appendQueryParameter("q", object.details.lat + "," + object.details.lng +
+                                "(" + object.name_tc + ")")
                         .build();
-                startActivity(new Intent(android.content.Intent.ACTION_VIEW, uri));
+                Intent mapIntent = new Intent(Intent.ACTION_VIEW, uri);
+                startActivity(mapIntent);
                 break;
             case android.R.id.home:
             case R.id.action_follow:
@@ -339,6 +344,10 @@ public class RouteEtaFragment extends Fragment
                 break;
             case R.id.action_notification:
                 Intent notificationIntent = new Intent(mContext, NotificationService.class);
+                if (null != mImageBitmap)
+                    object.bitmap = mImageBitmap;
+                else if (null != mMapBitmap)
+                    object.bitmap = mMapBitmap;
                 notificationIntent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
                 mContext.startService(notificationIntent);
                 if (null != getView() && null != getView().getRootView()) {
@@ -400,6 +409,11 @@ public class RouteEtaFragment extends Fragment
     public boolean onMarkerClick(Marker marker) {
         marker.showInfoWindow();
         return true;
+    }
+
+    @Override
+    public void onSnapshotReady(Bitmap snapshot) {
+        mMapBitmap = snapshot;
     }
 
     private void resetMap(final GoogleMap map) {
@@ -624,8 +638,8 @@ public class RouteEtaFragment extends Fragment
                 }
                 mapContainer.setVisibility(View.GONE);
                 mImageContainer.setVisibility(View.VISIBLE);
-                if (null != mBitmap) {
-                    mImageView.setImageBitmap(mBitmap);
+                if (null != mImageBitmap) {
+                    mImageView.setImageBitmap(mImageBitmap);
                     mImageView.setAnimation(fadeIn);
                 } else {
                     if (null != object)
@@ -640,7 +654,7 @@ public class RouteEtaFragment extends Fragment
                             .setCallback(new FutureCallback<ImageView>() {
                                 @Override
                                 public void onCompleted(Exception e, ImageView result) {
-                                    mBitmap = Ion.with(mImageView).getBitmap();
+                                    mImageBitmap = Ion.with(mImageView).getBitmap();
                                 }
                             });
                 }
@@ -654,6 +668,19 @@ public class RouteEtaFragment extends Fragment
                 mapContainer.setVisibility(View.VISIBLE);
                 mapContainer.setAnimation(fadeIn);
                 mImageContainer.setVisibility(View.GONE);
+                if (Utils.isPackageInstalled("com.google.android.wearable.app", mContext))
+                if (null != object && null != object.details)
+                    Ion.with(mContext)
+                            .load(Constants.URL.STATIC_MAP +
+                                    object.details.lat + "," + object.details.lng +
+                                    "&markers=size:mid%7C" + object.details.lat + "," + object.details.lng)
+                            .asBitmap()
+                            .setCallback(new FutureCallback<Bitmap>() {
+                                @Override
+                                public void onCompleted(Exception e, Bitmap result) {
+                                    mMapBitmap = result;
+                                }
+                            });
             }
         }
     }
