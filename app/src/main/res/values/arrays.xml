@@ -2,13 +2,13 @@
 <resources>
     
     <string-array name="eta_version_entries">
-        <item>網頁版 (分鐘)</item>
         <item>流動版 (時間)</item>
+        <item>網頁版 (分鐘)</item>
     </string-array>
 
     <string-array name="eta_version_values">
-        <item>1</item>
         <item>2</item>
+        <item>1</item>
     </string-array>
     
 </resources>

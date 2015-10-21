@@ -339,6 +339,17 @@ public class CheckEtaService extends IntentService {
                 }
 
                 if (etaApi.equals("")) {
+                    // 21 Oct 2015
+                    Pattern p = Pattern.compile("eq\\|([^\\|]*)\\|(t[a-zA-Z0-9_.]*)\\|");
+                    Matcher m = p.matcher(result);
+                    if (m.find() && m.groupCount() == 2) {
+                        etaApi = Constants.URL.KMB + Constants.URL.PATH_ETA_API
+                                + m.group(1) + ".php?" + m.group(2);
+                        Log.d(TAG, "etaApi: found-1021 " + etaApi);
+                    }
+                }
+
+                if (etaApi.equals("")) {
                     // 25 Sept 2015
                     Pattern p = Pattern.compile("\\|([^\\|]*)\\|eq\\|(t[a-zA-Z0-9_.]*)\\|");
                     Matcher m = p.matcher(result);
@@ -381,6 +392,7 @@ public class CheckEtaService extends IntentService {
                 }
 
                 if (etaApi.equals("")) {
+                    Log.d(TAG, "etaJs: " + etaJs);
                     Log.e(TAG, "etaApi: fail " + etaApi);
                     etaApi = null;
                 }
@@ -422,7 +434,7 @@ public class CheckEtaService extends IntentService {
                 if (result.get("valid").getAsBoolean()) {
                     String id = result.get("id").getAsString();
                     String token = result.get("token").getAsString();
-                    Log.d(TAG, "id: " + id + " token: " + token);
+                    // Log.d(TAG, "id: " + id + " token: " + token);
                     // save record
                     SharedPreferences.Editor editor = mPrefs.edit();
                     editor.putString(Constants.PREF.REQUEST_ID, id);
