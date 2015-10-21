@@ -50,8 +50,11 @@ public class CheckUpdateService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         // Log.d(TAG, "onHandleIntent");
-        Boolean triggerUpdateSuggestion =
-                intent.getBooleanExtra(Constants.MESSAGE.SUGGESTION_FORCE_UPDATE, false);
+        Boolean triggerUpdateSuggestion = false;
+        if (null != intent) {
+            triggerUpdateSuggestion =
+                    intent.getBooleanExtra(Constants.MESSAGE.SUGGESTION_FORCE_UPDATE, false);
+        }
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         int routeVersion = mPrefs.getInt(Constants.PREF.VERSION_RECORD, 0);
         if (Constants.ROUTES.VERSION > routeVersion) {

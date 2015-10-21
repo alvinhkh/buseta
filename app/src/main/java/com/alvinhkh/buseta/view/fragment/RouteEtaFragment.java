@@ -449,6 +449,7 @@ public class RouteEtaFragment extends Fragment
     }
 
     private Boolean isFollowing(RouteStop object) {
+        if (null == object || null == object.route_bound) return false;
         final Cursor c = mContext.getContentResolver().query(FollowProvider.CONTENT_URI_FOLLOW,
                 null,
                 FollowTable.COLUMN_ROUTE + " =?" +
@@ -470,6 +471,7 @@ public class RouteEtaFragment extends Fragment
     }
 
     private RouteStop getObject(RouteStop object) {
+        if (null == object || null == object.route_bound) return object;
         final Cursor c = mContext.getContentResolver().query(
                 RouteProvider.CONTENT_URI_STOP,
                 null,
