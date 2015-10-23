@@ -266,8 +266,6 @@ public class RouteBoundFragment extends Fragment
             mAdapter.clear();
             mAdapter.notifyDataSetChanged();
         }
-        if (null != mEmptyText)
-            mEmptyText.setText(R.string.message_loading);
         if (null != mProgressBar)
             mProgressBar.setVisibility(View.VISIBLE);
         Intent intent = new Intent(mContext, RouteService.class);

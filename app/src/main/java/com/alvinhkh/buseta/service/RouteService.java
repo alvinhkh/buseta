@@ -21,22 +21,23 @@ import com.alvinhkh.buseta.preference.SettingsHelper;
 import com.alvinhkh.buseta.provider.RouteBoundTable;
 import com.alvinhkh.buseta.provider.RouteStopTable;
 import com.alvinhkh.buseta.provider.RouteProvider;
-import com.alvinhkh.buseta.provider.SuggestionProvider;
-import com.alvinhkh.buseta.provider.SuggestionTable;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.koushikdutta.async.future.Future;
 import com.koushikdutta.ion.Ion;
 import com.koushikdutta.ion.Response;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 public class RouteService extends IntentService {
 
     private static final String TAG = RouteService.class.getSimpleName();
+    private static final int TIME_OUT = 15 * 1000;
 
     SharedPreferences mPrefs;
     SettingsHelper settingsHelper = null;
@@ -75,23 +76,35 @@ public class RouteService extends IntentService {
 
         String routeNo = extras.getString(Constants.BUNDLE.ROUTE_NO);
         if (null != routeNo) {
-            // request route bounds
-            final ConnectivityManager conMgr =
-                    (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-            final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
-            if (activeNetwork == null || !activeNetwork.isConnected()) {
-                // Check internet connection
-                sendUpdate(routeNo, Constants.STATUS.CONNECTIVITY_INVALID);
-                return;
-            }
-            try {
-                getRouteBound(routeNo);
-            } catch (InterruptedException | ExecutionException e) {
-                Log.e(TAG, e.getMessage());
+            synchronized(this) {
+                Log.d(TAG, "Get Bounds");
+                // request route bounds
+                final ConnectivityManager conMgr =
+                        (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
+                if (activeNetwork == null || !activeNetwork.isConnected()) {
+                    // Check internet connection
+                    sendUpdate(routeNo, Constants.STATUS.CONNECTIVITY_INVALID);
+                    return;
+                }
+                try {
+                    getRouteBound(routeNo);
+                } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                    sendUpdate(routeNo, Constants.STATUS.CONNECT_FAIL);
+                    Log.e(TAG, e.getMessage());
+                    // second attempt
+                    try {
+                        getRouteBound(routeNo);
+                    } catch (InterruptedException | ExecutionException | TimeoutException e2) {
+                        sendUpdate(routeNo, Constants.STATUS.CONNECT_FAIL);
+                        Log.e(TAG, e2.getMessage());
+                    }
+                }
             }
         }
         RouteBound object = extras.getParcelable(Constants.BUNDLE.BOUND_OBJECT);
         if (null != object) {
+            Log.d(TAG, "Get Stops");
             // request route stops
             final ConnectivityManager conMgr =
                     (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -103,64 +116,78 @@ public class RouteService extends IntentService {
             }
             try {
                 getRouteStop(object);
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                sendUpdate(routeNo, Constants.STATUS.CONNECT_FAIL);
                 Log.e(TAG, e.getMessage());
+                // second attempt
+                try {
+                    getRouteStop(object);
+                } catch (InterruptedException | ExecutionException | TimeoutException e2) {
+                    sendUpdate(routeNo, Constants.STATUS.CONNECT_FAIL);
+                    Log.e(TAG, e2.getMessage());
+                }
             }
         }
     }
 
-    private void getRouteBound(final String routeNo) throws ExecutionException, InterruptedException {
+    private void getRouteBound(final String routeNo) throws ExecutionException, InterruptedException, TimeoutException {
         sendUpdate(routeNo, Constants.STATUS.UPDATING_BOUNDS);
         Uri routeStopUri = Uri.parse(mPrefs.getString(Constants.PREF.REQUEST_API_INFO, Constants.URL.ROUTE_INFO))
                 .buildUpon()
                 .appendQueryParameter("t", ((Double) Math.random()).toString())
                 .appendQueryParameter("field9", routeNo)
                 .build();
-        Response<JsonObject> response = Ion.with(this)
+        Future<Response<JsonObject>> conn = Ion.with(this)
                 .load(routeStopUri.toString())
+                .setLogging(TAG, Log.DEBUG)
                 .setHeader("Referer", Constants.URL.REQUEST_REFERRER)
                 .setHeader("X-Requested-With", "XMLHttpRequest")
                 .setHeader("Pragma", "no-cache")
                 .setHeader("User-Agent", Constants.URL.REQUEST_UA)
+                .setTimeout(TIME_OUT)
                 .asJsonObject()
-                .withResponse()
-                .get();
+                .withResponse();
+        Response<JsonObject> response = conn.get();
         if (null != response && response.getHeaders().code() == 200) {
             JsonObject result = response.getResult();
             // Log.d(TAG, result.toString());
             valuesList = new ArrayList<>();
-            if (null != result)
-                if (result.get("valid").getAsBoolean()) {
-                    // token and id
-                    String id = result.get("id").getAsString();
-                    String token = result.get("token").getAsString();
-                    // Log.d(TAG, "id: " + id + " token: " + token);
-                    SharedPreferences.Editor editor = mPrefs.edit();
-                    editor.putString(Constants.PREF.REQUEST_ID, id);
-                    editor.putString(Constants.PREF.REQUEST_TOKEN, token);
-                    editor.apply();
-                    //  Got Bus Line Bounds
-                    JsonArray _bus_arr = result.getAsJsonArray("bus_arr");
-                    int seq = 1;
-                    for (JsonElement element : _bus_arr) {
-                        Gson gson = new Gson();
-                        RouteBound routeBound = gson.fromJson(element.getAsJsonObject(), RouteBound.class);
-                        routeBound.route_no = routeNo;
-                        routeBound.route_bound = String.valueOf(seq);
-                        valuesList.add(toContentValues(routeBound));
-                        seq++;
-                    }
-                    int rowInserted = getContentResolver().bulkInsert(RouteProvider.CONTENT_URI_BOUND,
-                            valuesList.toArray(new ContentValues[valuesList.size()]));
-                    if (rowInserted > 0) {
-                        // Log.d(TAG, "Route Bound: " + rowInserted);
-                        sendUpdate(routeNo, Constants.STATUS.UPDATED_BOUNDS);
-                    }
-                } else if (!result.get("valid").getAsBoolean() &&
-                        !result.get("message").getAsString().equals("")) {
-                    // Invalid request with output message
-                    sendUpdate(routeNo, result.get("message").getAsString());
+            if (null != result && result.get("valid").getAsBoolean()) {
+                // token and id
+                String id = result.get("id").getAsString();
+                String token = result.get("token").getAsString();
+                // Log.d(TAG, "id: " + id + " token: " + token);
+                SharedPreferences.Editor editor = mPrefs.edit();
+                editor.putString(Constants.PREF.REQUEST_ID, id);
+                editor.putString(Constants.PREF.REQUEST_TOKEN, token);
+                editor.apply();
+                //  Got Bus Line Bounds
+                JsonArray _bus_arr = result.getAsJsonArray("bus_arr");
+                int seq = 1;
+                for (JsonElement element : _bus_arr) {
+                    Gson gson = new Gson();
+                    RouteBound routeBound = gson.fromJson(element.getAsJsonObject(), RouteBound.class);
+                    routeBound.route_no = routeNo;
+                    routeBound.route_bound = String.valueOf(seq);
+                    valuesList.add(toContentValues(routeBound));
+                    seq++;
                 }
+                int rowInserted = getContentResolver().bulkInsert(RouteProvider.CONTENT_URI_BOUND,
+                        valuesList.toArray(new ContentValues[valuesList.size()]));
+                if (rowInserted > 0) {
+                    // Log.d(TAG, "Route Bound: " + rowInserted);
+                    sendUpdate(routeNo, Constants.STATUS.UPDATED_BOUNDS);
+                }
+            } else if (null != result &&
+                    !result.get("valid").getAsBoolean() &&
+                    !result.get("message").getAsString().equals("")) {
+                // Invalid request with output message
+                sendUpdate(routeNo, result.get("message").getAsString());
+            } else {
+                sendUpdate(routeNo, Constants.STATUS.CONNECT_FAIL);
+                if (null != result)
+                    Log.d(TAG, "bound: " + result.toString());
+            }
         } else if (null != response && response.getHeaders().code() == 404) {
             sendUpdate(routeNo, Constants.STATUS.CONNECT_404);
         } else {
@@ -168,7 +195,7 @@ public class RouteService extends IntentService {
         }
     }
 
-    private void getRouteStop(final RouteBound object) throws ExecutionException, InterruptedException {
+    private void getRouteStop(final RouteBound object) throws ExecutionException, InterruptedException, TimeoutException {
         sendUpdate(object, Constants.STATUS.UPDATING_STOPS);
         Uri routeStopUri = Uri.parse(mPrefs.getString(Constants.PREF.REQUEST_API_INFO, Constants.URL.ROUTE_INFO))
                 .buildUpon()
@@ -177,52 +204,58 @@ public class RouteService extends IntentService {
                 .appendQueryParameter("field9", object.route_no)
                 .appendQueryParameter("routebound", object.route_bound)
                 .build();
-       Response<JsonObject> response = Ion.with(this)
+        Future<Response<JsonObject>> conn = Ion.with(this)
                 .load(routeStopUri.toString())
+                .setLogging(TAG, Log.DEBUG)
                 .setHeader("Referer", Constants.URL.REQUEST_REFERRER)
                 .setHeader("X-Requested-With", "XMLHttpRequest")
                 .setHeader("Pragma", "no-cache")
                 .setHeader("User-Agent", Constants.URL.REQUEST_UA)
+                .setTimeout(TIME_OUT)
                 .asJsonObject()
-                .withResponse()
-                .get();
+                .withResponse();
+        Response<JsonObject> response = conn.get();
         if (null != response && response.getHeaders().code() == 200) {
             JsonObject result = response.getResult();
             // Log.d(TAG, result.toString());
             valuesList = new ArrayList<>();
-            if (null != result)
-                if (result.get("valid").getAsBoolean()) {
-                    // token and id
-                    String id = result.get("id").getAsString();
-                    String token = result.get("token").getAsString();
-                    Log.d(TAG, "id: " + id + " token: " + token);
-                    SharedPreferences.Editor editor = mPrefs.edit();
-                    editor.putString(Constants.PREF.REQUEST_ID, id);
-                    editor.putString(Constants.PREF.REQUEST_TOKEN, token);
-                    editor.apply();
-                    //  Got Bus Line Stops
-                    JsonArray _bus_arr = result.getAsJsonArray("bus_arr");
-                    int seq = 0;
-                    for (JsonElement element : _bus_arr) {
-                        Gson gson = new Gson();
-                        RouteStop routeStop = gson.fromJson(element.getAsJsonObject(), RouteStop.class);
-                        routeStop.route_bound = object;
-                        routeStop.stop_seq = String.valueOf(seq);
-                        valuesList.add(toContentValues(routeStop));
-                        seq++;
-                    }
-                    int rowInserted = getContentResolver().bulkInsert(RouteProvider.CONTENT_URI_STOP,
-                            valuesList.toArray(new ContentValues[valuesList.size()]));
-                    if (rowInserted > 0) {
-                        // Log.d(TAG, "Route Stop: " + rowInserted);
-                        sendUpdate(object, Constants.STATUS.UPDATED_STOPS);
-                    }
-                    getRouteFares(object);
-                } else if (!result.get("valid").getAsBoolean() &&
-                        !result.get("message").getAsString().equals("")) {
-                    // Invalid request with output message
-                    sendUpdate(object, result.get("message").getAsString());
+            if (null != result && result.get("valid").getAsBoolean()) {
+                // token and id
+                String id = result.get("id").getAsString();
+                String token = result.get("token").getAsString();
+                Log.d(TAG, "id: " + id + " token: " + token);
+                SharedPreferences.Editor editor = mPrefs.edit();
+                editor.putString(Constants.PREF.REQUEST_ID, id);
+                editor.putString(Constants.PREF.REQUEST_TOKEN, token);
+                editor.apply();
+                //  Got Bus Line Stops
+                JsonArray _bus_arr = result.getAsJsonArray("bus_arr");
+                int seq = 0;
+                for (JsonElement element : _bus_arr) {
+                    Gson gson = new Gson();
+                    RouteStop routeStop = gson.fromJson(element.getAsJsonObject(), RouteStop.class);
+                    routeStop.route_bound = object;
+                    routeStop.stop_seq = String.valueOf(seq);
+                    valuesList.add(toContentValues(routeStop));
+                    seq++;
                 }
+                int rowInserted = getContentResolver().bulkInsert(RouteProvider.CONTENT_URI_STOP,
+                        valuesList.toArray(new ContentValues[valuesList.size()]));
+                if (rowInserted > 0) {
+                    // Log.d(TAG, "Route Stop: " + rowInserted);
+                    sendUpdate(object, Constants.STATUS.UPDATED_STOPS);
+                }
+                getRouteFares(object);
+            } else if (null != result &&
+                    !result.get("valid").getAsBoolean() &&
+                    !result.get("message").getAsString().equals("")) {
+                // Invalid request with output message
+                sendUpdate(object, result.get("message").getAsString());
+            } else {
+                sendUpdate(object, Constants.STATUS.CONNECT_FAIL);
+                if (null != result)
+                    Log.d(TAG, "stop: " + result.toString());
+            }
         } else if (null != response && response.getHeaders().code() == 404) {
             sendUpdate(object, Constants.STATUS.CONNECT_404);
         } else {
@@ -235,17 +268,19 @@ public class RouteService extends IntentService {
         final String route_no = object.route_no;
         final String route_bound = object.route_bound;
         final String route_st = "01"; // TODO: selectable
-        Response<JsonArray> response = Ion.with(this)
+        Future<Response<JsonArray>> conn = Ion.with(this)
                 .load(Constants.URL.ROUTE_MAP)
                 .setHeader("Referer", Constants.URL.HTML_SEARCH)
                 .setHeader("X-Requested-With", "XMLHttpRequest")
                 .setHeader("Pragma", "no-cache")
                 .setHeader("User-Agent", Constants.URL.REQUEST_UA)
+                .setTimeout(TIME_OUT)
                 .setBodyParameter("bn", route_no)
                 .setBodyParameter("dir", route_bound)
                 .setBodyParameter("ST", route_st)
                 .asJsonArray()
-                .withResponse().get();
+                .withResponse();
+        Response<JsonArray> response = conn.get();
         if (null != response && response.getHeaders().code() == 200) {
             JsonArray result = response.getResult();
             // Log.d(TAG, result.toString());

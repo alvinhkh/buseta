@@ -283,7 +283,8 @@ public class NotificationService extends Service {
                 Intent updateIntent = new Intent(getApplicationContext(), CheckEtaService.class);
                 updateIntent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
                 updateIntent.putExtra(Constants.MESSAGE.NOTIFICATION_UPDATE, key);
-                startService(updateIntent);
+                if (null != getApplication())
+                    getApplication().startService(updateIntent);
             }
             mAutoRefreshHandler.postDelayed(mAutoRefreshRunnable, 15 * 1000); // every 15 seconds
         }

@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 public class CheckEtaService extends IntentService {
 
     private static final String TAG = CheckEtaService.class.getSimpleName();
+    private static final int TIME_OUT = 30 * 1000;
 
     SharedPreferences mPrefs;
     SettingsHelper settingsHelper = null;
@@ -134,6 +135,7 @@ public class CheckEtaService extends IntentService {
         Ion.with(getApplicationContext())
                 .load(routeEtaUri.toString())
                 .setHeader("X-Requested-With", "XMLHttpRequest")
+                .setTimeout(TIME_OUT)
                 .asJsonObject()
                 .setCallback(new FutureCallback<JsonObject>() {
                     @Override
@@ -214,6 +216,7 @@ public class CheckEtaService extends IntentService {
                 .setHeader("X-Requested-With", "XMLHttpRequest")
                 .setHeader("Pragma", "no-cache")
                 .setHeader("User-Agent", Constants.URL.REQUEST_UA)
+                .setTimeout(TIME_OUT)
                 .setBodyParameter("route", route_no)
                 .setBodyParameter("route_no", route_no)
                 .setBodyParameter("bound", routeStop.route_bound.route_bound)
@@ -297,6 +300,7 @@ public class CheckEtaService extends IntentService {
                 .load(Constants.URL.HTML_ETA)
                 .setHeader("Referer", Constants.URL.KMB)
                 .setHeader("User-Agent", Constants.URL.REQUEST_UA)
+                .setTimeout(TIME_OUT)
                 .asString()
                 .withResponse()
                 .get();
@@ -321,6 +325,7 @@ public class CheckEtaService extends IntentService {
                 .load(etaJs)
                 .setHeader("Referer", Constants.URL.REQUEST_REFERRER)
                 .setHeader("User-Agent", Constants.URL.REQUEST_UA)
+                .setTimeout(TIME_OUT)
                 .asString()
                 .withResponse()
                 .get();
@@ -424,6 +429,7 @@ public class CheckEtaService extends IntentService {
                 .setHeader("X-Requested-With", "XMLHttpRequest")
                 .setHeader("Pragma", "no-cache")
                 .setHeader("User-Agent", Constants.URL.REQUEST_UA)
+                .setTimeout(TIME_OUT)
                 .asJsonObject()
                 .withResponse()
                 .get();
