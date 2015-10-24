@@ -47,6 +47,12 @@
             android:persistent="false" />
 
         <Preference
+            android:key="send_logcat"
+            android:title="@string/title_send_logcat"
+            android:summary="@string/summary_send_logcat"
+            android:persistent="false" />
+
+        <Preference
             android:key="check_app_update"
             android:title="@string/title_check_app_update"
             android:summary="@string/summary_check_app_update"

@@ -281,6 +281,7 @@ public class NotificationService extends Service {
                 int key = routeStopArray.keyAt(i);
                 RouteStop object = routeStopArray.get(key);
                 Intent updateIntent = new Intent(getApplicationContext(), CheckEtaService.class);
+                object.bitmap = null;
                 updateIntent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
                 updateIntent.putExtra(Constants.MESSAGE.NOTIFICATION_UPDATE, key);
                 if (null != getApplication())

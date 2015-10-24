@@ -17,6 +17,7 @@
     <string name="action_no">否</string>
     <string name="action_confirm">確認</string>
     <string name="action_cancel">取消</string>
+    <string name="action_send_email">發送電子郵件…</string>
     <string name="action_update">更新</string>
     <string name="action_notification">顯示在通知欄</string>
 
@@ -53,6 +54,8 @@
     <string name="summary_on_load_stop_image">自動載入車站圖片</string>
     <string name="summary_off_load_stop_image">預設顯示車站位置，可手動切換顯示圖片</string>
     <string name="category_debug">測試</string>
+    <string name="title_send_logcat">發送 logcat</string>
+    <string name="summary_send_logcat">@string/email_developer</string>
     <string name="title_eta_version">到站時間預報系統</string>
     <string name="title_update_route_suggestion">更新建議路線</string>
     <string name="summary_update_route_suggestion">手動更新有提供到站時間預報的路線資料</string>
@@ -105,6 +108,9 @@
     <string name="message_shown_as_notification">已顯示在通知欄</string>
     <string name="message_total_routes">(共 %s 條路線)</string>
     <string name="message_unfollow">已從追蹤名單中移除</string>
+
+    <string name="email_subject">[BusETA Logcat]</string>
+    <string name="email_developer" translatable="false">email@alvinhkh.com</string>
 
     <string name="url_app" translatable="false">http://buseta.alvinhkh.com</string>
     <string name="url_developer" translatable="false">http://www.alvinhkh.com</string>

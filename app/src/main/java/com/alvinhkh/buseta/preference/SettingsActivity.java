@@ -16,6 +16,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
@@ -56,6 +57,9 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.koushikdutta.ion.Ion;
+
+import java.io.File;
+import java.io.IOException;
 
 public class SettingsActivity extends AppCompatPreferenceActivity {
 
@@ -253,6 +257,15 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                     return true;
                 }
             });
+            // send logcat
+            Preference sendLogcat = getPreferenceScreen().findPreference("send_logcat");
+            sendLogcat.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    sendLogcat();
+                    return true;
+                }
+            });
             // check app update
             Preference appUpdate = getPreferenceScreen().findPreference("check_app_update");
             appUpdate.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
@@ -386,6 +399,28 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
                 ListPreference listPref = (ListPreference) p;
                 p.setSummary(listPref.getEntry());
             }
+        }
+
+        public void sendLogcat() {
+            // save logcat in file
+            File outputFile = new File(Environment.getExternalStorageDirectory(), "buseta-logcat.txt");
+            try {
+                Runtime.getRuntime().exec("logcat -f " + outputFile.getAbsolutePath());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            // send file using email
+            Intent emailIntent = new Intent(Intent.ACTION_SEND);
+            emailIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[] {
+                    getString(R.string.email_developer)
+            });
+            // the attachment
+            emailIntent.setType("text/plain");
+            emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + outputFile.getAbsolutePath()));
+            // the mail subject
+            emailIntent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.email_subject));
+            startActivity(Intent.createChooser(emailIntent , getString(R.string.action_send_email)));
         }
 
         public class CheckUpdateReceiver extends BroadcastReceiver {
