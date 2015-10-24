@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreference
+        android:key="load_stop_image"
+        android:title="@string/title_load_stop_image"
+        android:summaryOn="@string/summary_on_load_stop_image"
+        android:summaryOff="@string/summary_off_load_stop_image"
+        android:defaultValue="false" />
+
+    <Preference
+        android:key="update_route_suggestion"
+        android:title="@string/title_update_route_suggestion"
+        android:summary="@string/summary_update_route_suggestion"
+        android:persistent="false" />
+
+    <Preference
+        android:key="check_app_update"
+        android:title="@string/title_check_app_update"
+        android:summary="@string/summary_check_app_update"
+        android:persistent="false" />
+
+    <PreferenceCategory
+        android:key="category_debug"
+        android:title="@string/category_debug">
+
+        <ListPreference
+            android:key="eta_version"
+            android:title="@string/title_eta_version"
+            android:defaultValue="2"
+            android:entries="@array/eta_version_entries"
+            android:entryValues="@array/eta_version_values"
+            android:negativeButtonText="@string/action_cancel"
+            android:positiveButtonText="@string/action_confirm" />
+
+        <Preference
+            android:key="send_logcat"
+            android:title="@string/title_send_logcat"
+            android:summary="@string/summary_send_logcat"
+            android:persistent="false" />
+
+        <SwitchPreference
+            android:key="com.alvinhkh.buseta.AD_HIDE"
+            android:title="@string/title_hide_ad"
+            android:summaryOn="@string/summary_on_hide_ad"
+            android:summaryOff="@string/summary_off_hide_ad"
+            android:defaultValue="false" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

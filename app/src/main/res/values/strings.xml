@@ -17,7 +17,7 @@
     <string name="action_no">否</string>
     <string name="action_confirm">確認</string>
     <string name="action_cancel">取消</string>
-    <string name="action_send_email">發送電子郵件…</string>
+    <string name="action_send_email">發送電子郵件（連附件）…</string>
     <string name="action_update">更新</string>
     <string name="action_notification">顯示在通知欄</string>
 
@@ -45,25 +45,10 @@
     <string name="label_server_time">獲取數據（伺服器時間）：</string>
 
     <string name="title_settings">設定</string>
-    <string name="category_general">一般</string>
     <string name="title_clear_history">清除搜尋記錄</string>
     <string name="summary_clear_history">@null</string>
     <string name="title_clear_follow">清除追蹤名單</string>
     <string name="summary_clear_follow">@null</string>
-    <string name="title_load_stop_image">顯示車站圖片</string>
-    <string name="summary_on_load_stop_image">自動載入車站圖片</string>
-    <string name="summary_off_load_stop_image">預設顯示車站位置，可手動切換顯示圖片</string>
-    <string name="category_debug">測試</string>
-    <string name="title_send_logcat">發送 logcat</string>
-    <string name="summary_send_logcat">@string/email_developer</string>
-    <string name="title_eta_version">到站時間預報系統</string>
-    <string name="title_update_route_suggestion">更新建議路線</string>
-    <string name="summary_update_route_suggestion">手動更新有提供到站時間預報的路線資料</string>
-    <string name="title_check_app_update">檢查更新</string>
-    <string name="summary_check_app_update">手動檢查應用程式更新</string>
-    <string name="title_hide_ad">隱藏廣告</string>
-    <string name="summary_on_hide_ad">除設定頁面，不顯示其他廣告</string>
-    <string name="summary_off_hide_ad">@null</string>
     <string name="category_about">關於</string>
     <string name="title_app_name" translatable="false">%s \u00A9 2015</string>
     <string name="summary_app_name" translatable="false">@string/url_app</string>
@@ -75,6 +60,22 @@
     <string name="summary_open_source_license">@null</string>
     <string name="category_statement">聲明</string>
     <string name="summary_statement">All data come from official website. \nNo guarantee that the accuracy or timeliness of information provided.</string>
+
+    <string name="title_advanced_settings">進階設定</string>
+    <string name="title_load_stop_image">顯示車站圖片</string>
+    <string name="summary_on_load_stop_image">自動載入車站圖片</string>
+    <string name="summary_off_load_stop_image">預設顯示車站位置，可手動切換顯示圖片</string>
+    <string name="title_update_route_suggestion">更新建議路線</string>
+    <string name="summary_update_route_suggestion">手動更新有提供到站時間預報的路線資料</string>
+    <string name="title_check_app_update">檢查更新</string>
+    <string name="summary_check_app_update">手動檢查應用程式更新</string>
+    <string name="category_debug">測試</string>
+    <string name="title_send_logcat">發送 logcat</string>
+    <string name="summary_send_logcat">@string/email_developer</string>
+    <string name="title_eta_version">到站時間預報系統</string>
+    <string name="title_hide_ad">隱藏廣告</string>
+    <string name="summary_on_hide_ad">除設定頁面，不顯示其他廣告</string>
+    <string name="summary_off_hide_ad">@null</string>
 
     <string name="message_app_update">新版本：%s</string>
     <string name="message_confirm_clear_follow">你確定要清除追蹤名單？</string>

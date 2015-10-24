@@ -85,7 +85,8 @@ public class CheckUpdateService extends IntentService {
                     if (null != object && object.has("suggestion_database")) {
                         AppUpdate appUpdate = new Gson().fromJson(object, AppUpdate.class);
                         if (null != appUpdate) {
-                            sendAppUpdated(appUpdate);
+                            if (!triggerUpdateSuggestion)
+                                sendAppUpdated(appUpdate);
                             Log.d(TAG, "SuggestionDB: " + appUpdate.suggestion_database + " " + routeVersion);
                             if (appUpdate.suggestion_database > routeVersion) {
                                 Log.d(TAG, "DotCom trigger update suggestion database");

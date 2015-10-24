@@ -67,12 +67,13 @@
             android:label="@string/title_settings" >
         </activity>
         <activity
+            android:name=".preference.AdvancedSettingsActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:label="@string/title_advanced_settings" >
+        </activity>
+        <activity
             android:name=".preference.OpenSourceLicensesActivity"
             android:label="@string/open_source_license" >
-            <intent-filter>
-                <action android:name="com.alvinhkh.buseta.OpenSourceLicenses.OPEN" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
         </activity>
 
         <!-- Google Play Services AdActivity -->
