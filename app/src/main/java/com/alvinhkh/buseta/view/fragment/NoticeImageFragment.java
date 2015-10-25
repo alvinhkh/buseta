@@ -22,6 +22,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.alvinhkh.buseta.Connectivity;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RouteNews;
@@ -164,9 +165,7 @@ public class NoticeImageFragment extends Fragment {
     private void showNoticeImage(final String notice_image) {
 
         // Check internet connection
-        final ConnectivityManager conMgr = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
-        if (activeNetwork == null || !activeNetwork.isConnected()) {
+        if (!Connectivity.isConnected(mContext)) {
             Snackbar snackbar = Snackbar.make(getActivity().findViewById(android.R.id.content),
                     R.string.message_no_internet_connection, Snackbar.LENGTH_LONG);
             TextView tv = (TextView)

@@ -42,6 +42,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.alvinhkh.buseta.BuildConfig;
+import com.alvinhkh.buseta.Connectivity;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.AppUpdate;
@@ -99,6 +100,8 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         mClient = new GoogleApiClient.Builder(this).addApi(AppIndex.APP_INDEX_API).build();
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        // check connectivity
+        Connectivity.toLog(this);
         // Set up a listener whenever a key changes
         PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).registerOnSharedPreferenceChangeListener(this);
         // Overview task
@@ -642,7 +645,8 @@ public class MainActivity extends AppCompatActivity
                     message.append(updated);
                     message.append("\n");
                     message.append(content);
-                    Log.d(TAG, "AppVersion: " + versionCode + " " + oVersionCode + " " + BuildConfig.VERSION_CODE);
+                    Log.d(TAG, "AppVersion: " + versionCode + " DB: " + oVersionCode +
+                            " APK: " + BuildConfig.VERSION_CODE);
                     if (notify)
                     if (versionCode > oVersionCode || (isForced && versionCode > BuildConfig.VERSION_CODE))
                         new AlertDialog.Builder(context)

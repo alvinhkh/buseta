@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.alvinhkh.buseta.Connectivity;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RouteBound;
@@ -37,7 +38,7 @@ import java.util.concurrent.TimeoutException;
 public class RouteService extends IntentService {
 
     private static final String TAG = RouteService.class.getSimpleName();
-    private static final int TIME_OUT = 15 * 1000;
+    private static final int TIME_OUT = 4 * 60 * 1000;
 
     SharedPreferences mPrefs;
     SettingsHelper settingsHelper = null;
@@ -79,10 +80,7 @@ public class RouteService extends IntentService {
             synchronized(this) {
                 Log.d(TAG, "Get Bounds");
                 // request route bounds
-                final ConnectivityManager conMgr =
-                        (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-                final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
-                if (activeNetwork == null || !activeNetwork.isConnected()) {
+                if (!Connectivity.isConnected(this)) {
                     // Check internet connection
                     sendUpdate(routeNo, Constants.STATUS.CONNECTIVITY_INVALID);
                     return;
@@ -106,10 +104,7 @@ public class RouteService extends IntentService {
         if (null != object) {
             Log.d(TAG, "Get Stops");
             // request route stops
-            final ConnectivityManager conMgr =
-                    (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-            final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
-            if (activeNetwork == null || !activeNetwork.isConnected()) {
+            if (!Connectivity.isConnected(this)) {
                 // Check internet connection
                 sendUpdate(object, Constants.STATUS.CONNECTIVITY_INVALID);
                 return;
@@ -150,7 +145,7 @@ public class RouteService extends IntentService {
         Response<JsonObject> response = conn.get();
         if (null != response && response.getHeaders().code() == 200) {
             JsonObject result = response.getResult();
-            // Log.d(TAG, result.toString());
+            Log.d(TAG, result.toString());
             valuesList = new ArrayList<>();
             if (null != result && result.get("valid").getAsBoolean()) {
                 // token and id
@@ -361,6 +356,7 @@ public class RouteService extends IntentService {
     }
 
     private void sendUpdate(String routeNo, String message) {
+        Log.d(TAG, "sendUpdate: " + routeNo + " " + message);
         Intent intent = new Intent(Constants.MESSAGE.BOUNDS_UPDATED);
         intent.putExtra(Constants.MESSAGE.BOUNDS_UPDATED, true);
         intent.putExtra(Constants.BUNDLE.ROUTE_NO, routeNo);
@@ -369,6 +365,8 @@ public class RouteService extends IntentService {
     }
 
     private void sendUpdate(RouteBound object, String message) {
+        if (null != object && null != object.route_no)
+            Log.d(TAG, "sendUpdate:: " + object.route_no + " " + message);
         Intent intent = new Intent(Constants.MESSAGE.STOPS_UPDATED);
         intent.putExtra(Constants.MESSAGE.STOPS_UPDATED, true);
         intent.putExtra(Constants.BUNDLE.BOUND_OBJECT, object);

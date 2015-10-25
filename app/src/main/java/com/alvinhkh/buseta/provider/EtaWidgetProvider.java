@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
 
+import com.alvinhkh.buseta.Connectivity;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RouteBound;
@@ -85,11 +86,8 @@ public class EtaWidgetProvider extends AppWidgetProvider {
 
     private void onRefresh(final Context context) {
         // Log.d(TAG, "onRefresh");
-        final ConnectivityManager conMgr =
-                (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
-        // Check internet connection
-        if (activeNetwork != null && activeNetwork.isConnected()) {
+        if (Connectivity.isConnected(context)) {
+            // Check internet connection
             try {
                 final Cursor c = context.getContentResolver().query(
                         FollowProvider.CONTENT_URI_FOLLOW, null, null, null,

@@ -34,6 +34,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.alvinhkh.buseta.Connectivity;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RouteStopMap;
@@ -431,10 +432,7 @@ public class RouteStopFragment extends Fragment
             if (null != f.mAdapter && aBoolean) {
                 if (null != f.mEtaHandler && null != f.mEtaRunnable)
                     f.mEtaHandler.removeCallbacks(f.mEtaRunnable);
-                final ConnectivityManager conMgr =
-                        (ConnectivityManager) f.mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-                final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
-                if (activeNetwork == null || !activeNetwork.isConnected()) {
+                if (!Connectivity.isConnected(f.mContext)) {
                     // Check internet connection
                     if (null != f.getView()) {
                         if (null != f.getView().findViewById(android.R.id.content)) {

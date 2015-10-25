@@ -35,6 +35,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.alvinhkh.buseta.Connectivity;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.provider.FollowProvider;
 import com.alvinhkh.buseta.provider.RouteProvider;
@@ -288,10 +289,7 @@ public class RouteBoundFragment extends Fragment
             Bundle bundle = msg.getData();
             Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.BOUNDS_UPDATED);
             if (null != f.mAdapter && aBoolean) {
-                final ConnectivityManager conMgr =
-                        (ConnectivityManager) f.mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-                final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
-                if (activeNetwork == null || !activeNetwork.isConnected()) {
+                if (!Connectivity.isConnected(f.mContext)) {
                     // Check internet connection
                     if (null != f.getView()) {
                         if (null != f.getView().findViewById(android.R.id.content)) {
@@ -310,7 +308,7 @@ public class RouteBoundFragment extends Fragment
                     if (null != f.mProgressBar)
                         f.mProgressBar.setVisibility(View.GONE);
                     if (null != f.mEmptyText)
-                        f.mEmptyText.setText(R.string.message_fail_to_request);
+                        f.mEmptyText.setText(R.string.message_no_internet_connection);
                     return;
                 }
                 String routeNo = bundle.getString(Constants.BUNDLE.ROUTE_NO);

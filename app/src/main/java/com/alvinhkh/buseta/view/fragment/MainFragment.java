@@ -36,6 +36,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.alvinhkh.buseta.Connectivity;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.provider.FollowProvider;
@@ -253,9 +254,7 @@ public class MainFragment extends Fragment
         mSwipeRefreshLayout.setRefreshing(true);
         if (null != mAdapter && null != mContext) {
             // Check internet connection
-            final ConnectivityManager conMgr = (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-            final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
-            if (activeNetwork != null && activeNetwork.isConnected()) {
+            if (Connectivity.isConnected(mContext)) {
                 for (int i = 0; i < mAdapter.getFollowCount(); i++) {
                     RouteStop object = mAdapter.getFollowItem(i);
                     Intent intent = new Intent(mContext, CheckEtaService.class);

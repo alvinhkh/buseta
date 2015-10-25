@@ -246,7 +246,8 @@ public class AdvancedSettingsActivity extends BasePreferenceActivity {
                         message.append(updated);
                         message.append("\n");
                         message.append(content);
-                        Log.d(TAG, "AppVersion: " + versionCode + " " + oVersionCode + " " + BuildConfig.VERSION_CODE);
+                        Log.d(TAG, "AppVersion: " + versionCode + " DB: " + oVersionCode +
+                                " APK: " + BuildConfig.VERSION_CODE);
                         if (BuildConfig.VERSION_CODE >= versionCode) {
                             if (null != mActivity) {
                                 final Snackbar snackbar = Snackbar.make(mActivity.findViewById(android.R.id.content),

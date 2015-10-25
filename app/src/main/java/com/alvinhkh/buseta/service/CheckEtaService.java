@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
+import com.alvinhkh.buseta.Connectivity;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.provider.EtaTable;
 import com.alvinhkh.buseta.provider.FollowProvider;
@@ -37,7 +38,7 @@ import java.util.regex.Pattern;
 public class CheckEtaService extends IntentService {
 
     private static final String TAG = CheckEtaService.class.getSimpleName();
-    private static final int TIME_OUT = 30 * 1000;
+    private static final int TIME_OUT = 4 * 60 * 1000;
 
     SharedPreferences mPrefs;
     SettingsHelper settingsHelper = null;
@@ -85,10 +86,7 @@ public class CheckEtaService extends IntentService {
         RouteStop object = extras.getParcelable(Constants.BUNDLE.STOP_OBJECT);
         if (null != object) {
             // Check internet connection
-            final ConnectivityManager conMgr =
-                    (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-            final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
-            if (activeNetwork == null || !activeNetwork.isConnected()) {
+            if (!Connectivity.isConnected(this)) {
                 object.eta_loading = false;
                 object.eta_fail = true;
                 sendUpdate(object, nId);

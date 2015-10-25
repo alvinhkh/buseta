@@ -9,6 +9,7 @@ import android.net.NetworkInfo;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
+import com.alvinhkh.buseta.Connectivity;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.provider.EtaTable;
 import com.alvinhkh.buseta.provider.FollowProvider;
@@ -103,10 +104,6 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
     }
 
     public RemoteViews getViewAt(int position) {
-        // Check internet connection
-        final ConnectivityManager conMgr =
-                (ConnectivityManager) mContext.getSystemService(Context.CONNECTIVITY_SERVICE);
-        final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
         // Get the data for this position from the content provider
         RouteStop object = getItem(position);
         // Return a proper item
@@ -122,7 +119,7 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
             rv.setTextViewText(R.id.route_destination, object.route_bound.destination_tc);
             rv.setTextViewText(R.id.eta, "");
             rv.setTextViewText(R.id.eta_more, "");
-            if (activeNetwork == null || !activeNetwork.isConnected()) {
+            if (!Connectivity.isConnected(mContext)) {
                 rv.setTextViewText(R.id.eta_more,
                         mContext.getString(R.string.message_no_internet_connection));
                 return rv;
@@ -184,7 +181,7 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
             rv.setTextViewText(R.id.route_destination, "");
             rv.setTextViewText(R.id.eta, "");
             rv.setTextViewText(R.id.eta_more, "");
-            if (activeNetwork == null || !activeNetwork.isConnected()) {
+            if (!Connectivity.isConnected(mContext)) {
                 rv.setTextViewText(R.id.eta_more,
                         mContext.getString(R.string.message_no_internet_connection));
             }

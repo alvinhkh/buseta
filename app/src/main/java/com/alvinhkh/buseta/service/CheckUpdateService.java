@@ -12,6 +12,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.alvinhkh.buseta.BuildConfig;
+import com.alvinhkh.buseta.Connectivity;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.AppUpdate;
@@ -63,10 +64,7 @@ public class CheckUpdateService extends IntentService {
         }
         Boolean checkWithoutPush = true;
         // Check internet connection
-        final ConnectivityManager conMgr =
-                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        final NetworkInfo activeNetwork = conMgr.getActiveNetworkInfo();
-        if (activeNetwork == null || !activeNetwork.isConnected()) {
+        if (!Connectivity.isConnected(this)) {
             sendUpdate(R.string.message_no_internet_connection);
             return;
         }
