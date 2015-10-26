@@ -34,6 +34,13 @@
             android:negativeButtonText="@string/action_cancel"
             android:positiveButtonText="@string/action_confirm" />
 
+        <SwitchPreference
+            android:key="proxy"
+            android:title="@string/title_proxy"
+            android:summaryOn="@string/summary_on_proxy"
+            android:summaryOff="@string/summary_off_proxy"
+            android:defaultValue="false" />
+
         <Preference
             android:key="send_logcat"
             android:title="@string/title_send_logcat"

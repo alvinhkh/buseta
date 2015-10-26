@@ -4,23 +4,26 @@ public class Constants {
 
     public interface URL {
         String RELEASE = "http://buseta.alvinhkh.com/release.json";
+        String PROXY = "http://proxy-hkh.rhcloud.com";
         String KMB = "http://www.kmb.hk";
         String PATH_ETA_API = "/ajax/eta_api/prod/";
         String PATH_ETA_JS = "/js/services/eta/";
         String ROUTE_AVAILABLE = "http://etadatafeed.kmb.hk:1933/GetData.ashx?type=ETA_R";
-        String ROUTE_INFO = KMB + "/ajax/getRouteInfo.php";
-        String ROUTE_INFO_V1 = KMB + "/ajax/getRoute_info.php";
-        String ROUTE_MAP = KMB + "/ajax/getRouteMapByBusno.php";
-        String ROUTE_NEWS = KMB + "/ajax/getnews.php";
+        String ROUTE_INFO = "/ajax/getRouteInfo.php";
+        String ROUTE_INFO_V1 = "/ajax/getRoute_info.php";
+        String ROUTE_MAP = "/ajax/getRouteMapByBusno.php";
+        String ROUTE_NEWS = "/ajax/getnews.php";
         String ROUTE_NOTICES = KMB + "/tc/news/realtimenews.html?page=";
         String ROUTE_NOTICES_IMAGE = KMB + "/loadImage.php?page=";
         String ROUTE_STOP_IMAGE = KMB + "/chi/img.php?file=";
         String HTML_ETA = KMB + "/tc/services/eta_enquiry.html";
         String HTML_SEARCH = KMB + "/tc/services/search.html";
-        String ETA_MOBILE_API = "http://etav2.kmb.hk";
+        String ETA_API_HOST = "http://etav2.kmb.hk";
         String REQUEST_REFERRER = HTML_ETA;
-        String REQUEST_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2478.0 Safari/537.36";
-        String STATIC_MAP = "http://maps.google.com/maps/api/staticmap?zoom=16&size=320x320&sensor=false&center=";
+        String REQUEST_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " + 
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2478.0 Safari/537.36";
+        String STATIC_MAP = "http://maps.google.com/maps/api/staticmap" + 
+                "?zoom=16&size=320x320&sensor=false&center=";
     }
 
     public interface URI {

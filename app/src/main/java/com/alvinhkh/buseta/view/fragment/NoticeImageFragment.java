@@ -5,8 +5,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.Snackbar;
@@ -27,6 +25,7 @@ import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RouteNews;
 import com.koushikdutta.async.future.FutureCallback;
+import com.koushikdutta.async.http.Headers;
 import com.koushikdutta.ion.Ion;
 
 import uk.co.senab.photoview.PhotoView;
@@ -180,12 +179,14 @@ public class NoticeImageFragment extends Fragment {
         if (mProgressBar != null)
             mProgressBar.setVisibility(View.VISIBLE);
 
+        Headers headers = new Headers();
+        headers.add("Referer", Constants.URL.ROUTE_NOTICES + notice_image);
+        headers.add("Pragma", "no-cache");
+        headers.add("User-Agent", Constants.URL.REQUEST_UA);
         Ion.with(mContext)
                 .load(Constants.URL.ROUTE_NOTICES_IMAGE + notice_image)
                 .progressBar(mProgressBar)
-                .setHeader("Referer", Constants.URL.ROUTE_NOTICES + notice_image)
-                .setHeader("Pragma", "no-cache")
-                .setHeader("User-Agent", Constants.URL.REQUEST_UA)
+                .addHeaders(headers.getMultiMap())
                 .withBitmap()
                 .error(R.drawable.ic_error_outline_black_48dp)
                 .fitCenter()

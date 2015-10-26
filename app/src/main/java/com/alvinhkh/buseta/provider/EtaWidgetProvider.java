@@ -9,8 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCantOpenDatabaseException;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -193,11 +191,7 @@ public class EtaWidgetProvider extends AppWidgetProvider {
         int maxWidth = bundle.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH);
         int minHeight = bundle.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT);
         int maxHeight = bundle.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT);
-        if (minHeight < 80) {
-            mIsLargeLayout = false;
-        } else {
-            mIsLargeLayout = true;
-        }
+        mIsLargeLayout = minHeight >= 80;
     }
 
 }

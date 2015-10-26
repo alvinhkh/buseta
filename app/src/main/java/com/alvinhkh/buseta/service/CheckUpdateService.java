@@ -2,16 +2,12 @@ package com.alvinhkh.buseta.service;
 
 import android.app.IntentService;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.Connectivity;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
@@ -21,6 +17,7 @@ import com.alvinhkh.buseta.provider.SuggestionTable;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.koushikdutta.async.http.Headers;
 import com.koushikdutta.ion.Ion;
 import com.koushikdutta.ion.Response;
 
@@ -104,9 +101,12 @@ public class CheckUpdateService extends IntentService {
             sendUpdate(R.string.message_database_updating);
         if (triggerUpdateSuggestion || checkWithoutPush)
         try {
+            Headers headers = new Headers();
+            headers.add("Referer", Constants.URL.REQUEST_REFERRER);
+            headers.add("X-Requested-With", "XMLHttpRequest");
             Response<JsonArray> response = Ion.with(getApplicationContext())
                     .load(Constants.URL.ROUTE_AVAILABLE)
-                    .setHeader("X-Requested-With", "XMLHttpRequest")
+                    .addHeaders(headers.getMultiMap())
                     .asJsonArray()
                     .withResponse()
                     .get();

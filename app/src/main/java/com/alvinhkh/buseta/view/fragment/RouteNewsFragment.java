@@ -3,14 +3,14 @@ package com.alvinhkh.buseta.view.fragment;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -35,6 +35,7 @@ import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RouteNews;
 import com.alvinhkh.buseta.view.adapter.RouteNewsAdapter;
 import com.koushikdutta.async.future.FutureCallback;
+import com.koushikdutta.async.http.Headers;
 import com.koushikdutta.ion.Ion;
 
 import org.jsoup.Jsoup;
@@ -56,6 +57,7 @@ public class RouteNewsFragment extends Fragment
     private static final String ROUTE_NEWS_TEXT = "ROUTE_NEWS_TEXT";
 
     private Context mContext = super.getActivity();
+    private SharedPreferences mPrefs;
     private ActionBar mActionBar = null;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private ListView mListView;
@@ -66,6 +68,7 @@ public class RouteNewsFragment extends Fragment
     private RouteNewsAdapter mAdapter;
     private String _route_no = null;
     private RouteNews _routeNews = null;
+    private String vHost = Constants.URL.KMB;
 
     public RouteNewsFragment() {
     }
@@ -84,6 +87,10 @@ public class RouteNewsFragment extends Fragment
         View view = inflater.inflate(R.layout.fragment_routenews, container, false);
         mContext = super.getActivity();
         // Get arguments
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        if (null != mPrefs && mPrefs.getBoolean("proxy", false)) {
+            vHost = Constants.URL.PROXY;
+        }
         _route_no = getArguments().getString("route_no");
         // Overview task
         setTaskDescription(_route_no + " " + getString(R.string.passenger_notice) +
@@ -272,20 +279,21 @@ public class RouteNewsFragment extends Fragment
         if (mProgressBar != null)
             mProgressBar.setVisibility(View.VISIBLE);
 
-        Uri routeInfoUri = Uri.parse(Constants.URL.ROUTE_NEWS)
+        Uri routeInfoUri = Uri.parse(vHost + Constants.URL.ROUTE_NEWS)
                 .buildUpon()
                 .appendQueryParameter("lang", "chi")
                 .appendQueryParameter("routeno", _route_no)
                 .build();
 
+        Headers headers = new Headers();
+        headers.add("Referer", Constants.URL.HTML_SEARCH);
+        headers.add("X-Requested-With", "XMLHttpRequest");
+        headers.add("Pragma", "no-cache");
+        headers.add("User-Agent", Constants.URL.REQUEST_UA);
         Ion.with(mContext)
                 .load(routeInfoUri.toString())
-                        //.setLogging("Ion", Log.DEBUG)
                 .progressBar(mProgressBar)
-                .setHeader("Referer", Constants.URL.HTML_SEARCH)
-                .setHeader("X-Requested-With", "XMLHttpRequest")
-                .setHeader("Pragma", "no-cache")
-                .setHeader("User-Agent", Constants.URL.REQUEST_UA)
+                .addHeaders(headers.getMultiMap())
                 .asString()
                 .setCallback(new FutureCallback<String>() {
                     @Override
@@ -332,11 +340,14 @@ public class RouteNewsFragment extends Fragment
 
         if (mSwipeRefreshLayout != null)
             mSwipeRefreshLayout.setRefreshing(true);
+        Headers headers = new Headers();
+        headers.add("Referer", vHost + Constants.URL.ROUTE_NEWS +
+                "?lang=chi&routeno=" + _route_no);
+        headers.add("Pragma", "no-cache");
+        headers.add("User-Agent", Constants.URL.REQUEST_UA);
         Ion.with(mContext)
                 .load(Constants.URL.ROUTE_NOTICES + routeNews.link)
-                .setHeader("Referer", Constants.URL.ROUTE_NEWS + "?lang=chi&routeno=" + _route_no)
-                .setHeader("Pragma", "no-cache")
-                .setHeader("User-Agent", Constants.URL.REQUEST_UA)
+                .addHeaders(headers.getMultiMap())
                 .asString()
                 .setCallback(new FutureCallback<String>() {
                     @Override

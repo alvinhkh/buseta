@@ -2,11 +2,8 @@ package com.alvinhkh.buseta.service;
 
 import android.app.IntentService;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -18,19 +15,23 @@ import com.alvinhkh.buseta.provider.EtaTable;
 import com.alvinhkh.buseta.provider.FollowProvider;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.holder.RouteStopETA;
-import com.alvinhkh.buseta.preference.SettingsHelper;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.koushikdutta.async.future.FutureCallback;
+import com.koushikdutta.async.http.Headers;
 import com.koushikdutta.ion.Ion;
 import com.koushikdutta.ion.Response;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,10 +39,10 @@ import java.util.regex.Pattern;
 public class CheckEtaService extends IntentService {
 
     private static final String TAG = CheckEtaService.class.getSimpleName();
-    private static final int TIME_OUT = 4 * 60 * 1000;
+    private static final int TIME_OUT = 60 * 1000;
 
     SharedPreferences mPrefs;
-    SettingsHelper settingsHelper = null;
+    String vHost = Constants.URL.KMB;
     String _id = null;
     String _token = null;
     Boolean sendUpdating = true;
@@ -57,11 +58,14 @@ public class CheckEtaService extends IntentService {
         _id = null;
         _token = null;
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        settingsHelper = new SettingsHelper().parse(getApplicationContext());
+        if (null != mPrefs && mPrefs.getBoolean("proxy", false)) {
+            vHost = Constants.URL.PROXY;
+        }
         SharedPreferences.Editor editor = mPrefs.edit();
         String routeInfoApi = mPrefs.getString(Constants.PREF.REQUEST_API_INFO, "");
         if (routeInfoApi.equals(""))
-            editor.putString(Constants.PREF.REQUEST_API_INFO, Constants.URL.ROUTE_INFO);
+            editor.putString(Constants.PREF.REQUEST_API_INFO,
+                    vHost + Constants.URL.ROUTE_INFO);
         editor.putString(Constants.PREF.REQUEST_ID, null);
         editor.putString(Constants.PREF.REQUEST_TOKEN, null);
         editor.apply();
@@ -97,7 +101,14 @@ public class CheckEtaService extends IntentService {
     }
 
     private void getETA(final RouteStop routeStop, final int nId) {
-        switch (settingsHelper.getEtaApi()) {
+        int version = 2;
+        try {
+            version = Integer.valueOf(mPrefs.getString("eta_version", "2"));
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            version = 2;
+        }
+        switch (version) {
             case 1:
                 try {
                     getETAv1(routeStop, nId);
@@ -120,7 +131,7 @@ public class CheckEtaService extends IntentService {
         String route_no = routeStop.route_bound.route_no.trim().replace(" ", "").toUpperCase();
         String stop_code = routeStop.code;
         if (null == stop_code) return;
-        Uri routeEtaUri = Uri.parse(Constants.URL.ETA_MOBILE_API)
+        Uri routeEtaUri = Uri.parse(Constants.URL.ETA_API_HOST)
                 .buildUpon()
                 .appendQueryParameter("action", "geteta")
                 .appendQueryParameter("lang", "tc")
@@ -130,9 +141,12 @@ public class CheckEtaService extends IntentService {
                 .appendQueryParameter("stop_seq", routeStop.stop_seq)
                 .build();
 
+        Headers headers = new Headers();
+        headers.add("X-Requested-With", "XMLHttpRequest");
         Ion.with(getApplicationContext())
                 .load(routeEtaUri.toString())
-                .setHeader("X-Requested-With", "XMLHttpRequest")
+                .setLogging(TAG, Log.VERBOSE)
+                .addHeaders(headers.getMultiMap())
                 .setTimeout(TIME_OUT)
                 .asJsonObject()
                 .setCallback(new FutureCallback<JsonObject>() {
@@ -195,7 +209,8 @@ public class CheckEtaService extends IntentService {
         String etaApi = mPrefs.getString(Constants.PREF.REQUEST_API_ETA, null);
         if (null == _id || null == _token || _id.equals("") || _token.equals("")) {
             findToken(routeStop,
-                    mPrefs.getString(Constants.PREF.REQUEST_API_INFO, Constants.URL.ROUTE_INFO));
+                    mPrefs.getString(Constants.PREF.REQUEST_API_INFO,
+                            vHost + Constants.URL.ROUTE_INFO));
             etaApi = null;
         }
         String route_no = routeStop.route_bound.route_no.trim().replace(" ", "").toUpperCase();
@@ -208,21 +223,26 @@ public class CheckEtaService extends IntentService {
             sendUpdate(routeStop, nId);
             return;
         }
+        Headers headers = new Headers();
+        headers.add("Referer", Constants.URL.REQUEST_REFERRER);
+        headers.add("X-Requested-With", "XMLHttpRequest");
+        headers.add("Pragma", "no-cache");
+        headers.add("User-Agent", Constants.URL.REQUEST_UA);
+        Map<String, List<String>> params = new HashMap<String, List<String>>();
+        params.put("route", Collections.singletonList(route_no));
+        params.put("route_no", Collections.singletonList(route_no));
+        params.put("bound", Collections.singletonList(routeStop.route_bound.route_bound));
+        params.put("busstop", Collections.singletonList(routeStop.code.replaceAll("-", "")));
+        params.put("lang", Collections.singletonList("tc"));
+        params.put("stopseq", Collections.singletonList(routeStop.stop_seq));
+        params.put("id", Collections.singletonList(_id));
+        params.put("token", Collections.singletonList(_token));
         Response<String> response = Ion.with(getApplicationContext())
                 .load(etaApi + _random_t)
-                .setHeader("Referer", Constants.URL.REQUEST_REFERRER)
-                .setHeader("X-Requested-With", "XMLHttpRequest")
-                .setHeader("Pragma", "no-cache")
-                .setHeader("User-Agent", Constants.URL.REQUEST_UA)
+                .setLogging(TAG, Log.VERBOSE)
+                .addHeaders(headers.getMultiMap())
                 .setTimeout(TIME_OUT)
-                .setBodyParameter("route", route_no)
-                .setBodyParameter("route_no", route_no)
-                .setBodyParameter("bound", routeStop.route_bound.route_bound)
-                .setBodyParameter("busstop", routeStop.code.replaceAll("-", ""))
-                .setBodyParameter("lang", "tc")
-                .setBodyParameter("stopseq", routeStop.stop_seq)
-                .setBodyParameter("id", _id)
-                .setBodyParameter("token", _token)
+                .setBodyParameters(params)
                 .asString()
                 .withResponse()
                 .get();
@@ -294,10 +314,13 @@ public class CheckEtaService extends IntentService {
 
     private String findEtaApi() throws ExecutionException, InterruptedException {
         // Find ETA API URL, by first finding the js file use to call eta api on web
+        Headers headers = new Headers();
+        headers.add("Referer", Constants.URL.KMB);
+        headers.add("User-Agent", Constants.URL.REQUEST_UA);
         Response<String> response = Ion.with(getApplicationContext())
                 .load(Constants.URL.HTML_ETA)
-                .setHeader("Referer", Constants.URL.KMB)
-                .setHeader("User-Agent", Constants.URL.REQUEST_UA)
+                .setLogging(TAG, Log.VERBOSE)
+                .addHeaders(headers.getMultiMap())
                 .setTimeout(TIME_OUT)
                 .asString()
                 .withResponse()
@@ -319,10 +342,12 @@ public class CheckEtaService extends IntentService {
         if (null == etaJs || etaJs.equals("")) return null;
         String etaApi = "";
         // Find ETA API Url in found JS file
+        Headers headers2 = new Headers();
+        headers2.add("Referer", Constants.URL.REQUEST_REFERRER);
+        headers2.add("User-Agent", Constants.URL.REQUEST_UA);
         Response<String> response2 = Ion.with(getApplicationContext())
                 .load(etaJs)
-                .setHeader("Referer", Constants.URL.REQUEST_REFERRER)
-                .setHeader("User-Agent", Constants.URL.REQUEST_UA)
+                .addHeaders(headers2.getMultiMap())
                 .setTimeout(TIME_OUT)
                 .asString()
                 .withResponse()
@@ -421,12 +446,15 @@ public class CheckEtaService extends IntentService {
                 .appendQueryParameter("routebound", routeStop.route_bound.route_bound)
                 .build();
 
+        Headers headers = new Headers();
+        headers.add("Referer", Constants.URL.REQUEST_REFERRER);
+        headers.add("X-Requested-With", "XMLHttpRequest");
+        headers.add("Pragma", "no-cache");
+        headers.add("User-Agent", Constants.URL.REQUEST_UA);
         Response<JsonObject> response = Ion.with(getApplicationContext())
                 .load(routeStopUri.toString())
-                .setHeader("Referer", Constants.URL.REQUEST_REFERRER)
-                .setHeader("X-Requested-With", "XMLHttpRequest")
-                .setHeader("Pragma", "no-cache")
-                .setHeader("User-Agent", Constants.URL.REQUEST_UA)
+                .setLogging(TAG, Log.VERBOSE)
+                .addHeaders(headers.getMultiMap())
                 .setTimeout(TIME_OUT)
                 .asJsonObject()
                 .withResponse()
@@ -450,10 +478,10 @@ public class CheckEtaService extends IntentService {
                     Log.d(TAG, result.get("message").getAsString());
                 }
         } else {
-            if (routeInfoApi.equals(Constants.URL.ROUTE_INFO)) {
-                routeInfoApi = Constants.URL.ROUTE_INFO_V1;
+            if (routeInfoApi.equals(vHost + Constants.URL.ROUTE_INFO)) {
+                routeInfoApi = vHost + Constants.URL.ROUTE_INFO_V1;
             } else {
-                routeInfoApi = Constants.URL.ROUTE_INFO;
+                routeInfoApi = vHost + Constants.URL.ROUTE_INFO;
             }
             SharedPreferences.Editor editor = mPrefs.edit();
             editor.putString(Constants.PREF.REQUEST_API_INFO, routeInfoApi);

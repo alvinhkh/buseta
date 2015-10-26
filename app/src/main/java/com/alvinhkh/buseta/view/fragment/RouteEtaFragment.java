@@ -6,12 +6,14 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
@@ -40,7 +42,6 @@ import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.holder.RouteStopETA;
 import com.alvinhkh.buseta.holder.RouteStopMap;
-import com.alvinhkh.buseta.preference.SettingsHelper;
 import com.alvinhkh.buseta.provider.EtaTable;
 import com.alvinhkh.buseta.provider.FollowProvider;
 import com.alvinhkh.buseta.provider.FollowTable;
@@ -75,6 +76,7 @@ public class RouteEtaFragment extends Fragment
     private static final String TAG = RouteEtaFragment.class.getSimpleName();
 
     private Context mContext = super.getActivity();
+    private SharedPreferences mPrefs;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private ActionBar mActionBar;
     private View mImageContainer;
@@ -91,7 +93,6 @@ public class RouteEtaFragment extends Fragment
     private MenuItem mRefresh;
     private MenuItem mFollow;
 
-    private SettingsHelper settingsHelper;
     private GoogleMap mMap;
     private Marker mStopMarker = null;
     private RouteStop object;
@@ -120,7 +121,6 @@ public class RouteEtaFragment extends Fragment
         mSwipeRefreshLayout.setEnabled(false);
         mSwipeRefreshLayout.setRefreshing(false);
         // Get arguments
-        settingsHelper = new SettingsHelper().parse(mContext.getApplicationContext());
         if (null != savedInstanceState) {
             object = savedInstanceState.getParcelable(Constants.BUNDLE.STOP_OBJECT);
             object = getObject(object);
@@ -227,7 +227,8 @@ public class RouteEtaFragment extends Fragment
         mMenu = menu;
         mRefresh = menu.findItem(R.id.action_refresh);
         mFollow = menu.findItem(R.id.action_follow);
-        Boolean loadImage = null != settingsHelper && settingsHelper.getLoadStopImage();
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+        Boolean loadImage = null != mPrefs && mPrefs.getBoolean("load_stop_image", false);
         menu.findItem(R.id.action_show_map).setVisible(loadImage);
         menu.findItem(R.id.action_show_photo).setVisible(!loadImage);
         getHeaderView(loadImage || imageVisible);

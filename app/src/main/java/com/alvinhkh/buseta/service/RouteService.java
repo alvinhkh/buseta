@@ -2,11 +2,8 @@ package com.alvinhkh.buseta.service;
 
 import android.app.IntentService;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -18,7 +15,6 @@ import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.holder.RouteStopMap;
-import com.alvinhkh.buseta.preference.SettingsHelper;
 import com.alvinhkh.buseta.provider.RouteBoundTable;
 import com.alvinhkh.buseta.provider.RouteStopTable;
 import com.alvinhkh.buseta.provider.RouteProvider;
@@ -26,23 +22,28 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.koushikdutta.async.future.Future;
+import com.koushikdutta.async.http.Headers;
 import com.koushikdutta.ion.Ion;
 import com.koushikdutta.ion.Response;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 public class RouteService extends IntentService {
 
     private static final String TAG = RouteService.class.getSimpleName();
-    private static final int TIME_OUT = 4 * 60 * 1000;
+    private static final int TIME_OUT = 60 * 1000;
 
     SharedPreferences mPrefs;
-    SettingsHelper settingsHelper = null;
     List<ContentValues> valuesList = null;
+    String vHost = Constants.URL.KMB;
 
     public RouteService() {
         super("RouteService");
@@ -52,11 +53,11 @@ public class RouteService extends IntentService {
     public void onCreate() {
         super.onCreate();
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        settingsHelper = new SettingsHelper().parse(getApplicationContext());
+        if (null != mPrefs && mPrefs.getBoolean("proxy", false)) {
+            vHost = Constants.URL.PROXY;
+        }
         SharedPreferences.Editor editor = mPrefs.edit();
-        String routeInfoApi = mPrefs.getString(Constants.PREF.REQUEST_API_INFO, "");
-        if (routeInfoApi.equals(""))
-            editor.putString(Constants.PREF.REQUEST_API_INFO, Constants.URL.ROUTE_INFO);
+        editor.putString(Constants.PREF.REQUEST_API_INFO, vHost + Constants.URL.ROUTE_INFO);
         editor.putString(Constants.PREF.REQUEST_ID, null);
         editor.putString(Constants.PREF.REQUEST_TOKEN, null);
         editor.apply();
@@ -127,25 +128,40 @@ public class RouteService extends IntentService {
 
     private void getRouteBound(final String routeNo) throws ExecutionException, InterruptedException, TimeoutException {
         sendUpdate(routeNo, Constants.STATUS.UPDATING_BOUNDS);
-        Uri routeStopUri = Uri.parse(mPrefs.getString(Constants.PREF.REQUEST_API_INFO, Constants.URL.ROUTE_INFO))
+        Uri routeStopUri = Uri.parse(mPrefs.getString(Constants.PREF.REQUEST_API_INFO,
+                vHost + Constants.URL.ROUTE_INFO))
                 .buildUpon()
                 .appendQueryParameter("t", ((Double) Math.random()).toString())
                 .appendQueryParameter("field9", routeNo)
                 .build();
-        Future<Response<JsonObject>> conn = Ion.with(this)
+        Headers headers = new Headers();
+        headers.add("Referer", Constants.URL.REQUEST_REFERRER);
+        headers.add("X-Requested-With", "XMLHttpRequest");
+        headers.add("Pragma", "no-cache");
+        headers.add("User-Agent", Constants.URL.REQUEST_UA);
+        Future<Response<String>> conn = Ion.with(this)
                 .load(routeStopUri.toString())
-                .setLogging(TAG, Log.DEBUG)
-                .setHeader("Referer", Constants.URL.REQUEST_REFERRER)
-                .setHeader("X-Requested-With", "XMLHttpRequest")
-                .setHeader("Pragma", "no-cache")
-                .setHeader("User-Agent", Constants.URL.REQUEST_UA)
+                .setLogging(TAG, Log.VERBOSE)
+                .addHeaders(headers.getMultiMap())
                 .setTimeout(TIME_OUT)
-                .asJsonObject()
+                .asString()
                 .withResponse();
-        Response<JsonObject> response = conn.get();
+        Response<String> response = conn.get();
         if (null != response && response.getHeaders().code() == 200) {
-            JsonObject result = response.getResult();
-            Log.d(TAG, result.toString());
+            String responseResult = response.getResult();
+            Log.d(TAG, "responseResult: " + responseResult);
+            JsonObject result = null;
+            if (null != responseResult) {
+                try {
+                    result = new JsonParser().parse(responseResult).getAsJsonObject();
+                    if (null == result) {
+                        Log.d(TAG, "bound: null");
+                    }
+                } catch (Exception e) {
+                    result = null;
+                    Log.d(TAG, e.getMessage());
+                }
+            }
             valuesList = new ArrayList<>();
             if (null != result && result.get("valid").getAsBoolean()) {
                 // token and id
@@ -180,8 +196,6 @@ public class RouteService extends IntentService {
                 sendUpdate(routeNo, result.get("message").getAsString());
             } else {
                 sendUpdate(routeNo, Constants.STATUS.CONNECT_FAIL);
-                if (null != result)
-                    Log.d(TAG, "bound: " + result.toString());
             }
         } else if (null != response && response.getHeaders().code() == 404) {
             sendUpdate(routeNo, Constants.STATUS.CONNECT_404);
@@ -192,26 +206,42 @@ public class RouteService extends IntentService {
 
     private void getRouteStop(final RouteBound object) throws ExecutionException, InterruptedException, TimeoutException {
         sendUpdate(object, Constants.STATUS.UPDATING_STOPS);
-        Uri routeStopUri = Uri.parse(mPrefs.getString(Constants.PREF.REQUEST_API_INFO, Constants.URL.ROUTE_INFO))
+        Uri routeStopUri = Uri.parse(mPrefs.getString(Constants.PREF.REQUEST_API_INFO,
+                vHost + Constants.URL.ROUTE_INFO))
                 .buildUpon()
                 .appendQueryParameter("t", ((Double) Math.random()).toString())
                 .appendQueryParameter("chkroutebound", "true")
                 .appendQueryParameter("field9", object.route_no)
                 .appendQueryParameter("routebound", object.route_bound)
                 .build();
-        Future<Response<JsonObject>> conn = Ion.with(this)
+        Headers headers = new Headers();
+        headers.add("Referer", Constants.URL.REQUEST_REFERRER);
+        headers.add("X-Requested-With", "XMLHttpRequest");
+        headers.add("Pragma", "no-cache");
+        headers.add("User-Agent", Constants.URL.REQUEST_UA);
+        Future<Response<String>> conn = Ion.with(this)
                 .load(routeStopUri.toString())
-                .setLogging(TAG, Log.DEBUG)
-                .setHeader("Referer", Constants.URL.REQUEST_REFERRER)
-                .setHeader("X-Requested-With", "XMLHttpRequest")
-                .setHeader("Pragma", "no-cache")
-                .setHeader("User-Agent", Constants.URL.REQUEST_UA)
+                .setLogging(TAG, Log.VERBOSE)
+                .addHeaders(headers.getMultiMap())
                 .setTimeout(TIME_OUT)
-                .asJsonObject()
+                .asString()
                 .withResponse();
-        Response<JsonObject> response = conn.get();
+        Response<String> response = conn.get();
         if (null != response && response.getHeaders().code() == 200) {
-            JsonObject result = response.getResult();
+            String responseResult = response.getResult();
+            Log.d(TAG, "responseResult: " + responseResult);
+            JsonObject result = null;
+            if (null != responseResult) {
+                try {
+                    result = new JsonParser().parse(responseResult).getAsJsonObject();
+                    if (null == result) {
+                        Log.d(TAG, "stop: null");
+                    }
+                } catch (Exception e) {
+                    result = null;
+                    Log.d(TAG, e.getMessage());
+                }
+            }
             // Log.d(TAG, result.toString());
             valuesList = new ArrayList<>();
             if (null != result && result.get("valid").getAsBoolean()) {
@@ -248,8 +278,6 @@ public class RouteService extends IntentService {
                 sendUpdate(object, result.get("message").getAsString());
             } else {
                 sendUpdate(object, Constants.STATUS.CONNECT_FAIL);
-                if (null != result)
-                    Log.d(TAG, "stop: " + result.toString());
             }
         } else if (null != response && response.getHeaders().code() == 404) {
             sendUpdate(object, Constants.STATUS.CONNECT_404);
@@ -263,16 +291,20 @@ public class RouteService extends IntentService {
         final String route_no = object.route_no;
         final String route_bound = object.route_bound;
         final String route_st = "01"; // TODO: selectable
+        Headers headers = new Headers();
+        headers.add("Referer", Constants.URL.HTML_SEARCH);
+        headers.add("X-Requested-With", "XMLHttpRequest");
+        headers.add("Pragma", "no-cache");
+        headers.add("User-Agent", Constants.URL.REQUEST_UA);
+        Map<String, List<String>> params = new HashMap<String, List<String>>();
+        params.put("bn", Collections.singletonList(route_no));
+        params.put("dir", Collections.singletonList(route_bound));
+        params.put("ST", Collections.singletonList(route_st));
         Future<Response<JsonArray>> conn = Ion.with(this)
-                .load(Constants.URL.ROUTE_MAP)
-                .setHeader("Referer", Constants.URL.HTML_SEARCH)
-                .setHeader("X-Requested-With", "XMLHttpRequest")
-                .setHeader("Pragma", "no-cache")
-                .setHeader("User-Agent", Constants.URL.REQUEST_UA)
+                .load(vHost + Constants.URL.ROUTE_MAP)
+                .addHeaders(headers.getMultiMap())
                 .setTimeout(TIME_OUT)
-                .setBodyParameter("bn", route_no)
-                .setBodyParameter("dir", route_bound)
-                .setBodyParameter("ST", route_st)
+                .setBodyParameters(params)
                 .asJsonArray()
                 .withResponse();
         Response<JsonArray> response = conn.get();
