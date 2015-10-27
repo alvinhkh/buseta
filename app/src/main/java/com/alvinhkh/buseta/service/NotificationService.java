@@ -203,6 +203,8 @@ public class NotificationService extends Service {
         notificationId -= object.name_tc.codePointAt(object.name_tc.length()-1);
         notificationId += object.route_bound.destination_tc.codePointAt(0);
         int color = ContextCompat.getColor(context, R.color.primary);
+        if (null == mBuilder)
+            mBuilder = new NotificationCompat.Builder(context);
         NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender();
         wearableExtender.setHintScreenTimeout(NotificationCompat.WearableExtender.SCREEN_TIMEOUT_LONG);
         if (null != object.bitmap)
@@ -214,16 +216,17 @@ public class NotificationService extends Service {
                             "(" + object.name_tc + ")")
                     .build();
             Intent mapIntent = new Intent(Intent.ACTION_VIEW, uri);
-            PendingIntent pendingIntent =
-                    PendingIntent.getActivity(this, 0, mapIntent, 0);
-            NotificationCompat.Action action =
-                    new NotificationCompat.Action.Builder(R.drawable.ic_map_white_48dp,
-                            getString(R.string.action_open_map), pendingIntent)
-                            .build();
-            wearableExtender.addAction(action);
+            if (null != mapIntent.resolveActivity(getPackageManager())) {
+                // only add open map action if proper geo app installed
+                PendingIntent pendingIntent =
+                        PendingIntent.getActivity(this, 0, mapIntent, 0);
+                NotificationCompat.Action actionOpenMap =
+                        new NotificationCompat.Action.Builder(R.drawable.ic_map_white_48dp,
+                                getString(R.string.action_open_map), pendingIntent)
+                                .build();
+                wearableExtender.addAction(actionOpenMap);
+            }
         }
-        if (null == mBuilder)
-            mBuilder = new NotificationCompat.Builder(context);
         Intent notificationIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.URI.STOP));
         notificationIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
         notificationIntent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);

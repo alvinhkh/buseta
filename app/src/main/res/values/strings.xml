@@ -92,6 +92,7 @@
     <string name="message_hide_ad_smile">:)</string>
     <string name="message_hide_ad_tip">試下SEARCH “%1$s”同“%2$s”</string>
     <string name="message_loading">載入中&#8230;</string>
+    <string name="message_no_geo_app">沒有安裝地圖應用程式</string>
     <string name="message_no_app_update">已經是最新版本</string>
     <string name="message_no_data">暫時沒有資料</string>
     <string name="message_no_internet_connection">請檢查網絡連線</string>

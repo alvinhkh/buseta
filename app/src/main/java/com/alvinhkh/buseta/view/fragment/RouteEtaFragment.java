@@ -270,7 +270,11 @@ public class RouteEtaFragment extends Fragment
                                 "(" + object.name_tc + ")")
                         .build();
                 Intent mapIntent = new Intent(Intent.ACTION_VIEW, uri);
-                startActivity(mapIntent);
+                if (null != mapIntent.resolveActivity(mContext.getPackageManager())) {
+                    startActivity(mapIntent);
+                } else {
+                    Toast.makeText(mContext, R.string.message_no_geo_app, Toast.LENGTH_SHORT).show();
+                }
                 break;
             case android.R.id.home:
             case R.id.action_follow:
