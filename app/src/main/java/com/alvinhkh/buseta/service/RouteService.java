@@ -148,7 +148,7 @@ public class RouteService extends IntentService {
         Response<String> response = conn.get();
         if (null != response && response.getHeaders().code() == 200) {
             String responseResult = response.getResult();
-            Log.d(TAG, "responseResult: " + responseResult);
+            // Log.d(TAG, "responseResult: " + responseResult);
             JsonObject result = null;
             if (null != responseResult) {
                 try {
@@ -220,7 +220,7 @@ public class RouteService extends IntentService {
         headers.add("User-Agent", Constants.URL.REQUEST_UA);
         Future<Response<String>> conn = Ion.with(this)
                 .load(routeStopUri.toString())
-                .setLogging(TAG, Log.VERBOSE)
+                .setLogging(TAG, Log.DEBUG)
                 .addHeaders(headers.getMultiMap())
                 .setTimeout(TIME_OUT)
                 .asString()
@@ -228,7 +228,7 @@ public class RouteService extends IntentService {
         Response<String> response = conn.get();
         if (null != response && response.getHeaders().code() == 200) {
             String responseResult = response.getResult();
-            Log.d(TAG, "responseResult: " + responseResult);
+            // Log.d(TAG, "responseResult: " + responseResult);
             JsonObject result = null;
             if (null != responseResult) {
                 try {

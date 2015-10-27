@@ -142,7 +142,7 @@ public class CheckEtaService extends IntentService {
         headers.add("X-Requested-With", "XMLHttpRequest");
         Ion.with(getApplicationContext())
                 .load(routeEtaUri.toString())
-                .setLogging(TAG, Log.VERBOSE)
+                .setLogging(TAG, Log.DEBUG)
                 .addHeaders(headers.getMultiMap())
                 .setTimeout(TIME_OUT)
                 .asJsonObject()
@@ -316,7 +316,7 @@ public class CheckEtaService extends IntentService {
         headers.add("User-Agent", Constants.URL.REQUEST_UA);
         Response<String> response = Ion.with(getApplicationContext())
                 .load(Constants.URL.HTML_ETA)
-                .setLogging(TAG, Log.VERBOSE)
+                .setLogging(TAG, Log.DEBUG)
                 .addHeaders(headers.getMultiMap())
                 .setTimeout(TIME_OUT)
                 .asString()
@@ -450,7 +450,7 @@ public class CheckEtaService extends IntentService {
         headers.add("User-Agent", Constants.URL.REQUEST_UA);
         Response<JsonObject> response = Ion.with(getApplicationContext())
                 .load(routeStopUri.toString())
-                .setLogging(TAG, Log.VERBOSE)
+                .setLogging(TAG, Log.DEBUG)
                 .addHeaders(headers.getMultiMap())
                 .setTimeout(TIME_OUT)
                 .asJsonObject()

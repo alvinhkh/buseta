@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
@@ -34,8 +33,10 @@ public class NotificationService extends Service {
     protected NotificationManagerCompat mNotifyManager;
     protected NotificationCompat.Builder mBuilder;
 
+    private NotificationAlarm mAlarm;
     private SparseArray<RouteStop> routeStopArray;
-    private UpdateEtaReceiver mReceiver;
+    private UpdateEtaReceiver etaReceiver;
+    private TriggerUpdateReceiver triggerReceiver;
 
     public NotificationService() {
         super();
@@ -48,12 +49,23 @@ public class NotificationService extends Service {
         routeStopArray = new SparseArray<>();
         // Broadcast Reciever
         IntentFilter mFilter_eta = new IntentFilter(Constants.MESSAGE.ETA_UPDATED);
-        mReceiver = new UpdateEtaReceiver();
+        etaReceiver = new UpdateEtaReceiver();
         mFilter_eta.addAction(Constants.MESSAGE.ETA_UPDATED);
-        registerReceiver(mReceiver, mFilter_eta);
+        registerReceiver(etaReceiver, mFilter_eta);
+        IntentFilter mFilter_trigger = new IntentFilter(Constants.MESSAGE.NOTIFICATION_TRIGGER_UPDATE);
+        triggerReceiver = new TriggerUpdateReceiver();
+        mFilter_trigger.addAction(Constants.MESSAGE.NOTIFICATION_TRIGGER_UPDATE);
+        registerReceiver(triggerReceiver, mFilter_trigger);
         // Auto Refresh
-        if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
-            mAutoRefreshHandler.post(mAutoRefreshRunnable);
+        boolean alarmUp = (PendingIntent.getBroadcast(this, 0,
+                new Intent(Constants.MESSAGE.NOTIFICATION_TRIGGER_UPDATE),
+                PendingIntent.FLAG_NO_CREATE) != null);
+        if (alarmUp) {
+            Log.d(TAG, "Alarm is already active");
+        } else {
+            mAlarm = new NotificationAlarm(getApplicationContext());
+            mAlarm.startAlarm(15);
+        }
     }
 
     @Override
@@ -103,14 +115,16 @@ public class NotificationService extends Service {
     @Override
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
-        if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
-            mAutoRefreshHandler.removeCallbacks(mAutoRefreshRunnable);
+        mAlarm = new NotificationAlarm(getApplicationContext());
+        mAlarm.stopAlarm();
         mNotifyManager = NotificationManagerCompat.from(this);
         mNotifyManager.cancelAll();
         if (null != routeStopArray)
             routeStopArray.clear();
-        if (null != mReceiver)
-            unregisterReceiver(mReceiver);
+        if (null != etaReceiver)
+            unregisterReceiver(etaReceiver);
+        if (null != triggerReceiver)
+            unregisterReceiver(triggerReceiver);
         super.onDestroy();
     }
 
@@ -273,22 +287,22 @@ public class NotificationService extends Service {
         }
     }
 
-    Handler mAutoRefreshHandler = new Handler();
-    Runnable mAutoRefreshRunnable = new Runnable() {
+    public class TriggerUpdateReceiver extends BroadcastReceiver {
         @Override
-        public void run() {
-            for (int i = 0; i < routeStopArray.size(); i++) {
-                int key = routeStopArray.keyAt(i);
-                RouteStop object = routeStopArray.get(key);
-                Intent updateIntent = new Intent(getApplicationContext(), CheckEtaService.class);
-                object.bitmap = null;
-                updateIntent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
-                updateIntent.putExtra(Constants.MESSAGE.NOTIFICATION_UPDATE, key);
-                if (null != getApplication())
-                    getApplication().startService(updateIntent);
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (null != action && action.equals(Constants.MESSAGE.NOTIFICATION_TRIGGER_UPDATE)) {
+                for (int i = 0; i < routeStopArray.size(); i++) {
+                    int key = routeStopArray.keyAt(i);
+                    RouteStop object = routeStopArray.get(key);
+                    Intent updateIntent = new Intent(getApplicationContext(), CheckEtaService.class);
+                    object.bitmap = null;
+                    updateIntent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
+                    updateIntent.putExtra(Constants.MESSAGE.NOTIFICATION_UPDATE, key);
+                    context.startService(updateIntent);
+                }
             }
-            mAutoRefreshHandler.postDelayed(mAutoRefreshRunnable, 15 * 1000); // every 15 seconds
         }
-    };
+    }
 
 }

@@ -49,6 +49,7 @@ public class Constants {
         String WIDGET_TRIGGER_UPDATE = "com.alvinhkh.buseta.WIDGET_TRIGGER_UPDATE";
         String SUGGESTION_FORCE_UPDATE = "com.alvinhkh.buseta.SUGGESTION_FORCE_UPDATE";
         String NOTIFICATION_UPDATE = "com.alvinhkh.buseta.NOTIFICATION_UPDATE";
+        String NOTIFICATION_TRIGGER_UPDATE = "com.alvinhkh.buseta.NOTIFICATION_TRIGGER_UPDATE";
     }
 
     public interface STATUS {
