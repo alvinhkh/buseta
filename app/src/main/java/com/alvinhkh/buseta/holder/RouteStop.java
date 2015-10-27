@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta.holder;
 
-import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -34,7 +33,7 @@ public class RouteStop implements Parcelable {
 
     public RouteStopMap details;
 
-    public Bitmap bitmap;
+    public String image;
 
     // Parcelling
     /**
@@ -45,7 +44,6 @@ public class RouteStop implements Parcelable {
         this.route_bound = p.readParcelable(RouteBound.class.getClassLoader());
         this.eta = p.readParcelable(RouteStopETA.class.getClassLoader());
         this.details = p.readParcelable(RouteStopMap.class.getClassLoader());
-        this.bitmap = p.readParcelable(Bitmap.class.getClassLoader());
         this.stop_seq = p.readString();
         this.name_tc = p.readString();
         this.name_en = p.readString();
@@ -53,6 +51,7 @@ public class RouteStop implements Parcelable {
         this.eta_loading = p.readByte() == 1;
         this.eta_fail = p.readByte() == 1;
         this.follow = p.readByte() == 1;
+        this.image = p.readString();
     }
 
     @Override
@@ -67,7 +66,6 @@ public class RouteStop implements Parcelable {
         p.writeParcelable(this.route_bound, flags);
         p.writeParcelable(this.eta, flags);
         p.writeParcelable(this.details, flags);
-        p.writeParcelable(this.bitmap, flags);
         p.writeString(this.stop_seq);
         p.writeString(this.name_tc);
         p.writeString(this.name_en);
@@ -75,6 +73,7 @@ public class RouteStop implements Parcelable {
         p.writeByte((byte) (this.eta_loading ? 1 : 0));
         p.writeByte((byte) (this.eta_fail ? 1 : 0));
         p.writeByte((byte) (this.follow ? 1 : 0));
+        p.writeString(this.image);
     }
     // Method to recreate a RouteStop from a Parcel
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {

@@ -65,6 +65,10 @@ import com.koushikdutta.ion.Ion;
 
 import org.jsoup.Jsoup;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Date;
 
 public class RouteEtaFragment extends Fragment
@@ -279,6 +283,7 @@ public class RouteEtaFragment extends Fragment
             case android.R.id.home:
             case R.id.action_follow:
                 // TODO: deal with situation where stop seq changed, a problem for followed stops
+                if (null == mContext) break;
                 if (null == object || null == object.route_bound) break;
                 Boolean org;
                 if (isFollowing(object)) {
@@ -348,11 +353,35 @@ public class RouteEtaFragment extends Fragment
                 mContext.sendBroadcast(intent);
                 break;
             case R.id.action_notification:
+                if (null == mContext) break;
                 Intent notificationIntent = new Intent(mContext, NotificationService.class);
+                Bitmap bitmap = null;
                 if (null != mImageBitmap)
-                    object.bitmap = mImageBitmap;
+                    bitmap = mImageBitmap;
                 else if (null != mMapBitmap)
-                    object.bitmap = mMapBitmap;
+                    bitmap = mMapBitmap;
+                if (null != bitmap && null != object.code && !object.code.equals("")) {
+                    ByteArrayOutputStream bs = new ByteArrayOutputStream();
+                    bitmap.compress(Bitmap.CompressFormat.PNG, 100, bs);
+                    String fileName = object.code + ".png";
+                    try {
+                        File cacheDir = new File(mContext.getCacheDir().getAbsolutePath() + File.separator + "images");
+                        boolean success = true;
+                        if (!cacheDir.exists())
+                            success = cacheDir.mkdir();
+                        if (success) {
+                            FileOutputStream fileOutStream =
+                                    new FileOutputStream(new File(cacheDir, fileName));
+                            fileOutStream.write(bs.toByteArray());
+                            fileOutStream.flush();
+                            fileOutStream.close();
+                            object.image = fileName;
+                        }
+                    } catch (IOException ioe) {
+                        object.image = null;
+                        ioe.printStackTrace();
+                    }
+                }
                 notificationIntent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
                 mContext.startService(notificationIntent);
                 if (null != getView() && null != getView().getRootView()) {

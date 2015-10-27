@@ -71,7 +71,6 @@ public class Constants {
         String MESSAGE_ID = "com.alvinhkh.buseta.MESSAGE_ID";
         String ROUTE_NO = "com.alvinhkh.buseta.ROUTE_NO";
         String STOP_OBJECT = "com.alvinhkh.buseta.STOP_OBJECT";
-        String STOP_BITMAP = "com.alvinhkh.buseta.STOP_BITMAP";
         String BOUND_OBJECT = "com.alvinhkh.buseta.BOUND_OBJECT";
         String UPDATE_MESSAGE = "com.alvinhkh.buseta.UPDATE_MESSAGE";
     }

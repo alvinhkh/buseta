@@ -6,6 +6,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -22,6 +24,7 @@ import com.alvinhkh.buseta.holder.RouteStop;
 
 import org.jsoup.Jsoup;
 
+import java.io.File;
 import java.util.Date;
 
 public class NotificationService extends Service {
@@ -125,6 +128,16 @@ public class NotificationService extends Service {
             unregisterReceiver(etaReceiver);
         if (null != triggerReceiver)
             unregisterReceiver(triggerReceiver);
+        File cacheDir = new File(getCacheDir().getAbsolutePath() + File.separator + "images");
+        if (cacheDir.exists()) {
+            File[] files = cacheDir.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.delete())
+                        Log.d(TAG, "image deleted: " + file.getPath());
+                }
+            }
+        }
         super.onDestroy();
     }
 
@@ -207,8 +220,17 @@ public class NotificationService extends Service {
             mBuilder = new NotificationCompat.Builder(context);
         NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender();
         wearableExtender.setHintScreenTimeout(NotificationCompat.WearableExtender.SCREEN_TIMEOUT_LONG);
-        if (null != object.bitmap)
-            wearableExtender.setBackground(object.bitmap);
+        if (null != object.image) {
+            File filePath = new File(getCacheDir().getAbsolutePath() +
+                    File.separator + "images" + File.separator + object.image);
+            Log.d(TAG, "image file: " + filePath.getPath());
+            if (filePath.exists()) {
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+                Bitmap bitmap = BitmapFactory.decodeFile(filePath.getPath(), options);
+                wearableExtender.setBackground(bitmap);
+            }
+        }
         if (null != object.details) {
             Uri uri = new Uri.Builder().scheme("geo")
                     .appendPath(object.details.lat + "," + object.details.lng)
@@ -299,7 +321,6 @@ public class NotificationService extends Service {
                     int key = routeStopArray.keyAt(i);
                     RouteStop object = routeStopArray.get(key);
                     Intent updateIntent = new Intent(getApplicationContext(), CheckEtaService.class);
-                    object.bitmap = null;
                     updateIntent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
                     updateIntent.putExtra(Constants.MESSAGE.NOTIFICATION_UPDATE, key);
                     context.startService(updateIntent);
