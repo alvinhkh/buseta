@@ -88,9 +88,6 @@ public class RouteNewsFragment extends Fragment
         mContext = super.getActivity();
         // Get arguments
         mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
-        if (null != mPrefs && mPrefs.getBoolean("proxy", false)) {
-            vHost = Constants.URL.PROXY;
-        }
         _route_no = getArguments().getString("route_no");
         // Overview task
         setTaskDescription(_route_no + " " + getString(R.string.passenger_notice) +

@@ -4,7 +4,6 @@ public class Constants {
 
     public interface URL {
         String RELEASE = "http://buseta.alvinhkh.com/release.json";
-        String PROXY = "http://proxy-hkh.rhcloud.com";
         String KMB = "http://www.kmb.hk";
         String PATH_ETA_API = "/ajax/eta_api/prod/";
         String PATH_ETA_JS = "/js/services/eta/";

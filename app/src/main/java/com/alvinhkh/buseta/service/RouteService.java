@@ -53,11 +53,10 @@ public class RouteService extends IntentService {
     public void onCreate() {
         super.onCreate();
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        if (null != mPrefs && mPrefs.getBoolean("proxy", false)) {
-            vHost = Constants.URL.PROXY;
-        }
         SharedPreferences.Editor editor = mPrefs.edit();
-        editor.putString(Constants.PREF.REQUEST_API_INFO, vHost + Constants.URL.ROUTE_INFO);
+        String routeInfoApi = mPrefs.getString(Constants.PREF.REQUEST_API_INFO, "");
+        if (routeInfoApi.equals("") || !routeInfoApi.contains(vHost))
+            editor.putString(Constants.PREF.REQUEST_API_INFO, vHost + Constants.URL.ROUTE_INFO);
         editor.putString(Constants.PREF.REQUEST_ID, null);
         editor.putString(Constants.PREF.REQUEST_TOKEN, null);
         editor.apply();

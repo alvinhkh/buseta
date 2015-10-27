@@ -71,9 +71,6 @@
     <string name="summary_check_app_update">手動檢查應用程式更新</string>
     <string name="category_debug">測試</string>
     <string name="title_eta_version">到站時間預報系統</string>
-    <string name="title_proxy">使用代理伺服器</string>
-    <string name="summary_on_proxy">經代理伺服器取得路線資料</string>
-    <string name="summary_off_proxy">直接從官方網站取得路線資料（預設）</string>
     <string name="title_send_logcat">發送日誌 (logcat)</string>
     <string name="summary_send_logcat">@string/email_developer</string>
     <string name="title_hide_ad">隱藏廣告</string>

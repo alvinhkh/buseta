@@ -58,9 +58,6 @@ public class CheckEtaService extends IntentService {
         _id = null;
         _token = null;
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        if (null != mPrefs && mPrefs.getBoolean("proxy", false)) {
-            vHost = Constants.URL.PROXY;
-        }
         SharedPreferences.Editor editor = mPrefs.edit();
         String routeInfoApi = mPrefs.getString(Constants.PREF.REQUEST_API_INFO, "");
         if (routeInfoApi.equals(""))
