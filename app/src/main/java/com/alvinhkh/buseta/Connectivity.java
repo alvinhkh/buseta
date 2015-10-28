@@ -19,8 +19,6 @@ public class Connectivity {
         Log.d(TAG, "isConnected: " + isConnected(context));
         Log.d(TAG, "isConnectedMobile: " + isConnectedMobile(context));
         Log.d(TAG, "isConnectedWifi: " + isConnectedWifi(context));
-        Log.d(TAG, "isConnectedFast: " + isConnectedFast(context));
-        Log.d(TAG, getNetworkInfo(context).toString());
     }
 
     /**
