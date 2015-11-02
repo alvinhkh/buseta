@@ -185,7 +185,6 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
                             } else {
                                 StringBuilder sb = new StringBuilder();
                                 for (int i = 0; i < etas.length; i++) {
-                                    if (i > 1) break; // only show one more result in eta_more
                                     sb.append(etas[i]);
                                     String estimate = EtaAdapterHelper.etaEstimate(object, etas, i, server_date
                                             , mActivity, viewHolder.eta, viewHolder.eta_more);
