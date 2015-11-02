@@ -10,7 +10,7 @@
 ## 安裝 Install
 從這裡下載最新 APK 
 Get the latest APK from here: 
-[(BusETA-release.apk)](http://bit.ly/buseta-release) 
+[BusETA-release.apk](http://bit.ly/buseta-release) 
 
 ## 功能 Features
 + 追蹤某路線車站 Follow specific route stops
