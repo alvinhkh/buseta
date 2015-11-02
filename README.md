@@ -1,10 +1,10 @@
-# BusETA - 香港巴士預計到站時間 App
+# BusETA - 香港巴士到站時間預報 App
 
 [![Banner](/images/banner.png?raw=true "BusETA (http://buseta.alvinhkh.com)")](http://bit.ly/hkbuseta)
 
-![Screenshot - Home Page](/images/screenshot_home.png?raw=true "BusETA - Home Page")
-![Screenshot - Route Stop Page with ETAs](/images/screenshot_route.png?raw=true "BusETA - Route Stop Page with ETAs")
-![Screenshot - Widget](/images/screenshot_widget.png?raw=true "BusETA - Widget")
+[![Screenshot - Home Page](/images/screenshot_home.png?raw=true "BusETA - Home Page")](http://bit.ly/hkbuseta)
+[![Screenshot - Route Stop Page with ETAs](/images/screenshot_route.png?raw=true "BusETA - Route Stop Page with ETAs")](http://bit.ly/hkbuseta)
+[![Screenshot - Widget](/images/screenshot_widget.png?raw=true "BusETA - Widget")](http://bit.ly/hkbuseta)
 
 
 ## 安裝 Install
@@ -15,8 +15,8 @@ Get the latest APK from here:
 ## 功能 Features
 + 追蹤某路線車站 Follow specific route stops
 + 搜尋記錄 Search History
-+ 一鍵取得所有站的到站時間預報 Get all ETAs of a route with one-click
-+ 通知欄顯示抵站時間預報 Notification for specific route stop, with Android Wear optimisation
++ 一鍵取得所有站的預計到站時間 Get all ETAs of a route with one-click
++ 通知欄顯示預計抵站時間 Notification for specific route stop, with Android Wear optimisation
 + 乘客通告（包括即時資訊） Passenger Notices including real-time notices from officials 
 + 車站位置＆圖片 Google Map integration
 + Widget
