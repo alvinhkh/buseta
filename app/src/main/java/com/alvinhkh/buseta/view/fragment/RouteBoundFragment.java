@@ -150,6 +150,7 @@ public class RouteBoundFragment extends Fragment
                             _routeNo,
                     }, RouteBoundTable.COLUMN_BOUND + "* 1 ASC");
             if (null != c && c.getCount() > 0) {
+                c.close();
                 Intent intent = new Intent(Constants.MESSAGE.BOUNDS_UPDATED);
                 intent.putExtra(Constants.MESSAGE.BOUNDS_UPDATED, true);
                 intent.putExtra(Constants.BUNDLE.ROUTE_NO, _routeNo);
