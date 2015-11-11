@@ -18,6 +18,7 @@ package com.alvinhkh.buseta.view;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.support.annotation.IntDef;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.util.AttributeSet;
@@ -27,7 +28,7 @@ import java.lang.ref.WeakReference;
 public class ControllableAppBarLayout extends AppBarLayout {
     private AppBarLayout.Behavior mBehavior;
     private WeakReference<CoordinatorLayout> mParent;
-    private ToolbarChange mQueuedChange = ToolbarChange.NONE;
+    private @ToolbarChange int mQueuedChange = TOOLBARCHANGE_NONE;
     private boolean mAfterFirstDraw = false;
 
     public ControllableAppBarLayout(Context context) {
@@ -59,7 +60,7 @@ public class ControllableAppBarLayout extends AppBarLayout {
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
         super.onLayout(changed, l, t, r, b);
-        if (r - l > 0 && b - t > 0 && mAfterFirstDraw && mQueuedChange != ToolbarChange.NONE) {
+        if (r - l > 0 && b - t > 0 && mAfterFirstDraw && mQueuedChange != TOOLBARCHANGE_NONE) {
             analyzeQueuedChange();
         }
     }
@@ -69,7 +70,7 @@ public class ControllableAppBarLayout extends AppBarLayout {
         super.onDraw(canvas);
         if (!mAfterFirstDraw) {
             mAfterFirstDraw = true;
-            if (mQueuedChange != ToolbarChange.NONE) {
+            if (mQueuedChange != TOOLBARCHANGE_NONE) {
                 analyzeQueuedChange();
             }
         }
@@ -77,21 +78,21 @@ public class ControllableAppBarLayout extends AppBarLayout {
 
     private synchronized void analyzeQueuedChange() {
         switch (mQueuedChange) {
-            case COLLAPSE:
+            case TOOLBARCHANGE_COLLAPSE:
                 performCollapsingWithoutAnimation();
                 break;
-            case COLLAPSE_WITH_ANIMATION:
+            case TOOLBARCHANGE_COLLAPSE_WITH_ANIMATION:
                 performCollapsingWithAnimation();
                 break;
-            case EXPAND:
+            case TOOLBARCHANGE_EXPAND:
                 performExpandingWithoutAnimation();
                 break;
-            case EXPAND_WITH_ANIMATION:
+            case TOOLBARCHANGE_EXPAND_WITH_ANIMATION:
                 performExpandingWithAnimation();
                 break;
         }
 
-        mQueuedChange = ToolbarChange.NONE;
+        mQueuedChange = TOOLBARCHANGE_NONE;
     }
 
     public void collapseToolbar() {
@@ -99,7 +100,7 @@ public class ControllableAppBarLayout extends AppBarLayout {
     }
 
     public void collapseToolbar(boolean withAnimation) {
-        mQueuedChange = withAnimation ? ToolbarChange.COLLAPSE_WITH_ANIMATION : ToolbarChange.COLLAPSE;
+        mQueuedChange = withAnimation ? TOOLBARCHANGE_COLLAPSE_WITH_ANIMATION : TOOLBARCHANGE_COLLAPSE;
         requestLayout();
     }
 
@@ -108,7 +109,7 @@ public class ControllableAppBarLayout extends AppBarLayout {
     }
 
     public void expandToolbar(boolean withAnimation) {
-        mQueuedChange = withAnimation ? ToolbarChange.EXPAND_WITH_ANIMATION : ToolbarChange.EXPAND;
+        mQueuedChange = withAnimation ? TOOLBARCHANGE_EXPAND_WITH_ANIMATION : TOOLBARCHANGE_EXPAND;
         requestLayout();
     }
 
@@ -136,12 +137,12 @@ public class ControllableAppBarLayout extends AppBarLayout {
         }
     }
 
-    private enum ToolbarChange {
-        COLLAPSE,
-        COLLAPSE_WITH_ANIMATION,
-        EXPAND,
-        EXPAND_WITH_ANIMATION,
-        NONE
-    }
+    @IntDef({TOOLBARCHANGE_COLLAPSE, TOOLBARCHANGE_COLLAPSE_WITH_ANIMATION, TOOLBARCHANGE_EXPAND, TOOLBARCHANGE_EXPAND_WITH_ANIMATION, TOOLBARCHANGE_NONE})
+    public @interface ToolbarChange {}
 
+    public static final int TOOLBARCHANGE_COLLAPSE = 0;
+    public static final int TOOLBARCHANGE_COLLAPSE_WITH_ANIMATION = 1;
+    public static final int TOOLBARCHANGE_EXPAND = 2;
+    public static final int TOOLBARCHANGE_EXPAND_WITH_ANIMATION = 3;
+    public static final int TOOLBARCHANGE_NONE = 4;
 }
