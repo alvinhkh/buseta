@@ -28,6 +28,9 @@ android {
         checkReleaseBuilds true
         abortOnError false
     }
+    buildTypes.each {
+        it.resValue 'string', 'GOOGLE_MAP_API_KEY', GoogleMapApiKey
+    }
 }
 
 repositories {
