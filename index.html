@@ -31,8 +31,7 @@
 				<h1 itemprop="name">BusETA</h1>
 				<p>巴士到站時間預報 App<br>Estimated Time of Bus Arrival App</p>
 				<ul class="actions">
-					<li><a href="http://bit.ly/buseta-github" class="button special icon fa-github" itemprop="downloadUrl">GitHub</a></li>
-					<li><a href="http://bit.ly/buseta-release" class="button special icon fa-download" itemprop="downloadUrl">下載 Download</a></li>
+					<li><span id="download" class="button special icon fa-download"><s>下載 Download</s></span></li>
 					<!--<li><a href="#beta_testing" class="button icon fa-chevron-down scrolly">Beta</a></li>-->
 				</ul>
 				<div>
@@ -102,6 +101,16 @@
 			
 		</section>
 		-->
+		<section id="github" class="wrapper special">
+			
+			<section>
+				<ul class="actions">
+					<li>
+				<a href="http://bit.ly/buseta-github" class="button icon fa-github" itemprop="downloadUrl">GitHub</a></li>
+				</ul>
+			</section>
+			
+		</section>
 
 		<!-- Footer -->
 		<footer id="footer">
@@ -127,6 +136,9 @@
 		$(function() {
 			$("img.lazy").lazyload({
 				effect : "fadeIn"
+			});
+			$("#download").click(function(){
+				alert("Removed by request from The Kowloon Motor Bus Company (1933) Limited");
 			});
 		});
 		</script>
