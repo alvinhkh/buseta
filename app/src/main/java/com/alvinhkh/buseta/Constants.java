@@ -5,6 +5,7 @@ public class Constants {
     public interface URL {
         String RELEASE = "http://buseta.alvinhkh.com/release.json";
         String KMB = "http://www.kmb.hk";
+        String LWB = "http://www.lwb.hk";
         String PATH_ETA_API = "/ajax/eta_api/prod/";
         String PATH_ETA_JS = "/js/services/eta/";
         String ROUTE_AVAILABLE = "http://etadatafeed.kmb.hk:1933/GetData.ashx?type=ETA_R";

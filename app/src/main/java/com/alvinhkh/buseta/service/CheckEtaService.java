@@ -42,7 +42,7 @@ public class CheckEtaService extends IntentService {
     private static final int TIME_OUT = 60 * 1000;
 
     SharedPreferences mPrefs;
-    String vHost = Constants.URL.KMB;
+    String vHost = Constants.URL.LWB;
     String _id = null;
     String _token = null;
     Boolean sendUpdating = true;
@@ -60,9 +60,9 @@ public class CheckEtaService extends IntentService {
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         SharedPreferences.Editor editor = mPrefs.edit();
         String routeInfoApi = mPrefs.getString(Constants.PREF.REQUEST_API_INFO, "");
-        if (routeInfoApi.equals(""))
+        if (routeInfoApi.equals("") || !routeInfoApi.contains(vHost))
             editor.putString(Constants.PREF.REQUEST_API_INFO,
-                    vHost + Constants.URL.ROUTE_INFO);
+                    vHost + Constants.URL.ROUTE_INFO_V1);
         editor.putString(Constants.PREF.REQUEST_ID, null);
         editor.putString(Constants.PREF.REQUEST_TOKEN, null);
         editor.apply();
@@ -207,7 +207,7 @@ public class CheckEtaService extends IntentService {
         if (null == _id || null == _token || _id.equals("") || _token.equals("")) {
             findToken(routeStop,
                     mPrefs.getString(Constants.PREF.REQUEST_API_INFO,
-                            vHost + Constants.URL.ROUTE_INFO));
+                            vHost + Constants.URL.ROUTE_INFO_V1));
             etaApi = null;
         }
         String route_no = routeStop.route_bound.route_no.trim().replace(" ", "").toUpperCase();
@@ -461,14 +461,16 @@ public class CheckEtaService extends IntentService {
             //Log.d(TAG, result.toString());
             if (null != result)
                 if (result.get("valid").getAsBoolean()) {
-                    String id = result.get("id").getAsString();
-                    String token = result.get("token").getAsString();
-                    // Log.d(TAG, "id: " + id + " token: " + token);
-                    // save record
-                    SharedPreferences.Editor editor = mPrefs.edit();
-                    editor.putString(Constants.PREF.REQUEST_ID, id);
-                    editor.putString(Constants.PREF.REQUEST_TOKEN, token);
-                    editor.apply();
+                    if (result.has("id") && result.has("token")) {
+                        String id = result.get("id").getAsString();
+                        String token = result.get("token").getAsString();
+                        // Log.d(TAG, "id: " + id + " token: " + token);
+                        // save record
+                        SharedPreferences.Editor editor = mPrefs.edit();
+                        editor.putString(Constants.PREF.REQUEST_ID, id);
+                        editor.putString(Constants.PREF.REQUEST_TOKEN, token);
+                        editor.apply();
+                    }
                 } else if (!result.get("valid").getAsBoolean() &&
                         !result.get("message").getAsString().equals("")) {
                     // Invalid request with output message

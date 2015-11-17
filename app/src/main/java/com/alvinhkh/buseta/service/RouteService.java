@@ -43,7 +43,7 @@ public class RouteService extends IntentService {
 
     SharedPreferences mPrefs;
     List<ContentValues> valuesList = null;
-    String vHost = Constants.URL.KMB;
+    String vHost = Constants.URL.LWB;
 
     public RouteService() {
         super("RouteService");
@@ -56,7 +56,8 @@ public class RouteService extends IntentService {
         SharedPreferences.Editor editor = mPrefs.edit();
         String routeInfoApi = mPrefs.getString(Constants.PREF.REQUEST_API_INFO, "");
         if (routeInfoApi.equals("") || !routeInfoApi.contains(vHost))
-            editor.putString(Constants.PREF.REQUEST_API_INFO, vHost + Constants.URL.ROUTE_INFO);
+            editor.putString(Constants.PREF.REQUEST_API_INFO,
+                    vHost + Constants.URL.ROUTE_INFO_V1);
         editor.putString(Constants.PREF.REQUEST_ID, null);
         editor.putString(Constants.PREF.REQUEST_TOKEN, null);
         editor.apply();
@@ -163,14 +164,16 @@ public class RouteService extends IntentService {
             }
             valuesList = new ArrayList<>();
             if (null != result && result.get("valid").getAsBoolean()) {
-                // token and id
-                String id = result.get("id").getAsString();
-                String token = result.get("token").getAsString();
-                // Log.d(TAG, "id: " + id + " token: " + token);
-                SharedPreferences.Editor editor = mPrefs.edit();
-                editor.putString(Constants.PREF.REQUEST_ID, id);
-                editor.putString(Constants.PREF.REQUEST_TOKEN, token);
-                editor.apply();
+                if (result.has("id") && result.has("token")) {
+                    // token and id
+                    String id = result.get("id").getAsString();
+                    String token = result.get("token").getAsString();
+                    // Log.d(TAG, "id: " + id + " token: " + token);
+                    SharedPreferences.Editor editor = mPrefs.edit();
+                    editor.putString(Constants.PREF.REQUEST_ID, id);
+                    editor.putString(Constants.PREF.REQUEST_TOKEN, token);
+                    editor.apply();
+                }
                 //  Got Bus Line Bounds
                 JsonArray _bus_arr = result.getAsJsonArray("bus_arr");
                 int seq = 1;
@@ -244,14 +247,16 @@ public class RouteService extends IntentService {
             // Log.d(TAG, result.toString());
             valuesList = new ArrayList<>();
             if (null != result && result.get("valid").getAsBoolean()) {
-                // token and id
-                String id = result.get("id").getAsString();
-                String token = result.get("token").getAsString();
-                Log.d(TAG, "id: " + id + " token: " + token);
-                SharedPreferences.Editor editor = mPrefs.edit();
-                editor.putString(Constants.PREF.REQUEST_ID, id);
-                editor.putString(Constants.PREF.REQUEST_TOKEN, token);
-                editor.apply();
+                if (result.has("id") && result.has("token")) {
+                    // token and id
+                    String id = result.get("id").getAsString();
+                    String token = result.get("token").getAsString();
+                    Log.d(TAG, "id: " + id + " token: " + token);
+                    SharedPreferences.Editor editor = mPrefs.edit();
+                    editor.putString(Constants.PREF.REQUEST_ID, id);
+                    editor.putString(Constants.PREF.REQUEST_TOKEN, token);
+                    editor.apply();
+                }
                 //  Got Bus Line Stops
                 JsonArray _bus_arr = result.getAsJsonArray("bus_arr");
                 int seq = 0;
@@ -300,7 +305,7 @@ public class RouteService extends IntentService {
         params.put("dir", Collections.singletonList(route_bound));
         params.put("ST", Collections.singletonList(route_st));
         Future<Response<JsonArray>> conn = Ion.with(this)
-                .load(vHost + Constants.URL.ROUTE_MAP)
+                .load(Constants.URL.KMB + Constants.URL.ROUTE_MAP)
                 .addHeaders(headers.getMultiMap())
                 .setTimeout(TIME_OUT)
                 .setBodyParameters(params)

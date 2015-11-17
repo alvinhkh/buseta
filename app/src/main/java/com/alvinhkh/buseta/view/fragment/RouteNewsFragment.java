@@ -68,7 +68,6 @@ public class RouteNewsFragment extends Fragment
     private RouteNewsAdapter mAdapter;
     private String _route_no = null;
     private RouteNews _routeNews = null;
-    private String vHost = Constants.URL.KMB;
 
     public RouteNewsFragment() {
     }
@@ -276,7 +275,7 @@ public class RouteNewsFragment extends Fragment
         if (mProgressBar != null)
             mProgressBar.setVisibility(View.VISIBLE);
 
-        Uri routeInfoUri = Uri.parse(vHost + Constants.URL.ROUTE_NEWS)
+        Uri routeInfoUri = Uri.parse(Constants.URL.KMB + Constants.URL.ROUTE_NEWS)
                 .buildUpon()
                 .appendQueryParameter("lang", "chi")
                 .appendQueryParameter("routeno", _route_no)
@@ -338,7 +337,7 @@ public class RouteNewsFragment extends Fragment
         if (mSwipeRefreshLayout != null)
             mSwipeRefreshLayout.setRefreshing(true);
         Headers headers = new Headers();
-        headers.add("Referer", vHost + Constants.URL.ROUTE_NEWS +
+        headers.add("Referer", Constants.URL.KMB + Constants.URL.ROUTE_NEWS +
                 "?lang=chi&routeno=" + _route_no);
         headers.add("Pragma", "no-cache");
         headers.add("User-Agent", Constants.URL.REQUEST_UA);
