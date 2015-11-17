@@ -212,6 +212,16 @@ public class CheckEtaService extends IntentService {
         }
         String route_no = routeStop.route_bound.route_no.trim().replace(" ", "").toUpperCase();
         String _random_t = ((Double) Math.random()).toString();
+        if (attempt == 0) {
+            etaApi = Constants.URL.LWB
+                    + Constants.URL.PATH_ETA_API_V1
+                    + "?routeno=" + route_no
+                    + "&bound=" + routeStop.route_bound.route_bound
+                    + "&busstop=" + routeStop.code.replaceAll("-", "")
+                    + "&lang=" + "tc"
+                    + "&stopseq=" + routeStop.stop_seq
+                    + "&t=";
+        }
         if (etaApi == null || etaApi.equals(""))
             etaApi = findEtaApi();
         if (etaApi == null) {
@@ -364,6 +374,17 @@ public class CheckEtaService extends IntentService {
                 }
 
                 if (etaApi.equals("")) {
+                    // 18 Nov 2015
+                    Pattern p = Pattern.compile("eq\\|37M\\|([^\\|]*)\\|(t[a-zA-Z0-9_.]*)\\|");
+                    Matcher m = p.matcher(result);
+                    if (m.find() && m.groupCount() == 2) {
+                        etaApi = Constants.URL.KMB + Constants.URL.PATH_ETA_API
+                                + m.group(1) + ".php?" + m.group(2);
+                        Log.d(TAG, "etaApi: found-1118 " + etaApi);
+                    }
+                }
+
+                if (etaApi.equals("")) {
                     // 21 Oct 2015
                     Pattern p = Pattern.compile("eq\\|([^\\|]*)\\|(t[a-zA-Z0-9_.]*)\\|");
                     Matcher m = p.matcher(result);
@@ -382,17 +403,6 @@ public class CheckEtaService extends IntentService {
                         etaApi = Constants.URL.KMB + Constants.URL.PATH_ETA_API
                                 + m.group(1) + ".php?" + m.group(2);
                         Log.d(TAG, "etaApi: found-0925 " + etaApi);
-                    }
-                }
-
-                if (etaApi.equals("")) {
-                    // 5 Sept 2015
-                    Pattern p = Pattern.compile("\\|([^\\|]*)\\|80K\\|\\|80M\\|8A\\|(t[a-zA-Z0-9_.]*)\\|75X");
-                    Matcher m = p.matcher(result);
-                    if (m.find() && m.groupCount() == 2) {
-                        etaApi = Constants.URL.KMB + Constants.URL.PATH_ETA_API
-                                + m.group(1) + ".php?" + m.group(2);
-                        Log.d(TAG, "etaApi: found-0905 " + etaApi);
                     }
                 }
 
