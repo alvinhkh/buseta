@@ -23,7 +23,7 @@ public class RouteNewsAdapter extends StateSavingArrayAdapter<RouteNews> {
     }
 
     public RouteNewsAdapter(Context context) {
-        super(context, R.layout.row_routebound);
+        super(context, R.layout.row_routenews);
     }
 
     @Override
