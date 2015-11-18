@@ -34,6 +34,18 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
         TextView fare;
         TextView updated_time;
         ImageView follow;
+
+        private ViewHolder(View convertView) {
+            stop_code = (TextView) convertView.findViewById(R.id.stop_code);
+            stop_lat = (TextView) convertView.findViewById(R.id.stop_lat);
+            stop_lng = (TextView) convertView.findViewById(R.id.stop_lng);
+            stop_name = (TextView) convertView.findViewById(R.id.stop_name);
+            eta = (TextView) convertView.findViewById(R.id.eta);
+            eta_more = (TextView) convertView.findViewById(R.id.eta_more);
+            fare = (TextView) convertView.findViewById(R.id.fare);
+            updated_time = (TextView) convertView.findViewById(R.id.updated_time);
+            follow = (ImageView) convertView.findViewById(R.id.follow);
+        }
     }
 
     public RouteStopAdapter(Context context) {
@@ -48,18 +60,9 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
         // Check if an existing view is being reused, otherwise inflate the view
         ViewHolder viewHolder; // view lookup cache stored in tag
         if (convertView == null) {
-            viewHolder = new ViewHolder();
-            LayoutInflater inflater = LayoutInflater.from(getContext());
-            convertView = inflater.inflate(R.layout.row_routestop, parent, false);
-            viewHolder.stop_code = (TextView) convertView.findViewById(R.id.stop_code);
-            viewHolder.stop_lat = (TextView) convertView.findViewById(R.id.stop_lat);
-            viewHolder.stop_lng = (TextView) convertView.findViewById(R.id.stop_lng);
-            viewHolder.stop_name = (TextView) convertView.findViewById(R.id.stop_name);
-            viewHolder.eta = (TextView) convertView.findViewById(R.id.eta);
-            viewHolder.eta_more = (TextView) convertView.findViewById(R.id.eta_more);
-            viewHolder.fare = (TextView) convertView.findViewById(R.id.fare);
-            viewHolder.updated_time = (TextView) convertView.findViewById(R.id.updated_time);
-            viewHolder.follow = (ImageView) convertView.findViewById(R.id.follow);
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.row_routestop, parent, false);
+            viewHolder = new ViewHolder(convertView);
+
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.alvinhkh.buseta.R;
@@ -15,6 +16,11 @@ public class RouteBoundAdapter extends StateSavingArrayAdapter<RouteBound> {
     private static class ViewHolder {
         TextView origin;
         TextView destination;
+
+        private ViewHolder(View convertView) {
+            origin = (TextView) convertView.findViewById(R.id.origin);
+            destination = (TextView) convertView.findViewById(R.id.destination);
+        }
     }
 
     public RouteBoundAdapter(Context context) {
@@ -28,11 +34,9 @@ public class RouteBoundAdapter extends StateSavingArrayAdapter<RouteBound> {
         // Check if an existing view is being reused, otherwise inflate the view
         ViewHolder viewHolder; // view lookup cache stored in tag
         if (convertView == null) {
-            viewHolder = new ViewHolder();
-            LayoutInflater inflater = LayoutInflater.from(getContext());
-            convertView = inflater.inflate(R.layout.row_routebound, parent, false);
-            viewHolder.origin = (TextView) convertView.findViewById(R.id.origin);
-            viewHolder.destination = (TextView) convertView.findViewById(R.id.destination);
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.row_routebound, parent, false);
+            viewHolder = new ViewHolder(convertView);
+
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
