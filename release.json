@@ -1,11 +1,11 @@
 [{
-	"suggestion_check": false,
-	"suggestion_database": 20151102,
-	"version_code": 1702,
-	"version_name": "0.1.7",
-	"content": "未更新的話快啲更新, 就快下架",
-	"updated": "2015-11-02",
-	"url": "https://play.google.com/store/apps/details?id=com.alvinhkh.buseta",
+	"suggestion_check": true,
+	"suggestion_database": 20151118,
+	"version_code": 1800,
+	"version_name": "0.1.8",
+	"content": "由於收到 KMB 警告，BusETA 上個月已從 Play Store 下架。",
+	"updated": "2015-11-18",
+	"url": "https://db.tt/3jihPh1i",
 	"notify": true,
 	"force": false,
 	"download": false
