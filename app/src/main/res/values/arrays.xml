@@ -2,8 +2,8 @@
 <resources>
     
     <string-array name="eta_version_entries">
-        <item>流動版 (時間)</item>
-        <item>網頁版 (分鐘)</item>
+        <item>流動版 (預設)</item>
+        <item>網頁版</item>
     </string-array>
 
     <string-array name="eta_version_values">
