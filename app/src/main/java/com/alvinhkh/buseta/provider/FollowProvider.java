@@ -11,6 +11,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 public class FollowProvider extends ContentProvider {
@@ -55,7 +56,7 @@ public class FollowProvider extends ContentProvider {
     }
 
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection,
+    public Cursor query(@NonNull Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
 
         // Uisng SQLiteQueryBuilder instead of query() method
@@ -121,12 +122,12 @@ public class FollowProvider extends ContentProvider {
     }
 
     @Override
-    public String getType(Uri uri) {
+    public String getType(@NonNull Uri uri) {
         return null;
     }
 
     @Override
-    public Uri insert(Uri uri, ContentValues values) {
+    public Uri insert(@NonNull Uri uri, ContentValues values) {
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase sqlDB = mHelper.getWritableDatabase();
         long id;
@@ -153,7 +154,7 @@ public class FollowProvider extends ContentProvider {
     }
 
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
+    public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
         int uriType = sURIMatcher.match(uri);
         SQLiteDatabase sqlDB = mHelper.getWritableDatabase();
         int rowsDeleted;
@@ -216,7 +217,7 @@ public class FollowProvider extends ContentProvider {
     }
 
     @Override
-    public int update(Uri uri, ContentValues values, String selection,
+    public int update(@NonNull Uri uri, ContentValues values, String selection,
                       String[] selectionArgs) {
 
         int uriType = sURIMatcher.match(uri);
@@ -279,10 +280,12 @@ public class FollowProvider extends ContentProvider {
 
     private void notifyChange(Uri uri, Boolean widgetUpdate) {
         Context context = getContext();
-        context.getContentResolver().notifyChange(uri, null);
-        if (widgetUpdate) {
-            // Widgets can't register content observers so we refresh widgets separately.
-            context.sendBroadcast(EtaWidgetProvider.getRefreshBroadcastIntent(context));
+        if (context != null) {
+            context.getContentResolver().notifyChange(uri, null);
+            if (widgetUpdate) {
+                // Widgets can't register content observers so we refresh widgets separately.
+                context.sendBroadcast(EtaWidgetProvider.getRefreshBroadcastIntent(context));
+            }
         }
     }
 
@@ -306,6 +309,7 @@ public class FollowProvider extends ContentProvider {
                 EtaTable.COLUMN_STOP_CODE,
                 EtaTable.COLUMN_ETA_API,
                 EtaTable.COLUMN_ETA_TIME,
+                EtaTable.COLUMN_ETA_WHEELCHAIR,
                 EtaTable.COLUMN_ETA_EXPIRE,
                 EtaTable.COLUMN_SERVER_TIME,
                 EtaTable.COLUMN_UPDATED

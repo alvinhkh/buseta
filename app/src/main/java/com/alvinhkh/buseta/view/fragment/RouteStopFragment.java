@@ -199,38 +199,7 @@ public class RouteStopFragment extends Fragment
             public void onScrollUp() {
                 mFab.hide();
             }
-        }, null/*new AbsListView.OnScrollListener() {
-
-            int mLastFirstVisibleItem = 0;
-
-            @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-                if (view.getId() == mListView.getId()) {
-                    final int currentFirstVisibleItem = mListView.getFirstVisiblePosition();
-                    if (currentFirstVisibleItem > mLastFirstVisibleItem) {
-                        // mActionBar.hide();
-                    } else if (currentFirstVisibleItem < mLastFirstVisibleItem) {
-                        // mActionBar.show();
-                    }
-                    mLastFirstVisibleItem = currentFirstVisibleItem;
-                }
-            }
-
-            @Override
-            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                boolean enable = false;
-                if (mListView != null && mListView.getChildCount() > 0) {
-                    // check if the first item of the list is visible
-                    boolean firstItemVisible = mListView.getFirstVisiblePosition() == 0;
-                    // check if the top of the first item is visible
-                    boolean topOfFirstItemVisible = mListView.getChildAt(0).getTop() == 0;
-                    // enabling or disabling the refresh layout
-                    enable = firstItemVisible && topOfFirstItemVisible;
-                }
-                // mSwipeRefreshLayout.setEnabled(enable);
-            }
-
-        }*/);
+        }, null);
         // load data
         if (savedInstanceState != null
                 && savedInstanceState.containsKey(KEY_LIST_VIEW_STATE)) {
@@ -668,6 +637,7 @@ public class RouteStopFragment extends Fragment
                                 routeStopETA.api_version = Integer.valueOf(apiVersion);
                                 routeStopETA.seq = getColumnString(cursor, EtaTable.COLUMN_STOP_SEQ);
                                 routeStopETA.etas = getColumnString(cursor, EtaTable.COLUMN_ETA_TIME);
+                                routeStopETA.wheelchair = getColumnString(cursor, EtaTable.COLUMN_ETA_WHEELCHAIR);
                                 routeStopETA.expires = getColumnString(cursor, EtaTable.COLUMN_ETA_EXPIRE);
                                 routeStopETA.server_time = getColumnString(cursor, EtaTable.COLUMN_SERVER_TIME);
                                 routeStopETA.updated = getColumnString(cursor, EtaTable.COLUMN_UPDATED);

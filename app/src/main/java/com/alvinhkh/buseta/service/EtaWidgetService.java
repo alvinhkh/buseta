@@ -84,6 +84,7 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
                 routeStopETA.api_version = Integer.valueOf(apiVersion);
                 routeStopETA.seq = getColumnString(mCursor, EtaTable.COLUMN_STOP_SEQ);
                 routeStopETA.etas = getColumnString(mCursor, EtaTable.COLUMN_ETA_TIME);
+                routeStopETA.wheelchair = getColumnString(mCursor, EtaTable.COLUMN_ETA_WHEELCHAIR);
                 routeStopETA.expires = getColumnString(mCursor, EtaTable.COLUMN_ETA_EXPIRE);
                 routeStopETA.server_time = getColumnString(mCursor, EtaTable.COLUMN_SERVER_TIME);
                 routeStopETA.updated = getColumnString(mCursor, EtaTable.COLUMN_UPDATED);
@@ -138,9 +139,7 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
                         // eta not available
                         rv.setTextViewText(R.id.eta, mContext.getString(R.string.message_no_data));
                     } else {
-                        Document doc = Jsoup.parse(object.eta.etas);
-                        //Log.d("RouteStopAdapter", doc.toString());
-                        String text = doc.text().replaceAll(" ?　?預定班次", "");
+                        String text = object.eta.etas.replaceAll(" ?　?預定班次", "");
                         String[] etas = text.split(", ?");
                         Pattern pattern = Pattern.compile("到達([^/離開]|$)");
                         Matcher matcher = pattern.matcher(text);

@@ -171,16 +171,20 @@ public class CheckEtaService extends IntentService {
                             routeStopETA.server_time = result.get("generated").getAsString();
                             StringBuilder etas = new StringBuilder();
                             StringBuilder expires = new StringBuilder();
+                            StringBuilder wheelchair = new StringBuilder();
                             for (int i = 0; i < jsonArray.size(); i++) {
                                 JsonObject object = jsonArray.get(i).getAsJsonObject();
                                 etas.append(object.get("t").getAsString());
                                 expires.append(object.get("ex").getAsString());
+                                wheelchair.append(object.get("w").getAsString());
                                 if (i < jsonArray.size() - 1) {
                                     etas.append(", ");
                                     expires.append(", ");
+                                    wheelchair.append(", ");
                                 }
                             }
                             routeStopETA.etas = etas.toString();
+                            routeStopETA.wheelchair = wheelchair.toString();
                             routeStopETA.expires = expires.toString();
                             routeStop.eta = routeStopETA;
                         }
@@ -222,8 +226,6 @@ public class CheckEtaService extends IntentService {
                     + "&stopseq=" + routeStop.stop_seq
                     + "&t=";
         }
-        if (etaApi == null || etaApi.equals(""))
-            etaApi = findEtaApi();
         if (etaApi == null) {
             routeStop.eta_loading = false;
             routeStop.eta_fail = true;
@@ -319,128 +321,6 @@ public class CheckEtaService extends IntentService {
         }
     }
 
-    private String findEtaApi() throws ExecutionException, InterruptedException {
-        // Find ETA API URL, by first finding the js file use to call eta api on web
-        Headers headers = new Headers();
-        headers.add("Referer", Constants.URL.KMB);
-        headers.add("User-Agent", Constants.URL.REQUEST_UA);
-        Response<String> response = Ion.with(getApplicationContext())
-                .load(Constants.URL.HTML_ETA)
-                .setLogging(TAG, Log.DEBUG)
-                .addHeaders(headers.getMultiMap())
-                .setTimeout(TIME_OUT)
-                .asString()
-                .withResponse()
-                .get();
-        String etaJs = null;
-        if (null != response && response.getHeaders().code() == 200) {
-            String result = response.getResult();
-            if (result != null && !result.equals("")) {
-                Pattern p = Pattern.compile("\"(" + Constants.URL.PATH_ETA_JS + "[a-zA-Z0-9_.]*\\.js\\?[a-zA-Z0-9]*)\"");
-                Matcher m = p.matcher(result);
-                if (m.find()) {
-                    etaJs = Constants.URL.KMB + m.group(1);
-                    // Log.d(TAG, "etaJs: " + etaJs);
-                } else {
-                    Log.e(TAG, "etaJs: fail " + result);
-                }
-            }
-        }
-        if (null == etaJs || etaJs.equals("")) return null;
-        String etaApi = "";
-        // Find ETA API Url in found JS file
-        Headers headers2 = new Headers();
-        headers2.add("Referer", Constants.URL.REQUEST_REFERRER);
-        headers2.add("User-Agent", Constants.URL.REQUEST_UA);
-        Response<String> response2 = Ion.with(getApplicationContext())
-                .load(etaJs)
-                .addHeaders(headers2.getMultiMap())
-                .setTimeout(TIME_OUT)
-                .asString()
-                .withResponse()
-                .get();
-        if (null != response2 && response2.getHeaders().code() == 200) {
-            String result = response2.getResult();
-            if (result != null && !result.equals("")) {
-
-                if (etaApi.equals("")) {
-                    // unencrypted
-                    Pattern p = Pattern.compile("\"(" + Constants.URL.PATH_ETA_API + "[a-zA-Z0-9_.]*\\.php\\?[a-zA-Z0-9]*=)\"");
-                    Matcher m = p.matcher(result);
-                    if (m.find()) {
-                        etaApi = Constants.URL.KMB + m.group(1);
-                        Log.d(TAG, "etaApi: easy " + etaApi);
-                    }
-                }
-
-                if (etaApi.equals("")) {
-                    // 18 Nov 2015
-                    Pattern p = Pattern.compile("eq\\|37M\\|([^\\|]*)\\|(t[a-zA-Z0-9_.]*)\\|");
-                    Matcher m = p.matcher(result);
-                    if (m.find() && m.groupCount() == 2) {
-                        etaApi = Constants.URL.KMB + Constants.URL.PATH_ETA_API
-                                + m.group(1) + ".php?" + m.group(2);
-                        Log.d(TAG, "etaApi: found-1118 " + etaApi);
-                    }
-                }
-
-                if (etaApi.equals("")) {
-                    // 21 Oct 2015
-                    Pattern p = Pattern.compile("eq\\|([^\\|]*)\\|(t[a-zA-Z0-9_.]*)\\|");
-                    Matcher m = p.matcher(result);
-                    if (m.find() && m.groupCount() == 2) {
-                        etaApi = Constants.URL.KMB + Constants.URL.PATH_ETA_API
-                                + m.group(1) + ".php?" + m.group(2);
-                        Log.d(TAG, "etaApi: found-1021 " + etaApi);
-                    }
-                }
-
-                if (etaApi.equals("")) {
-                    // 25 Sept 2015
-                    Pattern p = Pattern.compile("\\|([^\\|]*)\\|eq\\|(t[a-zA-Z0-9_.]*)\\|");
-                    Matcher m = p.matcher(result);
-                    if (m.find() && m.groupCount() == 2) {
-                        etaApi = Constants.URL.KMB + Constants.URL.PATH_ETA_API
-                                + m.group(1) + ".php?" + m.group(2);
-                        Log.d(TAG, "etaApi: found-0925 " + etaApi);
-                    }
-                }
-
-                if (etaApi.equals("")) {
-                    Pattern p = Pattern.compile("\\|([^\\|]*)\\|\\|(t[a-zA-Z0-9_.]*)\\|prod");
-                    Matcher m = p.matcher(result);
-                    if (m.find() && m.groupCount() == 2) {
-                        etaApi = Constants.URL.KMB + Constants.URL.PATH_ETA_API
-                                + m.group(1) + ".php?" + m.group(2);
-                        Log.d(TAG, "etaApi: found-nd " + etaApi);
-                    }
-                }
-
-                if (etaApi.equals("")) {
-                    Pattern p = Pattern.compile("\\|([^\\|]*)\\|(t[a-zA-Z0-9_.]*)\\|eq");
-                    Matcher m = p.matcher(result);
-                    if (m.find() && m.groupCount() == 2) {
-                        etaApi = Constants.URL.KMB + Constants.URL.PATH_ETA_API
-                                + m.group(1) + ".php?" + m.group(2);
-                        Log.d(TAG, "etaApi: found-rd " + etaApi);
-                    }
-                }
-
-                if (etaApi.equals("")) {
-                    Log.d(TAG, "etaJs: " + etaJs);
-                    Log.e(TAG, "etaApi: fail " + etaApi);
-                    etaApi = null;
-                }
-
-            }
-        }
-        // save record
-        SharedPreferences.Editor editor = mPrefs.edit();
-        editor.putString(Constants.PREF.REQUEST_API_ETA, etaApi);
-        editor.apply();
-        return etaApi;
-    }
-
     private void findToken(final RouteStop routeStop, String routeInfoApi) throws ExecutionException, InterruptedException {
         if (null == routeStop || null == routeStop.route_bound) return;
 
@@ -518,6 +398,7 @@ public class CheckEtaService extends IntentService {
             if (null != object.eta) {
                 values.put(EtaTable.COLUMN_ETA_API, String.valueOf(object.eta.api_version));
                 values.put(EtaTable.COLUMN_ETA_TIME, object.eta.etas);
+                values.put(EtaTable.COLUMN_ETA_WHEELCHAIR, object.eta.wheelchair);
                 values.put(EtaTable.COLUMN_ETA_EXPIRE, object.eta.expires);
                 values.put(EtaTable.COLUMN_SERVER_TIME, object.eta.server_time);
                 values.put(EtaTable.COLUMN_UPDATED, object.eta.updated);

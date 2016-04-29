@@ -556,6 +556,7 @@ public class RouteEtaFragment extends Fragment
                     routeStopETA.api_version = Integer.valueOf(apiVersion);
                     routeStopETA.seq = getColumnString(cEta, EtaTable.COLUMN_STOP_SEQ);
                     routeStopETA.etas = getColumnString(cEta, EtaTable.COLUMN_ETA_TIME);
+                    routeStopETA.wheelchair = getColumnString(cEta, EtaTable.COLUMN_ETA_WHEELCHAIR);
                     routeStopETA.expires = getColumnString(cEta, EtaTable.COLUMN_ETA_EXPIRE);
                     routeStopETA.server_time = getColumnString(cEta, EtaTable.COLUMN_SERVER_TIME);
                     routeStopETA.updated = getColumnString(cEta, EtaTable.COLUMN_UPDATED);
@@ -583,8 +584,12 @@ public class RouteEtaFragment extends Fragment
         tServerTime.setVisibility(View.VISIBLE);
         lLastUpdated.setVisibility(View.VISIBLE);
         tLastUpdated.setVisibility(View.VISIBLE);
-        tSubtitle.setText(object.name_tc + "\n" + object.route_bound.route_no + " " +
-                getString(R.string.destination, object.route_bound.destination_tc));
+        String subtitle = object.name_tc;
+        subtitle += "\n";
+        subtitle += object.route_bound.route_no;
+        subtitle += " ";
+        subtitle += getString(R.string.destination, object.route_bound.destination_tc);
+        tSubtitle.setText(subtitle);
         if (null != mFollow) {
             mFollow.setTitle(object.follow ? R.string.action_unfollow : R.string.action_follow);
             mFollow.setIcon(object.follow ?
@@ -628,13 +633,18 @@ public class RouteEtaFragment extends Fragment
                     EtaAdapterHelper.display_format.format(updated_date) : object.eta.updated;
         }
         // ETAs
-        String eta = Jsoup.parse(object.eta.etas).text();
-        String[] etas = eta.replaceAll("　", " ").split(", ?");
+        String[] etas = object.eta.etas.replaceAll("　", " ").split(", ?");
+        String[] wheelchairs = object.eta.wheelchair.split(", ?");
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < etas.length; i++) {
             sb.append(etas[i]);
             String estimate = EtaAdapterHelper.etaEstimate(object, etas, i, server_date, null, null, null);
             sb.append(estimate);
+            if (wheelchairs.length > i && wheelchairs[i] != null
+                    && wheelchairs[i].equals("Y")) {
+                sb.append(" ");
+                sb.append(new String(Character.toChars(0x267F))); // wheelchair emoji
+            }
             if (i < etas.length - 1)
                 sb.append("\n");
         }

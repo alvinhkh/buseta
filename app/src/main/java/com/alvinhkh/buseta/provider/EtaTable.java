@@ -15,6 +15,7 @@ public class EtaTable {
     public final static String COLUMN_STOP_CODE = PREFIX + "stop_code";
     public final static String COLUMN_ETA_API = PREFIX + "api_version";
     public final static String COLUMN_ETA_TIME = PREFIX + "time";
+    public final static String COLUMN_ETA_WHEELCHAIR = PREFIX + "wheelchair";
     public final static String COLUMN_ETA_EXPIRE = PREFIX + "expire";
     public final static String COLUMN_SERVER_TIME = PREFIX + "server_time";
     public final static String COLUMN_UPDATED = PREFIX + "updated";
@@ -32,6 +33,7 @@ public class EtaTable {
             + COLUMN_STOP_CODE + " TEXT not NULL, "
             + COLUMN_ETA_API + " TEXT, "
             + COLUMN_ETA_TIME + " TEXT, "
+            + COLUMN_ETA_WHEELCHAIR + " TEXT, "
             + COLUMN_ETA_EXPIRE + " TEXT, "
             + COLUMN_SERVER_TIME + " TEXT, "
             + COLUMN_UPDATED + " TEXT, "

@@ -111,6 +111,7 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
             routeStopETA.api_version = Integer.valueOf(apiVersion);
             routeStopETA.seq = getFollowColumnString(mCursor_follow, EtaTable.COLUMN_STOP_SEQ);
             routeStopETA.etas = getFollowColumnString(mCursor_follow, EtaTable.COLUMN_ETA_TIME);
+            routeStopETA.wheelchair = getFollowColumnString(mCursor_follow, EtaTable.COLUMN_ETA_WHEELCHAIR);
             routeStopETA.expires = getFollowColumnString(mCursor_follow, EtaTable.COLUMN_ETA_EXPIRE);
             routeStopETA.server_time = getFollowColumnString(mCursor_follow, EtaTable.COLUMN_SERVER_TIME);
             routeStopETA.updated = getFollowColumnString(mCursor_follow, EtaTable.COLUMN_UPDATED);
@@ -170,12 +171,11 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
                             // eta not available
                             viewHolder.eta.setText(R.string.message_no_data);
                         } else {
-                            Document doc = Jsoup.parse(object.eta.etas);
-                            //Log.d("RouteStopAdapter", doc.toString());
-                            String text = doc.text().replaceAll(" ?　?預定班次", "");
-                            String[] etas = text.split(", ?");
+                            String etaText = object.eta.etas.replaceAll(" ?　?預定班次", "");
+                            String[] etas = etaText.split(", ?");
                             Pattern pattern = Pattern.compile("到達([^/離開]|$)");
-                            Matcher matcher = pattern.matcher(text);
+                            Matcher matcher = pattern.matcher(etaText);
+                            String[] wheelchairs = object.eta.wheelchair.split(", ?");
                             int count = 0;
                             while (matcher.find())
                                 count++; //count any matched pattern
@@ -189,6 +189,11 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
                                     String estimate = EtaAdapterHelper.etaEstimate(object, etas, i, server_date
                                             , mActivity, viewHolder.eta, viewHolder.eta_more);
                                     sb.append(estimate);
+                                    if (wheelchairs.length > i && wheelchairs[i] != null
+                                            && wheelchairs[i].equals("Y")) {
+                                        sb.append(" ");
+                                        sb.append(new String(Character.toChars(0x267F))); // wheelchair emoji
+                                    }
                                     if (i == 0) {
                                         viewHolder.eta.setText(sb.toString());
                                         sb = new StringBuilder();

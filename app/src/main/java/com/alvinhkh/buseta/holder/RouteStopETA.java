@@ -21,6 +21,8 @@ public class RouteStopETA implements Parcelable {
     @SerializedName("ETA_EXPIRE")
     public String expires = "";
 
+    public String wheelchair = "";
+
     @SerializedName("server_time")
     public String server_time = "";
 
@@ -36,6 +38,7 @@ public class RouteStopETA implements Parcelable {
         this.seq = p.readString();
         this.etas = p.readString();
         this.expires = p.readString();
+        this.wheelchair = p.readString();
         this.server_time = p.readString();
         this.updated = p.readString();
     }
@@ -52,6 +55,7 @@ public class RouteStopETA implements Parcelable {
         p.writeString(this.seq);
         p.writeString(this.etas);
         p.writeString(this.expires);
+        p.writeString(this.wheelchair);
         p.writeString(this.server_time);
         p.writeString(this.updated);
     }

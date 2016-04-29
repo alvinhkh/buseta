@@ -99,12 +99,11 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
                         // eta not available
                         viewHolder.eta.setText(R.string.message_no_data);
                     } else {
-                        Document doc = Jsoup.parse(object.eta.etas);
-                        //Log.d("RouteStopAdapter", doc.toString());
-                        String text = doc.text().replaceAll(" ?　?預定班次", "");
-                        String[] etas = text.split(", ?");
+                        String etaText = object.eta.etas.replaceAll(" ?　?預定班次", "");
+                        String[] etas = etaText.split(", ?");
                         Pattern pattern = Pattern.compile("到達([^/離開]|$)");
-                        Matcher matcher = pattern.matcher(text);
+                        Matcher matcher = pattern.matcher(etaText);
+                        String[] wheelchairs = object.eta.wheelchair.split(", ?");
                         int count = 0;
                         while (matcher.find())
                             count++; //count any matched pattern
@@ -118,6 +117,11 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
                                 String estimate = EtaAdapterHelper.etaEstimate(object, etas, i, server_date
                                         , mContext, viewHolder.eta, viewHolder.eta_more);
                                 sb.append(estimate);
+                                if (wheelchairs.length > i && wheelchairs[i] != null
+                                        && wheelchairs[i].equals("Y")) {
+                                    sb.append(" ");
+                                    sb.append(new String(Character.toChars(0x267F))); // wheelchair emoji
+                                }
                                 if (i == 0) {
                                     viewHolder.eta.setText(sb.toString());
                                     sb = new StringBuilder();
