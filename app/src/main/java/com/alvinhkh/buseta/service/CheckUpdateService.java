@@ -125,7 +125,7 @@ public class CheckUpdateService extends IntentService {
                             mCursor_suggestion.close();
                         }
                         //
-                        String routes = object.get("r_no").getAsString();
+                        String routes = object.has("r_no") ? object.get("r_no").getAsString() : "";
                         String[] routeArray = routes.split(",");
                         Log.d(TAG, "Suggestion In DB: " + count + " Available: " + routeArray.length);
                         if (triggerUpdateSuggestion || routeArray.length > count || count == 0) {

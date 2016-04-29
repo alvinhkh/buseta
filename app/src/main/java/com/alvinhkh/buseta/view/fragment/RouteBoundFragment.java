@@ -195,6 +195,8 @@ public class RouteBoundFragment extends Fragment
             mSwipeRefreshLayout.setRefreshing(false);
         if (null != mListView)
             mListView.setAdapter(null);
+        if (null != mSwipeRefreshLayout)
+            mSwipeRefreshLayout.setRefreshing(false);
         if (null != mProgressBar)
             mProgressBar.setVisibility(View.GONE);
         if (null != mEmptyText)
@@ -268,6 +270,8 @@ public class RouteBoundFragment extends Fragment
             mAdapter.clear();
             mAdapter.notifyDataSetChanged();
         }
+        if (null != mSwipeRefreshLayout)
+            mSwipeRefreshLayout.setRefreshing(true);
         if (null != mProgressBar)
             mProgressBar.setVisibility(View.VISIBLE);
         Intent intent = new Intent(mContext, RouteService.class);
@@ -306,6 +310,8 @@ public class RouteBoundFragment extends Fragment
                                     Toast.LENGTH_LONG).show();
                         }
                     }
+                    if (null != f.mSwipeRefreshLayout)
+                        f.mSwipeRefreshLayout.setRefreshing(false);
                     if (null != f.mProgressBar)
                         f.mProgressBar.setVisibility(View.GONE);
                     if (null != f.mEmptyText)
@@ -346,42 +352,44 @@ public class RouteBoundFragment extends Fragment
                             f.mContext.getContentResolver().insert(SuggestionProvider.CONTENT_URI, values);
                             if (null != f.mEmptyText)
                                 f.mEmptyText.setText("");
-                            if (null != f.mProgressBar)
-                                f.mProgressBar.setVisibility(View.GONE);
                             if (null != f.mSwipeRefreshLayout)
                                 f.mSwipeRefreshLayout.setRefreshing(false);
+                            if (null != f.mProgressBar)
+                                f.mProgressBar.setVisibility(View.GONE);
                         }
                         break;
                     case Constants.STATUS.CONNECTIVITY_INVALID:
+                        if (null != f.mSwipeRefreshLayout)
+                            f.mSwipeRefreshLayout.setRefreshing(false);
                         if (null != f.mEmptyText)
                             f.mEmptyText.setText(R.string.message_no_internet_connection);
                         if (null != f.mProgressBar)
                             f.mProgressBar.setVisibility(View.GONE);
-                        if (null != f.mSwipeRefreshLayout)
-                            f.mSwipeRefreshLayout.setRefreshing(false);
                         break;
                     case Constants.STATUS.CONNECT_FAIL:
                     case Constants.STATUS.CONNECT_404:
+                        if (null != f.mSwipeRefreshLayout)
+                            f.mSwipeRefreshLayout.setRefreshing(false);
                         if (null != f.mEmptyText)
                             f.mEmptyText.setText(R.string.message_fail_to_request);
                         if (null != f.mProgressBar)
                             f.mProgressBar.setVisibility(View.GONE);
-                        if (null != f.mSwipeRefreshLayout)
-                            f.mSwipeRefreshLayout.setRefreshing(false);
                         break;
                     case Constants.STATUS.UPDATING_BOUNDS:
+                        if (null != f.mSwipeRefreshLayout)
+                            f.mSwipeRefreshLayout.setRefreshing(true);
                         if (null != f.mProgressBar)
                             f.mProgressBar.setVisibility(View.VISIBLE);
                         if (null != f.mEmptyText)
                             f.mEmptyText.setText(R.string.message_loading);
                         break;
                     default:
+                        if (null != f.mSwipeRefreshLayout)
+                            f.mSwipeRefreshLayout.setRefreshing(false);
                         if (null != f.mEmptyText)
                             f.mEmptyText.setText(message);
                         if (null != f.mProgressBar)
                             f.mProgressBar.setVisibility(View.GONE);
-                        if (null != f.mSwipeRefreshLayout)
-                            f.mSwipeRefreshLayout.setRefreshing(false);
                         break;
                 }
             }

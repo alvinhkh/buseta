@@ -1,45 +1,52 @@
 <android.support.v7.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tool="http://schemas.android.com/tools"
     android:id="@+id/card_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:clickable="true"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:background="@color/card_item"
+    android:layout_margin="8dp"
     app:cardCornerRadius="4dp"
-    android:layout_margin="5dp">
-
-    <TextView
-        android:id="@+id/position"
-        android:visibility="gone"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="-1" />
+    app:cardElevation="@dimen/card_elevation">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingLeft="@dimen/activity_horizontal_margin"
-        android:paddingRight="@dimen/activity_horizontal_margin"
-        android:paddingTop="@dimen/activity_vertical_margin"
-        android:paddingBottom="@dimen/activity_vertical_margin"
-        android:background="?android:attr/selectableItemBackground">
+        android:minHeight="60dp"
+        android:paddingTop="@dimen/card_item_vertical_padding"
+        android:paddingBottom="@dimen/card_item_vertical_padding"
+        android:paddingLeft="@dimen/card_item_horizontal_padding"
+        android:paddingRight="@dimen/card_item_horizontal_padding"
+        android:paddingStart="@dimen/card_item_horizontal_padding"
+        android:paddingEnd="@dimen/card_item_horizontal_padding">
 
         <ImageView
             android:id="@+id/icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:paddingRight="16dp"
+            android:paddingEnd="16dp"
+            android:paddingLeft="0dp"
+            android:paddingStart="0dp"
+            android:contentDescription="@string/content_description_icon"
+            android:tint="@color/icons"
             android:src="@drawable/ic_history_black_24dp"/>
 
         <TextView
             android:id="@android:id/text1"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:layout_gravity="center"
             android:gravity="center_vertical"
             android:singleLine="true"
-            android:textColor="@color/abc_primary_text_material_light"
-            style="@android:style/TextAppearance.Small"
-            android:text="Route 0" />
+            style="@style/TextAppearance.AppCompat.Small"
+            android:textColor="@color/primary_text"
+            tool:text="ROUTE"/>
 
     </LinearLayout>
 

@@ -13,11 +13,14 @@
     <color name="secondary_text">#727272</color>
     <color name="highlighted_text">#D50000</color>
     <color name="diminish_text">#989898</color>
-    <color name="icons">#FFFFFF</color>
+    <color name="icons">#000000</color>
     <color name="divider">#B6B6B6</color>
 
     <color name="translucent_scrim_top">#3D000000</color>
     <color name="translucent_scrim_top_center">#2A000000</color>
     <color name="translucent_scrim_bottom">#3A000000</color>
     <color name="translucent_scrim_bottom_center">#1A000000</color>
+
+    <color name="card_item">#FFFDFDFD</color>
+    <color name="activity_background">#FFFFFFFF</color>
 </resources>

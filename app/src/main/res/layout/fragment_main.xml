@@ -14,11 +14,7 @@
         <android.support.v7.widget.RecyclerView
             android:id="@+id/cardList"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingRight="@dimen/activity_horizontal_margin"
-            android:paddingTop="@dimen/activity_vertical_margin"
-            android:paddingBottom="@dimen/activity_vertical_margin" />
+            android:layout_height="match_parent" />
 
         <LinearLayout
             android:id="@android:id/empty"
@@ -32,21 +28,20 @@
             <ImageView
                 android:layout_width="160dp"
                 android:layout_height="160dp"
+                android:layout_margin="8dp"
                 android:src="@drawable/web_hi_res_512"
-                android:layout_margin="8dp" />
+                android:contentDescription="@string/app_name" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/diminish_text"
-                android:text="@string/start_search_route"
-                style="@android:style/TextAppearance.Medium" />
+                style="@style/TextAppearance.AppCompat.Title"
+                android:text="@string/start_search_route" />
 
         </LinearLayout>
 
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/fab"
-            android:src="@drawable/ic_search_white_24dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="end|bottom|right"
@@ -54,6 +49,8 @@
             android:adjustViewBounds="true"
             android:nestedScrollingEnabled="true"
             android:clickable="true"
+            android:tint="@color/white"
+            android:src="@drawable/ic_search_white_24dp"
             app:layout_behavior="com.alvinhkh.buseta.view.ScrollAwareFABBehavior"
             app:fabSize="normal" />
 

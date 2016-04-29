@@ -127,27 +127,25 @@ public class EtaWidgetProvider extends AppWidgetProvider {
         intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
         intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
         rv = new RemoteViews(context.getPackageName(), R.layout.widget_eta);
-        if (null != rv) {
-            rv.setRemoteAdapter(R.id.listView, intent);
-            rv.setEmptyView(R.id.listView, R.id.emptyView);
-            // click open app intent
-            final Intent openAppIntent = new Intent(context, MainActivity.class);
-            PendingIntent openAppPendingIntent = PendingIntent.getActivity(context, 0, openAppIntent, 0);
-            // update intent
-            final Intent updateIntent = new Intent(context, EtaWidgetProvider.class);
-            updateIntent.setAction(Constants.MESSAGE.WIDGET_TRIGGER_UPDATE);
-            updateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
-            // updateIntent.setData(Uri.parse(updateIntent.toUri(Intent.URI_INTENT_SCHEME)));
-            final PendingIntent updatePendingIntent = PendingIntent.getBroadcast(context, 0,
-                    updateIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-            rv.setPendingIntentTemplate(R.id.listView, updatePendingIntent);
-            if (largeLayout) {
-                rv.setViewVisibility(R.id.headerLayout, View.VISIBLE);
-                rv.setOnClickPendingIntent(R.id.headerText, openAppPendingIntent);
-                rv.setOnClickPendingIntent(R.id.refreshButton, updatePendingIntent);
-            } else {
-                rv.setViewVisibility(R.id.headerLayout, View.GONE);
-            }
+        rv.setRemoteAdapter(R.id.listView, intent);
+        rv.setEmptyView(R.id.listView, R.id.emptyView);
+        // click open app intent
+        final Intent openAppIntent = new Intent(context, MainActivity.class);
+        PendingIntent openAppPendingIntent = PendingIntent.getActivity(context, 0, openAppIntent, 0);
+        // update intent
+        final Intent updateIntent = new Intent(context, EtaWidgetProvider.class);
+        updateIntent.setAction(Constants.MESSAGE.WIDGET_TRIGGER_UPDATE);
+        updateIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId);
+        // updateIntent.setData(Uri.parse(updateIntent.toUri(Intent.URI_INTENT_SCHEME)));
+        final PendingIntent updatePendingIntent = PendingIntent.getBroadcast(context, 0,
+                updateIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        rv.setPendingIntentTemplate(R.id.listView, updatePendingIntent);
+        if (largeLayout) {
+            rv.setViewVisibility(R.id.headerLayout, View.VISIBLE);
+            rv.setOnClickPendingIntent(R.id.headerText, openAppPendingIntent);
+            rv.setOnClickPendingIntent(R.id.refreshButton, updatePendingIntent);
+        } else {
+            rv.setViewVisibility(R.id.headerLayout, View.GONE);
         }
         return rv;
     }

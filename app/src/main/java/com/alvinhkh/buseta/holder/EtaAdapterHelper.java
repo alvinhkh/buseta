@@ -2,6 +2,7 @@ package com.alvinhkh.buseta.holder;
 
 import android.content.Context;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.alvinhkh.buseta.R;
@@ -12,6 +13,8 @@ import java.util.Date;
 import java.util.Locale;
 
 public class EtaAdapterHelper {
+
+    private static final String TAG = EtaAdapterHelper.class.getSimpleName();
 
     public static SimpleDateFormat display_format = new SimpleDateFormat("HH:mm:ss dd/MM", Locale.US);
 
@@ -97,7 +100,7 @@ public class EtaAdapterHelper {
                                     ContextCompat.getColor(context, R.color.diminish_text) :
                                     ContextCompat.getColor(context, R.color.primary_text));
             } catch (ParseException ep) {
-                ep.printStackTrace();
+                Log.e(TAG, ep.getMessage());
             }
             if (!etaMinutes.equals("")) {
                 sb.append(" (");

@@ -633,7 +633,7 @@ public class RouteEtaFragment extends Fragment
                     EtaAdapterHelper.display_format.format(updated_date) : object.eta.updated;
         }
         // ETAs
-        String[] etas = object.eta.etas.replaceAll("　", " ").split(", ?");
+        String[] etas = Jsoup.parse(object.eta.etas).text().replaceAll("　", " ").split(", ?");
         String[] wheelchairs = object.eta.wheelchair.split(", ?");
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < etas.length; i++) {

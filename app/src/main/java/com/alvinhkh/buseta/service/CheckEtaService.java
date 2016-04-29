@@ -20,7 +20,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.koushikdutta.async.future.FutureCallback;
 import com.koushikdutta.async.http.Headers;
 import com.koushikdutta.ion.Ion;
 import com.koushikdutta.ion.Response;
@@ -39,7 +38,7 @@ import java.util.regex.Pattern;
 public class CheckEtaService extends IntentService {
 
     private static final String TAG = CheckEtaService.class.getSimpleName();
-    private static final int TIME_OUT = 60 * 1000;
+    private static final int TIME_OUT = 30 * 1000;
 
     SharedPreferences mPrefs;
     String vHost = Constants.URL.LWB;
@@ -128,70 +127,82 @@ public class CheckEtaService extends IntentService {
         String route_no = routeStop.route_bound.route_no.trim().replace(" ", "").toUpperCase();
         String stop_code = routeStop.code;
         if (null == stop_code) return;
-        Uri routeEtaUri = Uri.parse(Constants.URL.ETA_API_HOST)
-                .buildUpon()
-                .appendQueryParameter("action", "geteta")
-                .appendQueryParameter("lang", "tc")
-                .appendQueryParameter("route", route_no)
-                .appendQueryParameter("bound", routeStop.route_bound.route_bound)
-                .appendQueryParameter("stop", stop_code.replaceAll("-", ""))
-                .appendQueryParameter("stop_seq", routeStop.stop_seq)
-                .build();
+        try {
 
-        Headers headers = new Headers();
-        headers.add("X-Requested-With", "XMLHttpRequest");
-        Ion.with(getApplicationContext())
-                .load(routeEtaUri.toString())
-                .setLogging(TAG, Log.DEBUG)
-                .addHeaders(headers.getMultiMap())
-                .setTimeout(TIME_OUT)
-                .asJsonObject()
-                .setCallback(new FutureCallback<JsonObject>() {
-                    @Override
-                    public void onCompleted(Exception e, JsonObject result) {
-                        // do stuff with the result or error
-                        if (e != null)
-                            Log.e(TAG, e.toString());
-                        routeStop.eta_loading = true;
-                        routeStop.eta_fail = false;
-                        if (result != null) {
-                            // Log.d(TAG, result.toString());
-                            if (!result.has("response")) {
-                                routeStop.eta_loading = false;
-                                routeStop.eta_fail = !result.has("generated");
-                                routeStop.eta = result.has("generated") ? new RouteStopETA() : null;
-                                sendUpdate(routeStop, nId);
-                                return;
-                            }
-                            JsonArray jsonArray = result.get("response").getAsJsonArray();
-                            RouteStopETA routeStopETA = new RouteStopETA();
-                            routeStopETA.api_version = 2;
-                            routeStopETA.seq = routeStop.stop_seq;
-                            routeStopETA.updated = result.get("updated").getAsString();
-                            routeStopETA.server_time = result.get("generated").getAsString();
-                            StringBuilder etas = new StringBuilder();
-                            StringBuilder expires = new StringBuilder();
-                            StringBuilder wheelchair = new StringBuilder();
-                            for (int i = 0; i < jsonArray.size(); i++) {
-                                JsonObject object = jsonArray.get(i).getAsJsonObject();
-                                etas.append(object.get("t").getAsString());
-                                expires.append(object.get("ex").getAsString());
-                                wheelchair.append(object.get("w").getAsString());
-                                if (i < jsonArray.size() - 1) {
-                                    etas.append(", ");
-                                    expires.append(", ");
-                                    wheelchair.append(", ");
-                                }
-                            }
-                            routeStopETA.etas = etas.toString();
-                            routeStopETA.wheelchair = wheelchair.toString();
-                            routeStopETA.expires = expires.toString();
-                            routeStop.eta = routeStopETA;
-                        }
+            Uri routeEtaUri = Uri.parse(Constants.URL.ETA_API_HOST)
+                    .buildUpon()
+                    .appendQueryParameter("action", "geteta")
+                    .appendQueryParameter("lang", "tc")
+                    .appendQueryParameter("route", route_no)
+                    .appendQueryParameter("bound", routeStop.route_bound.route_bound)
+                    .appendQueryParameter("stop", stop_code.replaceAll("-", ""))
+                    .appendQueryParameter("stop_seq", routeStop.stop_seq)
+                    .build();
+            Headers headers = new Headers();
+            headers.add("X-Requested-With", "XMLHttpRequest");
+            Response<String> response = Ion.with(getApplicationContext())
+                    .load(routeEtaUri.toString())
+                    .addHeaders(headers.getMultiMap())
+                    .setTimeout(TIME_OUT)
+                    .asString()
+                    .withResponse()
+                    .get();
+
+            if (null != response && response.getHeaders().code() == 200) {
+                String str = response.getResult();
+                routeStop.eta_loading = true;
+                routeStop.eta_fail = false;
+                if (str != null) {
+                    JsonParser parser = new JsonParser();
+                    JsonObject result = parser.parse(str).getAsJsonObject();
+                    //Log.d(TAG, result.toString());
+                    if (!result.has("response") || !result.get("response").isJsonArray()) {
                         routeStop.eta_loading = false;
+                        routeStop.eta_fail = !result.has("generated");
+                        routeStop.eta = result.has("generated") ? new RouteStopETA() : null;
                         sendUpdate(routeStop, nId);
+                        return;
                     }
-                });
+                    JsonArray jsonArray = result.get("response").getAsJsonArray();
+                    RouteStopETA routeStopETA = new RouteStopETA();
+                    routeStopETA.api_version = 2;
+                    routeStopETA.seq = routeStop.stop_seq;
+                    routeStopETA.updated = result.has("updated") ?
+                            result.get("updated").getAsString() : "";
+                    routeStopETA.server_time = result.has("generated") ?
+                            result.get("generated").getAsString() : "";
+                    StringBuilder etas = new StringBuilder();
+                    StringBuilder expires = new StringBuilder();
+                    StringBuilder wheelchair = new StringBuilder();
+                    for (int i = 0; i < jsonArray.size(); i++) {
+                        JsonObject object = jsonArray.get(i).getAsJsonObject();
+                        etas.append(object.has("t") ? object.get("t").getAsString() : "");
+                        expires.append(object.has("ex") ? object.get("ex").getAsString() : "");
+                        wheelchair.append(object.has("w") ? object.get("w").getAsString() : "");
+                        if (i < jsonArray.size() - 1) {
+                            etas.append(", ");
+                            expires.append(", ");
+                            wheelchair.append(", ");
+                        }
+                    }
+                    routeStopETA.etas = etas.toString();
+                    routeStopETA.wheelchair = wheelchair.toString();
+                    routeStopETA.expires = expires.toString();
+                    routeStop.eta = routeStopETA;
+                }
+                routeStop.eta_loading = false;
+                sendUpdate(routeStop, nId);
+            } else {
+                routeStop.eta_loading = false;
+                routeStop.eta_fail = true;
+                sendUpdate(routeStop, nId);
+            }
+        } catch (ExecutionException | InterruptedException e) {
+            Log.e(TAG, e.toString());
+            routeStop.eta_loading = false;
+            routeStop.eta_fail = true;
+            sendUpdate(routeStop, nId);
+        }
     }
 
     private void getETAv1(final RouteStop routeStop, int nId)
@@ -248,7 +259,7 @@ public class CheckEtaService extends IntentService {
         params.put("token", Collections.singletonList(_token));
         Response<String> response = Ion.with(getApplicationContext())
                 .load(etaApi + _random_t)
-                .setLogging(TAG, Log.VERBOSE)
+                .setLogging(TAG, Log.INFO)
                 .addHeaders(headers.getMultiMap())
                 .setTimeout(TIME_OUT)
                 .setBodyParameters(params)
@@ -295,12 +306,13 @@ public class CheckEtaService extends IntentService {
                 JsonParser jsonParser = new JsonParser();
                 JsonArray jsonArray = jsonParser.parse(result).getAsJsonArray();
                 for (final JsonElement element : jsonArray) {
-                    routeStopETA = new Gson().fromJson(element.getAsJsonObject(), RouteStopETA.class);
-                    routeStopETA.api_version = 1;
+                    if (element.isJsonObject()) {
+                        routeStopETA = new Gson().fromJson(element.getAsJsonObject(), RouteStopETA.class);
+                        routeStopETA.api_version = 1;
+                    }
                 }
                 if (null != routeStopETA.etas) {
-                    Document doc = Jsoup.parse(routeStopETA.etas);
-                    String text = doc.text().replaceAll(" ?　?預定班次", "");
+                    String text = Jsoup.parse(routeStopETA.etas).text().replaceAll(" ?　?預定班次", "");
                     String[] etas = text.split(", ?");
                     Pattern pattern = Pattern.compile("到達([^/離開]|$)");
                     Matcher matcher = pattern.matcher(text);
@@ -340,7 +352,7 @@ public class CheckEtaService extends IntentService {
         headers.add("User-Agent", Constants.URL.REQUEST_UA);
         Response<JsonObject> response = Ion.with(getApplicationContext())
                 .load(routeStopUri.toString())
-                .setLogging(TAG, Log.DEBUG)
+                .setLogging(TAG, Log.INFO)
                 .addHeaders(headers.getMultiMap())
                 .setTimeout(TIME_OUT)
                 .asJsonObject()
@@ -350,7 +362,7 @@ public class CheckEtaService extends IntentService {
             JsonObject result = response.getResult();
             //Log.d(TAG, result.toString());
             if (null != result)
-                if (result.get("valid").getAsBoolean()) {
+                if (result.has("valid") && result.get("valid").getAsBoolean()) {
                     if (result.has("id") && result.has("token")) {
                         String id = result.get("id").getAsString();
                         String token = result.get("token").getAsString();
@@ -361,8 +373,8 @@ public class CheckEtaService extends IntentService {
                         editor.putString(Constants.PREF.REQUEST_TOKEN, token);
                         editor.apply();
                     }
-                } else if (!result.get("valid").getAsBoolean() &&
-                        !result.get("message").getAsString().equals("")) {
+                } else if (result.has("valid") && !result.get("valid").getAsBoolean() &&
+                        result.has("message") && !result.get("message").getAsString().equals("")) {
                     // Invalid request with output message
                     Log.d(TAG, result.get("message").getAsString());
                 }

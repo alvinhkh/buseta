@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/swipe_refresh"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/activity_background">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -18,6 +19,7 @@
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
             android:layout_margin="16dp"
+            android:tint="@color/white"
             android:src="@drawable/ic_refresh_white_24dp"
             app:layout_behavior="com.alvinhkh.buseta.view.ScrollAwareFABBehavior"
             app:fab_type="normal"

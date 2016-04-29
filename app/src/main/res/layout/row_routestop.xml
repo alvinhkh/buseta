@@ -1,38 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tool="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin">
+    android:foreground="?android:attr/selectableItemBackground">
 
     <LinearLayout
-        android:layout_width="0dp"
-        android:layout_weight="1"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_gravity="center"
+        android:orientation="vertical"
+        android:minHeight="@dimen/card_item_height"
+        android:paddingTop="@dimen/card_item_vertical_padding"
+        android:paddingBottom="@dimen/card_item_vertical_padding"
+        android:paddingLeft="@dimen/card_item_horizontal_padding"
+        android:paddingRight="@dimen/card_item_horizontal_padding"
+        android:paddingStart="@dimen/card_item_horizontal_padding"
+        android:paddingEnd="@dimen/card_item_horizontal_padding">
 
         <TextView
             android:id="@+id/stop_code"
             android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/dots" />
+            tool:text="@string/dots" />
 
         <TextView
             android:id="@+id/stop_lat"
             android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/dots" />
+            tool:text="@string/dots" />
 
         <TextView
             android:id="@+id/stop_lng"
             android:visibility="gone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/dots" />
+            tool:text="@string/dots" />
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -54,14 +60,16 @@
                     android:layout_height="match_parent"
                     android:layout_marginRight="2dp"
                     android:layout_marginEnd="2dp"
-                    android:src="@drawable/ic_stars_black_24dp" />
+                    android:contentDescription="@string/content_description_icon"
+                    android:tint="@color/icons"
+                    android:src="@drawable/ic_stars_black_24dp"/>
 
                 <TextView
                     android:id="@+id/stop_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:singleLine="true"
-                    style="@android:style/TextAppearance.Medium"
+                    style="@style/TextAppearance.AppCompat.Title"
                     android:text="@string/stop_name" />
 
             </LinearLayout>
@@ -76,9 +84,9 @@
                 android:layout_toEndOf="@+id/stop_layout"
                 android:gravity="end"
                 android:singleLine="true"
-                style="@android:style/TextAppearance.Medium"
+                style="@style/TextAppearance.AppCompat.Medium"
                 android:textColor="@color/highlighted_text"
-                android:text="@string/eta" />
+                tool:text="@string/eta" />
 
         </RelativeLayout>
 
@@ -90,7 +98,7 @@
 
             <TextView
                 android:id="@+id/fare"
-                style="@android:style/TextAppearance.Small"
+                style="@style/TextAppearance.AppCompat.Small"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|start"
@@ -106,29 +114,20 @@
                 android:layout_marginLeft="8dp"
                 android:layout_marginRight="8dp"
                 android:singleLine="true"
-                android:text="@string/dots" />
+                tool:text="@string/dots" />
 
             <TextView
                 android:id="@+id/eta_more"
-                style="@android:style/TextAppearance.Small"
+                style="@style/TextAppearance.AppCompat.Small"
                 android:textColor="@color/primary_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:singleLine="true"
                 android:gravity="bottom|right|end"
-                android:text="@string/eta" />
+                tool:text="@string/eta" />
 
         </LinearLayout>
 
     </LinearLayout>
-
-    <View
-        android:id="@+id/popup"
-        android:layout_width="36dp"
-        android:layout_height="match_parent"
-        android:layout_marginLeft="16dp"
-        android:layout_marginStart="16dp"
-        android:gravity="center_vertical|center_horizontal"
-        android:visibility="gone" />
 
 </LinearLayout>

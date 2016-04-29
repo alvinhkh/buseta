@@ -7,4 +7,20 @@
 
     <dimen name="sheet_text_scrim_height_top">64dp</dimen>
     <dimen name="sheet_text_scrim_height_bottom">80dp</dimen>
+
+    <dimen name="dropdown_item_height">48dp</dimen>
+    <dimen name="dropdown_item_horizontal_padding">16dp</dimen>
+    <dimen name="dropdown_item_vertical_padding">8dp</dimen>
+
+    <dimen name="card_horizontal_margin">16dp</dimen>
+    <dimen name="card_vertical_margin">4dp</dimen>
+    <dimen name="card_corner_radius">4dp</dimen>
+    <dimen name="card_elevation">2dp</dimen>
+    <dimen name="card_item_height">72dp</dimen>
+    <dimen name="card_item_label_width">44dp</dimen>
+    <dimen name="card_item_label_margin_start">48dp</dimen>
+    <dimen name="card_item_icon_margin_start">12dp</dimen>
+    <dimen name="card_item_text_margin_start">60dp</dimen>
+    <dimen name="card_item_horizontal_padding">16dp</dimen>
+    <dimen name="card_item_vertical_padding">12dp</dimen>
 </resources>

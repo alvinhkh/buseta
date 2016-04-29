@@ -1,59 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tool="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin">
+    android:foreground="?android:attr/selectableItemBackground">
 
-    <ImageView
-        android:id="@+id/icon_bus"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:layout_centerVertical="true"
-        android:layout_marginRight="16dp"
-        android:src="@drawable/ic_directions_bus_black_48dp"
-        android:layout_gravity="center" />
-
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_weight="1"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:orientation="vertical">
+        android:minHeight="@dimen/card_item_height"
+        android:paddingTop="@dimen/card_item_vertical_padding"
+        android:paddingBottom="@dimen/card_item_vertical_padding"
+        android:paddingLeft="@dimen/card_item_horizontal_padding"
+        android:paddingRight="@dimen/card_item_horizontal_padding"
+        android:paddingStart="@dimen/card_item_horizontal_padding"
+        android:paddingEnd="@dimen/card_item_horizontal_padding">
 
-        <TextView
-            android:id="@+id/origin"
-            style="@android:style/TextAppearance.Small"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:text="Origin" />
+        <ImageView
+            android:id="@+id/icon_bus"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_centerInParent="true"
+            android:layout_marginStart="@dimen/card_item_icon_margin_start"
+            android:layout_marginLeft="@dimen/card_item_icon_margin_start"
+            android:contentDescription="@string/content_description_icon"
+            android:tint="@color/icons"
+            android:src="@drawable/ic_directions_bus_black_48dp" />
 
-        <RelativeLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_centerInParent="true"
+            android:layout_marginStart="@dimen/card_item_text_margin_start"
+            android:layout_marginLeft="@dimen/card_item_text_margin_start"
+            android:gravity="center_vertical"
+            android:orientation="vertical">
 
             <TextView
-                android:id="@+id/destination_label"
-                style="@android:style/TextAppearance.Medium"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/dest" />
+                android:id="@+id/origin"
+                style="@style/TextAppearance.AppCompat.Small"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                tool:text="起點" />
 
-            <TextView
-                android:id="@+id/destination"
-                style="@android:style/TextAppearance.Medium"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Destination"
-                android:layout_toRightOf="@id/destination_label" />
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1">
 
-        </RelativeLayout>
+                <TextView
+                    android:id="@+id/destination_label"
+                    style="@style/TextAppearance.AppCompat.Title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dest" />
 
-    </LinearLayout>
+                <TextView
+                    android:id="@+id/destination"
+                    style="@style/TextAppearance.AppCompat.Title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tool:text="目的地"
+                    android:layout_toRightOf="@id/destination_label" />
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+    </RelativeLayout>
 
 </LinearLayout>

@@ -139,7 +139,7 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
                         // eta not available
                         rv.setTextViewText(R.id.eta, mContext.getString(R.string.message_no_data));
                     } else {
-                        String text = object.eta.etas.replaceAll(" ?　?預定班次", "");
+                        String text = Jsoup.parse(object.eta.etas).text().replaceAll(" ?　?預定班次", "");
                         String[] etas = text.split(", ?");
                         Pattern pattern = Pattern.compile("到達([^/離開]|$)");
                         Matcher matcher = pattern.matcher(text);

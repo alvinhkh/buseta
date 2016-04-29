@@ -57,7 +57,6 @@ public class RouteNewsFragment extends Fragment
     private static final String ROUTE_NEWS_TEXT = "ROUTE_NEWS_TEXT";
 
     private Context mContext = super.getActivity();
-    private SharedPreferences mPrefs;
     private ActionBar mActionBar = null;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private ListView mListView;
@@ -86,7 +85,6 @@ public class RouteNewsFragment extends Fragment
         View view = inflater.inflate(R.layout.fragment_routenews, container, false);
         mContext = super.getActivity();
         // Get arguments
-        mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
         _route_no = getArguments().getString("route_no");
         // Overview task
         setTaskDescription(_route_no + " " + getString(R.string.passenger_notice) +
@@ -263,6 +261,8 @@ public class RouteNewsFragment extends Fragment
                     snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
             tv.setTextColor(Color.WHITE);
             snackbar.show();
+            if (null != mSwipeRefreshLayout)
+                mSwipeRefreshLayout.setRefreshing(false);
             if (mProgressBar != null)
                 mProgressBar.setVisibility(View.GONE);
             if (mEmptyText != null)
@@ -270,6 +270,8 @@ public class RouteNewsFragment extends Fragment
             return;
         }
 
+        if (null != mSwipeRefreshLayout)
+            mSwipeRefreshLayout.setRefreshing(true);
         if (mEmptyText != null)
             mEmptyText.setText(R.string.message_loading);
         if (mProgressBar != null)
@@ -323,10 +325,10 @@ public class RouteNewsFragment extends Fragment
                             if (mEmptyText != null)
                                 mEmptyText.setText("");
                         }
+                        if (null != mSwipeRefreshLayout)
+                            mSwipeRefreshLayout.setRefreshing(false);
                         if (mProgressBar != null)
                             mProgressBar.setVisibility(View.GONE);
-                        if (mSwipeRefreshLayout != null)
-                            mSwipeRefreshLayout.setRefreshing(false);
                     }
                 });
     }

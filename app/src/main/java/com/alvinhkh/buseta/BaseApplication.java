@@ -1,6 +1,7 @@
 package com.alvinhkh.buseta;
 
 import android.app.Application;
+import android.support.v7.app.AppCompatDelegate;
 
 import org.acra.*;
 import org.acra.annotation.*;
@@ -15,7 +16,12 @@ import org.acra.annotation.*;
         mode = ReportingInteractionMode.SILENT
 )
 
-public class Acra extends Application {
+public class BaseApplication extends Application {
+
+    static {
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();

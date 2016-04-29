@@ -277,6 +277,8 @@ public class RouteStopFragment extends Fragment
             mListView.setAdapter(null);
         if (null != mProgressBar)
             mProgressBar.setVisibility(View.GONE);
+        if (null != mSwipeRefreshLayout)
+            mSwipeRefreshLayout.setRefreshing(false);
         if (null != mEmptyText)
             mEmptyText.setVisibility(View.GONE);
         if (null != mEtaHandler && null != mEtaRunnable)
@@ -377,6 +379,8 @@ public class RouteStopFragment extends Fragment
         }
         if (null != mProgressBar)
             mProgressBar.setVisibility(View.VISIBLE);
+        if (null != mSwipeRefreshLayout)
+            mSwipeRefreshLayout.setRefreshing(true);
         Intent intent = new Intent(mContext, RouteService.class);
         intent.putExtra(Constants.BUNDLE.BOUND_OBJECT, _routeBound);
         mContext.startService(intent);
@@ -417,6 +421,8 @@ public class RouteStopFragment extends Fragment
                     }
                     if (null != f.mProgressBar)
                         f.mProgressBar.setVisibility(View.GONE);
+                    if (null != f.mSwipeRefreshLayout)
+                        f.mSwipeRefreshLayout.setRefreshing(false);
                     if (null != f.mEmptyText)
                         f.mEmptyText.setText(R.string.message_fail_to_request);
                     if (null != f.mFab)

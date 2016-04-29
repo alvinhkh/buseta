@@ -96,9 +96,11 @@ public class MainFragment extends Fragment
         setHasOptionsMenu(true);
         // SwipeRefreshLayout
         mSwipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipe_refresh);
-        mSwipeRefreshLayout.setOnRefreshListener(this);
-        mSwipeRefreshLayout.setEnabled(false);
-        mSwipeRefreshLayout.setRefreshing(false);
+        if (null != mSwipeRefreshLayout) {
+            mSwipeRefreshLayout.setOnRefreshListener(this);
+            mSwipeRefreshLayout.setEnabled(false);
+            mSwipeRefreshLayout.setRefreshing(false);
+        }
         // RecyclerView
         RecyclerView mRecyclerView = (RecyclerView) view.findViewById(R.id.cardList);
         mRecyclerView.setHasFixedSize(true);
@@ -217,6 +219,7 @@ public class MainFragment extends Fragment
         menu.findItem(R.id.action_search).setVisible(false);
         mSearchMenuItem = menu.findItem(R.id.action_search);
         SearchView mSearchView = (SearchView) mSearchMenuItem.getActionView();
+        assert mSearchView != null;
         mSearchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
@@ -251,7 +254,8 @@ public class MainFragment extends Fragment
     }
 
     public void onRefresh() {
-        mSwipeRefreshLayout.setRefreshing(true);
+        if (null != mSwipeRefreshLayout)
+            mSwipeRefreshLayout.setRefreshing(true);
         if (null != mAdapter && null != mContext) {
             // Check internet connection
             if (Connectivity.isConnected(mContext)) {
@@ -268,13 +272,16 @@ public class MainFragment extends Fragment
                         snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
                 tv.setTextColor(Color.WHITE);
                 snackbar.show();
-                mSwipeRefreshLayout.setRefreshing(false);
+                if (null != mSwipeRefreshLayout)
+                    mSwipeRefreshLayout.setRefreshing(false);
             }
             if (mAdapter.getFollowCount() == 0) {
-                mSwipeRefreshLayout.setRefreshing(false);
+                if (null != mSwipeRefreshLayout)
+                    mSwipeRefreshLayout.setRefreshing(false);
             }
         } else {
-            mSwipeRefreshLayout.setRefreshing(false);
+            if (null != mSwipeRefreshLayout)
+                mSwipeRefreshLayout.setRefreshing(false);
         }
     }
 
@@ -362,10 +369,10 @@ public class MainFragment extends Fragment
                 Cursor oldCursor = f.mAdapter.swapFollowCursor(f.mCursor_follow);
                 if (null != oldCursor)
                     oldCursor.close();
-                if (aBoolean_stop) {
+                if (aBoolean_stop)
                     f.mContext.sendBroadcast(new Intent(Constants.MESSAGE.WIDGET_TRIGGER_UPDATE));
-                }
-                f.mSwipeRefreshLayout.setRefreshing(false);
+                if (null != f.mSwipeRefreshLayout)
+                    f.mSwipeRefreshLayout.setRefreshing(false);
             }
         }
     }

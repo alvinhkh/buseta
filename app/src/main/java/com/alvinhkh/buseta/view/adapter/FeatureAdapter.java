@@ -142,7 +142,6 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(ViewHolder vh, int position) {
-        vh.vPosition.setText(String.valueOf(position));
         if (vh instanceof FollowViewHolder) {
             FollowViewHolder viewHolder =  (FollowViewHolder) vh;
             RouteStop object = getFollowItem(position);
@@ -171,7 +170,7 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
                             // eta not available
                             viewHolder.eta.setText(R.string.message_no_data);
                         } else {
-                            String etaText = object.eta.etas.replaceAll(" ?　?預定班次", "");
+                            String etaText = Jsoup.parse(object.eta.etas).text().replaceAll(" ?　?預定班次", "");
                             String[] etas = etaText.split(", ?");
                             Pattern pattern = Pattern.compile("到達([^/離開]|$)");
                             Matcher matcher = pattern.matcher(etaText);
@@ -274,8 +273,8 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
                     final RouteStop object = getObject(caller);
                     if (null == object || null == object.route_bound) return false;
                     new AlertDialog.Builder(mActivity)
-                            .setTitle(object.route_bound.destination_tc + " " +
-                                    object.route_bound.route_no + "?")
+                            .setTitle(object.route_bound.route_no + " " +
+                                    object.name_tc + "?")
                             .setMessage(mActivity.getString(R.string.message_remove_from_follow_list))
                             .setNegativeButton(R.string.action_cancel, new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialoginterface, int i) {
@@ -389,11 +388,8 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
 
     public static class ViewHolder extends RecyclerViewHolder {
 
-        protected TextView vPosition;
-
         public ViewHolder(View v, ViewHolderClicks clicks) {
             super(v, clicks);
-            vPosition = (TextView) v.findViewById(R.id.position);
         }
 
     }

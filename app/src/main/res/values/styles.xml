@@ -4,7 +4,7 @@
         Base application theme, dependent on API level. This theme is replaced
         by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
     -->
-    <style name="AppTheme.Base" parent="Theme.AppCompat.Light">
+    <style name="AppTheme.Base" parent="Theme.AppCompat.DayNight">
         <!--
             Theme customizations available in newer API levels can go in
             res/values-vXX/styles.xml, while customizations related to
@@ -13,7 +13,6 @@
         <item name="windowActionBar">false</item>
         <item name="windowActionModeOverlay">true</item>
         <item name="windowNoTitle">true</item>
-        <item name="android:windowBackground">@color/bright_foreground_material_dark</item>
 
         <item name="android:textColor">@color/primary_text</item>
         <item name="android:textColorSecondary">@color/secondary_text</item>
@@ -22,8 +21,8 @@
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
 
-        <item name="popupMenuStyle">@style/ThemeOverlay.AppCompat.Light</item>
-        <item name="actionBarPopupTheme">@style/ThemeOverlay.AppCompat.Light</item>
+        <item name="popupMenuStyle">@style/ThemeOverlay.AppCompat</item>
+        <item name="actionBarPopupTheme">@style/ThemeOverlay.AppCompat</item>
         <item name="actionModeStyle">@style/Widget.AppTheme.ActionMode</item>
     </style>
 
@@ -33,8 +32,6 @@
         <item name="height">?android:attr/actionBarSize</item>
         <item name="titleTextStyle">@style/TextAppearance.Widget.AppCompat.Toolbar.Title</item>
         <item name="subtitleTextStyle">@style/TextAppearance.Widget.AppCompat.Toolbar.Subtitle</item>
-        <item name="android:textColorPrimary">@color/primary_text_default_material_dark</item>
-        <item name="android:textColorSecondary">@color/secondary_text_default_material_dark</item>
     </style>
 
     <style name="AppTheme.BottomSheet" parent="AppTheme.Base">
@@ -55,7 +52,7 @@
     </style>
 
     <!-- Dialog theme. -->
-    <style name="AppTheme.Dialog" parent="Theme.AppCompat.Light.Dialog">
+    <style name="AppTheme.Dialog" parent="Theme.AppCompat.DayNight.Dialog">
         <!-- All customizations that are NOT specific to a particular API-level can go here. -->
         <item name="android:windowFrame">@null</item>
         <item name="android:windowIsFloating">true</item>
@@ -67,12 +64,12 @@
     <style name="Widget.AppTheme.ActionBar" parent="Widget.AppCompat.ActionBar">
         <item name="android:background">@color/primary</item>
         <item name="theme">@style/ThemeOverlay.AppTheme.ActionBar</item>
-        <item name="popupTheme">@style/ThemeOverlay.AppCompat.Light</item>
+        <item name="popupTheme">@style/ThemeOverlay.AppCompat</item>
     </style>
 
     <style name="ThemeOverlay.AppTheme.ActionBar" parent="ThemeOverlay.AppCompat.ActionBar">
-        <item name="android:textColorPrimary">@color/primary_text_default_material_dark</item>
-        <item name="android:textColorSecondary">@color/secondary_text_default_material_dark</item>
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:textColorSecondary">@color/white</item>
     </style>
 
     <style name="TextAppearance.XSmall" parent="@android:style/TextAppearance.Small">

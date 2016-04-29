@@ -99,7 +99,7 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
                         // eta not available
                         viewHolder.eta.setText(R.string.message_no_data);
                     } else {
-                        String etaText = object.eta.etas.replaceAll(" ?　?預定班次", "");
+                        String etaText = Jsoup.parse(object.eta.etas).text().replaceAll(" ?　?預定班次", "");
                         String[] etas = etaText.split(", ?");
                         Pattern pattern = Pattern.compile("到達([^/離開]|$)");
                         Matcher matcher = pattern.matcher(etaText);
