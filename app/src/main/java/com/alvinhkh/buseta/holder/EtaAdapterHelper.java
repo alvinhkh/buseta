@@ -7,6 +7,8 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.R;
 
+import org.jsoup.Jsoup;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -47,6 +49,13 @@ public class EtaAdapterHelper {
 
     public static int greyOutMinutes = 3;
 
+    public static String getText(String text) {
+        return Jsoup.parse(text).text()
+                .replaceAll("　", " ")
+                .replaceAll(" ?預定班次", "")
+                .replaceAll(" ?時段班次", "");
+    }
+
     public static String etaEstimate(RouteStop object, String[] etas, int i, Date server_date,
                                      Context context, TextView tEta, TextView tEtaMore) {
         StringBuilder sb = new StringBuilder();
@@ -83,7 +92,7 @@ public class EtaAdapterHelper {
                     // minutes should be 0 to within a day
                     etaMinutes = String.valueOf(minutes);
                 }
-                if (minutes >= 60) {
+                if (minutes > 60) {
                     // calculation error
                     // they only provide eta within 60 minutes
                     etaMinutes = "";

@@ -17,9 +17,6 @@ import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.holder.RouteStopETA;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -80,14 +77,8 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
             RouteStopETA routeStopETA = null;
             String apiVersion = getColumnString(mCursor, EtaTable.COLUMN_ETA_API);
             if (null != apiVersion && !apiVersion.equals("")) {
-                routeStopETA = new RouteStopETA();
+                routeStopETA = RouteStopETA.create(mCursor);
                 routeStopETA.api_version = Integer.valueOf(apiVersion);
-                routeStopETA.seq = getColumnString(mCursor, EtaTable.COLUMN_STOP_SEQ);
-                routeStopETA.etas = getColumnString(mCursor, EtaTable.COLUMN_ETA_TIME);
-                routeStopETA.wheelchair = getColumnString(mCursor, EtaTable.COLUMN_ETA_WHEELCHAIR);
-                routeStopETA.expires = getColumnString(mCursor, EtaTable.COLUMN_ETA_EXPIRE);
-                routeStopETA.server_time = getColumnString(mCursor, EtaTable.COLUMN_SERVER_TIME);
-                routeStopETA.updated = getColumnString(mCursor, EtaTable.COLUMN_UPDATED);
             }
             routeStop = new RouteStop();
             routeStop.route_bound = routeBound;
@@ -139,10 +130,12 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
                         // eta not available
                         rv.setTextViewText(R.id.eta, mContext.getString(R.string.message_no_data));
                     } else {
-                        String text = Jsoup.parse(object.eta.etas).text().replaceAll(" ?　?預定班次", "");
+                        String text = EtaAdapterHelper.getText(object.eta.etas);
                         String[] etas = text.split(", ?");
                         Pattern pattern = Pattern.compile("到達([^/離開]|$)");
                         Matcher matcher = pattern.matcher(text);
+                        String[] scheduled = object.eta.scheduled.split(", ?");
+                        String[] wheelchairs = object.eta.wheelchair.split(", ?");
                         int count = 0;
                         while (matcher.find())
                             count++; //count any matched pattern
@@ -152,10 +145,21 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
                         } else {
                             StringBuilder sb = new StringBuilder();
                             for (int i = 0; i < etas.length; i++) {
+                                if (scheduled.length > i && scheduled[i] != null
+                                        && scheduled[i].equals("Y")) {
+                                    // scheduled bus
+                                    sb.append("*");
+                                }
                                 sb.append(etas[i]);
                                 String estimate = EtaAdapterHelper.etaEstimate(object, etas, i, server_date,
                                         null, null, null);
                                 sb.append(estimate);
+                                if (wheelchairs.length > i && wheelchairs[i] != null
+                                        && wheelchairs[i].equals("Y")) {
+                                    // wheelchair emoji
+                                    sb.append(" ");
+                                    sb.append(new String(Character.toChars(0x267F)));
+                                }
                                 if (i == 0) {
                                     rv.setTextViewText(R.id.eta, sb.toString());
                                     sb = new StringBuilder();

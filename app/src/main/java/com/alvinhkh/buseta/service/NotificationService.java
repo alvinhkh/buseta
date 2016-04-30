@@ -177,7 +177,7 @@ public class NotificationService extends Service {
                         EtaAdapterHelper.display_format.format(updated_date) : object.eta.updated;
             }
             // ETAs
-            String eta = Jsoup.parse(object.eta.etas).text();
+            String eta = EtaAdapterHelper.getText(object.eta.etas);
             String[] etas = eta.replaceAll("　", " ").split(", ?");
             for (int i = 0; i < etas.length; i++) {
                 bigText.append(etas[i]);
@@ -186,7 +186,7 @@ public class NotificationService extends Service {
                 if (i < etas.length - 1) {
                     bigText.append("\n");
                 }
-                String text = etas[i].replaceAll(" ?　?預定班次", "");
+                String text = etas[i];
                 if (i == 0) {
                     smallContentTitle.append(" ");
                     smallContentTitle.append(text);

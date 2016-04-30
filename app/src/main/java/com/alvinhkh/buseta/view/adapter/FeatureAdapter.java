@@ -24,14 +24,9 @@ import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.holder.RouteStopETA;
 import com.alvinhkh.buseta.provider.SuggestionProvider;
 import com.alvinhkh.buseta.provider.SuggestionTable;
-import com.alvinhkh.buseta.view.MainActivity;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RecyclerViewHolder;
 import com.alvinhkh.buseta.holder.SearchHistory;
-import com.alvinhkh.buseta.view.dialog.RouteEtaActivity;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 
 import java.util.Date;
 import java.util.regex.Matcher;
@@ -107,14 +102,8 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
         RouteStopETA routeStopETA = null;
         String apiVersion = getFollowColumnString(mCursor_follow, EtaTable.COLUMN_ETA_API);
         if (null != apiVersion && !apiVersion.equals("")) {
-            routeStopETA = new RouteStopETA();
+            routeStopETA = RouteStopETA.create(mCursor_follow);
             routeStopETA.api_version = Integer.valueOf(apiVersion);
-            routeStopETA.seq = getFollowColumnString(mCursor_follow, EtaTable.COLUMN_STOP_SEQ);
-            routeStopETA.etas = getFollowColumnString(mCursor_follow, EtaTable.COLUMN_ETA_TIME);
-            routeStopETA.wheelchair = getFollowColumnString(mCursor_follow, EtaTable.COLUMN_ETA_WHEELCHAIR);
-            routeStopETA.expires = getFollowColumnString(mCursor_follow, EtaTable.COLUMN_ETA_EXPIRE);
-            routeStopETA.server_time = getFollowColumnString(mCursor_follow, EtaTable.COLUMN_SERVER_TIME);
-            routeStopETA.updated = getFollowColumnString(mCursor_follow, EtaTable.COLUMN_UPDATED);
         }
         RouteStop routeStop = new RouteStop();
         routeStop.route_bound = routeBound;
@@ -170,10 +159,11 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
                             // eta not available
                             viewHolder.eta.setText(R.string.message_no_data);
                         } else {
-                            String etaText = Jsoup.parse(object.eta.etas).text().replaceAll(" ?　?預定班次", "");
+                            String etaText = EtaAdapterHelper.getText(object.eta.etas);
                             String[] etas = etaText.split(", ?");
                             Pattern pattern = Pattern.compile("到達([^/離開]|$)");
                             Matcher matcher = pattern.matcher(etaText);
+                            String[] scheduled = object.eta.scheduled.split(", ?");
                             String[] wheelchairs = object.eta.wheelchair.split(", ?");
                             int count = 0;
                             while (matcher.find())
@@ -184,14 +174,20 @@ public class FeatureAdapter extends RecyclerView.Adapter<FeatureAdapter.ViewHold
                             } else {
                                 StringBuilder sb = new StringBuilder();
                                 for (int i = 0; i < etas.length; i++) {
+                                    if (scheduled.length > i && scheduled[i] != null
+                                            && scheduled[i].equals("Y")) {
+                                        // scheduled bus
+                                        sb.append("*");
+                                    }
                                     sb.append(etas[i]);
                                     String estimate = EtaAdapterHelper.etaEstimate(object, etas, i, server_date
                                             , mActivity, viewHolder.eta, viewHolder.eta_more);
                                     sb.append(estimate);
                                     if (wheelchairs.length > i && wheelchairs[i] != null
                                             && wheelchairs[i].equals("Y")) {
+                                        // wheelchair emoji
                                         sb.append(" ");
-                                        sb.append(new String(Character.toChars(0x267F))); // wheelchair emoji
+                                        sb.append(new String(Character.toChars(0x267F)));
                                     }
                                     if (i == 0) {
                                         viewHolder.eta.setText(sb.toString());

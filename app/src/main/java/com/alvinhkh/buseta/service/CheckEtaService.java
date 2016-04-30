@@ -11,6 +11,7 @@ import android.util.Log;
 
 import com.alvinhkh.buseta.Connectivity;
 import com.alvinhkh.buseta.Constants;
+import com.alvinhkh.buseta.holder.EtaAdapterHelper;
 import com.alvinhkh.buseta.provider.EtaTable;
 import com.alvinhkh.buseta.provider.FollowProvider;
 import com.alvinhkh.buseta.holder.RouteStop;
@@ -173,19 +174,23 @@ public class CheckEtaService extends IntentService {
                             result.get("generated").getAsString() : "";
                     StringBuilder etas = new StringBuilder();
                     StringBuilder expires = new StringBuilder();
+                    StringBuilder scheduled = new StringBuilder();
                     StringBuilder wheelchair = new StringBuilder();
                     for (int i = 0; i < jsonArray.size(); i++) {
                         JsonObject object = jsonArray.get(i).getAsJsonObject();
                         etas.append(object.has("t") ? object.get("t").getAsString() : "");
                         expires.append(object.has("ex") ? object.get("ex").getAsString() : "");
+                        scheduled.append(object.has("ei") ? object.get("ei").getAsString() : "");
                         wheelchair.append(object.has("w") ? object.get("w").getAsString() : "");
                         if (i < jsonArray.size() - 1) {
                             etas.append(", ");
                             expires.append(", ");
+                            scheduled.append(", ");
                             wheelchair.append(", ");
                         }
                     }
                     routeStopETA.etas = etas.toString();
+                    routeStopETA.scheduled = scheduled.toString();
                     routeStopETA.wheelchair = wheelchair.toString();
                     routeStopETA.expires = expires.toString();
                     routeStop.eta = routeStopETA;
@@ -312,7 +317,7 @@ public class CheckEtaService extends IntentService {
                     }
                 }
                 if (null != routeStopETA.etas) {
-                    String text = Jsoup.parse(routeStopETA.etas).text().replaceAll(" ?　?預定班次", "");
+                    String text = EtaAdapterHelper.getText(routeStopETA.etas);
                     String[] etas = text.split(", ?");
                     Pattern pattern = Pattern.compile("到達([^/離開]|$)");
                     Matcher matcher = pattern.matcher(text);
@@ -410,6 +415,7 @@ public class CheckEtaService extends IntentService {
             if (null != object.eta) {
                 values.put(EtaTable.COLUMN_ETA_API, String.valueOf(object.eta.api_version));
                 values.put(EtaTable.COLUMN_ETA_TIME, object.eta.etas);
+                values.put(EtaTable.COLUMN_ETA_SCHEDULED, object.eta.scheduled);
                 values.put(EtaTable.COLUMN_ETA_WHEELCHAIR, object.eta.wheelchair);
                 values.put(EtaTable.COLUMN_ETA_EXPIRE, object.eta.expires);
                 values.put(EtaTable.COLUMN_SERVER_TIME, object.eta.server_time);

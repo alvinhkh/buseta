@@ -309,6 +309,7 @@ public class FollowProvider extends ContentProvider {
                 EtaTable.COLUMN_STOP_CODE,
                 EtaTable.COLUMN_ETA_API,
                 EtaTable.COLUMN_ETA_TIME,
+                EtaTable.COLUMN_ETA_SCHEDULED,
                 EtaTable.COLUMN_ETA_WHEELCHAIR,
                 EtaTable.COLUMN_ETA_EXPIRE,
                 EtaTable.COLUMN_SERVER_TIME,

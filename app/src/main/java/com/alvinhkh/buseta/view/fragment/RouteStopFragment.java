@@ -639,14 +639,8 @@ public class RouteStopFragment extends Fragment
                             RouteStopETA routeStopETA = null;
                             String apiVersion = getColumnString(cursor, EtaTable.COLUMN_ETA_API);
                             if (null != apiVersion && !apiVersion.equals("")) {
-                                routeStopETA = new RouteStopETA();
+                                routeStopETA = RouteStopETA.create(cursor);
                                 routeStopETA.api_version = Integer.valueOf(apiVersion);
-                                routeStopETA.seq = getColumnString(cursor, EtaTable.COLUMN_STOP_SEQ);
-                                routeStopETA.etas = getColumnString(cursor, EtaTable.COLUMN_ETA_TIME);
-                                routeStopETA.wheelchair = getColumnString(cursor, EtaTable.COLUMN_ETA_WHEELCHAIR);
-                                routeStopETA.expires = getColumnString(cursor, EtaTable.COLUMN_ETA_EXPIRE);
-                                routeStopETA.server_time = getColumnString(cursor, EtaTable.COLUMN_SERVER_TIME);
-                                routeStopETA.updated = getColumnString(cursor, EtaTable.COLUMN_UPDATED);
                             }
                             String route_no = getColumnString(cursor, EtaTable.COLUMN_ROUTE);
                             String route_bound = getColumnString(cursor, EtaTable.COLUMN_BOUND);

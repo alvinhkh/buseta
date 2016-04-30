@@ -552,14 +552,8 @@ public class RouteEtaFragment extends Fragment
                 RouteStopETA routeStopETA = null;
                 String apiVersion = getColumnString(cEta, EtaTable.COLUMN_ETA_API);
                 if (null != apiVersion && !apiVersion.equals("")) {
-                    routeStopETA = new RouteStopETA();
+                    routeStopETA = RouteStopETA.create(cEta);
                     routeStopETA.api_version = Integer.valueOf(apiVersion);
-                    routeStopETA.seq = getColumnString(cEta, EtaTable.COLUMN_STOP_SEQ);
-                    routeStopETA.etas = getColumnString(cEta, EtaTable.COLUMN_ETA_TIME);
-                    routeStopETA.wheelchair = getColumnString(cEta, EtaTable.COLUMN_ETA_WHEELCHAIR);
-                    routeStopETA.expires = getColumnString(cEta, EtaTable.COLUMN_ETA_EXPIRE);
-                    routeStopETA.server_time = getColumnString(cEta, EtaTable.COLUMN_SERVER_TIME);
-                    routeStopETA.updated = getColumnString(cEta, EtaTable.COLUMN_UPDATED);
                 }
                 routeStop.eta = routeStopETA;
                 routeStop.eta_loading = getColumnString(cEta, EtaTable.COLUMN_LOADING).equals("true");
@@ -634,16 +628,23 @@ public class RouteEtaFragment extends Fragment
         }
         // ETAs
         String[] etas = Jsoup.parse(object.eta.etas).text().replaceAll("　", " ").split(", ?");
+        String[] scheduled = object.eta.scheduled.split(", ?");
         String[] wheelchairs = object.eta.wheelchair.split(", ?");
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < etas.length; i++) {
+            if (scheduled.length > i && scheduled[i] != null
+                    && scheduled[i].equals("Y")) {
+                // scheduled bus
+                sb.append("*");
+            }
             sb.append(etas[i]);
             String estimate = EtaAdapterHelper.etaEstimate(object, etas, i, server_date, null, null, null);
             sb.append(estimate);
             if (wheelchairs.length > i && wheelchairs[i] != null
                     && wheelchairs[i].equals("Y")) {
+                // wheelchair emoji
                 sb.append(" ");
-                sb.append(new String(Character.toChars(0x267F))); // wheelchair emoji
+                sb.append(new String(Character.toChars(0x267F)));
             }
             if (i < etas.length - 1)
                 sb.append("\n");
