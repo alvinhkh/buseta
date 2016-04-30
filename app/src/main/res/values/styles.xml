@@ -14,6 +14,7 @@
         <item name="windowActionModeOverlay">true</item>
         <item name="windowNoTitle">true</item>
 
+        <item name="android:windowBackground">@color/activity_background</item>
         <item name="android:textColor">@color/primary_text</item>
         <item name="android:textColorSecondary">@color/secondary_text</item>
         <item name="android:textColorHighlight">@color/accent</item>

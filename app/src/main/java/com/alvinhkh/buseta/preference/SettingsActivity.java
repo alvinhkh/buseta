@@ -25,6 +25,7 @@ import android.widget.Toast;
 import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.holder.NightModeHelper;
 import com.alvinhkh.buseta.provider.FollowProvider;
 import com.alvinhkh.buseta.provider.RouteProvider;
 import com.alvinhkh.buseta.provider.SuggestionProvider;
@@ -206,6 +207,11 @@ public class SettingsActivity extends BasePreferenceActivity {
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
                                               String key) {
             updatePrefSummary(findPreference(key));
+            if (key.matches("app_theme")) {
+                NightModeHelper.update(getActivity());
+                ((AppCompatPreferenceActivity) getActivity()).getDelegate().applyDayNight();
+                getActivity().recreate();
+            }
         }
 
         private void initSummary(Preference p) {

@@ -46,6 +46,7 @@ import com.alvinhkh.buseta.Connectivity;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.AppUpdate;
+import com.alvinhkh.buseta.holder.NightModeHelper;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.provider.FollowProvider;
 import com.alvinhkh.buseta.holder.RouteBound;
@@ -97,6 +98,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        NightModeHelper.update(this);
         setContentView(R.layout.activity_main);
         mClient = new GoogleApiClient.Builder(this).addApi(AppIndex.APP_INDEX_API).build();
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -108,14 +110,16 @@ public class MainActivity extends AppCompatActivity
         setTaskDescription(getString(R.string.app_name));
         // Set Toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        toolbar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (null == mSearchMenuItem) return;
-                mSearchMenuItem.expandActionView();
-            }
-        });
+        if (null != toolbar) {
+            setSupportActionBar(toolbar);
+            toolbar.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (null == mSearchMenuItem) return;
+                    mSearchMenuItem.expandActionView();
+                }
+            });
+        }
         // Broadcast Receiver
         IntentFilter mFilter = new IntentFilter(Constants.MESSAGE.CHECKING_UPDATED);
         mReceiver = new CheckUpdateReceiver();
@@ -301,6 +305,10 @@ public class MainActivity extends AppCompatActivity
         } else if (key.matches("eta_version")) {
             int rowsDeleted = getContentResolver().delete(FollowProvider.CONTENT_URI_ETA_JOIN, null, null);
             Log.d(TAG, "Deleted ETA Records: " + rowsDeleted);
+        } else if (key.matches("app_theme")) {
+            NightModeHelper.update(this);
+            this.getDelegate().applyDayNight();
+            this.recreate();
         }
     }
 
@@ -315,7 +323,7 @@ public class MainActivity extends AppCompatActivity
         mSearchView = (SearchView) mSearchMenuItem.getActionView();
         if (mSearchView != null) {
             ((EditText) mSearchView.findViewById(android.support.v7.appcompat.R.id.search_src_text))
-                    .setHintTextColor(ContextCompat.getColor(this, R.color.hint_foreground_material_dark));
+                    .setHintTextColor(ContextCompat.getColor(this, R.color.search_view_hint_text));
             mSearchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
             mSearchView.setIconified(false);
             mSearchView.onActionViewCollapsed();
@@ -455,8 +463,8 @@ public class MainActivity extends AppCompatActivity
                     stringId = R.string.message_request_show_ad;
                 if (hidden && query.equals(Constants.PREF.AD_KEY))
                     stringId = R.string.message_request_hide_ad_again;
-                final Snackbar snackbar = Snackbar.make(findViewById(R.id.coordinator) == null ?
-                                findViewById(android.R.id.content) : findViewById(R.id.coordinator),
+                final Snackbar snackbar = Snackbar.make(findViewById(R.id.coordinator) != null ?
+                                findViewById(R.id.coordinator) : findViewById(android.R.id.content),
                         stringId, Snackbar.LENGTH_INDEFINITE);
                 TextView tv = (TextView)
                         snackbar.getView().findViewById(android.support.design.R.id.snackbar_text);
@@ -516,6 +524,7 @@ public class MainActivity extends AppCompatActivity
     private void createAdView() {
         // Admob
         final FrameLayout adViewContainer = (FrameLayout) findViewById(R.id.adView_container);
+        if (null == adViewContainer) return;
         if (null == mPrefs) {
             adViewContainer.setVisibility(View.VISIBLE);
             return;

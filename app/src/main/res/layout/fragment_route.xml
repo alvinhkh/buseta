@@ -57,7 +57,6 @@
                     android:id="@+id/button_news"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    style="@style/TextAppearance.AppCompat.Button"
                     android:text="@string/passenger_notice"/>
 
             </LinearLayout>

@@ -2,6 +2,15 @@
 <PreferenceScreen
     xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <ListPreference
+        android:key="app_theme"
+        android:title="@string/title_app_theme"
+        android:defaultValue="1"
+        android:entries="@array/app_theme_entries"
+        android:entryValues="@array/app_theme_values"
+        android:negativeButtonText="@string/action_cancel"
+        android:positiveButtonText="@string/action_confirm" />
+
     <Preference
         android:key="clear_history"
         android:title="@string/title_clear_history"

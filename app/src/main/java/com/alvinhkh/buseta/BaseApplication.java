@@ -1,7 +1,11 @@
 package com.alvinhkh.buseta;
 
 import android.app.Application;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatDelegate;
+
+import com.alvinhkh.buseta.holder.NightModeHelper;
 
 import org.acra.*;
 import org.acra.annotation.*;
@@ -18,15 +22,15 @@ import org.acra.annotation.*;
 
 public class BaseApplication extends Application {
 
-    static {
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-    }
-
     @Override
     public void onCreate() {
+
         super.onCreate();
 
-        if (!BuildConfig.DEBUG) // filter out debugging
-            ACRA.init(this);
+        if (!BuildConfig.DEBUG) ACRA.init(this); // filter out debugging
+
+        NightModeHelper.update(this);
+
     }
+
 }

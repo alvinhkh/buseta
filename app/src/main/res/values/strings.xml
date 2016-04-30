@@ -45,6 +45,7 @@
     <string name="label_server_time">獲取數據（伺服器時間）：</string>
 
     <string name="title_settings">設定</string>
+    <string name="title_app_theme">主題</string>
     <string name="title_clear_history">清除搜尋記錄</string>
     <string name="summary_clear_history">@null</string>
     <string name="title_clear_follow">清除追蹤名單</string>

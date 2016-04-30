@@ -1,8 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     
+    <string-array name="app_theme_entries">
+        <item>自動</item>
+        <item>日間</item>
+        <item>夜間</item>
+    </string-array>
+
+    <string-array name="app_theme_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
     <string-array name="eta_version_entries">
-        <item>流動版 (預設)</item>
+        <item>流動版（預設）</item>
         <item>網頁版</item>
     </string-array>
 
