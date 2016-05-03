@@ -8,13 +8,7 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="@dimen/card_item_height"
-        android:paddingTop="@dimen/card_item_vertical_padding"
-        android:paddingBottom="@dimen/card_item_vertical_padding"
-        android:paddingLeft="@dimen/card_item_horizontal_padding"
-        android:paddingRight="@dimen/card_item_horizontal_padding"
-        android:paddingStart="@dimen/card_item_horizontal_padding"
-        android:paddingEnd="@dimen/card_item_horizontal_padding">
+        android:minHeight="@dimen/card_item_height">
 
         <ImageView
             android:id="@+id/icon"

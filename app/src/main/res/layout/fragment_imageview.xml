@@ -1,8 +1,8 @@
-
+<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             xmlns:tool="http://schemas.android.com/tools">
 
     <uk.co.senab.photoview.PhotoView
         android:id="@+id/imageView"
@@ -15,31 +15,28 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical|bottom"
         android:background="#60000000"
-        android:textColor="@android:color/white"
-        android:text=""
-        android:visibility="gone"
         android:paddingLeft="@dimen/activity_horizontal_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingTop="@dimen/activity_vertical_margin"
         android:paddingBottom="@dimen/activity_vertical_margin"
-        style="@style/TextAppearance.AppCompat.Medium" />
+        style="@style/TextAppearance.AppCompat.Title"
+        android:textColor="@color/white"
+        tool:text="DESCRIPTION" />
 
     <LinearLayout
         android:id="@+id/empty"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_margin="16dp"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
         android:gravity="center_vertical|center_horizontal"
         android:layout_gravity="center"
         android:orientation="vertical">
 
         <ProgressBar
             android:id="@+id/progressBar"
-            style="?android:attr/progressBarStyleLarge"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            style="?android:attr/progressBarStyleLarge" />
 
     </LinearLayout>
 

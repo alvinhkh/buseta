@@ -1,77 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v4.widget.SwipeRefreshLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tool="http://schemas.android.com/tools"
     android:id="@+id/swipe_refresh"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/activity_background">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
 
         <RelativeLayout
             android:id="@+id/route_info_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:layout_marginTop="@dimen/activity_vertical_margin"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
             android:layout_marginRight="@dimen/activity_horizontal_margin">
 
-            <LinearLayout
-                android:id="@+id/route_info"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/route_no"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="44sp"/>
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="16dp"
-                    android:layout_weight="1"/>
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/TextAppearance.AppCompat.Small"
-                    android:text="@string/select_route_bound"/>
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/buttons"
+            <TextView
+                android:id="@+id/route_no"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
+                android:paddingBottom="16dp"
+                android:textSize="44sp"
+                tool:text="ROUTE"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/route_no"
+                style="@style/TextAppearance.AppCompat.Small"
+                android:text="@string/select_route_bound"/>
+
+            <Button
+                android:id="@+id/button_news"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/passenger_notice"
                 android:layout_alignParentEnd="true"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/button_news"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/passenger_notice"/>
-
-            </LinearLayout>
+                android:layout_alignParentRight="true" />
 
         </RelativeLayout>
 
         <FrameLayout
             android:id="@+id/child_container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:layout_below="@+id/route_info_container">
 
             <include layout="@layout/fragment_listview" />
 
         </FrameLayout>
 
-    </LinearLayout>
+    </RelativeLayout>
 
 </android.support.v4.widget.SwipeRefreshLayout>

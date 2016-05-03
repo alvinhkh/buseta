@@ -14,7 +14,7 @@
         android:clipToPadding="false"
         android:scrollbarStyle="outsideOverlay"
         android:overScrollFooter="@android:color/transparent"
-        android:footerDividersEnabled="false"
+        android:divider="@android:color/transparent"
         android:visibility="gone" />
 
     <LinearLayout
