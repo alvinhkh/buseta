@@ -4,7 +4,7 @@
         Base application theme, dependent on API level. This theme is replaced
         by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
     -->
-    <style name="AppTheme.Base" parent="Theme.AppCompat.DayNight">
+    <style name="AppTheme.Base" parent="Theme.AppCompat.DayNight.NoActionBar">
         <!--
             Theme customizations available in newer API levels can go in
             res/values-vXX/styles.xml, while customizations related to
@@ -21,18 +21,6 @@
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
-
-        <item name="popupMenuStyle">@style/ThemeOverlay.AppCompat</item>
-        <item name="actionBarPopupTheme">@style/ThemeOverlay.AppCompat</item>
-        <item name="actionModeStyle">@style/Widget.AppTheme.ActionMode</item>
-    </style>
-
-    <style name="Widget.AppTheme.ActionMode" parent="@style/Widget.AppCompat.ActionMode">
-        <item name="background">@color/primary</item>
-        <item name="backgroundSplit">@null</item>
-        <item name="height">?android:attr/actionBarSize</item>
-        <item name="titleTextStyle">@style/TextAppearance.Widget.AppCompat.Toolbar.Title</item>
-        <item name="subtitleTextStyle">@style/TextAppearance.Widget.AppCompat.Toolbar.Subtitle</item>
     </style>
 
     <style name="AppTheme.BottomSheet" parent="AppTheme.Base">
@@ -62,13 +50,12 @@
         <item name="windowActionBar">false</item>
     </style>
 
-    <style name="Widget.AppTheme.ActionBar" parent="Widget.AppCompat.ActionBar">
-        <item name="android:background">@color/primary</item>
+    <style name="Widget.AppTheme.ActionBar" parent="ThemeOverlay.AppCompat.ActionBar">
         <item name="theme">@style/ThemeOverlay.AppTheme.ActionBar</item>
-        <item name="popupTheme">@style/ThemeOverlay.AppCompat</item>
+        <item name="popupTheme">@style/Theme.AppCompat.DayNight.DarkActionBar</item>
     </style>
 
-    <style name="ThemeOverlay.AppTheme.ActionBar" parent="ThemeOverlay.AppCompat.ActionBar">
+    <style name="ThemeOverlay.AppTheme.ActionBar" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
         <item name="android:textColorPrimary">@color/white</item>
         <item name="android:textColorSecondary">@color/white</item>
     </style>
