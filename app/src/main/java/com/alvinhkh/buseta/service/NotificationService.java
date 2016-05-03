@@ -179,21 +179,56 @@ public class NotificationService extends Service {
             // ETAs
             String eta = EtaAdapterHelper.getText(object.eta.etas);
             String[] etas = eta.replaceAll("　", " ").split(", ?");
+            String[] scheduled = object.eta.scheduled.split(", ?");
+            String[] wheelchairs = object.eta.wheelchair.split(", ?");
             for (int i = 0; i < etas.length; i++) {
+                if (scheduled.length > i && scheduled[i] != null
+                        && scheduled[i].equals("Y")) {
+                    // scheduled bus
+                    bigText.append("*");
+                }
                 bigText.append(etas[i]);
                 String estimate = EtaAdapterHelper.etaEstimate(object, etas, i, server_date, null, null, null);
                 bigText.append(estimate);
+                if (wheelchairs.length > i && wheelchairs[i] != null
+                        && wheelchairs[i].equals("Y")) {
+                    // wheelchair emoji
+                    bigText.append(" ");
+                    bigText.append(new String(Character.toChars(0x267F)));
+                }
                 if (i < etas.length - 1) {
                     bigText.append("\n");
                 }
                 String text = etas[i];
                 if (i == 0) {
                     smallContentTitle.append(" ");
+                    if (scheduled.length > i && scheduled[i] != null
+                            && scheduled[i].equals("Y")) {
+                        // scheduled bus
+                        smallContentTitle.append("*");
+                    }
                     smallContentTitle.append(text);
                     smallContentTitle.append(estimate);
+                    if (wheelchairs.length > i && wheelchairs[i] != null
+                            && wheelchairs[i].equals("Y")) {
+                        // wheelchair emoji
+                        smallContentTitle.append(" ");
+                        smallContentTitle.append(new String(Character.toChars(0x267F)));
+                    }
                 } else {
+                    if (scheduled.length > i && scheduled[i] != null
+                            && scheduled[i].equals("Y")) {
+                        // scheduled bus
+                        smallText.append("*");
+                    }
                     smallText.append(text);
                     smallText.append(estimate);
+                    if (wheelchairs.length > i && wheelchairs[i] != null
+                            && wheelchairs[i].equals("Y")) {
+                        // wheelchair emoji
+                        smallText.append(" ");
+                        smallText.append(new String(Character.toChars(0x267F)));
+                    }
                     if (i < etas.length - 1) {
                         smallText.append(" ");
                     }
