@@ -120,7 +120,7 @@
                         android:layout_height="wrap_content"
                         android:labelFor="@+id/route_destination"
                         android:singleLine="true"
-                        style="@style/TextAppearance.XSmall"
+                        style="@style/TextAppearance.AppTheme.XSmall"
                         android:textColor="@color/secondary_text"
                         android:text="@string/dest" />
 
@@ -129,7 +129,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:singleLine="true"
-                        style="@style/TextAppearance.XSmall"
+                        style="@style/TextAppearance.AppTheme.XSmall"
                         android:textColor="@color/secondary_text"
                         android:text="@string/dots" />
 
@@ -137,7 +137,7 @@
 
                 <TextView
                     android:id="@+id/eta_more"
-                    style="@style/TextAppearance.XSmall"
+                    style="@style/TextAppearance.AppTheme.XSmall"
                     android:textColor="@color/primary_text"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

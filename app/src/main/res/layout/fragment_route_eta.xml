@@ -63,7 +63,7 @@
                     android:layout_toLeftOf="@+id/textView_serverTime"
                     android:layout_toStartOf="@+id/textView_serverTime"
                     android:labelFor="@+id/textView_serverTime"
-                    android:textAppearance="@style/TextAppearance.XSmall"
+                    android:textAppearance="@style/TextAppearance.AppTheme.XSmall"
                     android:textColor="@color/secondary_text"
                     android:text="@string/label_server_time" />
 
@@ -73,7 +73,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentRight="true"
                     android:layout_alignParentEnd="true"
-                    android:textAppearance="@style/TextAppearance.XSmall"
+                    android:textAppearance="@style/TextAppearance.AppTheme.XSmall"
                     android:textColor="@color/secondary_text"
                     android:text="@string/dots" />
 
@@ -95,7 +95,7 @@
                     android:layout_toLeftOf="@+id/textView_updated"
                     android:layout_toStartOf="@+id/textView_updated"
                     android:labelFor="@+id/textView_updated"
-                    android:textAppearance="@style/TextAppearance.XSmall"
+                    android:textAppearance="@style/TextAppearance.AppTheme.XSmall"
                     android:textColor="@color/secondary_text"
                     android:text="@string/label_last_updated" />
 
@@ -105,7 +105,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
                     android:layout_alignParentRight="true"
-                    android:textAppearance="@style/TextAppearance.XSmall"
+                    android:textAppearance="@style/TextAppearance.AppTheme.XSmall"
                     android:textColor="@color/secondary_text"
                     android:text="@string/dots" />
 
