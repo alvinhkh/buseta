@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.view.dialog;
+package com.alvinhkh.buseta.view;
 
 import android.app.ActivityManager;
 import android.content.Context;
@@ -23,7 +23,7 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.view.ControllableAppBarLayout;
+import com.alvinhkh.buseta.view.common.ControllableAppBarLayout;
 import com.alvinhkh.buseta.view.fragment.RouteEtaFragment;
 import com.koushikdutta.ion.Ion;
 

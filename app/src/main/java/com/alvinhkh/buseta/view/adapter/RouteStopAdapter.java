@@ -9,11 +9,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.holder.EtaAdapterHelper;
+import com.alvinhkh.buseta.utils.EtaAdapterHelper;
 import com.alvinhkh.buseta.holder.RouteStop;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
+import com.alvinhkh.buseta.view.common.StateSavingArrayAdapter;
 
 import java.util.Date;
 import java.util.regex.Matcher;

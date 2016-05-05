@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.alvinhkh.buseta.preference;
+package com.alvinhkh.buseta.view.common;
 
 import android.content.res.Configuration;
 import android.os.Bundle;

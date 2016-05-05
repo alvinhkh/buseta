@@ -4,11 +4,11 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RouteBound;
+import com.alvinhkh.buseta.view.common.StateSavingArrayAdapter;
 
 public class RouteBoundAdapter extends StateSavingArrayAdapter<RouteBound> {
 

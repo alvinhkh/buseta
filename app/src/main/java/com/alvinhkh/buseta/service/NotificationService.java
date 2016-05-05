@@ -19,10 +19,8 @@ import android.util.SparseArray;
 
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.holder.EtaAdapterHelper;
+import com.alvinhkh.buseta.utils.EtaAdapterHelper;
 import com.alvinhkh.buseta.holder.RouteStop;
-
-import org.jsoup.Jsoup;
 
 import java.io.File;
 import java.util.Date;

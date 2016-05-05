@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta;
+package com.alvinhkh.buseta.utils;
 
 import android.content.Context;
 import android.content.pm.PackageManager;

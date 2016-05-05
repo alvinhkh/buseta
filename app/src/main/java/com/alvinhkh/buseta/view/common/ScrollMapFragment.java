@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.view.fragment;
+package com.alvinhkh.buseta.view.common;
 
 import android.content.Context;
 import android.os.Bundle;

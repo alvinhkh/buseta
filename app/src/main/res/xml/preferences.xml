@@ -30,7 +30,7 @@
 
         <intent
             android:action="android.intent.action.VIEW"
-            android:targetClass="com.alvinhkh.buseta.preference.AdvancedSettingsActivity"
+            android:targetClass="com.alvinhkh.buseta.view.AdvancedSettingsActivity"
             android:targetPackage="com.alvinhkh.buseta" />
 
     </PreferenceScreen>
@@ -75,7 +75,7 @@
 
             <intent
                 android:action="android.intent.action.VIEW"
-                android:targetClass="com.alvinhkh.buseta.preference.OpenSourceLicensesActivity"
+                android:targetClass="com.alvinhkh.buseta.view.OpenSourceLicensesActivity"
                 android:targetPackage="com.alvinhkh.buseta" />
 
         </PreferenceScreen>

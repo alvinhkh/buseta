@@ -55,7 +55,7 @@
             android:src="@drawable/ic_search_white_24dp"
             app:layout_anchor="@+id/cardList"
             app:layout_anchorGravity="bottom|end|right"
-            app:layout_behavior="com.alvinhkh.buseta.view.ScrollAwareFABBehavior"
+            app:layout_behavior="com.alvinhkh.buseta.view.common.FloatingActionButtonScrollBehavior"
             app:fabSize="normal" />
 
     </android.support.design.widget.CoordinatorLayout>

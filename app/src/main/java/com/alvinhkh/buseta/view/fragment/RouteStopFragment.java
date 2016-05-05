@@ -34,7 +34,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.alvinhkh.buseta.Connectivity;
+import com.alvinhkh.buseta.utils.Connectivity;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RouteStopMap;
@@ -49,7 +49,7 @@ import com.alvinhkh.buseta.provider.RouteStopTable;
 import com.alvinhkh.buseta.service.CheckEtaService;
 import com.alvinhkh.buseta.service.RouteService;
 import com.alvinhkh.buseta.view.adapter.RouteStopAdapter;
-import com.alvinhkh.buseta.view.dialog.RouteEtaActivity;
+import com.alvinhkh.buseta.view.RouteEtaActivity;
 import com.koushikdutta.ion.Ion;
 
 import java.lang.ref.WeakReference;

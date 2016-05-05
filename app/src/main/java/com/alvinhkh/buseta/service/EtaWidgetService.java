@@ -7,12 +7,12 @@ import android.database.Cursor;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
-import com.alvinhkh.buseta.Connectivity;
+import com.alvinhkh.buseta.utils.Connectivity;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.provider.EtaTable;
 import com.alvinhkh.buseta.provider.FollowProvider;
 import com.alvinhkh.buseta.provider.FollowTable;
-import com.alvinhkh.buseta.holder.EtaAdapterHelper;
+import com.alvinhkh.buseta.utils.EtaAdapterHelper;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.holder.RouteStopETA;

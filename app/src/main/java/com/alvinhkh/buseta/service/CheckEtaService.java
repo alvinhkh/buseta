@@ -9,9 +9,9 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.alvinhkh.buseta.Connectivity;
+import com.alvinhkh.buseta.utils.Connectivity;
 import com.alvinhkh.buseta.Constants;
-import com.alvinhkh.buseta.holder.EtaAdapterHelper;
+import com.alvinhkh.buseta.utils.EtaAdapterHelper;
 import com.alvinhkh.buseta.provider.EtaTable;
 import com.alvinhkh.buseta.provider.FollowProvider;
 import com.alvinhkh.buseta.holder.RouteStop;
@@ -24,9 +24,6 @@ import com.google.gson.JsonParser;
 import com.koushikdutta.async.http.Headers;
 import com.koushikdutta.ion.Ion;
 import com.koushikdutta.ion.Response;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 
 import java.util.Collections;
 import java.util.HashMap;

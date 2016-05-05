@@ -9,7 +9,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-import com.alvinhkh.buseta.Connectivity;
+import com.alvinhkh.buseta.utils.Connectivity;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RouteBound;
@@ -141,7 +141,7 @@ public class RouteService extends IntentService {
         headers.add("User-Agent", Constants.URL.REQUEST_UA);
         Future<Response<String>> conn = Ion.with(this)
                 .load(routeStopUri.toString())
-                .setLogging(TAG, Log.VERBOSE)
+                .setLogging(TAG, Log.DEBUG)
                 .addHeaders(headers.getMultiMap())
                 .setTimeout(TIME_OUT)
                 .asString()
@@ -392,7 +392,7 @@ public class RouteService extends IntentService {
     }
 
     private void sendUpdate(String routeNo, String message) {
-        Log.d(TAG, "sendUpdate: " + routeNo + " " + message);
+        //Log.d(TAG, "sendUpdate: " + routeNo + " " + message);
         Intent intent = new Intent(Constants.MESSAGE.BOUNDS_UPDATED);
         intent.putExtra(Constants.MESSAGE.BOUNDS_UPDATED, true);
         intent.putExtra(Constants.BUNDLE.ROUTE_NO, routeNo);
@@ -401,8 +401,8 @@ public class RouteService extends IntentService {
     }
 
     private void sendUpdate(RouteBound object, String message) {
-        if (null != object && null != object.route_no)
-            Log.d(TAG, "sendUpdate:: " + object.route_no + " " + message);
+        //if (null != object && null != object.route_no)
+        //    Log.d(TAG, "sendUpdate:: " + object.route_no + " " + message);
         Intent intent = new Intent(Constants.MESSAGE.STOPS_UPDATED);
         intent.putExtra(Constants.MESSAGE.STOPS_UPDATED, true);
         intent.putExtra(Constants.BUNDLE.BOUND_OBJECT, object);

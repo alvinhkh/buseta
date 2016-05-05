@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.view.adapter;
+package com.alvinhkh.buseta.view.common;
 
 import android.content.Context;
 import android.os.Bundle;

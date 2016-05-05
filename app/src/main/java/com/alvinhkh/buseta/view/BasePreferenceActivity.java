@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.preference;
+package com.alvinhkh.buseta.view;
 
 import android.app.ActivityManager;
 import android.content.res.Configuration;
@@ -15,7 +15,8 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.Utils;
+import com.alvinhkh.buseta.utils.Utils;
+import com.alvinhkh.buseta.view.common.AppCompatPreferenceActivity;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;

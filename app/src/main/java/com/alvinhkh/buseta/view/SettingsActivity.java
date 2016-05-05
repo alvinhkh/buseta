@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.preference;
+package com.alvinhkh.buseta.view;
 
 import android.app.Activity;
 import android.content.DialogInterface;
@@ -23,11 +23,12 @@ import android.widget.Toast;
 import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.holder.NightModeHelper;
+import com.alvinhkh.buseta.utils.NightModeHelper;
 import com.alvinhkh.buseta.provider.FollowProvider;
 import com.alvinhkh.buseta.provider.RouteProvider;
 import com.alvinhkh.buseta.provider.SuggestionProvider;
 import com.alvinhkh.buseta.provider.SuggestionTable;
+import com.alvinhkh.buseta.view.common.AppCompatPreferenceActivity;
 import com.koushikdutta.ion.Ion;
 
 public class SettingsActivity extends BasePreferenceActivity {

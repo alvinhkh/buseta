@@ -54,7 +54,7 @@
         </activity>
 
         <activity
-            android:name=".view.dialog.RouteEtaActivity"
+            android:name=".view.RouteEtaActivity"
             android:label="@string/eta"
             android:excludeFromRecents="true"
             android:theme="@style/AppTheme.BottomSheet" >
@@ -62,19 +62,16 @@
 
         <!-- Preferences -->
         <activity
-            android:name=".preference.SettingsActivity"
+            android:name=".view.SettingsActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
-            android:label="@string/title_settings" >
-        </activity>
+            android:label="@string/title_settings" />
         <activity
-            android:name=".preference.AdvancedSettingsActivity"
+            android:name=".view.AdvancedSettingsActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
-            android:label="@string/title_advanced_settings" >
-        </activity>
+            android:label="@string/title_advanced_settings" />
         <activity
-            android:name=".preference.OpenSourceLicensesActivity"
-            android:label="@string/open_source_license" >
-        </activity>
+            android:name=".view.OpenSourceLicensesActivity"
+            android:label="@string/open_source_license" />
 
         <!-- Google Play Services AdActivity -->
         <activity

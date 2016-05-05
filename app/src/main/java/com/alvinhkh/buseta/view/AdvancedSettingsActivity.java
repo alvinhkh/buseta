@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.preference;
+package com.alvinhkh.buseta.view;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;

@@ -1,13 +1,9 @@
-package com.alvinhkh.buseta.holder;
+package com.alvinhkh.buseta.utils;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
-
-import com.alvinhkh.buseta.preference.AppCompatPreferenceActivity;
 
 public class NightModeHelper {
 

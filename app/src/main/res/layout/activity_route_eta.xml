@@ -42,7 +42,7 @@
 
     </android.support.design.widget.CoordinatorLayout>
 
-    <com.alvinhkh.buseta.view.ControllableAppBarLayout
+    <com.alvinhkh.buseta.view.common.ControllableAppBarLayout
         android:id="@+id/AppBar"
         android:layout_width="match_parent"
         android:layout_height="256dp"
@@ -68,7 +68,7 @@
 
                 <fragment
                     android:id="@+id/map"
-                    android:name="com.alvinhkh.buseta.view.fragment.ScrollMapFragment"
+                    android:name="com.alvinhkh.buseta.view.common.ScrollMapFragment"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
 
@@ -114,6 +114,6 @@
 
         </android.support.design.widget.CollapsingToolbarLayout>
 
-    </com.alvinhkh.buseta.view.ControllableAppBarLayout>
+    </com.alvinhkh.buseta.view.common.ControllableAppBarLayout>
 
 </android.support.design.widget.CoordinatorLayout>

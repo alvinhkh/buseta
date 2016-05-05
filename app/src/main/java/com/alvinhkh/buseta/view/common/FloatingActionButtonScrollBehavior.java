@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.view;
+package com.alvinhkh.buseta.view.common;
 
 import android.content.Context;
 import android.support.design.widget.CoordinatorLayout;
@@ -10,9 +10,9 @@ import android.view.View;
 /*
  * Reference: https://guides.codepath.com/android/Floating-Action-Buttons
  */
-public class ScrollAwareFABBehavior extends FloatingActionButton.Behavior {
+public class FloatingActionButtonScrollBehavior extends FloatingActionButton.Behavior {
 
-    public ScrollAwareFABBehavior(Context context, AttributeSet attrs) {
+    public FloatingActionButtonScrollBehavior(Context context, AttributeSet attrs) {
         super();
     }
 

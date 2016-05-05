@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.holder;
+package com.alvinhkh.buseta.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -8,6 +8,7 @@ import android.util.Log;
 import android.widget.TextView;
 
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.holder.RouteStop;
 
 import org.jsoup.Jsoup;
 

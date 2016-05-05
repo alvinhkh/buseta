@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.preference;
+package com.alvinhkh.buseta.view;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -16,12 +16,12 @@ public class OpenSourceLicensesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_webview);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
         if (null != getSupportActionBar())
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         mWebView = (WebView) findViewById(R.id.webView);
+        assert mWebView != null;
         mWebView.loadUrl("file:///android_asset/open_source_licenses.html");
     }
 

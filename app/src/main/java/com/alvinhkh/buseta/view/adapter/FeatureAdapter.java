@@ -18,14 +18,14 @@ import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.provider.EtaTable;
 import com.alvinhkh.buseta.provider.FollowProvider;
 import com.alvinhkh.buseta.provider.FollowTable;
-import com.alvinhkh.buseta.holder.EtaAdapterHelper;
+import com.alvinhkh.buseta.utils.EtaAdapterHelper;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.holder.RouteStopETA;
 import com.alvinhkh.buseta.provider.SuggestionProvider;
 import com.alvinhkh.buseta.provider.SuggestionTable;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.holder.RecyclerViewHolder;
+import com.alvinhkh.buseta.view.common.RecyclerViewHolder;
 import com.alvinhkh.buseta.holder.SearchHistory;
 
 import java.util.Date;

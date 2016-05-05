@@ -1,11 +1,8 @@
 package com.alvinhkh.buseta;
 
 import android.app.Application;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-import android.support.v7.app.AppCompatDelegate;
 
-import com.alvinhkh.buseta.holder.NightModeHelper;
+import com.alvinhkh.buseta.utils.NightModeHelper;
 
 import org.acra.*;
 import org.acra.annotation.*;

@@ -16,19 +16,19 @@ import android.util.Log;
 import android.view.View;
 import android.widget.RemoteViews;
 
-import com.alvinhkh.buseta.Connectivity;
+import com.alvinhkh.buseta.utils.Connectivity;
 import com.alvinhkh.buseta.Constants;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.holder.RouteBound;
 import com.alvinhkh.buseta.holder.RouteStop;
 import com.alvinhkh.buseta.service.CheckEtaService;
 import com.alvinhkh.buseta.service.EtaWidgetAlarm;
-import com.alvinhkh.buseta.service.EtaWidgetService;
 import com.alvinhkh.buseta.view.MainActivity;
+import com.alvinhkh.buseta.service.EtaWidgetService;
 
 public class EtaWidgetProvider extends AppWidgetProvider {
 
-    private static final String TAG = "EtaWidgetProvider";
+    private static final String TAG = EtaWidgetProvider.class.getSimpleName();
 
     RemoteViews rv;
     int intervalMinutes = 1;

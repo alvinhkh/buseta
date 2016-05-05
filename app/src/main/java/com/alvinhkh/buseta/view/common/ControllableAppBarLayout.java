@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.view;
+package com.alvinhkh.buseta.view.common;
 
 /**
  * Copyright 2015 Bartosz Lipinski
