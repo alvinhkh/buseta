@@ -7,8 +7,6 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.CheckBoxPreference;
-import android.preference.EditTextPreference;
 import android.preference.Preference;
 
 import android.preference.PreferenceFragment;
@@ -226,23 +224,6 @@ public class SettingsActivity extends BasePreferenceActivity {
         }
 
         private void updatePrefSummary(Preference p) {
-            if (p instanceof EditTextPreference) {
-                EditTextPreference editTextPref = (EditTextPreference) p;
-                p.setSummary(editTextPref.getText());
-            }
-            /*
-            if (p instanceof SwitchPreference) {
-                SwitchPreference switchPref = (SwitchPreference) p;
-                p.setSummary(switchPref.isChecked() ?
-                        getString(R.string.enabled) :
-                        getString(R.string.disabled));
-            }*/
-            if (p instanceof CheckBoxPreference) {
-                CheckBoxPreference checkBoxPref = (CheckBoxPreference) p;
-                p.setSummary(checkBoxPref.isChecked() ?
-                        getString(R.string.enabled) :
-                        getString(R.string.disabled));
-            }
             if (p instanceof ListPreference) {
                 ListPreference listPref = (ListPreference) p;
                 p.setSummary(listPref.getEntry());
