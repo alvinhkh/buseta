@@ -191,7 +191,8 @@ public class NotificationService extends Service {
                 String estimate = EtaAdapterHelper.etaEstimate(object, etas, i, server_date, null, null, null);
                 bigText.append(estimate);
                 if (wheelchairs.length > i && wheelchairs[i] != null
-                        && wheelchairs[i].equals("Y")) {
+                        && wheelchairs[i].equals("Y")
+                        && EtaAdapterHelper.isShowWheelchairIcon(this)) {
                     // wheelchair emoji
                     bigText.append(" ");
                     bigText.append(new String(Character.toChars(0x267F)));

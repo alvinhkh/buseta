@@ -63,7 +63,10 @@
     <string name="summary_statement">All data come from official website. \nNo guarantee that the accuracy or timeliness of information provided.</string>
 
     <string name="title_advanced_settings">進階設定</string>
-    <string name="title_load_stop_image">顯示車站圖片</string>
+    <string name="title_load_wheelchair_icon">輪椅圖示</string>
+    <string name="summary_on_load_wheelchair_icon">顯示輪椅圖示</string>
+    <string name="summary_off_load_wheelchair_icon">隱藏輪椅圖示</string>
+    <string name="title_load_stop_image">車站圖片</string>
     <string name="summary_on_load_stop_image">自動載入車站圖片</string>
     <string name="summary_off_load_stop_image">預設顯示車站位置，可手動切換顯示圖片</string>
     <string name="title_update_route_suggestion">更新建議路線</string>

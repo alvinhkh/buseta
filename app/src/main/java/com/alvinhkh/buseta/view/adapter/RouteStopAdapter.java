@@ -127,7 +127,8 @@ public class RouteStopAdapter extends StateSavingArrayAdapter<RouteStop> {
                                         , mContext, viewHolder.eta, viewHolder.eta_more);
                                 sb.append(estimate);
                                 if (wheelchairs.length > i && wheelchairs[i] != null
-                                        && wheelchairs[i].equals("Y")) {
+                                        && wheelchairs[i].equals("Y")
+                                        && EtaAdapterHelper.isShowWheelchairIcon(mContext)) {
                                     // wheelchair emoji
                                     sb.append(" ");
                                     sb.append(new String(Character.toChars(0x267F)));

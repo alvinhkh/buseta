@@ -1,6 +1,8 @@
 package com.alvinhkh.buseta.holder;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.TextView;
@@ -54,6 +56,11 @@ public class EtaAdapterHelper {
                 .replaceAll("　", " ")
                 .replaceAll(" ?預定班次", "")
                 .replaceAll(" ?時段班次", "");
+    }
+
+    public static boolean isShowWheelchairIcon(Context context) {
+        SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        return null != mPrefs && mPrefs.getBoolean("load_wheelchair_icon", true);
     }
 
     public static String etaEstimate(RouteStop object, String[] etas, int i, Date server_date,

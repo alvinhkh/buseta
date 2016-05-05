@@ -98,7 +98,6 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
         RouteStop object = getItem(position);
         // Return a proper item
         RemoteViews rv = new RemoteViews(mContext.getPackageName(), R.layout.widget_item_eta);
-        if (null != rv)
         if (null != object&& null != object.route_bound) {
             // load data
             rv.setTextViewText(R.id.stop_code, object.code);
@@ -151,11 +150,12 @@ class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
                                     sb.append("*");
                                 }
                                 sb.append(etas[i]);
-                                String estimate = EtaAdapterHelper.etaEstimate(object, etas, i, server_date,
-                                        null, null, null);
+                                String estimate = EtaAdapterHelper.etaEstimate(
+                                        object, etas, i, server_date, null, null, null);
                                 sb.append(estimate);
                                 if (wheelchairs.length > i && wheelchairs[i] != null
-                                        && wheelchairs[i].equals("Y")) {
+                                        && wheelchairs[i].equals("Y")
+                                        && EtaAdapterHelper.isShowWheelchairIcon(mContext)) {
                                     // wheelchair emoji
                                     sb.append(" ");
                                     sb.append(new String(Character.toChars(0x267F)));
