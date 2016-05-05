@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
@@ -26,6 +27,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -49,8 +51,6 @@ import com.alvinhkh.buseta.service.RouteService;
 import com.alvinhkh.buseta.view.adapter.RouteStopAdapter;
 import com.alvinhkh.buseta.view.dialog.RouteEtaActivity;
 import com.koushikdutta.ion.Ion;
-import com.melnykov.fab.FloatingActionButton;
-import com.melnykov.fab.ScrollDirectionListener;
 
 import java.lang.ref.WeakReference;
 
@@ -188,18 +188,27 @@ public class RouteStopFragment extends Fragment
             }
         });
         fabHidden = true;
-        mFab.attachToListView(mListView, new ScrollDirectionListener() {
-            @Override
-            public void onScrollDown() {
-                if (!fabHidden)
-                    mFab.show();
-            }
+        mListView.setOnScrollListener(new AbsListView.OnScrollListener() {
+            private int mLastFirstVisibleItem;
 
             @Override
-            public void onScrollUp() {
-                mFab.hide();
+            public void onScrollStateChanged(AbsListView view, int scrollState) {}
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem,
+                                 int visibleItemCount, int totalItemCount) {
+                if (mLastFirstVisibleItem < firstVisibleItem) {
+                    // SCROLLING DOWN
+                    mFab.hide();
+                }
+                if (mLastFirstVisibleItem > firstVisibleItem) {
+                    // SCROLLING UP
+                    if (!fabHidden)
+                        mFab.show();
+                }
+                mLastFirstVisibleItem=firstVisibleItem;
             }
-        }, null);
+        });
         // load data
         if (savedInstanceState != null
                 && savedInstanceState.containsKey(KEY_LIST_VIEW_STATE)) {

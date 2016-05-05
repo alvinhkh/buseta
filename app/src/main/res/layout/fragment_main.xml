@@ -50,13 +50,11 @@
             android:id="@+id/fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="end|bottom|right"
             android:layout_margin="16dp"
-            android:adjustViewBounds="true"
-            android:nestedScrollingEnabled="true"
-            android:clickable="true"
             android:tint="@color/white"
             android:src="@drawable/ic_search_white_24dp"
+            app:layout_anchor="@+id/cardList"
+            app:layout_anchorGravity="bottom|end|right"
             app:layout_behavior="com.alvinhkh.buseta.view.ScrollAwareFABBehavior"
             app:fabSize="normal" />
 

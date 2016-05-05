@@ -6,28 +6,23 @@
     android:layout_height="match_parent"
     android:background="@color/activity_background">
 
-    <RelativeLayout
+    <android.support.design.widget.CoordinatorLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <include layout="@layout/fragment_listview"/>
+        <include android:id="@+id/container" layout="@layout/fragment_listview"/>
 
-        <com.melnykov.fab.FloatingActionButton
+        <android.support.design.widget.FloatingActionButton
             android:id="@+id/fab"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_centerHorizontal="true"
             android:layout_margin="16dp"
             android:tint="@color/white"
             android:src="@drawable/ic_refresh_white_24dp"
-            app:layout_behavior="com.alvinhkh.buseta.view.ScrollAwareFABBehavior"
-            app:fab_type="normal"
-            app:fab_shadow="true"
-            app:fab_colorNormal="@color/accent"
-            app:fab_colorPressed="@color/accent_pressed"
-            app:fab_colorRipple="@color/ripple" />
+            app:layout_anchor="@+id/container"
+            app:layout_anchorGravity="bottom|center"
+            app:fabSize="normal" />
 
-    </RelativeLayout>
+    </android.support.design.widget.CoordinatorLayout>
 
 </android.support.v4.widget.SwipeRefreshLayout>
