@@ -33,10 +33,6 @@ android {
     }
 }
 
-repositories {
-    maven { url 'https://dl.bintray.com/alexeydanilov/maven' }
-}
-
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:23.3.0'
@@ -50,6 +46,6 @@ dependencies {
     compile 'com.google.android.gms:play-services-appindexing:8.4.0'
     compile 'com.koushikdutta.ion:ion:2.1.7'
     compile 'org.jsoup:jsoup:1.9.1'
-    compile 'com.github.chrisbanes.photoview:library:1.2.4'
+    compile 'com.github.chrisbanes:PhotoView:1.2.6'
     compile 'ch.acra:acra:4.8.5'
 }
