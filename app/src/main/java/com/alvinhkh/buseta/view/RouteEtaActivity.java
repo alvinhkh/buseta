@@ -3,7 +3,6 @@ package com.alvinhkh.buseta.view;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
@@ -75,12 +74,6 @@ public class RouteEtaActivity extends AppCompatActivity {
     public void onDestroy() {
         Ion.getDefault(this).cancelAll(this);
         super.onDestroy();
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        getDelegate().applyDayNight();
     }
 
     public static float dpToPixels(Context context, int dp) {

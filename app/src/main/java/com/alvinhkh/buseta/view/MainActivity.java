@@ -292,7 +292,6 @@ public class MainActivity extends AppCompatActivity
     @Override
      public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        getDelegate().applyDayNight();
         createAdView();
     }
 
@@ -306,7 +305,6 @@ public class MainActivity extends AppCompatActivity
             Log.d(TAG, "Deleted ETA Records: " + rowsDeleted);
         } else if (key.matches("app_theme")) {
             NightModeHelper.update(this);
-            this.getDelegate().applyDayNight();
             this.recreate();
         }
     }
