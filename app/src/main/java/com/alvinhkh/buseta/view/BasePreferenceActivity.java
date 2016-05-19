@@ -86,7 +86,7 @@ public class BasePreferenceActivity extends AppCompatPreferenceActivity {
         boolean hideAdView = false;
         if (!hideAdView) {
             mAdView = new AdView(this);
-            mAdView.setAdUnitId(getString(R.string.ad_banner_unit_id));
+            mAdView.setAdUnitId(getString(R.string.AD_BANNER_UNIT_ID));
             mAdView.setAdSize(AdSize.SMART_BANNER);
             mAdView.setAdListener(new AdListener() {
                 @Override
@@ -102,7 +102,7 @@ public class BasePreferenceActivity extends AppCompatPreferenceActivity {
             adViewContainer.addView(mAdView);
             AdRequest mAdRequest = new AdRequest.Builder()
                     .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)  // All emulators
-                    .addTestDevice(getString(R.string.ad_test_device))
+                    .addTestDevice(getString(R.string.AD_TEST_DEVICE))
                     .build();
             mAdView.loadAd(mAdRequest);
             // get device md5 id

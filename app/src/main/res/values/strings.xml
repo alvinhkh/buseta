@@ -121,9 +121,6 @@
     <string name="url_app" translatable="false">http://buseta.alvinhkh.com</string>
     <string name="url_developer" translatable="false">http://www.alvinhkh.com</string>
 
-    <string name="content_description_icon">History Icon</string>
-
-    <string name="ad_banner_unit_id" translatable="false">ca-app-pub-6262559170277485/9622928959</string>
-    <string name="ad_test_device" translatable="false">32435A22AB5E861137EA049E6F3821C3</string>
+    <string name="content_description_icon">Icon</string>
 
 </resources>

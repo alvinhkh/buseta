@@ -30,6 +30,8 @@ android {
     }
     buildTypes.each {
         it.resValue 'string', 'GOOGLE_MAP_API_KEY', GoogleMapApiKey
+        it.resValue 'string', 'AD_BANNER_UNIT_ID', AdBannerUnitId
+        it.resValue 'string', 'AD_TEST_DEVICE', AdTestDevice
     }
 }
 
