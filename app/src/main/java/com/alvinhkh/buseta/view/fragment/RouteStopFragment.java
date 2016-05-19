@@ -12,6 +12,8 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
 import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -167,17 +169,21 @@ public class RouteStopFragment extends Fragment
         mListView.setOnItemClickListener(this);
         // Broadcast Receiver
         if (null != mContext) {
+            HandlerThread handlerThread = new HandlerThread("ht");
+            handlerThread.start();
+            Looper looper = handlerThread.getLooper();
+            Handler handler = new Handler(looper);
             mReceiver_view = new UpdateViewReceiver();
             IntentFilter mFilter_view = new IntentFilter(Constants.MESSAGE.STOPS_UPDATED);
             mFilter_view.addAction(Constants.MESSAGE.STOPS_UPDATED);
-            mContext.registerReceiver(mReceiver_view, mFilter_view);
+            mContext.registerReceiver(mReceiver_view, mFilter_view, null, handler);
             mReceiver_item = new UpdateItemReceiver();
             IntentFilter mFilter_item = new IntentFilter(Constants.MESSAGE.FOLLOW_UPDATED);
             mFilter_item.addAction(Constants.MESSAGE.FOLLOW_UPDATED);
             IntentFilter mFilter_eta = new IntentFilter(Constants.MESSAGE.ETA_UPDATED);
             mFilter_eta.addAction(Constants.MESSAGE.ETA_UPDATED);
-            mContext.registerReceiver(mReceiver_item, mFilter_item);
-            mContext.registerReceiver(mReceiver_item, mFilter_eta);
+            mContext.registerReceiver(mReceiver_item, mFilter_item, null, handler);
+            mContext.registerReceiver(mReceiver_item, mFilter_eta, null, handler);
         }
         // FloatingActionButton
         mFab = (FloatingActionButton) view.findViewById(R.id.fab);
@@ -691,15 +697,9 @@ public class RouteStopFragment extends Fragment
         @Override
         public void onReceive(Context context, Intent intent) {
             final Bundle bundle = intent.getExtras();
-            Thread thread = new Thread() {
-                @Override
-                public void run() {
-                    Message message = mItemHandler.obtainMessage();
-                    message.setData(bundle);
-                    mItemHandler.sendMessage(message);
-                }
-            };
-            thread.run();
+            Message message = mItemHandler.obtainMessage();
+            message.setData(bundle);
+            mItemHandler.sendMessage(message);
         }
     }
 
