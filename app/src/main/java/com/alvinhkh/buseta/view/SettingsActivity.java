@@ -28,6 +28,7 @@ import com.alvinhkh.buseta.provider.FollowProvider;
 import com.alvinhkh.buseta.provider.RouteProvider;
 import com.alvinhkh.buseta.provider.SuggestionProvider;
 import com.alvinhkh.buseta.provider.SuggestionTable;
+import com.alvinhkh.buseta.view.common.AppCompatPreferenceActivity;
 import com.koushikdutta.ion.Ion;
 
 public class SettingsActivity extends BasePreferenceActivity {
@@ -207,6 +208,7 @@ public class SettingsActivity extends BasePreferenceActivity {
             updatePrefSummary(findPreference(key));
             if (key.matches("app_theme")) {
                 NightModeHelper.update(getActivity());
+                ((AppCompatPreferenceActivity) getActivity()).getDelegate().applyDayNight();
                 getActivity().recreate();
             }
         }

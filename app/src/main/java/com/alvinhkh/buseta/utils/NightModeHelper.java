@@ -7,7 +7,7 @@ import android.support.v7.app.AppCompatDelegate;
 
 public class NightModeHelper {
 
-    public static void update(Context context) {
+    public static void update(final Context context) {
         if (null == context) return;
         SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(context);
         switch (Integer.valueOf(mPrefs.getString("app_theme", "1"))) {

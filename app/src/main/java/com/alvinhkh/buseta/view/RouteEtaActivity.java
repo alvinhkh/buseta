@@ -51,12 +51,14 @@ public class RouteEtaActivity extends AppCompatActivity {
         } else {
             window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, (int) dpToPixels(this, layoutHeightDp));
         }
-        CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams) appBarLayout.getLayoutParams();
-        lp.height = (int) dpToPixels(this, 256);
-        if (getScreenOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
-            appBarLayout.setExpanded(false);
+        if (appBarLayout != null) {
+            CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams) appBarLayout.getLayoutParams();
+            lp.height = (int) dpToPixels(this, 256);
+            if (getScreenOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+                appBarLayout.setExpanded(false);
+            }
+            appBarLayout.collapseToolbar();
         }
-        appBarLayout.collapseToolbar();
 
         // Display the fragment as the main content.
         if (findViewById(R.id.fragment_container) != null) {
