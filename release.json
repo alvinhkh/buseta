@@ -5,8 +5,8 @@
 	"version_name": "0.1.9",
 	"content": "- 輪椅班次emoji（可設定隱藏）\n- 星號(*)表示預定班次\n- 夜間模式\n\n注意：如路線有任何更改總站或巴士站，你需要先取消該路線所有追踪車站，再重新載入該路線資料（可到設定一次過清除追踪名單）",
 	"updated": "2016-05-20",
-	"url": "https://db.tt/3jihPh1i",
+	"url": "https://www.dropbox.com/s/bi0xtkuy65katv3/buseta-latest.apk?dl=1",
 	"notify": true,
-	"force": false,
+	"force": true,
 	"download": false
 }]
