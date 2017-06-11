@@ -13,14 +13,4 @@
         <item>2</item>
     </string-array>
 
-    <string-array name="eta_version_entries">
-        <item>流動版（預設）</item>
-        <item>網頁版</item>
-    </string-array>
-
-    <string-array name="eta_version_values">
-        <item>2</item>
-        <item>1</item>
-    </string-array>
-    
 </resources>

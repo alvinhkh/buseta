@@ -32,15 +32,6 @@
         android:key="category_debug"
         android:title="@string/category_debug">
 
-        <ListPreference
-            android:key="eta_version"
-            android:title="@string/title_eta_version"
-            android:defaultValue="2"
-            android:entries="@array/eta_version_entries"
-            android:entryValues="@array/eta_version_values"
-            android:negativeButtonText="@string/action_cancel"
-            android:positiveButtonText="@string/action_confirm" />
-
         <Preference
             android:key="send_logcat"
             android:title="@string/title_send_logcat"

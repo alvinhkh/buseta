@@ -43,7 +43,6 @@ public class RouteService extends IntentService {
 
     SharedPreferences mPrefs;
     List<ContentValues> valuesList = null;
-    String vHost = Constants.URL.LWB;
 
     public RouteService() {
         super("RouteService");
@@ -54,10 +53,6 @@ public class RouteService extends IntentService {
         super.onCreate();
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         SharedPreferences.Editor editor = mPrefs.edit();
-        String routeInfoApi = mPrefs.getString(Constants.PREF.REQUEST_API_INFO, "");
-        if (routeInfoApi.equals("") || !routeInfoApi.contains(vHost))
-            editor.putString(Constants.PREF.REQUEST_API_INFO,
-                    vHost + Constants.URL.ROUTE_INFO_V1);
         editor.putString(Constants.PREF.REQUEST_ID, null);
         editor.putString(Constants.PREF.REQUEST_TOKEN, null);
         editor.apply();
@@ -128,8 +123,7 @@ public class RouteService extends IntentService {
 
     private void getRouteBound(final String routeNo) throws ExecutionException, InterruptedException, TimeoutException {
         sendUpdate(routeNo, Constants.STATUS.UPDATING_BOUNDS);
-        Uri routeStopUri = Uri.parse(mPrefs.getString(Constants.PREF.REQUEST_API_INFO,
-                vHost + Constants.URL.ROUTE_INFO))
+        Uri routeStopUri = Uri.parse(Constants.URL.LWB + Constants.URL.ROUTE_INFO)
                 .buildUpon()
                 .appendQueryParameter("t", ((Double) Math.random()).toString())
                 .appendQueryParameter("field9", routeNo)
@@ -208,8 +202,7 @@ public class RouteService extends IntentService {
 
     private void getRouteStop(final RouteBound object) throws ExecutionException, InterruptedException, TimeoutException {
         sendUpdate(object, Constants.STATUS.UPDATING_STOPS);
-        Uri routeStopUri = Uri.parse(mPrefs.getString(Constants.PREF.REQUEST_API_INFO,
-                vHost + Constants.URL.ROUTE_INFO))
+        Uri routeStopUri = Uri.parse(Constants.URL.LWB + Constants.URL.ROUTE_INFO)
                 .buildUpon()
                 .appendQueryParameter("t", ((Double) Math.random()).toString())
                 .appendQueryParameter("chkroutebound", "true")

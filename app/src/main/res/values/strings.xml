@@ -51,7 +51,7 @@
     <string name="title_clear_follow">清除追蹤名單</string>
     <string name="summary_clear_follow">@null</string>
     <string name="category_about">關於</string>
-    <string name="title_app_name" translatable="false">%s \u00A9 2015-2016</string>
+    <string name="title_app_name" translatable="false">%s \u00A9 2015-2017</string>
     <string name="summary_app_name" translatable="false">@string/url_app</string>
     <string name="title_app_version">版本</string>
     <string name="summary_app_version" translatable="false">%1$s (%2$s)</string>
@@ -74,7 +74,6 @@
     <string name="title_check_app_update">檢查更新</string>
     <string name="summary_check_app_update">手動檢查應用程式更新</string>
     <string name="category_debug">測試</string>
-    <string name="title_eta_version">到站時間預報系統</string>
     <string name="title_send_logcat">發送日誌 (logcat)</string>
     <string name="summary_send_logcat">@string/email_developer</string>
     <string name="title_hide_ad">隱藏廣告</string>

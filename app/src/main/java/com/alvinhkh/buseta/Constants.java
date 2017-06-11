@@ -6,12 +6,8 @@ public class Constants {
         String RELEASE = "http://buseta.alvinhkh.com/release.json";
         String KMB = "http://www.kmb.hk";
         String LWB = "http://www.lwb.hk";
-        String PATH_ETA_API = "/ajax/eta_api/prod/";
-        String PATH_ETA_API_V1 = "/ajax/eta_api/index_v2.php";
-        String PATH_ETA_JS = "/js/services/eta/";
         String ROUTE_AVAILABLE = "http://etadatafeed.kmb.hk:1933/GetData.ashx?type=ETA_R";
-        String ROUTE_INFO = "/ajax/getRouteInfo.php";
-        String ROUTE_INFO_V1 = "/ajax/getRoute_info.php";
+        String ROUTE_INFO = "/ajax/getRoute_info.php";
         String ROUTE_MAP = "/ajax/getRouteMapByBusno.php";
         String ROUTE_NEWS = "/ajax/getnews.php";
         String ROUTE_NOTICES = KMB + "/tc/news/realtimenews.html?page=";
@@ -19,7 +15,7 @@ public class Constants {
         String ROUTE_STOP_IMAGE = KMB + "/chi/img.php?file=";
         String HTML_ETA = KMB + "/tc/services/eta_enquiry.html";
         String HTML_SEARCH = KMB + "/tc/services/search.html";
-        String ETA_API_HOST = "http://etav2.kmb.hk";
+        String ETA_API_HOST = "http://etav3.kmb.hk";
         String REQUEST_REFERRER = HTML_ETA;
         String REQUEST_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " + 
                 "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2478.0 Safari/537.36";
@@ -35,7 +31,7 @@ public class Constants {
     }
 
     public interface ROUTES {
-        Integer VERSION = 20160401;
+        Integer VERSION = 20170611;
     }
 
     public interface MESSAGE {

@@ -22,6 +22,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.koushikdutta.async.http.Headers;
+import com.koushikdutta.async.util.Charsets;
 import com.koushikdutta.ion.Ion;
 import com.koushikdutta.ion.Response;
 
@@ -39,7 +40,6 @@ public class CheckEtaService extends IntentService {
     private static final int TIME_OUT = 30 * 1000;
 
     SharedPreferences mPrefs;
-    String vHost = Constants.URL.LWB;
     String _id = null;
     String _token = null;
     Boolean sendUpdating = true;
@@ -56,10 +56,6 @@ public class CheckEtaService extends IntentService {
         _token = null;
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         SharedPreferences.Editor editor = mPrefs.edit();
-        String routeInfoApi = mPrefs.getString(Constants.PREF.REQUEST_API_INFO, "");
-        if (routeInfoApi.equals("") || !routeInfoApi.contains(vHost))
-            editor.putString(Constants.PREF.REQUEST_API_INFO,
-                    vHost + Constants.URL.ROUTE_INFO_V1);
         editor.putString(Constants.PREF.REQUEST_ID, null);
         editor.putString(Constants.PREF.REQUEST_TOKEN, null);
         editor.apply();
@@ -95,26 +91,7 @@ public class CheckEtaService extends IntentService {
     }
 
     private void getETA(final RouteStop routeStop, final int nId) {
-        int version = 2;
-        try {
-            version = Integer.valueOf(mPrefs.getString("eta_version", "2"));
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-            version = 2;
-        }
-        switch (version) {
-            case 1:
-                try {
-                    getETAv1(routeStop, nId);
-                } catch (InterruptedException | ExecutionException e) {
-                    Log.e(TAG, e.getMessage());
-                }
-                break;
-            case 2:
-            default:
-                getETAv2(routeStop, nId);
-                break;
-        }
+        getETAv2(routeStop, nId);
     }
 
     private void getETAv2(final RouteStop routeStop, final int nId) {
@@ -142,7 +119,7 @@ public class CheckEtaService extends IntentService {
                     .load(routeEtaUri.toString())
                     .addHeaders(headers.getMultiMap())
                     .setTimeout(TIME_OUT)
-                    .asString()
+                    .asString(Charsets.UTF_8)
                     .withResponse()
                     .get();
 
@@ -153,7 +130,6 @@ public class CheckEtaService extends IntentService {
                 if (str != null) {
                     JsonParser parser = new JsonParser();
                     JsonObject result = parser.parse(str).getAsJsonObject();
-                    //Log.d(TAG, result.toString());
                     if (!result.has("response") || !result.get("response").isJsonArray()) {
                         routeStop.eta_loading = false;
                         routeStop.eta_fail = !result.has("generated");
@@ -207,194 +183,6 @@ public class CheckEtaService extends IntentService {
         }
     }
 
-    private void getETAv1(final RouteStop routeStop, int nId)
-            throws ExecutionException, InterruptedException {
-        getETAv1(routeStop, nId, 0);
-    }
-
-    private void getETAv1(final RouteStop routeStop, int nId, int attempt)
-            throws ExecutionException, InterruptedException {
-        if (null == routeStop || null == routeStop.route_bound) return;
-        routeStop.eta_loading = true;
-        sendUpdating(routeStop, nId);
-
-        _id = mPrefs.getString(Constants.PREF.REQUEST_ID, null);
-        _token = mPrefs.getString(Constants.PREF.REQUEST_TOKEN, null);
-        String etaApi = mPrefs.getString(Constants.PREF.REQUEST_API_ETA, null);
-        if (null == _id || null == _token || _id.equals("") || _token.equals("")) {
-            findToken(routeStop,
-                    mPrefs.getString(Constants.PREF.REQUEST_API_INFO,
-                            vHost + Constants.URL.ROUTE_INFO_V1));
-            etaApi = null;
-        }
-        String route_no = routeStop.route_bound.route_no.trim().replace(" ", "").toUpperCase();
-        String _random_t = ((Double) Math.random()).toString();
-        if (attempt == 0) {
-            etaApi = Constants.URL.LWB
-                    + Constants.URL.PATH_ETA_API_V1
-                    + "?routeno=" + route_no
-                    + "&bound=" + routeStop.route_bound.route_bound
-                    + "&busstop=" + routeStop.code.replaceAll("-", "")
-                    + "&lang=" + "tc"
-                    + "&stopseq=" + routeStop.stop_seq
-                    + "&t=";
-        }
-        if (etaApi == null) {
-            routeStop.eta_loading = false;
-            routeStop.eta_fail = true;
-            sendUpdate(routeStop, nId);
-            return;
-        }
-        Headers headers = new Headers();
-        headers.add("Referer", Constants.URL.REQUEST_REFERRER);
-        headers.add("X-Requested-With", "XMLHttpRequest");
-        headers.add("Pragma", "no-cache");
-        headers.add("User-Agent", Constants.URL.REQUEST_UA);
-        Map<String, List<String>> params = new HashMap<String, List<String>>();
-        params.put("route", Collections.singletonList(route_no));
-        params.put("route_no", Collections.singletonList(route_no));
-        params.put("bound", Collections.singletonList(routeStop.route_bound.route_bound));
-        params.put("busstop", Collections.singletonList(routeStop.code.replaceAll("-", "")));
-        params.put("lang", Collections.singletonList("tc"));
-        params.put("stopseq", Collections.singletonList(routeStop.stop_seq));
-        params.put("id", Collections.singletonList(_id));
-        params.put("token", Collections.singletonList(_token));
-        Response<String> response = Ion.with(getApplicationContext())
-                .load(etaApi + _random_t)
-                .setLogging(TAG, Log.INFO)
-                .addHeaders(headers.getMultiMap())
-                .setTimeout(TIME_OUT)
-                .setBodyParameters(params)
-                .asString()
-                .withResponse()
-                .get();
-        routeStop.eta_loading = true;
-        routeStop.eta_fail = false;
-        if (null != response && response.getHeaders().code() == 404) {
-            // delete record
-            SharedPreferences.Editor editor = mPrefs.edit();
-            editor.putString(Constants.PREF.REQUEST_ID, null);
-            editor.putString(Constants.PREF.REQUEST_TOKEN, null);
-            editor.putString(Constants.PREF.REQUEST_API_ETA, null);
-            editor.apply();
-            if (attempt < 3) {
-                getETAv1(routeStop, attempt + 1);
-            } else {
-                routeStop.eta_loading = false;
-                routeStop.eta_fail = false;
-                sendUpdate(routeStop, nId);
-            }
-        } else if (null != response && response.getHeaders().code() == 200) {
-            String result = response.getResult();
-            if (result != null) {
-                // Log.d(TAG, result);
-                if (!result.contains("ETA_TIME")) {
-                    // delete record
-                    SharedPreferences.Editor editor = mPrefs.edit();
-                    editor.putString(Constants.PREF.REQUEST_API_ETA, null);
-                    editor.apply();
-                    if (attempt < 5) {
-                        getETAv1(routeStop, attempt);
-                    } else {
-                        routeStop.eta_loading = false;
-                        routeStop.eta_fail = true;
-                        sendUpdate(routeStop, nId);
-                    }
-                    return;
-                }
-
-                RouteStopETA routeStopETA = new RouteStopETA();
-                // TODO: parse result [], ignore php error
-                JsonParser jsonParser = new JsonParser();
-                JsonArray jsonArray = jsonParser.parse(result).getAsJsonArray();
-                for (final JsonElement element : jsonArray) {
-                    if (element.isJsonObject()) {
-                        routeStopETA = new Gson().fromJson(element.getAsJsonObject(), RouteStopETA.class);
-                        routeStopETA.api_version = 1;
-                    }
-                }
-                if (null != routeStopETA.etas) {
-                    String text = EtaAdapterHelper.getText(routeStopETA.etas);
-                    String[] etas = text.split(", ?");
-                    Pattern pattern = Pattern.compile("到達([^/離開]|$)");
-                    Matcher matcher = pattern.matcher(text);
-                    int count = 0;
-                    while (matcher.find())
-                        count++; //count any matched pattern
-                    if (count > 1 && count == etas.length && attempt < 8) {
-                        // more than one and all same, more likely error
-                        Log.d(TAG, "sam.sam.sam.");
-                        getETAv1(routeStop, attempt + 1);
-                        return;
-                    }
-                }
-                routeStop.eta = routeStopETA;
-                routeStop.eta_loading = false;
-                sendUpdate(routeStop, nId);
-            }
-        }
-    }
-
-    private void findToken(final RouteStop routeStop, String routeInfoApi) throws ExecutionException, InterruptedException {
-        if (null == routeStop || null == routeStop.route_bound) return;
-
-        String _random_t = ((Double) Math.random()).toString();
-        Uri routeStopUri = Uri.parse(routeInfoApi)
-                .buildUpon()
-                .appendQueryParameter("t", _random_t)
-                .appendQueryParameter("chkroutebound", "true")
-                .appendQueryParameter("field9", routeStop.route_bound.route_no)
-                .appendQueryParameter("routebound", routeStop.route_bound.route_bound)
-                .build();
-
-        Headers headers = new Headers();
-        headers.add("Referer", Constants.URL.REQUEST_REFERRER);
-        headers.add("X-Requested-With", "XMLHttpRequest");
-        headers.add("Pragma", "no-cache");
-        headers.add("User-Agent", Constants.URL.REQUEST_UA);
-        Response<JsonObject> response = Ion.with(getApplicationContext())
-                .load(routeStopUri.toString())
-                .setLogging(TAG, Log.INFO)
-                .addHeaders(headers.getMultiMap())
-                .setTimeout(TIME_OUT)
-                .asJsonObject()
-                .withResponse()
-                .get();
-        if (null != response && response.getHeaders().code() == 200) {
-            JsonObject result = response.getResult();
-            //Log.d(TAG, result.toString());
-            if (null != result)
-                if (result.has("valid") && result.get("valid").getAsBoolean()) {
-                    if (result.has("id") && result.has("token")) {
-                        String id = result.get("id").getAsString();
-                        String token = result.get("token").getAsString();
-                        // Log.d(TAG, "id: " + id + " token: " + token);
-                        // save record
-                        SharedPreferences.Editor editor = mPrefs.edit();
-                        editor.putString(Constants.PREF.REQUEST_ID, id);
-                        editor.putString(Constants.PREF.REQUEST_TOKEN, token);
-                        editor.apply();
-                    }
-                } else if (result.has("valid") && !result.get("valid").getAsBoolean() &&
-                        result.has("message") && !result.get("message").getAsString().equals("")) {
-                    // Invalid request with output message
-                    Log.d(TAG, result.get("message").getAsString());
-                }
-        } else {
-            if (routeInfoApi.equals(vHost + Constants.URL.ROUTE_INFO)) {
-                routeInfoApi = vHost + Constants.URL.ROUTE_INFO_V1;
-            } else {
-                routeInfoApi = vHost + Constants.URL.ROUTE_INFO;
-            }
-            SharedPreferences.Editor editor = mPrefs.edit();
-            editor.putString(Constants.PREF.REQUEST_API_INFO, routeInfoApi);
-            editor.putString(Constants.PREF.REQUEST_ID, null);
-            editor.putString(Constants.PREF.REQUEST_TOKEN, null);
-            editor.apply();
-            findToken(routeStop, routeInfoApi);
-        }
-    }
-    
     private void sendUpdating(RouteStop object, int nId) {
         if (!sendUpdating || isWidget || nId > 0) return;
         sendUpdate(object, nId);
