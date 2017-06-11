@@ -150,16 +150,18 @@ public class CheckEtaService extends IntentService {
                     StringBuilder scheduled = new StringBuilder();
                     StringBuilder wheelchair = new StringBuilder();
                     for (int i = 0; i < jsonArray.size(); i++) {
-                        JsonObject object = jsonArray.get(i).getAsJsonObject();
-                        etas.append(object.has("t") ? object.get("t").getAsString() : "");
-                        expires.append(object.has("ex") ? object.get("ex").getAsString() : "");
-                        scheduled.append(object.has("ei") ? object.get("ei").getAsString() : "");
-                        wheelchair.append(object.has("w") ? object.get("w").getAsString() : "");
-                        if (i < jsonArray.size() - 1) {
-                            etas.append(", ");
-                            expires.append(", ");
-                            scheduled.append(", ");
-                            wheelchair.append(", ");
+                        if (!jsonArray.get(i).isJsonNull()) {
+                            JsonObject object = jsonArray.get(i).getAsJsonObject();
+                            etas.append(object.has("t") && !object.get("t").isJsonNull() ? object.get("t").getAsString() : "");
+                            expires.append(object.has("ex") && !object.get("ex").isJsonNull() ? object.get("ex").getAsString() : "");
+                            scheduled.append(object.has("ei") && !object.get("ei").isJsonNull() ? object.get("ei").getAsString() : "");
+                            wheelchair.append(object.has("w") && !object.get("w").isJsonNull() ? object.get("w").getAsString() : "");
+                            if (i < jsonArray.size() - 1) {
+                                etas.append(", ");
+                                expires.append(", ");
+                                scheduled.append(", ");
+                                wheelchair.append(", ");
+                            }
                         }
                     }
                     routeStopETA.etas = etas.toString();
