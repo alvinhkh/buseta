@@ -157,21 +157,18 @@ public class RouteEtaFragment extends Fragment
             mActionBar.setHomeAsUpIndicator(R.drawable.ic_star_border_white_24dp);
         }
         setHasOptionsMenu(true);
-        if (mMap == null) {
-            // Google Map
-            ScrollMapFragment mMapFragment =
-                    ((ScrollMapFragment) getFragmentManager().findFragmentById(R.id.map));
-            mMap = mMapFragment.getMap();
-            final NestedScrollView mScrollView = (NestedScrollView) view.findViewById(R.id.NestedScrollView);
-            ((ScrollMapFragment) getFragmentManager().findFragmentById(R.id.map))
-                    .setListener(new ScrollMapFragment.OnTouchListener() {
-                        @Override
-                        public void onTouch() {
-                            mScrollView.requestDisallowInterceptTouchEvent(true);
-                        }
-                    });
-            mMapFragment.getMapAsync(this);
-        }
+        // Google Map
+        ScrollMapFragment mMapFragment =
+                ((ScrollMapFragment) getFragmentManager().findFragmentById(R.id.map));
+        final NestedScrollView mScrollView = (NestedScrollView) view.findViewById(R.id.NestedScrollView);
+        ((ScrollMapFragment) getFragmentManager().findFragmentById(R.id.map))
+                .setListener(new ScrollMapFragment.OnTouchListener() {
+                    @Override
+                    public void onTouch() {
+                        mScrollView.requestDisallowInterceptTouchEvent(true);
+                    }
+                });
+        mMapFragment.getMapAsync(this);
         checkGooglePlayServices(getActivity());
         return view;
     }
@@ -207,7 +204,7 @@ public class RouteEtaFragment extends Fragment
         if (null != mAutoRefreshHandler && null != mAutoRefreshRunnable)
             mAutoRefreshHandler.removeCallbacks(mAutoRefreshRunnable);
         if (null != mContext && null != mReceiver)
-                mContext.unregisterReceiver(mReceiver);
+            mContext.unregisterReceiver(mReceiver);
         super.onPause();
     }
 
@@ -691,20 +688,20 @@ public class RouteEtaFragment extends Fragment
                     mImageView.setAnimation(fadeIn);
                 } else {
                     if (null != object)
-                    Ion.with(mContext)
-                            .load(Constants.URL.ROUTE_STOP_IMAGE + object.code)
-                            .withBitmap()
-                            .error(R.drawable.ic_error_outline_black_48dp)
-                            .resize(340, 255)
-                            .centerCrop()
-                            .animateLoad(R.anim.fade_in)
-                            .intoImageView(mImageView)
-                            .setCallback(new FutureCallback<ImageView>() {
-                                @Override
-                                public void onCompleted(Exception e, ImageView result) {
-                                    mImageBitmap = Ion.with(mImageView).getBitmap();
-                                }
-                            });
+                        Ion.with(mContext)
+                                .load(Constants.URL.ROUTE_STOP_IMAGE + object.code)
+                                .withBitmap()
+                                .error(R.drawable.ic_error_outline_black_48dp)
+                                .resize(340, 255)
+                                .centerCrop()
+                                .animateLoad(R.anim.fade_in)
+                                .intoImageView(mImageView)
+                                .setCallback(new FutureCallback<ImageView>() {
+                                    @Override
+                                    public void onCompleted(Exception e, ImageView result) {
+                                        mImageBitmap = Ion.with(mImageView).getBitmap();
+                                    }
+                                });
                 }
             } else {
                 if (null != mMenu) {
@@ -717,18 +714,18 @@ public class RouteEtaFragment extends Fragment
                 mapContainer.setAnimation(fadeIn);
                 mImageContainer.setVisibility(View.GONE);
                 if (Utils.isPackageInstalled("com.google.android.wearable.app", mContext))
-                if (null != object && null != object.details)
-                    Ion.with(mContext)
-                            .load(Constants.URL.STATIC_MAP +
-                                    object.details.lat + "," + object.details.lng +
-                                    "&markers=size:mid%7C" + object.details.lat + "," + object.details.lng)
-                            .asBitmap()
-                            .setCallback(new FutureCallback<Bitmap>() {
-                                @Override
-                                public void onCompleted(Exception e, Bitmap result) {
-                                    mMapBitmap = result;
-                                }
-                            });
+                    if (null != object && null != object.details)
+                        Ion.with(mContext)
+                                .load(Constants.URL.STATIC_MAP +
+                                        object.details.lat + "," + object.details.lng +
+                                        "&markers=size:mid%7C" + object.details.lat + "," + object.details.lng)
+                                .asBitmap()
+                                .setCallback(new FutureCallback<Bitmap>() {
+                                    @Override
+                                    public void onCompleted(Exception e, Bitmap result) {
+                                        mMapBitmap = result;
+                                    }
+                                });
             }
         }
     }
