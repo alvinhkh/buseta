@@ -25,6 +25,7 @@
                 android:layout_height="wrap_content"
                 android:paddingBottom="16dp"
                 android:textSize="44sp"
+                style="@style/TextAppearance.AppCompat.Subhead"
                 tool:text="ROUTE"/>
 
             <TextView

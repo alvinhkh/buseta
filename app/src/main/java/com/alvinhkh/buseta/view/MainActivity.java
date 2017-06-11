@@ -319,8 +319,6 @@ public class MainActivity extends AppCompatActivity
         mSearchMenuItem = menu.findItem(R.id.action_search);
         mSearchView = (SearchView) mSearchMenuItem.getActionView();
         if (mSearchView != null) {
-            ((EditText) mSearchView.findViewById(android.support.v7.appcompat.R.id.search_src_text))
-                    .setHintTextColor(ContextCompat.getColor(this, R.color.search_view_hint_text));
             mSearchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
             mSearchView.setIconified(false);
             mSearchView.onActionViewCollapsed();

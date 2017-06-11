@@ -47,13 +47,13 @@
         android:layout_width="match_parent"
         android:layout_height="256dp"
         android:background="@android:color/transparent"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
         app:titleEnabled="false">
 
         <android.support.design.widget.CollapsingToolbarLayout
             android:id="@+id/CollapsingToolbarLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:theme="@style/AppTheme.AppBarOverlay"
             app:contentScrim="@android:color/transparent"
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
             app:titleEnabled="true">
@@ -109,8 +109,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 android:background="@android:color/transparent"
-                app:layout_collapseMode="pin"
-                style="@style/Widget.AppTheme.ActionBar" />
+                app:layout_collapseMode="pin" />
 
         </android.support.design.widget.CollapsingToolbarLayout>
 
