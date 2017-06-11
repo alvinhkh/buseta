@@ -40,8 +40,7 @@
             android:layout_marginStart="@dimen/card_item_label_margin_start"
             android:layout_marginLeft="@dimen/card_item_label_margin_start"
             android:gravity="center_vertical"
-            android:singleLine="true"
-            style="@style/TextAppearance.AppCompat.Widget.ActionBar.Subtitle.Inverse"
+            android:maxLines="1"
             tool:text="ROUTE" />
 
     </RelativeLayout>

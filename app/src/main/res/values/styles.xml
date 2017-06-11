@@ -15,7 +15,7 @@
         <item name="windowNoTitle">true</item>
 
         <item name="android:windowBackground">@color/activity_background</item>
-        <item name="android:textColor">@color/primary_text</item>
+        <item name="android:textColorPrimary">@color/primary_text</item>
         <item name="android:textColorSecondary">@color/secondary_text</item>
         <item name="android:textColorHighlight">@color/accent</item>
         <item name="colorPrimary">@color/primary</item>
@@ -56,8 +56,6 @@
     </style>
 
     <style name="ThemeOverlay.AppTheme.ActionBar" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
-        <item name="android:textColorPrimary">@color/white</item>
-        <item name="android:textColorSecondary">@color/white</item>
     </style>
 
     <style name="TextAppearance.AppTheme.XSmall" parent="@style/TextAppearance.AppCompat.Small">
