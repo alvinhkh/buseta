@@ -1,77 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.alvinhkh.buseta" >
+    package="com.alvinhkh.buseta">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <!--
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    -->
+
     <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES" />
 
     <application
-        android:name=".BaseApplication"
+        android:name=".App"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/AppTheme.NoActionBar">
-
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
-
         <meta-data
-            android:name="com.google.android.maps.v2.API_KEY"
-            android:value="@string/GOOGLE_MAP_API_KEY" />
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key" />
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="6032abdc0a74733a4c4cdf5c47ef72307cc54795" />
 
         <activity
             android:name=".view.MainActivity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:label="@string/app_name"
             android:launchMode="singleTask">
-            <intent-filter
-                android:label="@string/launcher_name">
+            <intent-filter android:label="@string/launcher_name">
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
+        </activity>
+        <activity
+            android:name=".ui.search.SearchActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleTop"
+            android:theme="@style/AppTheme.NoActionBar.Translucent">
             <intent-filter>
                 <action android:name="android.intent.action.SEARCH" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
             <intent-filter
+                android:autoVerify="true"
                 android:label="@string/app_name">
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <!-- Accepts URIs that begin with "buseta://route" -->
                 <data
-                    android:scheme="buseta"
                     android:host="route"
+                    android:pathPattern=".*"
                     android:pathPrefix="/"
-                    android:pathPattern=".*" />
+                    android:scheme="buseta" />
             </intent-filter>
+
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
         </activity>
-
         <activity
-            android:name=".view.RouteEtaActivity"
-            android:label="@string/eta"
-            android:excludeFromRecents="true"
-            android:theme="@style/AppTheme.BottomSheet" >
+            android:name=".ui.follow.FollowActivity"
+            android:label="@string/app_name" />
+        <activity
+            android:name=".ui.route.RouteAnnounceActivity"
+            android:label="@string/passenger_notice" />
+        <activity
+            android:name=".ui.image.ImageActivity"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar.Black" />
+        <activity
+            android:name=".ui.setting.SettingActivity"
+            android:label="@string/title_settings"
+            android:launchMode="singleTop">
+            <intent-filter android:label="@string/app_name">
+                <action android:name="android.intent.action.APPLICATION_PREFERENCES" />
+            </intent-filter>
         </activity>
-
-        <!-- Preferences -->
         <activity
-            android:name=".view.SettingsActivity"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:label="@string/title_settings" />
+            android:name=".lwb.ui.LwbActivity"
+            android:label="@string/route"
+            android:hardwareAccelerated="true" />
         <activity
-            android:name=".view.AdvancedSettingsActivity"
-            android:configChanges="orientation|screenSize|keyboardHidden"
-            android:label="@string/title_advanced_settings" />
-        <activity
-            android:name=".view.OpenSourceLicensesActivity"
-            android:label="@string/open_source_license" />
+            android:name=".kmb.ui.KmbActivity"
+            android:label="@string/route"
+            android:hardwareAccelerated="true" />
 
         <!-- Google Play Services AdActivity -->
         <activity
@@ -79,22 +108,43 @@
             android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize"
             android:theme="@android:style/Theme.Translucent" />
 
+        <!-- Google Play Services OssLicensesActivity -->
+        <activity
+            android:name="com.google.android.gms.oss.licenses.OssLicensesMenuActivity"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name="com.google.android.gms.oss.licenses.OssLicensesActivity"
+            android:theme="@style/AppTheme" />
+
         <!-- Services -->
         <service
-            android:name=".service.RouteService"
-            android:enabled="true" />
-        <service
-            android:name=".service.CheckEtaService"
-            android:enabled="true" />
-        <service
             android:name=".service.CheckUpdateService"
+            android:enabled="true"
+            android:stopWithTask="true"  />
+        <service
+            android:name=".service.EtaService"
             android:enabled="true" />
         <service
             android:name=".service.EtaWidgetService"
             android:enabled="true"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
         <service
+            android:name=".service.EtaJobService"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE" />
+            </intent-filter>
+        </service>
+        <service
+            android:name=".service.LocationService"
+            android:enabled="true"
+            android:stopWithTask="true" />
+        <service
             android:name=".service.NotificationService"
+            android:enabled="true" />
+        <service
+            android:name=".service.GeofenceTransitionsIntentService"
             android:enabled="true" />
 
         <!-- Content Provider -->
@@ -110,9 +160,13 @@
             android:name=".provider.RouteProvider"
             android:authorities="com.alvinhkh.buseta.RouteProvider"
             android:exported="true" />
+        <provider
+            android:name=".provider.EtaProvider"
+            android:authorities="${applicationId}.EtaProvider"
+            android:exported="false" />
 
         <!-- Broadcast Receiver -->
-        <receiver android:name=".provider.EtaWidgetProvider" >
+        <receiver android:name=".provider.EtaWidgetProvider">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
@@ -120,17 +174,16 @@
                 <action android:name="android.appwidget.action.APPWIDGET_DISABLED" />
             </intent-filter>
             <intent-filter>
-                <action android:name="com.alvinhkh.buseta.ETA_UPDATED" />
+                <action android:name="com.alvinhkh.buseta.ETA_UPDATE" />
             </intent-filter>
             <intent-filter>
-                <action android:name="com.alvinhkh.buseta.WIDGET_TRIGGER_UPDATE" />
+                <action android:name="com.alvinhkh.buseta.WIDGET_UPDATE" />
             </intent-filter>
 
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/widget_eta_info" />
         </receiver>
-
     </application>
 
 </manifest>

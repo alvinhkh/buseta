@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:layout_gravity="center"
+    android:minHeight="@dimen/card_item_height"
+    android:paddingTop="@dimen/card_item_vertical_padding"
+    android:paddingBottom="@dimen/card_item_vertical_padding"
+    android:paddingLeft="@dimen/card_item_horizontal_padding"
+    android:paddingRight="@dimen/card_item_horizontal_padding"
+    android:paddingStart="@dimen/card_item_horizontal_padding"
+    android:paddingEnd="@dimen/card_item_horizontal_padding"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_weight="1"
+        android:layout_height="0dp"
+        android:layout_gravity="start">
+
+        <LinearLayout
+            android:id="@+id/stop_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true">
+
+            <ImageView
+                android:visibility="gone"
+                android:id="@+id/follow"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginRight="4dp"
+                android:layout_marginEnd="4dp"
+                android:contentDescription="@string/content_description_icon"
+                android:tint="@color/icons"
+                android:src="@drawable/ic_bookmark_black_24dp"/>
+
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                style="@style/TextAppearance.AppCompat.Title"
+                android:text="@string/stop_name" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/eta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_toRightOf="@+id/stop_layout"
+            android:layout_toEndOf="@+id/stop_layout"
+            android:gravity="end"
+            android:maxLines="1"
+            style="@style/TextAppearance.AppCompat.Medium"
+            android:textColor="@color/textHighlighted"
+            tools:text="@string/eta" />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:layout_gravity="start">
+
+        <TextView
+            android:id="@+id/fare"
+            style="@style/TextAppearance.AppCompat.Small"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:maxLines="1"
+            android:text="@string/dots"
+            tools:text="$10.0" />
+
+        <ImageView
+            android:visibility="gone"
+            android:id="@+id/nearby"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:contentDescription="@string/content_description_icon"
+            android:tint="@color/icons"
+            android:src="@drawable/ic_my_location_black_24dp"/>
+
+        <TextView
+            android:id="@+id/distance"
+            style="@style/TextAppearance.AppCompat.Small"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:maxLines="1"
+            android:text="@string/dots"
+            tools:text="~1.1m" />
+
+        <TextView
+            android:id="@+id/eta_next"
+            style="@style/TextAppearance.AppCompat.Small"
+            android:textColor="@color/textPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:maxLines="1"
+            android:gravity="end"
+            tools:text="@string/eta" />
+
+    </LinearLayout>
+
+</LinearLayout>

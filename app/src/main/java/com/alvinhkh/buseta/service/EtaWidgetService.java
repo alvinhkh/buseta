@@ -1,215 +1,248 @@
 package com.alvinhkh.buseta.service;
 
+import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
+import android.os.Binder;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.TextUtils;
+import android.text.style.ForegroundColorSpan;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
-import com.alvinhkh.buseta.utils.Connectivity;
+import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.provider.EtaTable;
-import com.alvinhkh.buseta.provider.FollowProvider;
-import com.alvinhkh.buseta.provider.FollowTable;
-import com.alvinhkh.buseta.utils.EtaAdapterHelper;
-import com.alvinhkh.buseta.holder.RouteBound;
-import com.alvinhkh.buseta.holder.RouteStop;
-import com.alvinhkh.buseta.holder.RouteStopETA;
+import com.alvinhkh.buseta.model.ArrivalTime;
+import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.model.FollowStop;
+import com.alvinhkh.buseta.ui.search.SearchActivity;
+import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
+import com.alvinhkh.buseta.utils.BusRouteStopUtil;
+import com.alvinhkh.buseta.utils.ConnectivityUtil;
+import com.alvinhkh.buseta.utils.FollowStopUtil;
+import com.alvinhkh.buseta.utils.PreferenceUtil;
+import com.alvinhkh.buseta.view.MainActivity;
 
-import java.util.Date;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.observers.DisposableObserver;
+import timber.log.Timber;
 
 /**
  * This is the service that provides the factory to be bound to the collection service.
  */
 public class EtaWidgetService extends RemoteViewsService {
+
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
-        return new StackRemoteViewsFactory(this.getApplicationContext(), intent);
-    }
-}
-
-/**
- * This is the factory that will provide data to the collection widget.
- */
-class StackRemoteViewsFactory implements RemoteViewsService.RemoteViewsFactory {
-
-    private Context mContext;
-    private Cursor mCursor;
-    private int mAppWidgetId;
-
-    public StackRemoteViewsFactory(Context context, Intent intent) {
-        mContext = context;
-        mAppWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
-                AppWidgetManager.INVALID_APPWIDGET_ID);
+        return new StackRemoteViewsFactory(getApplicationContext(), intent);
     }
 
-    public void onCreate() {
-        // Since we reload the cursor in onDataSetChanged() which gets called immediately after
-        // onCreate(), we do nothing here.
-    }
+    /**
+     * This is the factory that will provide data to the collection widget.
+     */
+    private class StackRemoteViewsFactory implements RemoteViewsFactory {
 
-    public void onDestroy() {
-        if (mCursor != null)
-            mCursor.close();
-    }
+        private final CompositeDisposable disposables = new CompositeDisposable();
 
-    public int getCount() {
-        return (null == mCursor) ? 0 : mCursor.getCount();
-    }
+        private Context context;
 
-    private String getColumnString(Cursor cursor, String column) {
-        int index = cursor.getColumnIndex(column);
-        return cursor.isNull(index) ? "" : cursor.getString(index);
-    }
+        private Cursor cursor;
 
-    private RouteStop getItem(int position) {
-        RouteStop routeStop = null;
-        if (mCursor.moveToPosition(position)) {
-            // Load data from cursor and return it...
-            RouteBound routeBound = new RouteBound();
-            routeBound.route_no = getColumnString(mCursor, FollowTable.COLUMN_ROUTE);
-            routeBound.route_bound = getColumnString(mCursor, FollowTable.COLUMN_BOUND);
-            routeBound.origin_tc = getColumnString(mCursor, FollowTable.COLUMN_ORIGIN);
-            routeBound.destination_tc = getColumnString(mCursor, FollowTable.COLUMN_DESTINATION);
-            RouteStopETA routeStopETA = null;
-            String apiVersion = getColumnString(mCursor, EtaTable.COLUMN_ETA_API);
-            if (null != apiVersion && !apiVersion.equals("")) {
-                routeStopETA = RouteStopETA.create(mCursor);
-                routeStopETA.api_version = Integer.valueOf(apiVersion);
-            }
-            routeStop = new RouteStop();
-            routeStop.route_bound = routeBound;
-            routeStop.stop_seq = getColumnString(mCursor, FollowTable.COLUMN_STOP_SEQ);
-            routeStop.name_tc = getColumnString(mCursor, FollowTable.COLUMN_STOP_NAME);
-            routeStop.code = getColumnString(mCursor, FollowTable.COLUMN_STOP_CODE);
-            routeStop.follow = true;
-            routeStop.eta = routeStopETA;
-            routeStop.eta_loading = getColumnString(mCursor, EtaTable.COLUMN_LOADING).equals("true");
-            routeStop.eta_fail = getColumnString(mCursor, EtaTable.COLUMN_FAIL).equals("true");
+        private int appWidgetId;
+
+        StackRemoteViewsFactory(@NonNull Context context, Intent intent) {
+            this.context = context;
+            appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
+                    AppWidgetManager.INVALID_APPWIDGET_ID);
         }
-        return routeStop;
-    }
 
-    public RemoteViews getViewAt(int position) {
-        // Get the data for this position from the content provider
-        RouteStop object = getItem(position);
-        // Return a proper item
-        RemoteViews rv = new RemoteViews(mContext.getPackageName(), R.layout.widget_item_eta);
-        if (null != object&& null != object.route_bound) {
-            // load data
-            rv.setTextViewText(R.id.stop_code, object.code);
-            rv.setTextViewText(R.id.stop_seq, object.stop_seq);
-            rv.setTextViewText(R.id.route_bound, object.route_bound.route_bound);
-            rv.setTextViewText(R.id.stop_name, object.name_tc);
-            rv.setTextViewText(R.id.route_no, object.route_bound.route_no);
-            rv.setTextViewText(R.id.route_destination, object.route_bound.destination_tc);
-            rv.setTextViewText(R.id.eta, "");
-            rv.setTextViewText(R.id.eta_more, "");
-            if (!Connectivity.isConnected(mContext)) {
-                rv.setTextViewText(R.id.eta_more,
-                        mContext.getString(R.string.message_no_internet_connection));
-                return rv;
+        public void onCreate() {
+            disposables.add(RxBroadcastReceiver.create(context, new IntentFilter(C.ACTION.ETA_UPDATE))
+                    .share()
+                    .subscribeWith(etaObserver()));
+        }
+
+        public void onDestroy() {
+            disposables.clear();
+            if (cursor != null) {
+                cursor.close();
             }
-            // eta
-            if (object.eta_loading != null && object.eta_loading) {
-                rv.setTextViewText(R.id.eta_more, mContext.getString(R.string.message_loading));
-            } else if (object.eta_fail != null && object.eta_fail) {
-                rv.setTextViewText(R.id.eta_more, mContext.getString(R.string.message_fail_to_request));
-            } else if (null != object.eta) {
-                if (object.eta.etas.equals("") && object.eta.expires.equals("")) {
-                    rv.setTextViewText(R.id.eta_more, mContext.getString(R.string.message_no_data)); // route does not support eta
-                } else {
-                    // Request Time
-                    Date server_date = EtaAdapterHelper.serverDate(object);
-                    // ETAs
-                    if (object.eta.etas.equals("")) {
-                        // eta not available
-                        rv.setTextViewText(R.id.eta, mContext.getString(R.string.message_no_data));
-                    } else {
-                        String text = EtaAdapterHelper.getText(object.eta.etas);
-                        String[] etas = text.split(", ?");
-                        Pattern pattern = Pattern.compile("到達([^/離開]|$)");
-                        Matcher matcher = pattern.matcher(text);
-                        String[] scheduled = object.eta.scheduled.split(", ?");
-                        String[] wheelchairs = object.eta.wheelchair.split(", ?");
-                        int count = 0;
-                        while (matcher.find())
-                            count++; //count any matched pattern
-                        if (count > 1 && count == etas.length) {
-                            // more than one and all same, more likely error
-                            rv.setTextViewText(R.id.eta, mContext.getString(R.string.message_please_click_once_again));
-                        } else {
-                            StringBuilder sb = new StringBuilder();
-                            for (int i = 0; i < etas.length; i++) {
-                                if (scheduled.length > i && scheduled[i] != null
-                                        && scheduled[i].equals("Y")) {
-                                    // scheduled bus
-                                    sb.append("*");
+        }
+
+        @Override
+        public int getCount() {
+            return (cursor == null) ? 0 : cursor.getCount();
+        }
+
+        @Override
+        public RemoteViews getViewAt(int position) {
+            // Get the data for this position from the content provider
+            if (cursor == null) return null;
+            cursor.moveToPosition(position);
+            FollowStop followStop = FollowStopUtil.fromCursor(cursor);
+            // Return a proper item
+            RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.widget_item_eta);
+            if (followStop == null) return remoteViews;
+            BusRouteStop stop = BusRouteStopUtil.fromFollowStop(followStop);
+            if (stop != null) {
+                remoteViews.setTextViewText(R.id.stop_name, stop.name);
+                remoteViews.setTextViewText(R.id.route_no, stop.route);
+                remoteViews.setTextViewText(R.id.route_destination, stop.destination);
+                remoteViews.setTextViewText(R.id.eta, null);
+                remoteViews.setTextViewText(R.id.eta_more, null);
+                // ETA
+                // http://stackoverflow.com/a/20645908/2411672
+                final long token = Binder.clearCallingIdentity();
+                try {SpannableStringBuilder etaTexts = new SpannableStringBuilder();
+                    ArrivalTimeUtil.query(context, stop).subscribe(cursor -> {
+                        // Cursor has been moved +1 position forward.
+                        ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
+                        arrivalTime = ArrivalTimeUtil.estimate(context, arrivalTime);
+
+                        if (arrivalTime.id != null) {
+                            SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.text);
+                            Integer pos = Integer.parseInt(arrivalTime.id);
+                            Integer colorInt = ContextCompat.getColor(context,
+                                    arrivalTime.expired ? R.color.widgetTextDiminish :
+                                            (pos > 0 ? R.color.widgetTextPrimary : R.color.widgetTextHighlighted));
+                            if (arrivalTime.isSchedule) {
+                                etaText.append("*");
+                            }
+                            if (!TextUtils.isEmpty(arrivalTime.estimate)) {
+                                etaText.append(" (").append(arrivalTime.estimate).append(")");
+                            }
+                            if (arrivalTime.capacity >= 0) {
+                                String capacity = "";
+                                if (arrivalTime.capacity == 0) {
+                                    capacity = context.getString(R.string.capacity_empty);
+                                } else if (arrivalTime.capacity > 0 && arrivalTime.capacity <= 3) {
+                                    capacity = "¼";
+                                } else if (arrivalTime.capacity > 3 && arrivalTime.capacity <= 6) {
+                                    capacity = "½";
+                                } else if (arrivalTime.capacity > 6 && arrivalTime.capacity <= 9) {
+                                    capacity = "¾";
+                                } else if (arrivalTime.capacity >= 10) {
+                                    capacity = context.getString(R.string.capacity_full);
                                 }
-                                sb.append(etas[i]);
-                                String estimate = EtaAdapterHelper.etaEstimate(
-                                        object, etas, i, server_date, null, null, null);
-                                sb.append(estimate);
-                                if (wheelchairs.length > i && wheelchairs[i] != null
-                                        && wheelchairs[i].equals("Y")
-                                        && EtaAdapterHelper.isShowWheelchairIcon(mContext)) {
-                                    // wheelchair emoji
-                                    sb.append(" ");
-                                    sb.append(new String(Character.toChars(0x267F)));
-                                }
-                                if (i == 0) {
-                                    rv.setTextViewText(R.id.eta, sb.toString());
-                                    sb = new StringBuilder();
-                                } else {
-                                    if (i < etas.length - 1)
-                                        sb.append(" ");
+                                if (!TextUtils.isEmpty(capacity)) {
+                                    etaText.append(" [").append(capacity).append("]");
                                 }
                             }
-                            rv.setTextViewText(R.id.eta_more, sb.toString());
+                            if (arrivalTime.hasWheelchair && PreferenceUtil.isShowWheelchairIcon(context)) {
+                                etaText.append(" \u267F");
+                            }
+                            if (arrivalTime.hasWifi && PreferenceUtil.isShowWifiIcon(context)) {
+                                etaText.append(" [W]");
+                            }
+                            etaText.setSpan(new ForegroundColorSpan(colorInt), 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+                            switch(pos) {
+                                case 0:
+                                    remoteViews.setTextViewText(R.id.eta, etaText);
+                                    remoteViews.setTextViewText(R.id.eta_more, null);
+                                    break;
+                                case 1:
+                                    etaText.insert(0, etaTexts);
+                                    etaTexts.clear();
+                                    etaTexts.append(etaText);
+                                    remoteViews.setTextViewText(R.id.eta_more, etaTexts);
+                                    break;
+                                case 2:
+                                default:
+                                    // etaText.insert(0, "  ");
+                                    // etaText.insert(0, etaTexts);
+                                    // etaTexts.clear();
+                                    // etaTexts.append(etaText);
+                                    // remoteViews.setTextViewText(R.id.eta_more, etaTexts);
+                                    break;
+                            }
                         }
-                    }
+                    });
+                } finally {
+                    Binder.restoreCallingIdentity(token);
                 }
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setClass(context, SearchActivity.class);
+                intent.putExtra(C.EXTRA.STOP_OBJECT, stop);
+                remoteViews.setOnClickFillInIntent(R.id.widget_item_eta, intent);
+            } else {
+                remoteViews.setTextViewText(R.id.stop_name, "");
+                remoteViews.setTextViewText(R.id.route_no, "");
+                remoteViews.setTextViewText(R.id.route_destination, "");
+                remoteViews.setTextViewText(R.id.eta, "");
+                remoteViews.setTextViewText(R.id.eta_more, "");
             }
-        } else {
-            rv.setTextViewText(R.id.stop_code, "");
-            rv.setTextViewText(R.id.stop_seq, "");
-            rv.setTextViewText(R.id.route_bound, "");
-            rv.setTextViewText(R.id.stop_name, "");
-            rv.setTextViewText(R.id.route_no, "");
-            rv.setTextViewText(R.id.route_destination, "");
-            rv.setTextViewText(R.id.eta, "");
-            rv.setTextViewText(R.id.eta_more, "");
-            if (!Connectivity.isConnected(mContext)) {
-                rv.setTextViewText(R.id.eta_more,
-                        mContext.getString(R.string.message_no_internet_connection));
+            if (!ConnectivityUtil.isConnected(context)) {
+                remoteViews.setTextViewText(R.id.eta_more, context.getString(R.string.message_no_internet_connection));
+            }
+            return remoteViews;
+        }
+
+        @Override
+        public RemoteViews getLoadingView() {
+            return null;
+        }
+
+        @Override
+        public int getViewTypeCount() {
+            return 2;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public boolean hasStableIds() {
+            return true;
+        }
+
+        @Override
+        public void onDataSetChanged() {
+            Timber.d("onDataSetChanged");
+            // http://stackoverflow.com/a/20645908/2411672
+            final long token = Binder.clearCallingIdentity();
+            try {
+                if (cursor != null) {
+                    cursor.close();
+                }
+                cursor = FollowStopUtil.queryAll(context);
+            } finally {
+                Binder.restoreCallingIdentity(token);
             }
         }
-        return rv;
-    }
-    public RemoteViews getLoadingView() {
-        return null;
-    }
 
-    public int getViewTypeCount() {
-        return 2;
-    }
 
-    public long getItemId(int position) {
-        return position;
-    }
+        DisposableObserver<Intent> etaObserver() {
+            return new DisposableObserver<Intent>() {
+                @Override
+                public void onNext(Intent intent) {
+                    Bundle bundle = intent.getExtras();
+                    if (bundle == null) return;
+                    if (bundle.getBoolean(C.EXTRA.COMPLETE) &&
+                            bundle.getInt(C.EXTRA.WIDGET_UPDATE, -1) == appWidgetId) {
+                        AppWidgetManager mgr = AppWidgetManager.getInstance(context);
+                        mgr.notifyAppWidgetViewDataChanged(appWidgetId, R.id.list_view);
+                    }
+                }
 
-    public boolean hasStableIds() {
-        return true;
-    }
+                @Override
+                public void onError(Throwable e) {
+                    Timber.d(e);
+                }
 
-    public void onDataSetChanged() {
-        // Refresh the cursor
-        mCursor = mContext.getContentResolver().query(
-                FollowProvider.CONTENT_URI, null, null, null,
-                FollowTable.COLUMN_DATE + " DESC");
+                @Override
+                public void onComplete() {
+                }
+            };
+        }
     }
-
 }

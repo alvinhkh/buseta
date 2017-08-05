@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#F44336</color>
-    <color name="primary_600">#E53935</color>
-    <color name="primary_dark">#D32F2F</color>
-    <color name="primary_light">#FFCDD2</color>
-    <color name="accent">#FF9800</color>
-    <color name="accent_pressed">#F57C00</color>
+    <color name="colorPrimary">#F44336</color>
+    <color name="colorPrimaryDark">#D32F2F</color>
+    <color name="colorPrimary600">#E53935</color>
+    <color name="colorPrimaryLight">#FFCDD2</color>
+    <color name="colorPrimaryA700">#D50000</color>
+    <color name="colorAccent">#FF9800</color>
+    <color name="colorAccentDark">#F57C00</color>
     <color name="ripple">#FB8C00</color>
 
+    <color name="transparent">#00000000</color>
+    <color name="white">#ffffff</color>
     <color name="black">#000000</color>
-    <color name="white">#FFFFFFFF</color>
-    <color name="primary_text">#DE000000</color>
-    <color name="secondary_text">#8A000000</color>
-    <color name="diminish_text">#61000000</color>
-    <color name="divider">#1F000000</color>
-    <color name="highlighted_text">#D50000</color>
+    <color name="grey">#80000000</color>
+    <color name="textPrimary">#DE000000</color>
+    <color name="textSecondary">#8A000000</color>
+    <color name="textDiminish">#61000000</color>
+    <color name="textHighlighted">@color/colorPrimaryA700</color>
     <color name="icons">#61000000</color>
 
     <color name="translucent_scrim_top">#3D000000</color>
@@ -22,8 +24,12 @@
     <color name="translucent_scrim_bottom">#3A000000</color>
     <color name="translucent_scrim_bottom_center">#1A000000</color>
 
-    <color name="widget_item_background">#dcdcdc</color>
-    <color name="card_item">#FFFFFFFF</color>
-    <color name="activity_background">#FFFAFAFA</color>
+    <color name="background">#FFFAFAFA</color>
+    <color name="widgetBackground">#fff7f9f9</color>
+    <color name="widgetItemBackground">#dcdcdc</color>
+    <color name="widgetTextPrimary">#DE000000</color>
+    <color name="widgetTextSecondary">#8A000000</color>
+    <color name="widgetTextDiminish">#61000000</color>
+    <color name="widgetTextHighlighted">#FFD50000</color>
     <color name="searchViewBackground">#FFFFFFFF</color>
 </resources>

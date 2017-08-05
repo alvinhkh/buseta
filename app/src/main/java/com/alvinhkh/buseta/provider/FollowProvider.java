@@ -19,34 +19,17 @@ public class FollowProvider extends ContentProvider {
     private RouteOpenHelper mHelper;
 
     private static final String AUTHORITY = "com.alvinhkh.buseta.FollowProvider";
-    private static final String BASE_PATH_LEFT_JOIN = "left_join";
-    public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY
-            + "/" + BASE_PATH_LEFT_JOIN);
-    private static final String BASE_PATH_RIGHT_JOIN = "right_join";
-    public static final Uri CONTENT_URI_ETA_JOIN = Uri.parse("content://" + AUTHORITY
-            + "/" + BASE_PATH_RIGHT_JOIN);
     private static final String BASE_PATH_FOLLOW = "follows";
     public static final Uri CONTENT_URI_FOLLOW = Uri.parse("content://" + AUTHORITY
             + "/" + BASE_PATH_FOLLOW);
-    private static final String BASE_PATH_ETA = "etas";
-    public static final Uri CONTENT_URI_ETA = Uri.parse("content://" + AUTHORITY
-            + "/" + BASE_PATH_ETA);
 
     // used for the UriMatcher
-    private static final int FOLLOW_FIRST = 10;
-    private static final int ETA_FIRST = 11;
     private static final int FOLLOW = 20;
     private static final int FOLLOW_ID = 21;
-    private static final int ETA = 30;
-    private static final int ETA_ID = 31;
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
     static {
-        sURIMatcher.addURI(AUTHORITY, BASE_PATH_LEFT_JOIN, FOLLOW_FIRST);
-        sURIMatcher.addURI(AUTHORITY, BASE_PATH_RIGHT_JOIN, ETA_FIRST);
         sURIMatcher.addURI(AUTHORITY, BASE_PATH_FOLLOW, FOLLOW);
         sURIMatcher.addURI(AUTHORITY, BASE_PATH_FOLLOW + "/#", FOLLOW_ID);
-        sURIMatcher.addURI(AUTHORITY, BASE_PATH_ETA, ETA);
-        sURIMatcher.addURI(AUTHORITY, BASE_PATH_ETA + "/#", ETA_ID);
     }
 
     @Override
@@ -66,47 +49,15 @@ public class FollowProvider extends ContentProvider {
 
         int uriType = sURIMatcher.match(uri);
         switch (uriType) {
-            case FOLLOW_FIRST:
-                // Set the table
-                queryBuilder.setTables(FollowTable.TABLE_NAME +
-                        " LEFT JOIN " + EtaTable.TABLE_NAME +
-                        " ON (" +
-                        FollowTable.COLUMN_ROUTE + "=" + EtaTable.COLUMN_ROUTE + " AND " +
-                        FollowTable.COLUMN_BOUND + "=" + EtaTable.COLUMN_BOUND + " AND " +
-                        FollowTable.COLUMN_STOP_SEQ + "=" + EtaTable.COLUMN_STOP_SEQ + " AND " +
-                        FollowTable.COLUMN_STOP_CODE + "=" + EtaTable.COLUMN_STOP_CODE +
-                        ")");
-                break;
-            case ETA_FIRST:
-                // Set the table
-                queryBuilder.setTables(EtaTable.TABLE_NAME +
-                        " LEFT JOIN " + FollowTable.TABLE_NAME +
-                        " ON (" +
-                        FollowTable.COLUMN_ROUTE + "=" + EtaTable.COLUMN_ROUTE + " AND " +
-                        FollowTable.COLUMN_BOUND + "=" + EtaTable.COLUMN_BOUND + " AND " +
-                        FollowTable.COLUMN_STOP_SEQ + "=" + EtaTable.COLUMN_STOP_SEQ + " AND " +
-                        FollowTable.COLUMN_STOP_CODE + "=" + EtaTable.COLUMN_STOP_CODE +
-                        ")");
-                break;
             case FOLLOW:
                 // Set the table
                 queryBuilder.setTables(FollowTable.TABLE_NAME);
-                break;
-            case ETA:
-                // Set the table
-                queryBuilder.setTables(EtaTable.TABLE_NAME);
                 break;
             case FOLLOW_ID:
                 // Set the table
                 queryBuilder.setTables(FollowTable.TABLE_NAME);
                 // adding the ID to the original query
                 queryBuilder.appendWhere(FollowTable.COLUMN_ID + "=" + uri.getLastPathSegment());
-                break;
-            case ETA_ID:
-                // Set the table
-                queryBuilder.setTables(EtaTable.TABLE_NAME);
-                // adding the ID to the original query
-                queryBuilder.appendWhere(EtaTable.COLUMN_ID + "=" + uri.getLastPathSegment());
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -136,18 +87,12 @@ public class FollowProvider extends ContentProvider {
                 id = sqlDB.insert(FollowTable.TABLE_NAME, null, values);
                 notifyChange(uri, true);
                 break;
-            case ETA:
-                id = sqlDB.insert(EtaTable.TABLE_NAME, null, values);
-                notifyChange(uri, false);
-                break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
         switch (uriType) {
             case FOLLOW:
                 return Uri.parse(BASE_PATH_FOLLOW + "/#" + id);
-            case ETA:
-                return Uri.parse(BASE_PATH_ETA + "/#" + id);
             default:
                 return null;
         }
@@ -159,19 +104,6 @@ public class FollowProvider extends ContentProvider {
         SQLiteDatabase sqlDB = mHelper.getWritableDatabase();
         int rowsDeleted;
         switch (uriType) {
-            case ETA_FIRST:
-                rowsDeleted = sqlDB.delete(EtaTable.TABLE_NAME, EtaTable.COLUMN_ID +
-                                " IN ( " + "SELECT " + EtaTable.COLUMN_ID + " FROM " +
-                                EtaTable.TABLE_NAME +
-                                " LEFT JOIN " + FollowTable.TABLE_NAME +
-                                " ON (" +
-                                FollowTable.COLUMN_ROUTE + "=" + EtaTable.COLUMN_ROUTE + " AND " +
-                                FollowTable.COLUMN_BOUND + "=" + EtaTable.COLUMN_BOUND + " AND " +
-                                FollowTable.COLUMN_STOP_SEQ + "=" + EtaTable.COLUMN_STOP_SEQ + " AND " +
-                                FollowTable.COLUMN_STOP_CODE + "=" + EtaTable.COLUMN_STOP_CODE +
-                                ")" + " WHERE " + FollowTable.COLUMN_ID + " IS NULL)",
-                        null);
-                break;
             case FOLLOW:
                 rowsDeleted = sqlDB.delete(FollowTable.TABLE_NAME, selection,
                         selectionArgs);
@@ -190,25 +122,6 @@ public class FollowProvider extends ContentProvider {
                             selectionArgs);
                 }
                 notifyChange(uri, true);
-                break;
-            case ETA:
-                rowsDeleted = sqlDB.delete(EtaTable.TABLE_NAME, selection,
-                        selectionArgs);
-                notifyChange(uri, false);
-                break;
-            case ETA_ID:
-                id = uri.getLastPathSegment();
-                if (TextUtils.isEmpty(selection)) {
-                    rowsDeleted = sqlDB.delete(EtaTable.TABLE_NAME,
-                            EtaTable.COLUMN_ID + "=" + id,
-                            null);
-                } else {
-                    rowsDeleted = sqlDB.delete(EtaTable.TABLE_NAME,
-                            EtaTable.COLUMN_ID + "=" + id
-                                    + " and " + selection,
-                            selectionArgs);
-                }
-                notifyChange(uri, false);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -248,30 +161,6 @@ public class FollowProvider extends ContentProvider {
                 }
                 notifyChange(uri, true);
                 break;
-            case ETA:
-                rowsUpdated = sqlDB.update(EtaTable.TABLE_NAME,
-                        values,
-                        selection,
-                        selectionArgs);
-                notifyChange(uri, false);
-                break;
-            case ETA_ID:
-                id = uri.getLastPathSegment();
-                if (TextUtils.isEmpty(selection)) {
-                    rowsUpdated = sqlDB.update(EtaTable.TABLE_NAME,
-                            values,
-                            EtaTable.COLUMN_ID + "=" + id,
-                            null);
-                } else {
-                    rowsUpdated = sqlDB.update(EtaTable.TABLE_NAME,
-                            values,
-                            EtaTable.COLUMN_ID + "=" + id
-                                    + " and "
-                                    + selection,
-                            selectionArgs);
-                }
-                notifyChange(uri, false);
-                break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
@@ -283,8 +172,7 @@ public class FollowProvider extends ContentProvider {
         if (context != null) {
             context.getContentResolver().notifyChange(uri, null);
             if (widgetUpdate) {
-                // Widgets can't register content observers so we refresh widgets separately.
-                context.sendBroadcast(EtaWidgetProvider.getRefreshBroadcastIntent(context));
+                // TODO: Widgets can't register content observers so we refresh widgets separately.
             }
         }
     }
@@ -299,21 +187,7 @@ public class FollowProvider extends ContentProvider {
                 FollowTable.COLUMN_DESTINATION,
                 FollowTable.COLUMN_STOP_SEQ,
                 FollowTable.COLUMN_STOP_CODE,
-                FollowTable.COLUMN_STOP_NAME,
-
-                EtaTable.COLUMN_ID,
-                EtaTable.COLUMN_DATE,
-                EtaTable.COLUMN_ROUTE,
-                EtaTable.COLUMN_BOUND,
-                EtaTable.COLUMN_STOP_SEQ,
-                EtaTable.COLUMN_STOP_CODE,
-                EtaTable.COLUMN_ETA_API,
-                EtaTable.COLUMN_ETA_TIME,
-                EtaTable.COLUMN_ETA_SCHEDULED,
-                EtaTable.COLUMN_ETA_WHEELCHAIR,
-                EtaTable.COLUMN_ETA_EXPIRE,
-                EtaTable.COLUMN_SERVER_TIME,
-                EtaTable.COLUMN_UPDATED
+                FollowTable.COLUMN_STOP_NAME
         };
         if (projection != null) {
             HashSet<String> requestedColumns = new HashSet<>(Arrays.asList(projection));

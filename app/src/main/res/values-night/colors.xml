@@ -1,19 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#D32F2F</color>
-    <color name="primary_dark">#B71C1C</color>
-    <color name="accent">#F57C00</color>
-    <color name="accent_pressed">#E65100</color>
+    <color name="colorPrimary">#D32F2F</color>
+    <color name="colorPrimaryDark">#B71C1C</color>
+    <color name="colorAccent">#F57C00</color>
+    <color name="colorAccentDark">#E65100</color>
     <color name="ripple">#EF6C00</color>
 
-    <color name="primary_text">#FFFFFFFF</color>
-    <color name="secondary_text">#B3FFFFFF</color>
-    <color name="diminish_text">#80FFFFFF</color>
-    <color name="divider">#1FFFFFFF</color>
-    <color name="highlighted_text">#FF8A80</color>
+    <color name="textPrimary">#deffffff</color>
+    <color name="textSecondary">#61ffffff</color>
+    <color name="textDiminish">#80FFFFFF</color>
+    <color name="textHighlighted">#FF8A80</color>
     <color name="icons">#80FFFFFF</color>
 
-    <color name="activity_background">#FF303030</color>
-    <color name="card_item">#FF616161</color>
-    <color name="playback_controls_background">#212121</color>
+    <color name="background">#FF303030</color>
 </resources>

@@ -3,23 +3,23 @@
 
     <string name="app_name">BusETA</string>
     <string name="launcher_name">巴士ETA</string>
+    <string name="channel_name_eta">ETA 通知</string>
+    <string name="channel_description_eta">ETA 通知</string>
+    <string name="channel_name_arrival_alert">到站提示通知</string>
+    <string name="channel_description_arrival_alert">到站提示通知</string>
+    <string name="channel_name_foreground">「%1$s」背景執行需要用到的前台通知</string>
+    <string name="channel_description_foreground">長按可永久隱藏此類別通知（不會影響ETA通知）</string>
 
     <string name="action_settings">設定</string>
     <string name="action_search">搜尋</string>
     <string name="action_share">分享</string>
     <string name="action_refresh">重新載入</string>
-    <string name="action_follow">追蹤</string>
+    <string name="follow">追蹤</string>
     <string name="action_unfollow">停止追蹤</string>
-    <string name="action_show_map">顯示地圖</string>
-    <string name="action_show_photo">顯示圖片</string>
-    <string name="action_open_map">打開地圖</string>
-    <string name="action_yes">是</string>
-    <string name="action_no">否</string>
     <string name="action_confirm">確認</string>
     <string name="action_cancel">取消</string>
-    <string name="action_send_email">發送電子郵件（連附件）…</string>
     <string name="action_update">更新</string>
-    <string name="action_notification">顯示在通知欄</string>
+    <string name="action_notification">顯示通知</string>
 
     <string name="dest">往</string>
     <string name="destination">往%s</string>
@@ -28,16 +28,14 @@
     <string name="enabled">啟用</string>
     <string name="eta">到站時間預報</string>
     <string name="hint_enter_route">輸入路線&#8230;</string>
-    <string name="hkd" translatable="false">$%s</string>
     <string name="interpunct" translatable="false">\u00A0&#183;\u00A0</string>
-    <string name="minutes">分鐘</string>
+    <string name="minutes">%1$s分鐘</string>
     <string name="now">現在</string>
     <string name="open_source_license">開放原始碼授權</string>
     <string name="orig">從</string>
     <string name="origin">從%s</string>
     <string name="passenger_notice">乘客通告</string>
     <string name="search_route">搜尋路線</string>
-    <string name="select_route_bound">選擇路線</string>
     <string name="start_search_route">按右下角按鈕，開始搜尋路線</string>
     <string name="stop_name">站名</string>
 
@@ -46,39 +44,23 @@
 
     <string name="title_settings">設定</string>
     <string name="title_app_theme">主題</string>
-    <string name="title_clear_history">清除搜尋記錄</string>
-    <string name="summary_clear_history">@null</string>
-    <string name="title_clear_follow">清除追蹤名單</string>
-    <string name="summary_clear_follow">@null</string>
     <string name="category_about">關於</string>
-    <string name="title_app_name" translatable="false">%s \u00A9 2015-2017</string>
-    <string name="summary_app_name" translatable="false">@string/url_app</string>
+    <string name="title_app_name" translatable="false">%s \u00A9 2017</string>
     <string name="title_app_version">版本</string>
     <string name="summary_app_version" translatable="false">%1$s (%2$s)</string>
     <string name="title_developer">開發者</string>
     <string name="summary_developer" translatable="false">AlvinHKH</string>
-    <string name="title_open_source_license">開放原始碼授權</string>
-    <string name="summary_open_source_license">@null</string>
     <string name="category_statement">聲明</string>
     <string name="summary_statement">All data come from official website. \nNo guarantee that the accuracy or timeliness of information provided.</string>
 
-    <string name="title_advanced_settings">進階設定</string>
     <string name="title_load_wheelchair_icon">輪椅圖示</string>
-    <string name="summary_on_load_wheelchair_icon">顯示輪椅圖示</string>
-    <string name="summary_off_load_wheelchair_icon">隱藏輪椅圖示</string>
+    <string name="title_load_wifi_icon">WiFi圖示</string>
     <string name="title_load_stop_image">車站圖片</string>
-    <string name="summary_on_load_stop_image">自動載入車站圖片</string>
-    <string name="summary_off_load_stop_image">預設顯示車站位置，可手動切換顯示圖片</string>
-    <string name="title_update_route_suggestion">更新建議路線</string>
-    <string name="summary_update_route_suggestion">手動更新有提供到站時間預報的路線資料</string>
     <string name="title_check_app_update">檢查更新</string>
-    <string name="summary_check_app_update">手動檢查應用程式更新</string>
-    <string name="category_debug">測試</string>
-    <string name="title_send_logcat">發送日誌 (logcat)</string>
-    <string name="summary_send_logcat">@string/email_developer</string>
     <string name="title_hide_ad">隱藏廣告</string>
     <string name="summary_on_hide_ad">除設定頁面，不顯示其他廣告</string>
     <string name="summary_off_hide_ad">@null</string>
+    <string name="title_kmb_api">九巴API</string>
 
     <string name="message_app_update">新版本：%s</string>
     <string name="message_confirm_clear_follow">你確定要清除追蹤名單？</string>
@@ -90,7 +72,6 @@
     <string name="message_database_updating">數據庫更新中</string>
     <string name="message_database_updated">數據庫經已更新</string>
     <string name="message_fail_to_request">未能載入，請再試一次</string>
-    <string name="message_follow">已加到追蹤名單</string>
     <string name="message_hide_ad">除設定頁面，其他廣告經已隱藏</string>
     <string name="message_hide_ad_smile">:)</string>
     <string name="message_hide_ad_tip">試下SEARCH “%1$s”同“%2$s”</string>
@@ -100,26 +81,57 @@
     <string name="message_no_data">暫時沒有資料</string>
     <string name="message_no_internet_connection">請檢查網絡連線</string>
     <string name="message_no_passenger_notice">暫時沒有任何通告</string>
-    <string name="message_please_click_once_again">請再按多一次</string>
-    <string name="message_reminder_auto_refresh">提示：每分鐘會自動更新</string>
     <string name="message_remove_from_search_history">從搜尋記錄中移除</string>
     <string name="message_remove_from_follow_list">從追蹤名單中移除</string>
     <string name="message_request_hide_ad">收到! 除咗設定嗰頁，其他廣告都隱藏晒</string>
     <string name="message_request_hide_ad_again">除咗設定嗰頁，其他廣告都已經隱藏晒，唔洗講咁多次!</string>
     <string name="message_request_show_ad">所有廣告都唔再隱藏喇 :)</string>
-    <string name="message_route_not_support_eta">本站沒有抵站時間預報服務</string>
     <string name="message_share_title">同朋友分享 BusETA</string>
     <string name="message_share_text">快啲下載 BusETA 巴士到站時間預報 App :)\nhttp://buseta.alvinhkh.com</string>
     <string name="message_shown_as_notification">已顯示在通知欄</string>
     <string name="message_total_routes">(共 %s 條路線)</string>
-    <string name="message_unfollow">已從追蹤名單中移除</string>
-
-    <string name="email_subject">[BusETA Logcat]</string>
-    <string name="email_developer" translatable="false">email@alvinhkh.com</string>
 
     <string name="url_app" translatable="false">http://buseta.alvinhkh.com</string>
     <string name="url_developer" translatable="false">http://www.alvinhkh.com</string>
 
     <string name="content_description_icon">Icon</string>
+
+    <string name="clear_history">清除搜尋記錄</string>
+    <string name="clear_follow">清除追蹤名單</string>
+    <string name="display">顯示</string>
+    <string name="hide">隱藏</string>
+    <string name="missing_input">Missing Input</string>
+    <string name="map">地圖</string>
+    <string name="streetview">街景</string>
+    <string name="route">路線</string>
+    <string name="route_path">從%1$s 往%2$s</string>
+    <string name="scheduled_bus">預定班次</string>
+    <string name="general">一般</string>
+    <string name="github_issues">問題回報 (via GitHub)</string>
+    <string name="github_issues_url" translatable="false">https://github.com/alvinhkh/buseta/issues</string>
+    <string name="location_permission">位置權限</string>
+    <string name="permission_granted_yes">已經取得</string>
+    <string name="permission_granted_no">還未取得</string>
+    <string name="capacity_empty">空</string>
+    <string name="capacity_full">滿</string>
+    <string name="debug">測試</string>
+    <string name="auto_load">自動載入</string>
+    <string name="manual">手動</string>
+    <string name="replace">取代</string>
+    <string name="arrival_alert">到站落車</string>
+    <string name="arrival_alert_added">新增到站落車提示</string>
+    <string name="arrival_alert_existed">同時間只能設定一個到站落車提示</string>
+    <string name="arrival_alert_removed">移除了到站落車提示</string>
+    <string name="arrival_alert_entered">進入落車提示車站範圍</string>
+    <string name="arrival_alert_leaving">離開落車提示車站範圍</string>
+    <string name="arrival_alert_unknown">到站落車提示: 未知問題</string>
+
+    <string name="search_shortcut_short_label">@string/search_route</string>
+    <string name="search_shortcut_long_label">@string/search_route</string>
+    <string name="search_disabled_message">@string/disabled</string>
+
+    <string name="insufficient_permissions">Insufficient permissions.</string>
+    <string name="permission_rationale">Location permission is needed for core functionality</string>
+    <string name="permission_denied_explanation">Permission was denied, but is needed for core functionality.</string>
 
 </resources>

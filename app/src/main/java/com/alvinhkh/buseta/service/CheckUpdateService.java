@@ -5,28 +5,29 @@ import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.preference.PreferenceManager;
-import android.util.Log;
+import android.support.v7.preference.PreferenceManager;
+import android.text.TextUtils;
 
-import com.alvinhkh.buseta.utils.Connectivity;
-import com.alvinhkh.buseta.Constants;
+import com.alvinhkh.buseta.Api;
+import com.alvinhkh.buseta.C;
+import com.alvinhkh.buseta.kmb.KmbService;
+import com.alvinhkh.buseta.kmb.model.KmbEtaRoutes;
+import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.holder.AppUpdate;
+import com.alvinhkh.buseta.model.AppUpdate;
 import com.alvinhkh.buseta.provider.SuggestionProvider;
 import com.alvinhkh.buseta.provider.SuggestionTable;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.koushikdutta.async.http.Headers;
-import com.koushikdutta.ion.Ion;
-import com.koushikdutta.ion.Response;
 
 import java.util.Calendar;
-import java.util.concurrent.ExecutionException;
+import java.util.List;
+import java.util.Locale;
+
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.observers.DisposableObserver;
+import io.reactivex.schedulers.Schedulers;
+import timber.log.Timber;
 
 public class CheckUpdateService extends IntentService {
-
-    private static final String TAG = CheckUpdateService.class.getSimpleName();
 
     SharedPreferences mPrefs;
 
@@ -47,147 +48,131 @@ public class CheckUpdateService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        // Log.d(TAG, "onHandleIntent");
-        Boolean triggerUpdateSuggestion = false;
+        Boolean manualUpdate = false;
         if (null != intent) {
-            triggerUpdateSuggestion =
-                    intent.getBooleanExtra(Constants.MESSAGE.SUGGESTION_FORCE_UPDATE, false);
+            manualUpdate = intent.getBooleanExtra(C.EXTRA.MANUAL, false);
         }
         mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        int routeVersion = mPrefs.getInt(Constants.PREF.VERSION_RECORD, 0);
-        if (Constants.ROUTES.VERSION > routeVersion) {
-            Log.d(TAG, "hardcode trigger update suggestion database");
-            triggerUpdateSuggestion = true;
-        }
-        Boolean checkWithoutPush = true;
+        int routeVersion = mPrefs.getInt(C.PREF.VERSION_RECORD, 0);
         // Check internet connection
-        if (!Connectivity.isConnected(this)) {
-            sendUpdate(R.string.message_no_internet_connection);
+        if (!ConnectivityUtil.isConnected(this)) {
+            Intent i = new Intent(C.ACTION.SUGGESTION_ROUTE_UPDATE);
+            i.putExtra(C.EXTRA.UPDATED, true);
+            i.putExtra(C.EXTRA.MANUAL, manualUpdate);
+            i.putExtra(C.EXTRA.MESSAGE_RID, R.string.message_no_internet_connection);
+            sendBroadcast(i);
             return;
         }
-        try {
-            Response<JsonArray> response = Ion.with(getApplicationContext())
-                    .load(Constants.URL.RELEASE)
-                    .asJsonArray()
-                    .withResponse()
-                    .get();
-            if (null != response && response.getHeaders().code() == 404) {
-                Log.d(TAG, "DotCom not found");
-            } else if (null != response && response.getHeaders().code() == 200) {
-                JsonArray result = response.getResult();
-                if (null != result && result.size() > 0) {
-                    JsonObject object = result.get(0).getAsJsonObject();
-                    if (null != object && object.has("suggestion_database")) {
-                        AppUpdate appUpdate = new Gson().fromJson(object, AppUpdate.class);
-                        if (null != appUpdate) {
-                            if (!triggerUpdateSuggestion)
-                                sendAppUpdated(appUpdate);
-                            Log.d(TAG, "SuggestionDB: " + appUpdate.suggestion_database + " " + routeVersion);
-                            if (appUpdate.suggestion_database > routeVersion) {
-                                Log.d(TAG, "DotCom trigger update suggestion database");
-                                triggerUpdateSuggestion = true;
-                            }
-                            Log.d(TAG, "SuggestionCheck: " + appUpdate.suggestion_check);
-                            checkWithoutPush = appUpdate.suggestion_check;
-                        }
-                    }
-                }
-            }
-        } catch (ExecutionException | InterruptedException e) {
-            Log.e(TAG, e.toString());
-        }
+        // app update check
+        Api apiService = Api.retrofit.create(Api.class);
+        apiService.appUpdate()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(appUpdateObserver(manualUpdate));
         // start fetch available bus route
-        if (triggerUpdateSuggestion)
-            sendUpdate(R.string.message_database_updating);
-        if (triggerUpdateSuggestion || checkWithoutPush)
-        try {
-            Headers headers = new Headers();
-            headers.add("Referer", Constants.URL.REQUEST_REFERRER);
-            headers.add("X-Requested-With", "XMLHttpRequest");
-            Response<JsonArray> response = Ion.with(getApplicationContext())
-                    .load(Constants.URL.ROUTE_AVAILABLE)
-                    .addHeaders(headers.getMultiMap())
-                    .asJsonArray()
-                    .withResponse()
-                    .get();
-            if (null != response && response.getHeaders().code() == 200) {
-                JsonArray result = response.getResult();
-                if (null != result && result.size() > 0) {
-                    JsonObject object = result.get(0).getAsJsonObject();
-                    if (null != object && object.has("r_no")) {
-                        // count existing routes
-                        Cursor mCursor_suggestion = getContentResolver().query(SuggestionProvider.CONTENT_URI,
-                                null, SuggestionTable.COLUMN_TYPE + " = '" + SuggestionTable.TYPE_DEFAULT + "'",
-                                null, SuggestionTable.COLUMN_DATE + " DESC");
-                        int count = 0;
-                        if (null != mCursor_suggestion) {
-                            count = mCursor_suggestion.getCount();
-                            mCursor_suggestion.close();
-                        }
-                        //
-                        String routes = object.has("r_no") ? object.get("r_no").getAsString() : "";
-                        String[] routeArray = routes.split(",");
-                        Log.d(TAG, "Suggestion In DB: " + count + " Available: " + routeArray.length);
-                        if (triggerUpdateSuggestion || routeArray.length > count || count == 0) {
-                            // clear existing suggested routes
-                            getContentResolver().delete(SuggestionProvider.CONTENT_URI,
-                                    SuggestionTable.COLUMN_TYPE + "=?",
-                                    new String[]{SuggestionTable.TYPE_DEFAULT});
-                            //
-                            ContentValues[] contentValues = new ContentValues[routeArray.length];
-                            for (int i = 0; i < routeArray.length; i++) {
-                                ContentValues values = new ContentValues();
-                                values.put(SuggestionTable.COLUMN_TEXT, routeArray[i]);
-                                values.put(SuggestionTable.COLUMN_TYPE, SuggestionTable.TYPE_DEFAULT);
-                                values.put(SuggestionTable.COLUMN_DATE, "0");
-                                contentValues[i] = values;
-                            }
-                            int insertedRows = getContentResolver().bulkInsert(
-                                    SuggestionProvider.CONTENT_URI, contentValues);
-                            if (null != mPrefs) {
-                                // update record version number
-                                Calendar now = Calendar.getInstance();
-                                String nowYear = String.format("%02d", now.get(Calendar.YEAR));
-                                String nowMonth = String.format("%02d", now.get(Calendar.MONTH) + 1);
-                                String nowDay = String.format("%02d", now.get(Calendar.DAY_OF_MONTH));
-                                String date = nowYear + nowMonth + nowDay;
-                                Integer version = Integer.valueOf(date);
-                                SharedPreferences.Editor editor = mPrefs.edit();
-                                editor.putInt(Constants.PREF.VERSION_RECORD, version);
-                                editor.apply();
-                            }
-                            if (insertedRows > 0) {
-                                Log.d(TAG, "updated available routes suggestion: " + insertedRows);
-                            } else {
-                                Log.d(TAG, "error when inserting available routes to database");
-                            }
-                            sendUpdate(R.string.message_database_updated);
-                        }
-                    }
+        KmbService kmbService = KmbService.etadatafeed.create(KmbService.class);
+        kmbService.getEtaRoutes()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(kmbRoutesObserver(manualUpdate));
+    }
+
+    DisposableObserver<List<KmbEtaRoutes>> kmbRoutesObserver(Boolean manualUpdate) {
+        return new DisposableObserver<List<KmbEtaRoutes>>() {
+            @Override
+            public void onNext(List<KmbEtaRoutes> res) {
+                if (res.size() < 1 || TextUtils.isEmpty(res.get(0).r_no)) return;
+                // count existing routes
+                Cursor mCursor_suggestion = getContentResolver().query(SuggestionProvider.CONTENT_URI,
+                        null, SuggestionTable.COLUMN_TYPE + " = '" + SuggestionTable.TYPE_DEFAULT + "'",
+                        null, SuggestionTable.COLUMN_DATE + " DESC");
+                int count = 0;
+                if (null != mCursor_suggestion) {
+                    count = mCursor_suggestion.getCount();
+                    mCursor_suggestion.close();
                 }
-            } else {
-                if (triggerUpdateSuggestion)
-                    sendUpdate(R.string.message_fail_to_request);
+                //
+                String routes = res.get(0).r_no;
+                String[] routeArray = routes.split(",");
+                Timber.d("Suggestion In DB: %s Available: %s", count, routeArray.length);
+                if (routeArray.length > count || count == 0) {
+                    // clear existing suggested routes
+                    getContentResolver().delete(SuggestionProvider.CONTENT_URI,
+                            SuggestionTable.COLUMN_TYPE + "=?",
+                            new String[]{SuggestionTable.TYPE_DEFAULT});
+                    //
+                    ContentValues[] contentValues = new ContentValues[routeArray.length];
+                    for (int i = 0; i < routeArray.length; i++) {
+                        ContentValues values = new ContentValues();
+                        values.put(SuggestionTable.COLUMN_TEXT, routeArray[i]);
+                        values.put(SuggestionTable.COLUMN_TYPE, SuggestionTable.TYPE_DEFAULT);
+                        values.put(SuggestionTable.COLUMN_DATE, "0");
+                        contentValues[i] = values;
+                    }
+                    int insertedRows = getContentResolver().bulkInsert(
+                            SuggestionProvider.CONTENT_URI, contentValues);
+                    if (null != mPrefs) {
+                        // update record version number
+                        Calendar now = Calendar.getInstance();
+                        String nowYear = String.format(Locale.ENGLISH, "%02d", now.get(Calendar.YEAR));
+                        String nowMonth = String.format(Locale.ENGLISH, "%02d", now.get(Calendar.MONTH) + 1);
+                        String nowDay = String.format(Locale.ENGLISH, "%02d", now.get(Calendar.DAY_OF_MONTH));
+                        String date = nowYear + nowMonth + nowDay;
+                        Integer version = Integer.valueOf(date);
+                        SharedPreferences.Editor editor = mPrefs.edit();
+                        editor.putInt(C.PREF.VERSION_RECORD, version);
+                        editor.apply();
+                    }
+                    if (insertedRows > 0) {
+                        Timber.d("updated available routes suggestion: %s", insertedRows);
+                    } else {
+                        Timber.d("error when inserting available routes to database");
+                    }
+                    Intent i = new Intent(C.ACTION.SUGGESTION_ROUTE_UPDATE);
+                    i.putExtra(C.EXTRA.UPDATED, true);
+                    i.putExtra(C.EXTRA.MANUAL, manualUpdate);
+                    i.putExtra(C.EXTRA.MESSAGE_RID, R.string.message_database_updated);
+                    sendBroadcast(i);
+                }
             }
-        } catch (ExecutionException | InterruptedException e) {
-            Log.e(TAG, e.toString());
-            if (triggerUpdateSuggestion)
-                sendUpdate(R.string.message_fail_to_request);
-        }
+
+            @Override
+            public void onError(Throwable e) {
+                Timber.d(e);
+                Intent i = new Intent(C.ACTION.SUGGESTION_ROUTE_UPDATE);
+                i.putExtra(C.EXTRA.UPDATED, true);
+                i.putExtra(C.EXTRA.MANUAL, manualUpdate);
+                i.putExtra(C.EXTRA.MESSAGE_RID, R.string.message_fail_to_request);
+                sendBroadcast(i);
+            }
+
+            @Override
+            public void onComplete() {
+            }
+        };
     }
 
-    private void sendUpdate(int id) {
-        Intent intent = new Intent(Constants.MESSAGE.CHECKING_UPDATED);
-        intent.putExtra(Constants.STATUS.UPDATED_SUGGESTION, true);
-        intent.putExtra(Constants.BUNDLE.MESSAGE_ID, id);
-        sendBroadcast(intent);
-    }
+    DisposableObserver<List<AppUpdate>> appUpdateObserver(Boolean manualUpdate) {
+        return new DisposableObserver<List<AppUpdate>>() {
+            @Override
+            public void onNext(List<AppUpdate> res) {
+                if (res.size() < 1) return;
+                AppUpdate appUpdate = res.get(0);
+                Intent i = new Intent(C.ACTION.APP_UPDATE);
+                i.putExtra(C.EXTRA.UPDATED, true);
+                i.putExtra(C.EXTRA.MANUAL, manualUpdate);
+                i.putExtra(C.EXTRA.APP_UPDATE_OBJECT, appUpdate);
+                sendBroadcast(i);
+            }
 
-    private void sendAppUpdated(AppUpdate data) {
-        Intent intent = new Intent(Constants.MESSAGE.CHECKING_UPDATED);
-        intent.putExtra(Constants.STATUS.UPDATED_APP_FOUND, true);
-        intent.putExtra(Constants.BUNDLE.APP_UPDATE_OBJECT, data);
-        sendBroadcast(intent);
-    }
+            @Override
+            public void onError(Throwable e) {
+                Timber.d(e);
+            }
 
+            @Override
+            public void onComplete() {
+            }
+        };
+    }
 }

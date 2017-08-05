@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tool="http://schemas.android.com/tools"
+    android:id="@+id/card_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:layout_margin="@dimen/card_vertical_margin"
+    android:layout_marginLeft="@dimen/card_horizontal_margin"
+    android:layout_marginRight="@dimen/card_horizontal_margin"
+    app:cardCornerRadius="2dp"
+    app:cardElevation="@dimen/card_elevation">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/card_item_vertical_padding"
+        android:layout_marginBottom="@dimen/card_item_vertical_padding"
+        android:layout_marginLeft="@dimen/card_item_horizontal_padding"
+        android:layout_marginRight="@dimen/card_item_horizontal_padding"
+        android:layout_marginStart="@dimen/card_item_horizontal_padding"
+        android:layout_marginEnd="@dimen/card_item_horizontal_padding">
+
+        <TextView
+            android:id="@+id/route_no"
+            android:layout_width="@dimen/card_follow_route"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_centerInParent="true"
+            style="@style/TextAppearance.AppCompat.Small"
+            android:textColor="@color/textPrimary"
+            tool:text="XXXXXX" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_centerInParent="true"
+            android:layout_marginStart="@dimen/card_follow_text_margin_start"
+            android:layout_marginLeft="@dimen/card_follow_text_margin_start"
+            android:gravity="center_vertical"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="start">
+
+                <TextView
+                    android:id="@+id/name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="start"
+                    android:maxLines="1"
+                    style="@style/TextAppearance.AppCompat.Small"
+                    android:textColor="@color/textPrimary"
+                    tool:text="@string/stop_name" />
+
+                <TextView
+                    android:id="@+id/eta"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:maxLines="1"
+                    style="@style/TextAppearance.AppCompat.Small"
+                    tool:text="@string/eta" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:layout_gravity="start">
+
+                <TextView
+                    android:id="@+id/route_location_end"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start"
+                    android:maxLines="1"
+                    android:textColor="@color/textSecondary"
+                    style="@style/TextAppearance.AppCompat.Small"
+                    tool:text="@string/dest" />
+
+                <TextView
+                    android:id="@+id/eta_next"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:maxLines="1"
+                    style="@style/TextAppearance.AppCompat.Small"
+                    tool:text="@string/eta" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>

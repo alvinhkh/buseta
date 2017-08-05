@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <corners
-        android:topLeftRadius="@dimen/widget_corner_radius"
-        android:topRightRadius="@dimen/widget_corner_radius"/>
-    <solid android:color="@color/primary"/>
+        android:topLeftRadius="3dp"
+        android:topRightRadius="3dp"/>
+    <solid android:color="@color/colorPrimary"/>
     <stroke
-        android:color="@color/primary"
+        android:color="@color/colorPrimary"
         android:width="1dp"/>
 </shape>

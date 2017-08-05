@@ -1,43 +1,43 @@
 package com.alvinhkh.buseta.service;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.provider.Settings;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
-import android.support.v4.content.ContextCompat;
-import android.util.Log;
-import android.util.SparseArray;
+import android.support.v4.util.SparseArrayCompat;
 
-import com.alvinhkh.buseta.Constants;
+import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.utils.EtaAdapterHelper;
-import com.alvinhkh.buseta.holder.RouteStop;
+import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.utils.NotificationUtil;
+import com.firebase.jobdispatcher.FirebaseJobDispatcher;
+import com.firebase.jobdispatcher.GooglePlayDriver;
 
-import java.io.File;
-import java.util.Date;
+import java.util.Locale;
+
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.observers.DisposableObserver;
+import timber.log.Timber;
+
 
 public class NotificationService extends Service {
 
-    private static final String TAG = NotificationService.class.getSimpleName();
-    private static final String ACTION_CANCEL = "ACTION_CANCEL";
-    private static final String NOTIFICATION_ID = "NOTIFICATION_ID";
+    private final CompositeDisposable disposables = new CompositeDisposable();
 
-    protected NotificationManagerCompat mNotifyManager;
-    protected NotificationCompat.Builder mBuilder;
+    private SparseArrayCompat<BusRouteStop> routeStops = new SparseArrayCompat<>();
 
-    private NotificationAlarm mAlarm;
-    private SparseArray<RouteStop> routeStopArray;
-    private UpdateEtaReceiver etaReceiver;
-    private TriggerUpdateReceiver triggerReceiver;
+    private NotificationAlarm alarm;
 
     public NotificationService() {
         super();
@@ -46,321 +46,177 @@ public class NotificationService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        // Log.d(TAG, "onCreate");
-        routeStopArray = new SparseArray<>();
-        // Broadcast Reciever
-        IntentFilter mFilter_eta = new IntentFilter(Constants.MESSAGE.ETA_UPDATED);
-        etaReceiver = new UpdateEtaReceiver();
-        mFilter_eta.addAction(Constants.MESSAGE.ETA_UPDATED);
-        registerReceiver(etaReceiver, mFilter_eta);
-        IntentFilter mFilter_trigger = new IntentFilter(Constants.MESSAGE.NOTIFICATION_TRIGGER_UPDATE);
-        triggerReceiver = new TriggerUpdateReceiver();
-        mFilter_trigger.addAction(Constants.MESSAGE.NOTIFICATION_TRIGGER_UPDATE);
-        registerReceiver(triggerReceiver, mFilter_trigger);
-        // Auto Refresh
-        boolean alarmUp = (PendingIntent.getBroadcast(this, 0,
-                new Intent(Constants.MESSAGE.NOTIFICATION_TRIGGER_UPDATE),
-                PendingIntent.FLAG_NO_CREATE) != null);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationManager notificationManager =
+                    (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+            NotificationChannel etaChannel = new NotificationChannel(C.NOTIFICATION.CHANNEL_ETA,
+                    getString(R.string.channel_name_eta), NotificationManager.IMPORTANCE_HIGH);
+            etaChannel.setDescription(getString(R.string.channel_description_eta));
+            etaChannel.enableLights(false);
+            etaChannel.enableVibration(false);
+            notificationManager.createNotificationChannel(etaChannel);
+            NotificationChannel foregroundChannel = new NotificationChannel(C.NOTIFICATION.CHANNEL_FOREGROUND,
+                    getString(R.string.channel_name_foreground, getString(R.string.app_name)), NotificationManager.IMPORTANCE_MIN);
+            foregroundChannel.setDescription(getString(R.string.channel_description_foreground));
+            foregroundChannel.enableLights(false);
+            foregroundChannel.enableVibration(false);
+            notificationManager.createNotificationChannel(foregroundChannel);
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            showForegroundNotification();
+        }
+        disposables.add(RxBroadcastReceiver.create(this, new IntentFilter(C.ACTION.ETA_UPDATE))
+                .share()
+                .subscribeWith(etaObserver()));
+        disposables.add(RxBroadcastReceiver.create(this, new IntentFilter(C.ACTION.NOTIFICATION_UPDATE))
+                .share()
+                .subscribeWith(updateObserver()));
+        // Alarm Service
+        boolean alarmUp = PendingIntent.getBroadcast(this, 0, new Intent(C.ACTION.NOTIFICATION_UPDATE),
+                PendingIntent.FLAG_NO_CREATE) != null;
         if (alarmUp) {
-            Log.d(TAG, "Alarm is already active");
+            Timber.d("Alarm is already active");
         } else {
-            mAlarm = new NotificationAlarm(getApplicationContext());
-            mAlarm.startAlarm(15);
+            alarm = new NotificationAlarm(this);
+            alarm.startAlarm(15);  // 15 seconds
         }
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        // Log.d(TAG, "onStartCommand");
+        Timber.d("onStartCommand");
         if (intent == null) {
             stopSelf();
-            return -1;
+            return START_NOT_STICKY;
         }
         Bundle extras = intent.getExtras();
         if (extras == null) {
             stopSelf();
-            return -1;
+            return START_NOT_STICKY;
         }
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
         String action = intent.getAction();
-        if (null != action && action.equals(ACTION_CANCEL)) {
-            int notificationId = extras.getInt(NOTIFICATION_ID);
-            // Log.d(TAG, "Remove: " + notificationId);
-            if (null != routeStopArray)
-                routeStopArray.delete(notificationId);
-            mNotifyManager = NotificationManagerCompat.from(this);
-            mNotifyManager.cancel(notificationId);
-            if (routeStopArray.size() < 1)
+        int notificationId = extras.getInt(C.EXTRA.NOTIFICATION_ID);
+        int rowId = extras.getInt(C.EXTRA.ROW);
+        int widgetId = extras.getInt(C.EXTRA.WIDGET_UPDATE);
+        if (action != null && action.equals(C.ACTION.CANCEL)) {
+            FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
+            dispatcher.cancel(String.format(Locale.ENGLISH, "eta-notification-%d", notificationId));
+            notificationManager.cancel(notificationId);
+            routeStops.delete(notificationId);
+            if (routeStops.size() < 1) {
                 stopSelf();
-            return -1;
+            }
+            return START_NOT_STICKY;
         }
-        RouteStop object = extras.getParcelable(Constants.BUNDLE.STOP_OBJECT);
-        if (null == object || null == object.route_bound) {
-            stopSelf();
-            return -1;
+
+        BusRouteStop busRouteStop = extras.getParcelable(C.EXTRA.STOP_OBJECT);
+        if (busRouteStop != null) {
+            notificationId = NotificationUtil.getNotificationId(busRouteStop);
+            NotificationCompat.Builder builder = NotificationUtil.showArrivalTime(this, busRouteStop);
+            notificationManager.notify(notificationId, builder.build());
+            routeStops.put(notificationId, busRouteStop);
+            Intent startIntent = new Intent(getApplicationContext(), EtaService.class);
+            startIntent.putExtra(C.EXTRA.STOP_OBJECT, busRouteStop);
+            startIntent.putExtra(C.EXTRA.NOTIFICATION_ID, notificationId);
+            startIntent.putExtra(C.EXTRA.ROW, rowId);
+            startIntent.putExtra(C.EXTRA.WIDGET_UPDATE, widgetId);
+            startService(startIntent);
         }
-        int notificationId = parse(object);
-        // ask for update
-        Intent updateIntent = new Intent(getApplicationContext(), CheckEtaService.class);
-        updateIntent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
-        updateIntent.putExtra(Constants.MESSAGE.NOTIFICATION_UPDATE, notificationId);
-        startService(updateIntent);
         return START_STICKY;
     }
 
     @Override
     public IBinder onBind(Intent intent) {
-        // We don't provide binding, so return null
         return null;
     }
 
     @Override
     public void onDestroy() {
-        Log.d(TAG, "onDestroy");
-        mAlarm = new NotificationAlarm(getApplicationContext());
-        mAlarm.stopAlarm();
-        mNotifyManager = NotificationManagerCompat.from(this);
-        mNotifyManager.cancelAll();
-        if (null != routeStopArray)
-            routeStopArray.clear();
-        if (null != etaReceiver)
-            unregisterReceiver(etaReceiver);
-        if (null != triggerReceiver)
-            unregisterReceiver(triggerReceiver);
-        File cacheDir = new File(getCacheDir().getAbsolutePath() + File.separator + "images");
-        if (cacheDir.exists()) {
-            File[] files = cacheDir.listFiles();
-            if (files != null) {
-                for (File file : files) {
-                    if (file.delete())
-                        Log.d(TAG, "image deleted: " + file.getPath());
-                }
-            }
-        }
+        alarm = new NotificationAlarm(getApplicationContext());
+        alarm.stopAlarm();
+        routeStops.clear();
+        stopForeground(true);
         super.onDestroy();
     }
 
-    private int parse(RouteStop object) {
-        if (null == object || null == object.route_bound) return -1;
-        StringBuilder smallContentTitle = new StringBuilder();
-        StringBuilder smallText = new StringBuilder();
-        StringBuilder bigText = new StringBuilder();
-        StringBuilder bigContentTitle = new StringBuilder();
-        StringBuilder bigSummaryText = new StringBuilder();
-        StringBuilder subText = new StringBuilder();
-        StringBuilder contentInfo = new StringBuilder();
-        smallContentTitle.append(object.route_bound.route_no);
-        bigContentTitle.append(object.route_bound.route_no);
-        bigContentTitle.append(" ");
-        bigContentTitle.append(object.name_tc);
-        bigContentTitle.append(" ");
-        bigContentTitle.append(getString(R.string.destination, object.route_bound.destination_tc));
-        subText.append(object.name_tc);
-        subText.append(" ");
-        subText.append(getString(R.string.destination, object.route_bound.destination_tc));
-        if (null != object.eta) {
-            // Request Time
-            String server_time = "";
-            Date server_date = null;
-            if (null != object.eta.server_time && !object.eta.server_time.equals("")) {
-                server_date = EtaAdapterHelper.serverDate(object);
-                server_time = (null != server_date) ?
-                        EtaAdapterHelper.display_format.format(server_date) : object.eta.server_time;
-            }
-            // last updated
-            String updated_time = "";
-            Date updated_date;
-            if (null != object.eta.updated && !object.eta.updated.equals("")) {
-                updated_date = EtaAdapterHelper.updatedDate(object);
-                updated_time = (null != updated_date) ?
-                        EtaAdapterHelper.display_format.format(updated_date) : object.eta.updated;
-            }
-            // ETAs
-            String eta = EtaAdapterHelper.getText(object.eta.etas);
-            String[] etas = eta.replaceAll("　", " ").split(", ?");
-            String[] scheduled = object.eta.scheduled.split(", ?");
-            String[] wheelchairs = object.eta.wheelchair.split(", ?");
-            for (int i = 0; i < etas.length; i++) {
-                if (scheduled.length > i && scheduled[i] != null
-                        && scheduled[i].equals("Y")) {
-                    // scheduled bus
-                    bigText.append("*");
-                }
-                bigText.append(etas[i]);
-                String estimate = EtaAdapterHelper.etaEstimate(object, etas, i, server_date, null, null, null);
-                bigText.append(estimate);
-                if (wheelchairs.length > i && wheelchairs[i] != null
-                        && wheelchairs[i].equals("Y")
-                        && EtaAdapterHelper.isShowWheelchairIcon(this)) {
-                    // wheelchair emoji
-                    bigText.append(" ");
-                    bigText.append(new String(Character.toChars(0x267F)));
-                }
-                if (i < etas.length - 1) {
-                    bigText.append("\n");
-                }
-                String text = etas[i];
-                if (i == 0) {
-                    smallContentTitle.append(" ");
-                    if (scheduled.length > i && scheduled[i] != null
-                            && scheduled[i].equals("Y")) {
-                        // scheduled bus
-                        smallContentTitle.append("*");
-                    }
-                    smallContentTitle.append(text);
-                    smallContentTitle.append(estimate);
-                    if (wheelchairs.length > i && wheelchairs[i] != null
-                            && wheelchairs[i].equals("Y")) {
-                        // wheelchair emoji
-                        smallContentTitle.append(" ");
-                        smallContentTitle.append(new String(Character.toChars(0x267F)));
-                    }
-                } else {
-                    if (scheduled.length > i && scheduled[i] != null
-                            && scheduled[i].equals("Y")) {
-                        // scheduled bus
-                        smallText.append("*");
-                    }
-                    smallText.append(text);
-                    smallText.append(estimate);
-                    if (wheelchairs.length > i && wheelchairs[i] != null
-                            && wheelchairs[i].equals("Y")) {
-                        // wheelchair emoji
-                        smallText.append(" ");
-                        smallText.append(new String(Character.toChars(0x267F)));
-                    }
-                    if (i < etas.length - 1) {
-                        smallText.append(" ");
-                    }
-                }
-            }
-            if (null != updated_time && !updated_time.equals("")) {
-                bigSummaryText.append(updated_time);
-            } else if (null != server_time && !server_time.equals("")) {
-                bigSummaryText.append(server_time);
-            }
+    @RequiresApi(Build.VERSION_CODES.O)
+    private void showForegroundNotification() {
+        int notificationId = 1000;
+        Intent i = new Intent();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            i.setAction(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS);
+            i.putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName());
+            i.putExtra(Settings.EXTRA_CHANNEL_ID, C.NOTIFICATION.CHANNEL_FOREGROUND);
+        } else {
+            i.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+            i.setData(Uri.fromParts("package", getPackageName(), null));
         }
-        contentInfo.append(getString(R.string.app_name));
-        // Foreground Notification
-        Context context = getApplicationContext();
-        int notificationId = 100;
-        for (int i = 0; i < object.route_bound.route_no.length(); i++) {
-            notificationId += object.route_bound.route_no.charAt(i);
-        }
-        notificationId += object.name_tc.codePointAt(0);
-        notificationId -= object.name_tc.codePointAt(object.name_tc.length()-1);
-        notificationId += object.route_bound.destination_tc.codePointAt(0);
-        int color = ContextCompat.getColor(context, R.color.primary);
-        if (null == mBuilder)
-            mBuilder = new NotificationCompat.Builder(context);
-        NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender();
-        wearableExtender.setHintScreenTimeout(NotificationCompat.WearableExtender.SCREEN_TIMEOUT_LONG);
-        if (null != object.image) {
-            File filePath = new File(getCacheDir().getAbsolutePath() +
-                    File.separator + "images" + File.separator + object.image);
-            Log.d(TAG, "image file: " + filePath.getPath());
-            if (filePath.exists()) {
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inPreferredConfig = Bitmap.Config.ARGB_8888;
-                Bitmap bitmap = BitmapFactory.decodeFile(filePath.getPath(), options);
-                wearableExtender.setBackground(bitmap);
-            }
-        }
-        if (null != object.details) {
-            Uri uri = new Uri.Builder().scheme("geo")
-                    .appendPath(object.details.lat + "," + object.details.lng)
-                    .appendQueryParameter("q", object.details.lat + "," + object.details.lng +
-                            "(" + object.name_tc + ")")
-                    .build();
-            Intent mapIntent = new Intent(Intent.ACTION_VIEW, uri);
-            if (null != mapIntent.resolveActivity(getPackageManager())) {
-                // only add open map action if proper geo app installed
-                PendingIntent pendingIntent =
-                        PendingIntent.getActivity(this, 0, mapIntent, 0);
-                NotificationCompat.Action actionOpenMap =
-                        new NotificationCompat.Action.Builder(R.drawable.ic_map_white_48dp,
-                                getString(R.string.action_open_map), pendingIntent)
-                                .build();
-                wearableExtender.addAction(actionOpenMap);
-            }
-        }
-        Intent notificationIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(Constants.URI.STOP));
-        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-        notificationIntent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
-        PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(),
-                notificationId, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        mBuilder.setContentTitle(smallContentTitle.length() > 0 ? smallContentTitle : null)
-                .setContentText(smallText.length() > 0 ? smallText : null)
-                .setSubText(subText.length() > 0 ? subText : null)
-                .setContentInfo(contentInfo.length() > 0 ? contentInfo : null)
-                .setStyle(new NotificationCompat.BigTextStyle()
-                        .setBigContentTitle(bigContentTitle.length() > 0 ? bigContentTitle : null)
-                        .setSummaryText(bigSummaryText.length() > 0 ? bigSummaryText : null)
-                        .bigText(bigText.length() > 0 ? bigText : null))
+        PendingIntent contentIntent = PendingIntent.getActivity(this, notificationId, i, PendingIntent.FLAG_UPDATE_CURRENT);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, C.NOTIFICATION.CHANNEL_FOREGROUND);
+        builder.setOnlyAlertOnce(true)
+                .setVisibility(NotificationCompat.VISIBILITY_SECRET)
+                .setPriority(NotificationCompat.PRIORITY_MIN)
                 .setSmallIcon(R.drawable.ic_directions_bus_white_24dp)
-                .setColor(color)
-                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setCategory(NotificationCompat.CATEGORY_STATUS)
-                .setContentIntent(pendingIntent)
-                .setDeleteIntent(createDeleteIntent(context, notificationId))
-                .extend(wearableExtender);
-        mNotifyManager = NotificationManagerCompat.from(this);
-        mNotifyManager.notify(notificationId, mBuilder.build());
-        routeStopArray.put(notificationId, object);
-        // Log.d(TAG, "Add: " + notificationId + " " + object.name_tc);
-        return notificationId;
+                .setCategory(NotificationCompat.CATEGORY_SYSTEM)
+                .setShowWhen(false)
+                .setContentTitle(getString(R.string.channel_name_foreground, getString(R.string.app_name)))
+                .setContentText(getString(R.string.channel_description_foreground))
+                .setContentIntent(contentIntent);
+        startForeground(notificationId, builder.build());
     }
 
-    private PendingIntent createDeleteIntent(Context context, int notificationId) {
-        Intent deleteIntent = new Intent(context, NotificationService.class);
-        deleteIntent.setAction(ACTION_CANCEL);
-        deleteIntent.putExtra(NOTIFICATION_ID, notificationId);
-        return PendingIntent.getService(context.getApplicationContext(), notificationId,
-                deleteIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-    }
-
-    public class UpdateEtaReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Bundle bundle = intent.getExtras();
-            Boolean aBoolean = bundle.getBoolean(Constants.MESSAGE.ETA_UPDATED);
-            if (aBoolean) {
-                RouteStop routeStop = bundle.getParcelable(Constants.BUNDLE.STOP_OBJECT);
-                Integer notificationId = bundle.getInt(Constants.MESSAGE.NOTIFICATION_UPDATE);
-                if (notificationId > 0) {
-                    RouteStop object = routeStopArray.get(notificationId);
-                    if (null != routeStop && null != routeStop.route_bound
-                            && null != object && null != object.route_bound) {
-                        if (object.route_bound.route_no.equals(routeStop.route_bound.route_no) &&
-                                object.route_bound.route_bound.equals(routeStop.route_bound.route_bound) &&
-                                object.stop_seq.equals(routeStop.stop_seq) &&
-                                object.code.equals(routeStop.code)) {
-                            object.eta = routeStop.eta;
-                            object.eta_loading = routeStop.eta_loading;
-                            object.eta_fail = routeStop.eta_fail;
-                            parse(object);
-                        }
-                    }
+    private DisposableObserver<Intent> etaObserver() {
+        return new DisposableObserver<Intent>() {
+            @Override
+            public void onNext(Intent intent) {
+                Bundle bundle = intent.getExtras();
+                if (bundle == null) return;
+                BusRouteStop routeStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
+                Integer notificationId = bundle.getInt(C.EXTRA.NOTIFICATION_ID);
+                if (routeStop == null) return;
+                if (notificationId > 0 && routeStops.get(notificationId) != null) {
+                    Timber.d("notification: %s UPDATE", notificationId);
+                    NotificationCompat.Builder builder = NotificationUtil.showArrivalTime(getApplicationContext(), routeStop);
+                    NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
+                    notificationManager.notify(notificationId, builder.build());
                 }
             }
-        }
+
+            @Override
+            public void onError(Throwable e) {
+                Timber.d(e);
+            }
+
+            @Override
+            public void onComplete() {
+            }
+        };
     }
 
-    public class TriggerUpdateReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (null != action && action.equals(Constants.MESSAGE.NOTIFICATION_TRIGGER_UPDATE)) {
-                for (int i = 0; i < routeStopArray.size(); i++) {
-                    int key = routeStopArray.keyAt(i);
-                    RouteStop object = routeStopArray.get(key);
-                    Intent updateIntent = new Intent(getApplicationContext(), CheckEtaService.class);
-                    updateIntent.putExtra(Constants.BUNDLE.STOP_OBJECT, object);
-                    updateIntent.putExtra(Constants.MESSAGE.NOTIFICATION_UPDATE, key);
-                    context.startService(updateIntent);
+    private DisposableObserver<Intent> updateObserver() {
+        return new DisposableObserver<Intent>() {
+            @Override
+            public void onNext(Intent intent) {
+                Bundle bundle = intent.getExtras();
+                if (bundle == null) return;
+                for (int i = 0; i < routeStops.size(); i++) {
+                    Timber.d("request update notification: %s", routeStops.keyAt(i));
+                    Intent startIntent = new Intent(getApplicationContext(), EtaService.class);
+                    startIntent.putExtra(C.EXTRA.STOP_OBJECT, routeStops.valueAt(i));
+                    startIntent.putExtra(C.EXTRA.NOTIFICATION_ID, routeStops.keyAt(i));
+                    startService(startIntent);
                 }
             }
-        }
-    }
 
+            @Override
+            public void onError(Throwable e) {
+                Timber.d(e);
+            }
+
+            @Override
+            public void onComplete() {
+            }
+        };
+    }
 }

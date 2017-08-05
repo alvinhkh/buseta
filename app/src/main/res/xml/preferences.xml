@@ -1,39 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen
+<android.support.v7.preference.PreferenceScreen
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <ListPreference
-        android:key="app_theme"
-        android:title="@string/title_app_theme"
-        android:defaultValue="1"
-        android:entries="@array/app_theme_entries"
-        android:entryValues="@array/app_theme_values"
-        android:negativeButtonText="@string/action_cancel"
-        android:positiveButtonText="@string/action_confirm" />
+    <PreferenceCategory
+        android:key="category_general"
+        android:title="@string/general">
 
-    <Preference
-        android:key="clear_history"
-        android:title="@string/title_clear_history"
-        android:summary="@string/summary_clear_history"
-        android:persistent="false" />
+        <SwitchPreferenceCompat
+            android:key="location_permission"
+            android:title="@string/location_permission"
+            android:summaryOn="@string/permission_granted_yes"
+            android:summaryOff="@string/permission_granted_no"
+            android:defaultValue="false"
+            android:persistent="false" />
 
-    <Preference
-        android:key="clear_follow"
-        android:title="@string/title_clear_follow"
-        android:summary="@string/summary_clear_follow"
-        android:persistent="false" />
+        <Preference
+            android:key="clear_follow"
+            android:title="@string/clear_follow"
+            android:persistent="false" />
 
-    <PreferenceScreen
-        android:key="advanced"
-        android:title="@string/title_advanced_settings"
-        android:persistent="false">
+        <Preference
+            android:key="clear_history"
+            android:title="@string/clear_history"
+            android:persistent="false" />
 
-        <intent
-            android:action="android.intent.action.VIEW"
-            android:targetClass="com.alvinhkh.buseta.view.AdvancedSettingsActivity"
-            android:targetPackage="com.alvinhkh.buseta" />
+    </PreferenceCategory>
 
-    </PreferenceScreen>
+    <PreferenceCategory
+        android:key="category_display"
+        android:title="@string/display">
+
+        <ListPreference
+            android:key="app_theme"
+            android:title="@string/title_app_theme"
+            android:defaultValue="1"
+            android:entries="@array/app_theme_entries"
+            android:entryValues="@array/app_theme_values"
+            android:negativeButtonText="@string/action_cancel"
+            android:positiveButtonText="@string/action_confirm" />
+
+        <SwitchPreferenceCompat
+            android:key="load_wheelchair_icon"
+            android:title="@string/title_load_wheelchair_icon"
+            android:summaryOn="@string/display"
+            android:summaryOff="@string/hide"
+            android:defaultValue="true" />
+
+        <SwitchPreferenceCompat
+            android:key="load_wifi_icon"
+            android:title="@string/title_load_wifi_icon"
+            android:summaryOn="@string/display"
+            android:summaryOff="@string/hide"
+            android:defaultValue="true" />
+
+        <SwitchPreferenceCompat
+            android:key="load_stop_image"
+            android:title="@string/title_load_stop_image"
+            android:summaryOn="@string/auto_load"
+            android:summaryOff="@string/manual"
+            android:defaultValue="false" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="category_debug"
+        android:title="@string/debug">
+
+        <ListPreference
+            android:key="kmb_api"
+            android:title="@string/title_kmb_api"
+            android:defaultValue="lwb_web"
+            android:entries="@array/kmb_api_entries"
+            android:entryValues="@array/kmb_api_values"
+            android:negativeButtonText="@string/action_cancel"
+            android:positiveButtonText="@string/action_confirm" />
+
+        <SwitchPreferenceCompat
+            android:visible="false"
+            android:key="com.alvinhkh.buseta.AD_HIDE"
+            android:title="@string/title_hide_ad"
+            android:summaryOn="@string/summary_on_hide_ad"
+            android:summaryOff="@string/summary_off_hide_ad"
+            android:defaultValue="false" />
+
+    </PreferenceCategory>
 
     <PreferenceCategory
         android:key="category_about"
@@ -42,19 +92,13 @@
         <Preference
             android:key="app_name"
             android:title="@string/app_name"
-            android:summary="@string/summary_app_name"
+            android:summary="@string/url_app"
             android:persistent="false">
 
             <intent android:action="android.intent.action.VIEW"
                 android:data="@string/url_app" />
 
         </Preference>
-
-        <Preference
-            android:key="app_version"
-            android:title="@string/title_app_version"
-            android:summary="@string/summary_app_version"
-            android:persistent="false" />
 
         <Preference
             android:key="developer"
@@ -67,18 +111,46 @@
 
         </Preference>
 
+        <Preference
+            android:key="app_version"
+            android:title="@string/title_app_version"
+            android:summary="@string/summary_app_version"
+            android:persistent="false" />
+
+        <Preference
+            android:visible="false"
+            android:key="check_app_update"
+            android:title="@string/title_check_app_update"
+            android:persistent="false" />
+
+        <Preference
+            android:key="share_app"
+            android:title="@string/message_share_title"
+            android:persistent="false" />
+
         <PreferenceScreen
             android:key="open_source_license"
             android:title="@string/open_source_license"
-            android:summary="@string/summary_open_source_license"
             android:persistent="false">
 
             <intent
                 android:action="android.intent.action.VIEW"
-                android:targetClass="com.alvinhkh.buseta.view.OpenSourceLicensesActivity"
-                android:targetPackage="com.alvinhkh.buseta" />
+                android:targetClass="com.google.android.gms.oss.licenses.OssLicensesMenuActivity"
+                android:targetPackage="com.alvinhkh.buseta">
+                <extra android:name="title" android:value="@string/open_source_license" />
+            </intent>
 
         </PreferenceScreen>
+
+        <Preference
+            android:key="github_issue"
+            android:title="@string/github_issues"
+            android:persistent="false">
+
+            <intent android:action="android.intent.action.VIEW"
+                android:data="@string/github_issues_url" />
+
+        </Preference>
 
     </PreferenceCategory>
 
@@ -93,4 +165,4 @@
 
     </PreferenceCategory>
 
-</PreferenceScreen>   
+</android.support.v7.preference.PreferenceScreen>

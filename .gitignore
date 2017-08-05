@@ -1,9 +1,11 @@
 *.iml
 .gradle
+.DS_Store
 /local.properties
 /.idea
-.DS_Store
+/app/release
 /build
-/captures
 key.jks
-*.apk
+google-services.json
+third_party_licenses
+third_party_license_metadata

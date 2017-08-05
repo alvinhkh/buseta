@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <android.support.v7.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/bottom_sheet_peek_height"
+            android:background="@color/colorPrimary"
+            android:paddingTop="8dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="8dp">
+
+            <LinearLayout
+                android:id="@+id/route_info"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="8dp"
+                android:layout_marginRight="8dp"
+                android:gravity="start"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/route_no"
+                    style="@style/TextAppearance.AppCompat.Small"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    tools:text="1A"/>
+
+                <TextView
+                    android:id="@+id/stop_name"
+                    style="@style/TextAppearance.AppCompat.Medium"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    tools:text="@string/stop_name"/>
+
+                <TextView
+                    android:id="@+id/route_location"
+                    style="@style/TextAppearance.AppCompat.Small"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    tools:text="FROM .. TO .."/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/stop_info"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:gravity="end"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/stop_location"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:maxLines="1"
+                    style="@style/TextAppearance.AppCompat.Small"
+                    tools:text="ADDRESS"/>
+
+                <TextView
+                    android:id="@+id/distance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:maxLines="1"
+                    style="@style/TextAppearance.AppCompat.Small"
+                    tools:text="~5.00km"/>
+
+                <TextView
+                    android:id="@+id/fare"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:maxLines="1"
+                    style="@style/TextAppearance.AppCompat.Medium"
+                    tools:text="$10.0"/>
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+
+        <android.support.design.widget.CoordinatorLayout
+            android:id="@+id/button_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:gravity="center_vertical|center_horizontal"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/follow_button"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:drawableTop="@drawable/ic_bookmark_border_black_48dp"
+                    android:drawableTint="@color/colorAccent"
+                    android:contentDescription="@string/content_description_icon"
+                    android:text="@string/follow"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                    style="?android:attr/borderlessButtonStyle" />
+
+                <Button
+                    android:id="@+id/open_map_button"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:drawableTop="@drawable/ic_map_black_48dp"
+                    android:drawableTint="@color/colorAccent"
+                    android:contentDescription="@string/content_description_icon"
+                    android:text="@string/map"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                    style="?android:attr/borderlessButtonStyle" />
+
+                <Button
+                    android:id="@+id/open_streetview_button"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:drawableTop="@drawable/ic_streetview_black_48dp"
+                    android:drawableTint="@color/colorAccent"
+                    android:contentDescription="@string/content_description_icon"
+                    android:text="@string/streetview"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                    style="?android:attr/borderlessButtonStyle" />
+
+                <Button
+                    android:id="@+id/notification_button"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:drawableTop="@drawable/ic_notifications_none_black_48dp"
+                    android:drawableTint="@color/colorAccent"
+                    android:contentDescription="@string/content_description_icon"
+                    android:text="@string/action_notification"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                    style="?android:attr/borderlessButtonStyle" />
+
+                <Button
+                    android:id="@+id/arrival_alert_button"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:drawableTop="@drawable/ic_alarm_black_48dp"
+                    android:drawableTint="@color/colorAccent"
+                    android:contentDescription="@string/content_description_icon"
+                    android:text="@string/arrival_alert"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                    style="?android:attr/borderlessButtonStyle" />
+
+            </LinearLayout>
+
+        </android.support.design.widget.CoordinatorLayout>
+
+        <LinearLayout
+            android:visibility="gone"
+            android:id="@+id/eta_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/activity_horizontal_margin"
+            android:layout_marginBottom="@dimen/activity_horizontal_margin"
+            android:layout_marginStart="@dimen/activity_vertical_margin"
+            android:layout_marginEnd="@dimen/activity_vertical_margin"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/eta_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@color/textPrimary"
+                tools:text="@string/eta" />
+
+            <View
+                android:id="@+id/dividerContent"
+                android:layout_width="match_parent"
+                android:layout_height="24dp"/>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_toLeftOf="@+id/eta_server_time"
+                    android:layout_toStartOf="@+id/eta_server_time"
+                    android:labelFor="@+id/eta_server_time"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                    android:textColor="@color/textSecondary"
+                    android:text="@string/label_server_time" />
+
+                <TextView
+                    android:id="@+id/eta_server_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                    android:textColor="@color/textSecondary"
+                    android:text="@string/dots" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_toLeftOf="@+id/eta_last_update"
+                    android:layout_toStartOf="@+id/eta_last_update"
+                    android:labelFor="@+id/eta_last_update"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                    android:textColor="@color/textSecondary"
+                    android:text="@string/label_last_updated" />
+
+                <TextView
+                    android:id="@+id/eta_last_update"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+                    android:textColor="@color/textSecondary"
+                    android:text="@string/dots" />
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+        <org.osmdroid.views.MapView
+            android:visibility="gone"
+            android:id="@+id/map"
+            android:layout_width="match_parent"
+            android:layout_height="320dp" />
+
+        <ImageView
+            android:visibility="gone"
+            android:id="@+id/stop_image"
+            android:layout_width="match_parent"
+            android:layout_height="320dp"
+            android:contentDescription="@string/title_load_stop_image"
+            android:scaleType="centerCrop"
+            tools:src="@mipmap/ic_launcher" />
+
+        <Button
+            android:id="@+id/show_image_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/title_load_stop_image"
+            style="@style/Widget.AppCompat.Button.Borderless"/>
+
+    </android.support.v7.widget.LinearLayoutCompat>
+
+</android.support.v4.widget.NestedScrollView>

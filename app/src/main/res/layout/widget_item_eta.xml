@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tool="http://schemas.android.com/tools"
+    android:id="@+id/widget_item_eta"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:tool="http://schemas.android.com/tools"
     android:paddingLeft="12dp"
     android:paddingRight="12dp"
     android:paddingTop="12dp"
@@ -10,47 +11,12 @@
     android:background="@drawable/widget_item_background"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/position"
-        android:visibility="gone"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="-1" />
-
-    <TextView
-        android:id="@+id/stop_code"
-        android:visibility="gone"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/dots" />
-
-    <TextView
-        android:id="@+id/stop_seq"
-        android:visibility="gone"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="" />
-
-    <TextView
-        android:id="@+id/route_bound"
-        android:visibility="gone"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="1" />
-
-    <TextView
-        android:id="@+id/route_origin"
-        android:visibility="gone"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="" />
-
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_weight="1"
         android:layout_height="0dp"
         android:orientation="horizontal"
-        android:layout_gravity="left"
+        android:layout_gravity="start"
         android:layout_marginBottom="1dp">
 
         <TextView
@@ -59,9 +25,9 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_alignParentLeft="true"
-            android:singleLine="true"
+            android:maxLines="1"
             style="@style/TextAppearance.AppCompat.Small"
-            android:textColor="@color/primary_text"
+            android:textColor="@color/widgetTextPrimary"
             tool:text="@string/stop_name" />
 
         <TextView
@@ -72,10 +38,10 @@
             android:layout_alignParentRight="true"
             android:layout_toRightOf="@+id/stop_name"
             android:layout_toEndOf="@+id/stop_name"
-            android:gravity="right|end"
-            android:singleLine="true"
+            android:gravity="end"
+            android:maxLines="1"
             style="@style/TextAppearance.AppCompat.Small"
-            android:textColor="@color/highlighted_text"
+            android:textColor="@color/widgetTextHighlighted"
             tool:text="@string/eta" />
 
     </RelativeLayout>
@@ -84,22 +50,23 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="horizontal"
-        android:layout_gravity="left"
+        android:layout_gravity="start"
         android:layout_marginTop="1dp">
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|left">
+            android:layout_gravity="bottom|start">
 
             <TextView
                 android:id="@+id/route_no"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginRight="4dp"
-                android:singleLine="true"
-                style="@style/TextAppearance.AppTheme.XSmall"
-                android:textColor="@color/primary_text"
+                android:layout_marginEnd="4dp"
+                android:maxLines="1"
+                style="@style/TextAppearance.AppCompat.Small"
+                android:textColor="@color/widgetTextPrimary"
                 tool:text="@string/dots" />
 
             <TextView
@@ -107,30 +74,30 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:labelFor="@+id/route_destination"
-                android:singleLine="true"
-                style="@style/TextAppearance.AppTheme.XSmall"
-                android:textColor="@color/secondary_text"
+                android:maxLines="1"
+                style="@style/TextAppearance.AppCompat.Small"
+                android:textColor="@color/widgetTextSecondary"
                 android:text="@string/dest" />
 
             <TextView
                 android:id="@+id/route_destination"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:singleLine="true"
-                style="@style/TextAppearance.AppTheme.XSmall"
-                android:textColor="@color/secondary_text"
+                android:maxLines="1"
+                style="@style/TextAppearance.AppCompat.Small"
+                android:textColor="@color/widgetTextSecondary"
                 tool:text="@string/dots" />
 
         </LinearLayout>
 
         <TextView
             android:id="@+id/eta_more"
-            style="@style/TextAppearance.AppTheme.XSmall"
-            android:textColor="@color/primary_text"
+            style="@style/TextAppearance.AppCompat.Small"
+            android:textColor="@color/widgetTextPrimary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:singleLine="true"
-            android:gravity="bottom|right|end"
+            android:maxLines="1"
+            android:gravity="bottom|end"
             tool:text="@string/eta" />
 
     </LinearLayout>

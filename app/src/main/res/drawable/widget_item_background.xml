@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <corners
-        android:radius="@dimen/widget_corner_radius"/>
-    <solid android:color="@color/widget_item_background"/>
+        android:radius="3dp"/>
+    <solid android:color="@color/widgetItemBackground"/>
     <stroke
-        android:color="@color/white"
+        android:color="@color/widgetBackground"
         android:width="0dp"/>
 </shape>

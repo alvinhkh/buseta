@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="search"
+        android:enabled="true"
+        android:tint="@color/grey"
+        android:icon="@drawable/ic_shortcut_search"
+        android:shortcutShortLabel="@string/search_shortcut_short_label"
+        android:shortcutLongLabel="@string/search_shortcut_long_label"
+        android:shortcutDisabledMessage="@string/search_disabled_message">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.alvinhkh.buseta"
+            android:targetClass="com.alvinhkh.buseta.ui.follow.FollowActivity" />
+        <!-- If your shortcut is associated with multiple intents, include them
+             here. The last intent in the list determines what the user sees when
+             they launch this shortcut. -->
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+    <!-- Specify more shortcuts here. -->
+</shortcuts>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tool="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="@dimen/card_footer_horizontal_padding"
+    android:paddingEnd="@dimen/card_footer_horizontal_padding"
+    android:paddingLeft="@dimen/card_footer_horizontal_padding"
+    android:paddingRight="@dimen/card_footer_horizontal_padding"
+    android:paddingTop="@dimen/card_footer_vertical_padding"
+    android:paddingBottom="@dimen/card_footer_vertical_padding">
+
+    <TextView
+        android:id="@+id/section_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+        android:textColor="@color/textDiminish"
+        android:layout_gravity="center_vertical"
+        android:maxLines="1"
+        tool:text="最後更新時間：2017/01/01 00:00" />
+
+</FrameLayout>

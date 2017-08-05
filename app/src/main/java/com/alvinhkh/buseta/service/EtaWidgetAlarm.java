@@ -4,40 +4,43 @@ import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 
-import com.alvinhkh.buseta.Constants;
+import com.alvinhkh.buseta.C;
+import com.alvinhkh.buseta.provider.EtaWidgetProvider;
 
 import java.util.Calendar;
 
 public class EtaWidgetAlarm {
-    private final int ALARM_ID = 0;
 
-    private Context mContext;
+    private static final Integer ALARM_ID = 0;
 
-    public EtaWidgetAlarm(Context context) {
-        mContext = context;
-    }
-
-    public void startAlarm(int minutes) {
-        int interval_millis = minutes * 60 * 1000;
+    public static void start(@NonNull Context context, int minutes) {
+        Integer intervalMillis = minutes * 60 * 1000;
         Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.MILLISECOND, interval_millis);
+        calendar.add(Calendar.MILLISECOND, intervalMillis);
 
-        Intent alarmIntent = new Intent(Constants.MESSAGE.WIDGET_TRIGGER_UPDATE);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, ALARM_ID, alarmIntent,
+        Intent alarmIntent = new Intent(context, EtaWidgetProvider.class);
+        alarmIntent.setAction(C.EXTRA.WIDGET_UPDATE);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, ALARM_ID, alarmIntent,
                 PendingIntent.FLAG_CANCEL_CURRENT);
 
-        AlarmManager alarmManager = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         // RTC does not wake the device up
-        alarmManager.setRepeating(AlarmManager.RTC, calendar.getTimeInMillis(), interval_millis, pendingIntent);
+        if (alarmManager != null) {
+            alarmManager.setRepeating(AlarmManager.RTC, calendar.getTimeInMillis(), intervalMillis, pendingIntent);
+        }
     }
 
-    public void stopAlarm() {
-        Intent alarmIntent = new Intent(Constants.MESSAGE.WIDGET_TRIGGER_UPDATE);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(mContext, ALARM_ID, alarmIntent,
+    public static void stop(@NonNull Context context) {
+        Intent alarmIntent = new Intent(context, EtaWidgetProvider.class);
+        alarmIntent.setAction(C.EXTRA.WIDGET_UPDATE);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, ALARM_ID, alarmIntent,
                 PendingIntent.FLAG_CANCEL_CURRENT);
 
-        AlarmManager alarmManager = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
-        alarmManager.cancel(pendingIntent);
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        if (alarmManager != null) {
+            alarmManager.cancel(pendingIntent);
+        }
     }
 }
