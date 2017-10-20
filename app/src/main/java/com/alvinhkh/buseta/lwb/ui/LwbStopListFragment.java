@@ -504,7 +504,7 @@ public class LwbStopListFragment extends Fragment implements
                     }
                     List<Item> items = new ArrayList<>();
                     for (int i = 0; i < data.size(); i++) {
-                        items.add(new Item(Item.TYPE_DATA, BusRouteStopUtil.fromLwb(data.get(i), busRoute, i)));
+                        items.add(new Item(Item.TYPE_DATA, BusRouteStopUtil.fromLwb(data.get(i), busRoute, i, i >= data.size() - 1)));
                     }
                     adapter.addAll(items);
                 }

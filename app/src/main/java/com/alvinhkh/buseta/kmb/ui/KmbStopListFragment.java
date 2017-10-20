@@ -517,7 +517,7 @@ public class KmbStopListFragment extends Fragment implements
                     if (res.data.routeStops != null) {
                         List<Item> items = new ArrayList<>();
                         for (int i = 0; i < res.data.routeStops.size(); i++) {
-                            items.add(new Item(Item.TYPE_DATA, BusRouteStopUtil.fromKmbRouteStop(res.data.routeStops.get(i), busRoute, i)));
+                            items.add(new Item(Item.TYPE_DATA, BusRouteStopUtil.fromKmbRouteStop(res.data.routeStops.get(i), busRoute, i, i >= res.data.routeStops.size() - 1)));
                         }
                         adapter.addAll(items);
                     }

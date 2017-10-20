@@ -77,7 +77,8 @@ public class BusRouteStopUtil {
 
     public static BusRouteStop fromKmbRouteStop(@NonNull KmbRouteStop kmbRouteStop,
                                                 @NonNull BusRoute busRoute,
-                                                Integer position) {
+                                                Integer position,
+                                                Boolean isLastStop) {
         BusRouteStop object = new BusRouteStop();
         object.company = BusRoute.COMPANY_KMB;
         object.route = kmbRouteStop.route;
@@ -100,14 +101,15 @@ public class BusRouteStopUtil {
                 object.imageUrl = "http://www.kmb.hk/chi/img.php?file=" + object.code;
             }
             object.etaGet = String.format("/?action=geteta&lang=tc&route=%s&bound=%s&stop=%s&stop_seq=%s",
-                    object.route, object.direction, object.code, object.sequence);
+                    object.route, object.direction, object.code, isLastStop ? 999 : object.sequence);
         }
         return object;
     }
 
     public static BusRouteStop fromLwb(@NonNull LwbRouteStop lwbRouteStop,
                                        @NonNull BusRoute busRoute,
-                                       Integer position) {
+                                       Integer position,
+                                       Boolean isLastStop) {
         BusRouteStop object = new BusRouteStop();
         object.company = BusRoute.COMPANY_KMB;
         object.route = busRoute.getName();
@@ -127,7 +129,7 @@ public class BusRouteStopUtil {
                 object.imageUrl = "http://www.kmb.hk/chi/img.php?file=" + object.code;
             }
             object.etaGet = String.format("/?action=geteta&lang=tc&route=%s&bound=%s&stop=%s&stop_seq=%s",
-                    object.route, object.direction, object.code, object.sequence);
+                    object.route, object.direction, object.code, isLastStop ? 999 : object.sequence);
         }
         return object;
     }
