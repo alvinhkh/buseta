@@ -6,6 +6,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import com.alvinhkh.buseta.model.SearchHistory;
 import com.alvinhkh.buseta.provider.RxCursorIterable;
@@ -54,7 +55,7 @@ public class SearchHistoryUtil {
                 SuggestionTable.COLUMN_TYPE + "=? AND "
                         + SuggestionTable.COLUMN_TEXT + "=?",
                 new String[]{
-                        history.record_type,
+                        history.recordType,
                         history.route
                 });
     }
@@ -66,6 +67,7 @@ public class SearchHistoryUtil {
     public static ContentValues toContentValues(@NonNull SearchHistory history) {
         ContentValues values = new ContentValues();
         values.put(SuggestionTable.COLUMN_TEXT, history.route);
+        values.put(SuggestionTable.COLUMN_COMPANY, history.company);
         values.put(SuggestionTable.COLUMN_TYPE, SuggestionTable.TYPE_HISTORY);
         values.put(SuggestionTable.COLUMN_DATE, String.valueOf(System.currentTimeMillis() / 1000L));
         return values;
@@ -74,7 +76,11 @@ public class SearchHistoryUtil {
     public static SearchHistory fromCursor(@NonNull Cursor cursor) {
         SearchHistory object = new SearchHistory();
         object.route = cursor.getString(cursor.getColumnIndex(SuggestionTable.COLUMN_TEXT));
-        object.record_type = cursor.getString(cursor.getColumnIndex(SuggestionTable.COLUMN_TYPE));
+        object.recordType = cursor.getString(cursor.getColumnIndex(SuggestionTable.COLUMN_TYPE));
+        object.company = cursor.getString(cursor.getColumnIndex(SuggestionTable.COLUMN_COMPANY));
+        if (TextUtils.isEmpty(object.company)) {
+            object.company = "KMB";
+        }
         return object;
     }
 

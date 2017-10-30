@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class SuggestionOpenHelper extends SQLiteOpenHelper {
 
     public static final String DATABASE_NAME = "suggestions.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
 
     public SuggestionOpenHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

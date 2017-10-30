@@ -125,7 +125,11 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
         historyCursor.moveToPosition(position);
         SearchHistory object = new SearchHistory();
         object.route = historyCursor.getString(historyCursor.getColumnIndex(SuggestionTable.COLUMN_TEXT));
-        object.record_type = historyCursor.getString(historyCursor.getColumnIndex(SuggestionTable.COLUMN_TYPE));
+        object.recordType = historyCursor.getString(historyCursor.getColumnIndex(SuggestionTable.COLUMN_TYPE));
+        object.company = historyCursor.getString(historyCursor.getColumnIndex(SuggestionTable.COLUMN_COMPANY));
+        if (TextUtils.isEmpty(object.company)) {
+            object.company = "KMB";
+        }
         return object;
     }
 
@@ -260,7 +264,7 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
             HistoryViewHolder vh = (HistoryViewHolder) viewHolder;
             vh.routeText.setText(info.route);
             Drawable drawable;
-            switch (info.record_type) {
+            switch (info.recordType) {
                 case SuggestionTable.TYPE_HISTORY:
                     drawable = ContextCompat.getDrawable(mContext, R.drawable.ic_history_black_24dp);
                     break;

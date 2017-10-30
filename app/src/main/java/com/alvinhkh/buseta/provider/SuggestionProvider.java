@@ -16,7 +16,7 @@ import java.util.HashSet;
 
 public class SuggestionProvider extends ContentProvider {
 
-    private SuggestionOpenHelper mHelper;
+    private SuggestionOpenHelper helper;
 
     private static final String AUTHORITY = "com.alvinhkh.buseta.SuggestionProvider";
     private static final String BASE_PATH = "suggestion";
@@ -41,7 +41,7 @@ public class SuggestionProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        mHelper = new SuggestionOpenHelper(getContext());
+        helper = new SuggestionOpenHelper(getContext());
         return false;
     }
 
@@ -109,7 +109,7 @@ public class SuggestionProvider extends ContentProvider {
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
 
-        SQLiteDatabase db = mHelper.getWritableDatabase();
+        SQLiteDatabase db = helper.getWritableDatabase();
         Cursor cursor = queryBuilder.query(db, projection, selection,
                 selectionArgs, null, null, sortOrder);
         // make sure that potential listeners are getting notified
@@ -126,7 +126,7 @@ public class SuggestionProvider extends ContentProvider {
     @Override
     public Uri insert(Uri uri, ContentValues values) {
         int uriType = sURIMatcher.match(uri);
-        SQLiteDatabase sqlDB = mHelper.getWritableDatabase();
+        SQLiteDatabase sqlDB = helper.getWritableDatabase();
         long id;
         switch (uriType) {
             case SUGGESTION:
@@ -156,7 +156,7 @@ public class SuggestionProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
-        SQLiteDatabase sqlDB = mHelper.getWritableDatabase();
+        SQLiteDatabase sqlDB = helper.getWritableDatabase();
         sqlDB.beginTransaction();
         try {
             for (ContentValues cv : values) {
@@ -176,7 +176,7 @@ public class SuggestionProvider extends ContentProvider {
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         int uriType = sURIMatcher.match(uri);
-        SQLiteDatabase sqlDB = mHelper.getWritableDatabase();
+        SQLiteDatabase sqlDB = helper.getWritableDatabase();
         int rowsDeleted;
         switch (uriType) {
             case SUGGESTION:
@@ -208,7 +208,7 @@ public class SuggestionProvider extends ContentProvider {
                       String[] selectionArgs) {
 
         int uriType = sURIMatcher.match(uri);
-        SQLiteDatabase sqlDB = mHelper.getWritableDatabase();
+        SQLiteDatabase sqlDB = helper.getWritableDatabase();
         int rowsUpdated;
         switch (uriType) {
             case SUGGESTION:
@@ -244,6 +244,7 @@ public class SuggestionProvider extends ContentProvider {
         String[] available = {
                 SuggestionTable.COLUMN_ID,
                 SuggestionTable.COLUMN_TEXT,
+                SuggestionTable.COLUMN_COMPANY,
                 SuggestionTable.COLUMN_TYPE,
                 SuggestionTable.COLUMN_DATE,
         };

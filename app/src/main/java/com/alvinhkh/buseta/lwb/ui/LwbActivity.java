@@ -309,13 +309,15 @@ public class LwbActivity extends BaseActivity
                     // TODO: SearchHistory
                     ContentValues values = new ContentValues();
                     values.put(SuggestionTable.COLUMN_TEXT, routeNo);
+                    values.put(SuggestionTable.COLUMN_COMPANY, "KMB");
                     values.put(SuggestionTable.COLUMN_TYPE, SuggestionTable.TYPE_HISTORY);
                     values.put(SuggestionTable.COLUMN_DATE, String.valueOf(System.currentTimeMillis() / 1000L));
                     getContentResolver().insert(SuggestionProvider.CONTENT_URI, values);
 
                     SearchHistory history = new SearchHistory();
                     history.route = routeNo;
-                    history.record_type = SuggestionTable.TYPE_HISTORY;
+                    history.recordType = SuggestionTable.TYPE_HISTORY;
+                    history.company = "KMB";
                     // getContentResolver().insert(SuggestionProvider.CONTENT_URI, SearchHistoryUtil.toContentValues(history));
 
                     if (emptyView != null) {
