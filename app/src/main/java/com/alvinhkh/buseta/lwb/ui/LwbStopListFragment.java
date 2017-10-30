@@ -414,7 +414,7 @@ public class LwbStopListFragment extends Fragment implements
                 if (bundle == null) return;
                 BusRouteStop busRouteStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
                 if (busRouteStop == null) return;
-                if (bundle.getBoolean(C.EXTRA.UPDATED)) {
+                if (bundle.getBoolean(C.EXTRA.UPDATED) || bundle.getBoolean(C.EXTRA.FAIL)) {
                     if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
                         swipeRefreshLayout.setRefreshing(false);
                     }

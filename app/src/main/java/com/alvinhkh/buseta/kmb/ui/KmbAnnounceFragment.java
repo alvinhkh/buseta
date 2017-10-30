@@ -157,7 +157,7 @@ public class KmbAnnounceFragment extends Fragment
                 .subscribeWith(getRouteAnnounceObserver()));
     }
 
-    public DisposableObserver<KmbAnnounceRes> getRouteAnnounceObserver() {
+    DisposableObserver<KmbAnnounceRes> getRouteAnnounceObserver() {
         return new DisposableObserver<KmbAnnounceRes>() {
             @Override
             public void onNext(KmbAnnounceRes res) {

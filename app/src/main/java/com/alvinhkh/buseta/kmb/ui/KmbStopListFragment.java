@@ -423,7 +423,7 @@ public class KmbStopListFragment extends Fragment implements
                 if (bundle == null) return;
                 BusRouteStop busRouteStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
                 if (busRouteStop == null) return;
-                if (bundle.getBoolean(C.EXTRA.UPDATED)) {
+                if (bundle.getBoolean(C.EXTRA.UPDATED) || bundle.getBoolean(C.EXTRA.FAIL)) {
                     if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
                         swipeRefreshLayout.setRefreshing(false);
                     }
@@ -517,7 +517,8 @@ public class KmbStopListFragment extends Fragment implements
                     if (res.data.routeStops != null) {
                         List<Item> items = new ArrayList<>();
                         for (int i = 0; i < res.data.routeStops.size(); i++) {
-                            items.add(new Item(Item.TYPE_DATA, BusRouteStopUtil.fromKmbRouteStop(res.data.routeStops.get(i), busRoute, i, i >= res.data.routeStops.size() - 1)));
+                            items.add(new Item(Item.TYPE_DATA, BusRouteStopUtil.fromKmbRouteStop(res.data.routeStops.get(i),
+                                    busRoute, i, i >= res.data.routeStops.size() - 1)));
                         }
                         adapter.addAll(items);
                     }

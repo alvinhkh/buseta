@@ -16,6 +16,7 @@ import com.alvinhkh.buseta.provider.RxCursorIterable;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -67,7 +68,7 @@ public class ArrivalTimeUtil {
                 // grey out
                 object.expired = minutes <= -3    // time past
                         || TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - generatedDate.getTime()) >= 5;    // maybe outdated
-                if (object.expire != null) {
+                if (!TextUtils.isEmpty(object.expire)) {
                     Date etaExpireDate = etaExpireDateFormat.parse(object.expire);
                     if (etaExpireDate != null)
                     object.expired |= TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - etaExpireDate.getTime()) >= 0;    // expired
@@ -110,6 +111,15 @@ public class ArrivalTimeUtil {
     }
     
     public static ContentValues toContentValues(BusRouteStop stop, ArrivalTime eta) {
+        if (TextUtils.isEmpty(eta.expire)) {
+            eta.expire = "";
+        }
+        if (eta.capacity == null) {
+            eta.capacity = -1;
+        }
+        if (TextUtils.isEmpty(eta.text)) {
+            eta.text = "";
+        }
         ContentValues values = new ContentValues();
         values.put(EtaEntry.COLUMN_ROUTE_COMPANY, stop.company);
         values.put(EtaEntry.COLUMN_ROUTE_NO, stop.route);
@@ -119,7 +129,8 @@ public class ArrivalTimeUtil {
 
         values.put(EtaEntry.COLUMN_ETA_EXPIRE, eta.expire);
         values.put(EtaEntry.COLUMN_ETA_ID, eta.id);
-        values.put(EtaEntry.COLUMN_ETA_MISC, Boolean.toString(eta.hasWheelchair) + "," + Integer.toString(eta.capacity) + "," + Boolean.toString(eta.hasWifi));
+        values.put(EtaEntry.COLUMN_ETA_MISC, Boolean.toString(eta.hasWheelchair) + "," +
+                Integer.toString(eta.capacity) + "," + Boolean.toString(eta.hasWifi));
         values.put(EtaEntry.COLUMN_ETA_SCHEDULED, Boolean.toString(eta.isSchedule));
         values.put(EtaEntry.COLUMN_ETA_TIME, eta.text);
         values.put(EtaEntry.COLUMN_ETA_URL, stop.etaGet);
@@ -140,6 +151,19 @@ public class ArrivalTimeUtil {
         object.text = cursor.getString(cursor.getColumnIndex(EtaEntry.COLUMN_ETA_TIME));
         object.generatedAt = cursor.getLong(cursor.getColumnIndex(EtaEntry.COLUMN_GENERATED_AT));
         object.updatedAt = cursor.getLong(cursor.getColumnIndex(EtaEntry.COLUMN_UPDATED_AT));
+        return object;
+    }
+
+    public static ArrivalTime emptyInstance(@NonNull Context context) {
+        ArrivalTime object = new ArrivalTime();
+        object.id = "0";
+        object.text = context.getString(R.string.message_no_data);
+        object.capacity = -1;
+        object.updatedAt = System.currentTimeMillis();
+        object.generatedAt = System.currentTimeMillis();
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.MINUTE, 1);
+        object.expire = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).format(calendar.getTime());
         return object;
     }
 }

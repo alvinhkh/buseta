@@ -78,7 +78,6 @@ import okhttp3.ResponseBody;
 import timber.log.Timber;
 
 
-// TODO: map view
 public class RouteStopFragment extends BottomSheetDialogFragment implements OnCompleteListener<Void> {
 
     private final CompositeDisposable disposables = new CompositeDisposable();

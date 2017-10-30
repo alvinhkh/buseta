@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
@@ -91,10 +92,11 @@ public class EtaProvider extends ContentProvider {
         switch (uriType) {
             case ETA:
                 _id = sqlDB.insert(EtaContract.EtaEntry.TABLE_NAME, null, values);
-                if ( _id > 0 )
+                if (_id > 0) {
                     returnUri = EtaContract.EtaEntry.buildUri(_id);
-                else
-                    throw new android.database.SQLException("Failed to insert row into " + uri);
+                } else {
+                    throw new SQLException("Failed to insert row into " + uri);
+                }
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);

@@ -223,7 +223,7 @@ public class RouteStopListAdapter
                     ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
                     arrivalTime = ArrivalTimeUtil.estimate(context, arrivalTime);
 
-                    if (arrivalTime.id != null) {
+                    if (!TextUtils.isEmpty(arrivalTime.id)) {
                         SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.text);
                         Integer pos = Integer.parseInt(arrivalTime.id);
                         Integer colorInt = ContextCompat.getColor(context,

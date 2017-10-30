@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 
 import com.alvinhkh.buseta.C;
+import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.kmb.KmbService;
 import com.alvinhkh.buseta.kmb.model.network.KmbEtaRes;
 import com.alvinhkh.buseta.kmb.util.KmbEtaUtil;
@@ -108,23 +109,31 @@ public class EtaService extends IntentService {
             @Override
             public void onNext(KmbEtaRes res) {
                 if (res != null && res.etas != null) {
-                    if (res.etas.size() <= 0) {
-                        notifyUpdate(busRouteStop, C.EXTRA.FAIL, widgetId, notificationId, rowNo);
-                    } else {
+                    if (res.etas.size() > 0) {
                         for (int i = 0; i < res.etas.size(); i++) {
                             ArrivalTime arrivalTime = KmbEtaUtil.toArrivalTime(getApplicationContext(), res.etas.get(i), res.generated);
                             arrivalTime.id = Integer.toString(i);
                             getContentResolver().insert(EtaEntry.CONTENT_URI,
                                     ArrivalTimeUtil.toContentValues(busRouteStop, arrivalTime));
-                    }
+                        }
                         notifyUpdate(busRouteStop, C.EXTRA.UPDATED, widgetId, notificationId, rowNo);
+                        return;
                     }
                 }
+                ArrivalTime arrivalTime = ArrivalTimeUtil.emptyInstance(getApplicationContext());
+                arrivalTime.generatedAt = res.generated;
+                getContentResolver().insert(EtaEntry.CONTENT_URI,
+                        ArrivalTimeUtil.toContentValues(busRouteStop, arrivalTime));
+                notifyUpdate(busRouteStop, C.EXTRA.FAIL, widgetId, notificationId, rowNo);
             }
 
             @Override
             public void onError(Throwable e) {
                 Timber.d(e);
+                ArrivalTime arrivalTime = ArrivalTimeUtil.emptyInstance(getApplicationContext());
+                arrivalTime.text = e.getMessage();
+                getContentResolver().insert(EtaEntry.CONTENT_URI,
+                        ArrivalTimeUtil.toContentValues(busRouteStop, arrivalTime));
                 notifyUpdate(busRouteStop, C.EXTRA.FAIL, widgetId, notificationId, rowNo);
             }
 
