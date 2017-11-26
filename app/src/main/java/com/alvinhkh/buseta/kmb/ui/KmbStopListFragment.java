@@ -48,6 +48,7 @@ import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
 import com.alvinhkh.buseta.ui.route.RouteAnnounceActivity;
 import com.alvinhkh.buseta.ui.route.RouteStopListAdapter;
 import com.alvinhkh.buseta.utils.BusRouteStopUtil;
+import com.alvinhkh.buseta.utils.RetryWithDelay;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -233,6 +234,7 @@ public class KmbStopListFragment extends Fragment implements
         }
 
         disposables.add(kmbService.getStops(busRoute.getName(), busRoute.getSequence(), busRoute.getServiceType())
+                .retryWhen(new RetryWithDelay(5, 3000))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(routeStopsObserver(goToStopPos)));
@@ -559,30 +561,32 @@ public class KmbStopListFragment extends Fragment implements
                 if (map != null) {
                     map.clear();
                 }
-                PolylineOptions line = new PolylineOptions().width(20).zIndex(1)
-                        .color(ContextCompat.getColor(getContext(), R.color.colorAccent));
-                for (int i = 0; i < adapter.getItemCount(); i++) {
-                    Item item = adapter.getItem(i);
-                    if (item.getType() != Item.TYPE_DATA) continue;
-                    BusRouteStop stop = (BusRouteStop) item.getObject();
-                    busRouteStops.add(stop);
+                if (adapter.getItemCount() > 0) {
+                    PolylineOptions line = new PolylineOptions().width(20).zIndex(1)
+                            .color(ContextCompat.getColor(getContext(), R.color.colorAccent));
+                    for (int i = 0; i < adapter.getItemCount(); i++) {
+                        Item item = adapter.getItem(i);
+                        if (item.getType() != Item.TYPE_DATA) continue;
+                        BusRouteStop stop = (BusRouteStop) item.getObject();
+                        busRouteStops.add(stop);
 
-                    if (map != null) {
-                        LatLng latLng = new LatLng(Double.parseDouble(stop.latitude), Double.parseDouble(stop.longitude));
-                        line.add(latLng);
-                        IconGenerator iconFactory = new IconGenerator(getContext());
-                        Bitmap bmp = iconFactory.makeIcon(stop.sequence + ": " + stop.name);
-                        map.addMarker(new MarkerOptions().position(latLng)
-                                .icon(BitmapDescriptorFactory.fromBitmap(bmp))).setTag(stop);
+                        if (map != null) {
+                            LatLng latLng = new LatLng(Double.parseDouble(stop.latitude), Double.parseDouble(stop.longitude));
+                            line.add(latLng);
+                            IconGenerator iconFactory = new IconGenerator(getContext());
+                            Bitmap bmp = iconFactory.makeIcon(stop.sequence + ": " + stop.name);
+                            map.addMarker(new MarkerOptions().position(latLng)
+                                    .icon(BitmapDescriptorFactory.fromBitmap(bmp))).setTag(stop);
+                        }
                     }
-                }
-                if (map != null && busRouteStops.size() > 0 && scrollToPosition < busRouteStops.size()) {
-                    line.startCap(new RoundCap());
-                    line.endCap(new RoundCap());
-                    map.addPolyline(line);
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                            new LatLng(Double.parseDouble(busRouteStops.get(scrollToPosition).latitude),
-                                    Double.parseDouble(busRouteStops.get(scrollToPosition).longitude)), 16));
+                    if (map != null && busRouteStops.size() > 0 && scrollToPosition < busRouteStops.size()) {
+                        line.startCap(new RoundCap());
+                        line.endCap(new RoundCap());
+                        map.addPolyline(line);
+                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                new LatLng(Double.parseDouble(busRouteStops.get(scrollToPosition).latitude),
+                                        Double.parseDouble(busRouteStops.get(scrollToPosition).longitude)), 16));
+                    }
                 }
                 if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
                     swipeRefreshLayout.setRefreshing(false);
