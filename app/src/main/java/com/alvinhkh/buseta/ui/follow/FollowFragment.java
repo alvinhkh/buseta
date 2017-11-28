@@ -9,7 +9,6 @@ import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -126,8 +125,6 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
         }
         mFab = getActivity().findViewById(R.id.fab);
 
-
-
         return rootView;
     }
 
@@ -242,7 +239,7 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setClass(getContext(), SearchActivity.class);
                     intent.putExtra(C.EXTRA.STOP_OBJECT_STRING, new Gson().toJson(busRouteStop));
-                    shortcuts.add(new ShortcutInfo.Builder(getContext(), "buseta-" + busRouteStop.route + busRouteStop.direction + busRouteStop.code)
+                    shortcuts.add(new ShortcutInfo.Builder(getContext(), "buseta-" + busRouteStop.company + busRouteStop.route + busRouteStop.direction + busRouteStop.code)
                             .setShortLabel(busRouteStop.route + " " + busRouteStop.name)
                             .setLongLabel(busRouteStop.route + " " + busRouteStop.name + " " + getString(R.string.destination, busRouteStop.destination))
                             .setIcon(Icon.createWithResource(getContext(), R.drawable.ic_shortcut_directions_bus))
@@ -250,10 +247,11 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
                             .build());
                 } else if (object instanceof SearchHistory) {
                     SearchHistory searchHistory = (SearchHistory) object;
-                    Intent intent = new Intent(Intent.ACTION_SEARCH);
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setClass(getContext(), SearchActivity.class);
-                    intent.putExtra(SearchManager.QUERY, searchHistory.route);
-                    shortcuts.add(new ShortcutInfo.Builder(getContext(), "buseta-search-" + searchHistory.route)
+                    intent.putExtra(C.EXTRA.ROUTE_NO, searchHistory.route);
+                    intent.putExtra(C.EXTRA.COMPANY, searchHistory.company);
+                    shortcuts.add(new ShortcutInfo.Builder(getContext(), "buseta-q-" + searchHistory.company + searchHistory.route)
                             .setShortLabel(searchHistory.route)
                             .setLongLabel(searchHistory.route)
                             .setIcon(Icon.createWithResource(getContext(), R.drawable.ic_shortcut_search))

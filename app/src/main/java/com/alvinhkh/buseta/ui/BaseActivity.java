@@ -241,12 +241,13 @@ abstract public class BaseActivity extends AppCompatActivity
     public boolean onSuggestionClick(int position) {
         collapseSearchView();
         Cursor cursor = (Cursor) searchView.getSuggestionsAdapter().getItem(position);
-        int indexColumnSuggestion = cursor.getColumnIndex(SuggestionTable.COLUMN_TEXT);
-        String route_no = cursor.getString(indexColumnSuggestion);
+        String routeNo = cursor.getString(cursor.getColumnIndex(SuggestionTable.COLUMN_TEXT));
+        String company = cursor.getString(cursor.getColumnIndex(SuggestionTable.COLUMN_COMPANY));
         cursor.close();
-        Intent intent = new Intent(Intent.ACTION_SEARCH);
+        Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setClass(this, SearchActivity.class);
-        intent.putExtra(SearchManager.QUERY, route_no);
+        intent.putExtra(C.EXTRA.ROUTE_NO, routeNo);
+        intent.putExtra(C.EXTRA.COMPANY, company);
         startActivity(intent);
         return true;
     }
@@ -277,10 +278,10 @@ abstract public class BaseActivity extends AppCompatActivity
                 new Handler().postDelayed(snackbar::dismiss, 5000);
             }
         } else {
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setClass(this, SearchActivity.class);
-            intent.setData(Uri.parse(C.URI.ROUTE + query));
-            startActivity(intent);
+            Intent i = new Intent(Intent.ACTION_SEARCH);
+            i.setClass(this, SearchActivity.class);
+            i.putExtra(SearchManager.QUERY, query);
+            startActivity(i);
         }
         return true;
     }

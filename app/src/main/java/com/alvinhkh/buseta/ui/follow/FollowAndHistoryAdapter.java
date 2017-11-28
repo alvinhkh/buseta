@@ -279,9 +279,10 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
             vh.itemView.setOnClickListener(v -> {
                 Context context = v.getContext();
                 if (context == null) return;
-                Intent intent = new Intent(Intent.ACTION_SEARCH);
+                Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setClass(context, SearchActivity.class);
-                intent.putExtra(SearchManager.QUERY, info.route);
+                intent.putExtra(C.EXTRA.COMPANY, info.company);
+                intent.putExtra(C.EXTRA.ROUTE_NO, info.route);
                 context.startActivity(intent);
             });
             vh.itemView.setOnLongClickListener(v -> {

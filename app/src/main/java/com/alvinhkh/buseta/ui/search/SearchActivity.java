@@ -11,6 +11,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.widget.Toast;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.kmb.ui.KmbActivity;
@@ -33,7 +34,7 @@ import timber.log.Timber;
 // Search holder, redirect search event
 public class SearchActivity extends AppCompatActivity {
 
-    private String mLastQuery = "";
+    private String lastQuery = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,17 +51,30 @@ public class SearchActivity extends AppCompatActivity {
     @Override
     public void onStart() {
         super.onStart();
-        appIndexStart(mLastQuery);
+        appIndexStart(lastQuery);
     }
 
     @Override
     public void onStop() {
-        appIndexStop(mLastQuery);
+        appIndexStop(lastQuery);
         super.onStop();
     }
 
-    private void handleIntent(Intent intent) {
-        if (null == intent) return;
+    private Intent getIntent(@NonNull String companyCode) {
+        Intent intent = new Intent(getApplicationContext(), SearchActivity.class);
+        if (!TextUtils.isEmpty(companyCode) && companyCode.equals("NLB")) {
+            Toast.makeText(this, "NLB", Toast.LENGTH_SHORT).show();
+        } else {
+            intent = new Intent(getApplicationContext(), LwbActivity.class);
+            if (PreferenceUtil.isUsingNewKmbApi(getApplicationContext())) {
+                intent = new Intent(getApplicationContext(), KmbActivity.class);
+            }
+        }
+        return intent;
+    }
+
+    private void handleIntent(@NonNull Intent intent) {
+        if (intent == null) return;
 
         String action = intent.getAction();
         String data = intent.getDataString();
@@ -75,52 +89,51 @@ public class SearchActivity extends AppCompatActivity {
         }
 
         if (Intent.ACTION_SEARCH.equals(action)) {
+            // TODO: handle company is empty
             String query = intent.getStringExtra(SearchManager.QUERY);
-            Intent i = new Intent(getApplicationContext(), LwbActivity.class);
-            if (PreferenceUtil.isUsingNewKmbApi(getApplicationContext())) {
-                i = new Intent(getApplicationContext(), KmbActivity.class);
-            }
+            String company = intent.getStringExtra(C.EXTRA.COMPANY);
+            Intent i = getIntent(company);
             i.putExtra(C.EXTRA.ROUTE_NO, query);
             startActivity(i);
             finish();
         }
 
         if (Intent.ACTION_VIEW.equals(action)) {
-            if (!TextUtils.isEmpty(mLastQuery)) {
-                appIndexStop(mLastQuery);
+            if (!TextUtils.isEmpty(lastQuery)) {
+                appIndexStop(lastQuery);
             }
             BusRouteStop routeStop = intent.getParcelableExtra(C.EXTRA.STOP_OBJECT);
             String stopText = intent.getStringExtra(C.EXTRA.STOP_OBJECT_STRING);
+            String company = intent.getStringExtra(C.EXTRA.COMPANY);
+            String routeNo = intent.getStringExtra(C.EXTRA.ROUTE_NO);
             if (routeStop == null && !TextUtils.isEmpty(stopText)) {
                 routeStop = new Gson().fromJson(stopText, BusRouteStop.class);
             }
             if (routeStop != null) {
-                Intent routeIntent = new Intent(getApplicationContext(), LwbActivity.class);
-                if (PreferenceUtil.isUsingNewKmbApi(getApplicationContext())) {
-                    routeIntent = new Intent(getApplicationContext(), KmbActivity.class);
-                }
-                routeIntent.putExtra(C.EXTRA.ROUTE_NO, routeStop.route);
-                routeIntent.putExtra(C.EXTRA.STOP_OBJECT, routeStop);
-                startActivity(routeIntent);
-                mLastQuery = routeStop.route;
-            }
-            if (!TextUtils.isEmpty(data)) {
+                Intent i = getIntent(routeStop.company);
+                i.putExtra(C.EXTRA.ROUTE_NO, routeStop.route);
+                i.putExtra(C.EXTRA.STOP_OBJECT, routeStop);
+                startActivity(i);
+                lastQuery = routeStop.route;
+            } else if (!TextUtils.isEmpty(routeNo) && !TextUtils.isEmpty(company)) {
+                Intent i = getIntent(company);
+                i.putExtra(C.EXTRA.ROUTE_NO, routeNo);
+                startActivity(i);
+                lastQuery = routeNo;
+            } else if (!TextUtils.isEmpty(data)) {
                 String regex = "/route/(.*)/?";
                 Pattern regexPattern = Pattern.compile(regex);
                 Matcher match = regexPattern.matcher(data);
                 if (match.find()) {
-                    mLastQuery = match.group(1);
+                    lastQuery = match.group(1);
                 } else {
-                    mLastQuery = data.substring(data.lastIndexOf("/") + 1);
+                    lastQuery = data.substring(data.lastIndexOf("/") + 1);
                 }
-                Intent routeIntent = new Intent(getApplicationContext(), LwbActivity.class);
-                if (PreferenceUtil.isUsingNewKmbApi(getApplicationContext())) {
-                    routeIntent = new Intent(getApplicationContext(), KmbActivity.class);
-                }
-                routeIntent.putExtra(C.EXTRA.ROUTE_NO, mLastQuery);
-                startActivity(routeIntent);
+                Intent i = getIntent("");
+                i.putExtra(C.EXTRA.ROUTE_NO, lastQuery);
+                startActivity(i);
             }
-            appIndexStart(mLastQuery);
+            appIndexStart(lastQuery);
             finish();
         }
     }
@@ -146,7 +159,7 @@ public class SearchActivity extends AppCompatActivity {
         Answers.getInstance().logContentView(new ContentViewEvent()
                 .putContentName("search")
                 .putContentType("route")
-                .putCustomAttribute("route Nno", routeNo));
+                .putCustomAttribute("route no", routeNo));
     }
 
     private void appIndexStop(@NonNull String routeNo) {

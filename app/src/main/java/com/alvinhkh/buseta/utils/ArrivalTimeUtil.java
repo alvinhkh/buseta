@@ -10,6 +10,7 @@ import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.kmb.model.KmbEta;
 import com.alvinhkh.buseta.kmb.util.KmbEtaUtil;
 import com.alvinhkh.buseta.model.ArrivalTime;
+import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.model.BusRouteStop;
 import com.alvinhkh.buseta.provider.EtaContract.EtaEntry;
 import com.alvinhkh.buseta.provider.RxCursorIterable;
@@ -30,6 +31,16 @@ public class ArrivalTimeUtil {
     public static SimpleDateFormat displayDateFormat = new SimpleDateFormat("HH:mm:ss dd/MM", Locale.ENGLISH);
 
     public static ArrivalTime estimate(@NonNull Context context, @NonNull ArrivalTime object) {
+        if (!TextUtils.isEmpty(object.companyCode)) {
+            switch (object.companyCode) {
+                case BusRoute.COMPANY_KMB:
+                    return estimateKmb(context, object);
+            }
+        }
+        return object;
+    }
+
+    private static ArrivalTime estimateKmb(@NonNull Context context, @NonNull ArrivalTime object) {
         SimpleDateFormat etaDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.ENGLISH);
         SimpleDateFormat etaExpireDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
         Date generatedDate = object.generatedAt == null ? new Date() : new Date(object.generatedAt);
@@ -74,7 +85,7 @@ public class ArrivalTimeUtil {
                     object.expired |= TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - etaExpireDate.getTime()) >= 0;    // expired
                 }
             } catch (ParseException|ArrayIndexOutOfBoundsException ep) {
-                Timber.e(ep);
+                Timber.d(ep);
             }
             if (!TextUtils.isEmpty(estimateMinutes)) {
                 if (estimateMinutes.equals("0")) {
@@ -141,6 +152,7 @@ public class ArrivalTimeUtil {
 
     public static ArrivalTime fromCursor(@NonNull Cursor cursor) {
         ArrivalTime object = new ArrivalTime();
+        object.companyCode = cursor.getString(cursor.getColumnIndex(EtaEntry.COLUMN_ROUTE_COMPANY));
         object.expire = cursor.getString(cursor.getColumnIndex(EtaEntry.COLUMN_ETA_EXPIRE));
         object.id = cursor.getString(cursor.getColumnIndex(EtaEntry.COLUMN_ETA_ID));
         String[] misc = cursor.getString(cursor.getColumnIndex(EtaEntry.COLUMN_ETA_MISC)).split(",");

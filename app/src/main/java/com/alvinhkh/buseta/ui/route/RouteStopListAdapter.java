@@ -216,6 +216,9 @@ public class RouteStopListAdapter
                 // Follow
                 FollowStopUtil.query(context, BusRouteStopUtil.toFollowStop(stop)).subscribe(cursor -> {
                     this.followImage.setVisibility(cursor.getCount() > 0 ? View.VISIBLE : View.GONE);
+                    if (cursor != null) {
+                        cursor.close();
+                    }
                 });
                 // ETA
                 ArrivalTimeUtil.query(context, stop).subscribe(cursor -> {

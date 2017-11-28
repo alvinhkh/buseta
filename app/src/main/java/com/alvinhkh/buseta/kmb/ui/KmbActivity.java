@@ -97,8 +97,10 @@ public class KmbActivity extends BaseActivity
         super.onCreate(savedInstanceState);
 
         Bundle bundle = getIntent().getExtras();
-        routeNo = bundle.getString(C.EXTRA.ROUTE_NO);
-        stopFromIntent = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
+        if (bundle != null) {
+            routeNo = bundle.getString(C.EXTRA.ROUTE_NO);
+            stopFromIntent = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
+        }
         if (TextUtils.isEmpty(routeNo)) {
             if (stopFromIntent != null) {
                 routeNo = stopFromIntent.route;

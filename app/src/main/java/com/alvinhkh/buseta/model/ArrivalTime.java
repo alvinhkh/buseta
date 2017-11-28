@@ -5,6 +5,8 @@ public class ArrivalTime {
 
     public Integer capacity;
 
+    public String companyCode;
+
     public String estimate = "";
 
     public String expire;
@@ -28,7 +30,7 @@ public class ArrivalTime {
     public ArrivalTime() { }
 
     public String toString() {
-        return "ArrivalTime{capacity=" + this.capacity + ", estimate=" + this.estimate
+        return "ArrivalTime{capacity=" + this.capacity + ", companyCode=" + this.companyCode + ", estimate=" + this.estimate
                 + ", expire=" + this.expire + ", expired=" + this.expired + ", id=" + this.id
                 + ", isSchedule=" + this.isSchedule + ", hasWheelchair=" + this.hasWheelchair
                 + ", hasWifi=" + this.hasWifi + ", text=" + this.text
