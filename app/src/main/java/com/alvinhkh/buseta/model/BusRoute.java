@@ -1,10 +1,14 @@
 package com.alvinhkh.buseta.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
-public class BusRoute {
+public class BusRoute implements Parcelable {
 
     public static final String COMPANY_KMB = "KMB";
+
+    public static final String COMPANY_NLB = "NLB";
 
     private String companyCode;
 
@@ -107,6 +111,10 @@ public class BusRoute {
         this.key = key;
     }
 
+    public boolean equals(BusRouteStop object) {
+        return this.toString().equals(object.toString());
+    }
+
     public String toString() {
         return "BusRoute{companyCode=" + this.companyCode
                 + ", description=" + this.description
@@ -115,4 +123,48 @@ public class BusRoute {
                 + ", sequence=" + this.sequence + ", serviceType=" + this.serviceType
                 + ", key=" + this.key + ", childKey=" + this.childKey + "}";
     }
+
+    /**
+     * Constructs a BusRoute from a Parcel
+     * @param p Source Parcel
+     */
+    public BusRoute(Parcel p) {
+        this.companyCode = p.readString();
+        this.locationEndName = p.readString();
+        this.locationStartName = p.readString();
+        this.name = p.readString();
+        this.sequence = p.readString();
+        this.serviceType = p.readString();
+        this.description = p.readString();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        //The parcelable object has to be the first one
+        dest.writeString(this.companyCode);
+        dest.writeString(this.locationEndName);
+        dest.writeString(this.locationStartName);
+        dest.writeString(this.name);
+        dest.writeString(this.sequence);
+        dest.writeString(this.serviceType);
+        dest.writeString(this.description);
+    }
+
+    /*
+     * Method to recreate class object from a Parcel
+     */
+    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
+        public BusRoute createFromParcel(Parcel in) {
+            return new BusRoute(in);
+        }
+
+        public BusRoute[] newArray(int size) {
+            return new BusRoute[size];
+        }
+    };
 }

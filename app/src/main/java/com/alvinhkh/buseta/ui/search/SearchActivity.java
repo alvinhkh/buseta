@@ -11,12 +11,13 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.widget.Toast;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.kmb.ui.KmbActivity;
 import com.alvinhkh.buseta.lwb.ui.LwbActivity;
+import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.nlb.ui.NlbActivity;
 import com.alvinhkh.buseta.service.LocationService;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
 import com.crashlytics.android.answers.Answers;
@@ -61,21 +62,26 @@ public class SearchActivity extends AppCompatActivity {
     }
 
     private Intent getIntent(@NonNull String companyCode) {
-        Intent intent = new Intent(getApplicationContext(), SearchActivity.class);
-        if (!TextUtils.isEmpty(companyCode) && companyCode.equals("NLB")) {
-            Toast.makeText(this, "NLB", Toast.LENGTH_SHORT).show();
-        } else {
-            intent = new Intent(getApplicationContext(), LwbActivity.class);
-            if (PreferenceUtil.isUsingNewKmbApi(getApplicationContext())) {
-                intent = new Intent(getApplicationContext(), KmbActivity.class);
-            }
+        Intent intent;
+        if (TextUtils.isEmpty(companyCode)) {
+            companyCode = BusRoute.COMPANY_KMB;
+        }
+        switch (companyCode) {
+            case BusRoute.COMPANY_NLB:
+                intent = new Intent(getApplicationContext(), NlbActivity.class);
+                break;
+            case BusRoute.COMPANY_KMB:
+            default:
+                intent = new Intent(getApplicationContext(), LwbActivity.class);
+                if (PreferenceUtil.isUsingNewKmbApi(getApplicationContext())) {
+                    intent = new Intent(getApplicationContext(), KmbActivity.class);
+                }
+                break;
         }
         return intent;
     }
 
     private void handleIntent(@NonNull Intent intent) {
-        if (intent == null) return;
-
         String action = intent.getAction();
         String data = intent.getDataString();
 
@@ -89,9 +95,9 @@ public class SearchActivity extends AppCompatActivity {
         }
 
         if (Intent.ACTION_SEARCH.equals(action)) {
-            // TODO: handle company is empty
+            // TODO: handle company is empty, full page search
             String query = intent.getStringExtra(SearchManager.QUERY);
-            String company = intent.getStringExtra(C.EXTRA.COMPANY);
+            String company = intent.getStringExtra(C.EXTRA.COMPANY_CODE);
             Intent i = getIntent(company);
             i.putExtra(C.EXTRA.ROUTE_NO, query);
             startActivity(i);
@@ -104,13 +110,13 @@ public class SearchActivity extends AppCompatActivity {
             }
             BusRouteStop routeStop = intent.getParcelableExtra(C.EXTRA.STOP_OBJECT);
             String stopText = intent.getStringExtra(C.EXTRA.STOP_OBJECT_STRING);
-            String company = intent.getStringExtra(C.EXTRA.COMPANY);
+            String company = intent.getStringExtra(C.EXTRA.COMPANY_CODE);
             String routeNo = intent.getStringExtra(C.EXTRA.ROUTE_NO);
             if (routeStop == null && !TextUtils.isEmpty(stopText)) {
                 routeStop = new Gson().fromJson(stopText, BusRouteStop.class);
             }
             if (routeStop != null) {
-                Intent i = getIntent(routeStop.company);
+                Intent i = getIntent(routeStop.companyCode);
                 i.putExtra(C.EXTRA.ROUTE_NO, routeStop.route);
                 i.putExtra(C.EXTRA.STOP_OBJECT, routeStop);
                 startActivity(i);

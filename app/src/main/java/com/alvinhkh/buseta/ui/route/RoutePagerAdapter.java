@@ -15,6 +15,7 @@ import com.alvinhkh.buseta.kmb.ui.KmbStopListFragment;
 import com.alvinhkh.buseta.lwb.ui.LwbStopListFragment;
 import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.nlb.ui.NlbStopListFragment;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
 
 import java.util.ArrayList;
@@ -86,10 +87,15 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
             throw new IllegalArgumentException();
         }
         if (position >= MIN_PAGE) {
-            if (PreferenceUtil.isUsingNewKmbApi(context)) {
-                return KmbStopListFragment.newInstance(routes.get(position - MIN_PAGE), busRouteStop);
+            BusRoute busRoute = routes.get(position - MIN_PAGE);
+            if (busRoute.getCompanyCode().equals(BusRoute.COMPANY_NLB)) {
+                return NlbStopListFragment.newInstance(busRoute, busRouteStop);
             } else {
-                return LwbStopListFragment.newInstance(routes.get(position - MIN_PAGE), busRouteStop);
+                if (PreferenceUtil.isUsingNewKmbApi(context)) {
+                    return KmbStopListFragment.newInstance(busRoute, busRouteStop);
+                } else {
+                    return LwbStopListFragment.newInstance(busRoute, busRouteStop);
+                }
             }
         }
         return null;

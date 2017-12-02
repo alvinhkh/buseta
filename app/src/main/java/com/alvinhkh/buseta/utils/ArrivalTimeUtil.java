@@ -7,23 +7,19 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.kmb.model.KmbEta;
 import com.alvinhkh.buseta.kmb.util.KmbEtaUtil;
 import com.alvinhkh.buseta.model.ArrivalTime;
 import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.nlb.util.NlbEtaUtil;
 import com.alvinhkh.buseta.provider.EtaContract.EtaEntry;
 import com.alvinhkh.buseta.provider.RxCursorIterable;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
-import timber.log.Timber;
 
 
 public class ArrivalTimeUtil {
@@ -34,65 +30,9 @@ public class ArrivalTimeUtil {
         if (!TextUtils.isEmpty(object.companyCode)) {
             switch (object.companyCode) {
                 case BusRoute.COMPANY_KMB:
-                    return estimateKmb(context, object);
-            }
-        }
-        return object;
-    }
-
-    private static ArrivalTime estimateKmb(@NonNull Context context, @NonNull ArrivalTime object) {
-        SimpleDateFormat etaDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.ENGLISH);
-        SimpleDateFormat etaExpireDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
-        Date generatedDate = object.generatedAt == null ? new Date() : new Date(object.generatedAt);
-        // given timeText
-        if (!TextUtils.isEmpty(object.text) && object.text.matches(".*\\d.*")) {
-            // if text has digit
-            String estimateMinutes = "";
-            long differences = new Date().getTime() - generatedDate.getTime(); // get device timeText and compare to server timeText
-            try {
-                Date etaCompareDate = generatedDate;
-                // first assume eta timeText and server timeText is on the same date
-                Date etaDate = etaDateFormat.parse(
-                        new SimpleDateFormat("yyyy", Locale.ENGLISH).format(etaCompareDate) + "/" +
-                                new SimpleDateFormat("MM", Locale.ENGLISH).format(etaCompareDate) + "/" +
-                                new SimpleDateFormat("dd", Locale.ENGLISH).format(etaCompareDate) + " " + object.text);
-                // if not minutes will get negative integer
-                int minutes = (int) ((etaDate.getTime() / 60000) - ((generatedDate.getTime() + differences) / 60000));
-                if (minutes < -12 * 60) {
-                    // plus one day to get correct eta date
-                    etaCompareDate = new Date(generatedDate.getTime() + 24 * 60 * 60 * 1000);
-                    etaDate = etaDateFormat.parse(
-                            new SimpleDateFormat("yyyy", Locale.ENGLISH).format(etaCompareDate) + "/" +
-                                    new SimpleDateFormat("MM", Locale.ENGLISH).format(etaCompareDate) + "/" +
-                                    new SimpleDateFormat("dd", Locale.ENGLISH).format(etaCompareDate) + " " + object.text);
-                    minutes = (int) ((etaDate.getTime() / 60000) - ((generatedDate.getTime() + differences) / 60000));
-                }
-                if (minutes >= 0 && minutes < 24 * 60) {
-                    // minutes should be 0 to within a day
-                    estimateMinutes = String.valueOf(minutes);
-                }
-                if (minutes > 60) {
-                    // calculation error
-                    // they only provide eta within 60 minutes
-                    estimateMinutes = "";
-                }
-                // grey out
-                object.expired = minutes <= -3    // time past
-                        || TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - generatedDate.getTime()) >= 5;    // maybe outdated
-                if (!TextUtils.isEmpty(object.expire)) {
-                    Date etaExpireDate = etaExpireDateFormat.parse(object.expire);
-                    if (etaExpireDate != null)
-                    object.expired |= TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - etaExpireDate.getTime()) >= 0;    // expired
-                }
-            } catch (ParseException|ArrayIndexOutOfBoundsException ep) {
-                Timber.d(ep);
-            }
-            if (!TextUtils.isEmpty(estimateMinutes)) {
-                if (estimateMinutes.equals("0")) {
-                    object.estimate = context.getString(R.string.now);
-                } else {
-                    object.estimate = context.getString(R.string.minutes, estimateMinutes);
-                }
+                    return KmbEtaUtil.estimate(context, object);
+                case BusRoute.COMPANY_NLB:
+                    return NlbEtaUtil.estimate(context, object);
             }
         }
         return object;
@@ -107,7 +47,7 @@ public class ArrivalTimeUtil {
                 + EtaEntry.COLUMN_ETA_EXPIRE + ">?";
         Cursor query = context.getContentResolver().query(EtaEntry.CONTENT_URI,  null,
                 selection, new String[] {
-                        stop.company,
+                        stop.companyCode,
                         stop.route,
                         stop.direction,
                         stop.sequence,
@@ -132,7 +72,7 @@ public class ArrivalTimeUtil {
             eta.text = "";
         }
         ContentValues values = new ContentValues();
-        values.put(EtaEntry.COLUMN_ROUTE_COMPANY, stop.company);
+        values.put(EtaEntry.COLUMN_ROUTE_COMPANY, stop.companyCode);
         values.put(EtaEntry.COLUMN_ROUTE_NO, stop.route);
         values.put(EtaEntry.COLUMN_ROUTE_SEQ, stop.direction);
         values.put(EtaEntry.COLUMN_STOP_SEQ, stop.sequence);

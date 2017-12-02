@@ -179,7 +179,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
     public void onComplete(@NonNull Task<Void> task) {
         if (task.isSuccessful()) {
             if (mPendingGeofenceTask == PendingGeofenceTask.ADD) {
-                updateGeofencesAdded(String.format(Locale.ENGLISH, "%s-%s-%s-%s", busRouteStop.company,
+                updateGeofencesAdded(String.format(Locale.ENGLISH, "%s-%s-%s-%s", busRouteStop.companyCode,
                         busRouteStop.route, busRouteStop.direction, busRouteStop.code));
                 showSnackbar(getString(R.string.arrival_alert_added));
             } else if (mPendingGeofenceTask == PendingGeofenceTask.REMOVE) {
@@ -187,7 +187,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                 showSnackbar(getString(R.string.arrival_alert_removed));
             }
         } else {
-            Timber.w("GeofenceError", task.getException());
+            Timber.w(task.getException());
         }
         if (vh != null && vh.arrivalAlertButton != null) {
             vh.arrivalAlertButton.setCompoundDrawablesWithIntrinsicBounds(null,
@@ -255,7 +255,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
     private boolean isThisGeofencesAdded() {
         return PreferenceManager.getDefaultSharedPreferences(getContext())
                 .getString(C.PREF.GEOFENCES_KEY, "")
-                .equals(String.format(Locale.ENGLISH, "%s-%s-%s-%s", busRouteStop.company,
+                .equals(String.format(Locale.ENGLISH, "%s-%s-%s-%s", busRouteStop.companyCode,
                         busRouteStop.route, busRouteStop.direction, busRouteStop.code));
     }
 
@@ -683,10 +683,15 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
 
             vh.nameText.setText(TextUtils.isEmpty(busRouteStop.name) ? "" : busRouteStop.name.trim());
             vh.routeNoText.setText(TextUtils.isEmpty(busRouteStop.route) ? "" : busRouteStop.route.trim());
-            vh.routeLocationText.setText(getString(R.string.route_path,
-                    busRouteStop.origin, busRouteStop.destination));
+            if (!TextUtils.isEmpty(busRouteStop.origin) && !TextUtils.isEmpty(busRouteStop.destination)) {
+                vh.routeLocationText.setText(getString(R.string.route_path,
+                        busRouteStop.origin, busRouteStop.destination));
+            }
             vh.stopLocationText.setText(TextUtils.isEmpty(busRouteStop.location) ? "" : busRouteStop.location.trim());
             vh.fareText.setText(String.format(Locale.ENGLISH, "$%1$,.1f", Float.valueOf(busRouteStop.fare)));
+            if (!TextUtils.isEmpty(busRouteStop.fareHoliday)) {
+                vh.fareText.setText(String.format(Locale.ENGLISH, "$%1$,.1f/$%2$,.1f", Float.valueOf(busRouteStop.fare), Float.valueOf(busRouteStop.fareHoliday)));
+            }
             updateDistanceDisplay();
             // ETA
             vh.etaView.setVisibility(View.INVISIBLE);
@@ -835,14 +840,15 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                             }
 
                             if (arrivalTime.generatedAt != null && arrivalTime.generatedAt > 0) {
-                                // Request server time
                                 Date date = new Date(arrivalTime.generatedAt);
                                 vh.etaServerTimeText.setText(ArrivalTimeUtil.displayDateFormat.format(date));
                             }
                             if (arrivalTime.updatedAt != null && arrivalTime.updatedAt > 0) {
-                                // last updated time
                                 Date date = new Date(arrivalTime.updatedAt);
                                 vh.etaLastUpdateText.setText(ArrivalTimeUtil.displayDateFormat.format(date));
+                            }
+                            if (vh.etaServerTimeText.getText().equals(vh.etaLastUpdateText.getText())) {
+                                vh.etaServerTimeText.setText(null);
                             }
 
                             vh.etaView.setVisibility(View.VISIBLE);

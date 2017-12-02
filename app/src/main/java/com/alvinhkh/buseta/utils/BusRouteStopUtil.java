@@ -9,14 +9,14 @@ import com.alvinhkh.buseta.lwb.model.LwbRouteStop;
 import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.model.BusRouteStop;
 import com.alvinhkh.buseta.model.FollowStop;
+import com.alvinhkh.buseta.nlb.model.NlbRouteStop;
+import com.alvinhkh.buseta.nlb.model.NlbStop;
 
 import org.osgeo.proj4j.CRSFactory;
 import org.osgeo.proj4j.CoordinateReferenceSystem;
 import org.osgeo.proj4j.CoordinateTransform;
 import org.osgeo.proj4j.CoordinateTransformFactory;
 import org.osgeo.proj4j.ProjCoordinate;
-
-import java.io.UnsupportedEncodingException;
 
 import timber.log.Timber;
 
@@ -25,8 +25,9 @@ public class BusRouteStopUtil {
     public static BusRouteStop fromFollowStop(FollowStop followStop) {
         if (followStop == null) return null;
         BusRouteStop object = new BusRouteStop();
-        object.company = followStop.company;
+        object.companyCode = followStop.companyCode;
         object.route = followStop.route;
+        object.routeId = followStop.routeId;
         object.direction = followStop.direction;
         object.code = followStop.code;
         object.sequence = followStop.sequence;
@@ -41,8 +42,9 @@ public class BusRouteStopUtil {
 
     public static FollowStop toFollowStop(@NonNull BusRouteStop busRouteStop) {
         FollowStop object = new FollowStop();
-        object.company = busRouteStop.company;
+        object.companyCode = busRouteStop.companyCode;
         object.route = busRouteStop.route;
+        object.routeId = busRouteStop.routeId;
         object.direction = busRouteStop.direction;
         object.code = busRouteStop.code;
         object.sequence = busRouteStop.sequence;
@@ -55,7 +57,7 @@ public class BusRouteStopUtil {
         return object;
     }
 
-    private static Pair<Double, Double> fromHK80toWGS84(Pair<Double, Double> pair) {
+    private static Pair<Double, Double> fromHK80toWGS84(@NonNull Pair<Double, Double> pair) {
         try {
             // reference: blog.tiger-workshop.com/hk1980-grid-to-wgs84/
             CoordinateTransformFactory ctFactory = new CoordinateTransformFactory();
@@ -80,8 +82,9 @@ public class BusRouteStopUtil {
                                                 Integer position,
                                                 Boolean isLastStop) {
         BusRouteStop object = new BusRouteStop();
-        object.company = BusRoute.COMPANY_KMB;
+        object.companyCode = BusRoute.COMPANY_KMB;
         object.route = kmbRouteStop.route;
+        object.routeId = kmbRouteStop.route;
         object.direction = kmbRouteStop.bound;
         object.code = kmbRouteStop.bsiCode;
         object.sequence = Integer.toString(position);
@@ -96,7 +99,7 @@ public class BusRouteStopUtil {
         object.destination = busRoute.getLocationEndName();
         object.origin = busRoute.getLocationStartName();
 
-        if (object.company != null && object.company.equals(BusRoute.COMPANY_KMB)) {
+        if (object.companyCode != null && object.companyCode.equals(BusRoute.COMPANY_KMB)) {
             if (!TextUtils.isEmpty(object.code)) {
                 object.imageUrl = "http://www.kmb.hk/chi/img.php?file=" + object.code;
             }
@@ -111,8 +114,9 @@ public class BusRouteStopUtil {
                                        Integer position,
                                        Boolean isLastStop) {
         BusRouteStop object = new BusRouteStop();
-        object.company = BusRoute.COMPANY_KMB;
+        object.companyCode = BusRoute.COMPANY_KMB;
         object.route = busRoute.getName();
+        object.routeId = busRoute.getName();
         object.direction = busRoute.getSequence();
         object.code = lwbRouteStop.subarea;
         object.sequence = Integer.toString(position);
@@ -124,13 +128,32 @@ public class BusRouteStopUtil {
         object.destination = busRoute.getLocationEndName();
         object.origin = busRoute.getLocationStartName();
 
-        if (object.company != null && object.company.equals(BusRoute.COMPANY_KMB)) {
+        if (object.companyCode != null && object.companyCode.equals(BusRoute.COMPANY_KMB)) {
             if (!TextUtils.isEmpty(object.code)) {
                 object.imageUrl = "http://www.kmb.hk/chi/img.php?file=" + object.code;
             }
             object.etaGet = String.format("/?action=geteta&lang=tc&route=%s&bound=%s&stop=%s&stop_seq=%s",
                     object.route, object.direction, object.code, isLastStop ? 999 : object.sequence);
         }
+        return object;
+    }
+
+    public static BusRouteStop fromNlb(@NonNull NlbRouteStop nlbRouteStop,
+                                       @NonNull NlbStop nlbStop,
+                                       @NonNull BusRoute busRoute) {
+        BusRouteStop object = new BusRouteStop();
+        object.companyCode = BusRoute.COMPANY_NLB;
+        object.route = busRoute.getName();
+        object.routeId = nlbRouteStop.route_id;
+        object.direction = busRoute.getSequence();
+        object.code = nlbRouteStop.stop_id;
+        object.name = nlbStop.stop_name_c;
+        object.fare = nlbRouteStop.fare;
+        object.fareHoliday = nlbRouteStop.fare_holiday;
+        object.latitude = nlbStop.latitude;
+        object.longitude = nlbStop.longitude;
+        object.destination = busRoute.getLocationEndName();
+        object.origin = busRoute.getLocationStartName();
         return object;
     }
 }

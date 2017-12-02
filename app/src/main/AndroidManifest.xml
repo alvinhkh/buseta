@@ -101,6 +101,10 @@
             android:name=".kmb.ui.KmbActivity"
             android:label="@string/route"
             android:hardwareAccelerated="true" />
+        <activity
+            android:name=".nlb.ui.NlbActivity"
+            android:label="@string/route"
+            android:hardwareAccelerated="true" />
 
         <!-- Google Play Services AdActivity -->
         <activity
@@ -150,15 +154,11 @@
         <!-- Content Provider -->
         <provider
             android:name=".provider.FollowProvider"
-            android:authorities="com.alvinhkh.buseta.FollowProvider"
+            android:authorities="${applicationId}.FollowProvider"
             android:exported="true" />
         <provider
             android:name=".provider.SuggestionProvider"
-            android:authorities="com.alvinhkh.buseta.SuggestionProvider"
-            android:exported="true" />
-        <provider
-            android:name=".provider.RouteProvider"
-            android:authorities="com.alvinhkh.buseta.RouteProvider"
+            android:authorities="${applicationId}.SuggestionProvider"
             android:exported="true" />
         <provider
             android:name=".provider.EtaProvider"

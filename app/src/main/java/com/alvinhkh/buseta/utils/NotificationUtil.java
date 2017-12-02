@@ -199,8 +199,8 @@ public class NotificationUtil {
             notificationId += object.name.codePointAt(0);
             notificationId -= object.name.codePointAt(object.name.length()-1);
         }
-        if (!TextUtils.isEmpty(object.company)) {
-            notificationId += object.company.codePointAt(0);
+        if (!TextUtils.isEmpty(object.companyCode)) {
+            notificationId += object.companyCode.codePointAt(0);
         }
         if (!TextUtils.isEmpty(object.destination)) {
             notificationId += object.destination.codePointAt(0);

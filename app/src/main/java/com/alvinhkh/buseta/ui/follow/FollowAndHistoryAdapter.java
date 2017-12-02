@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta.ui.follow;
 
-import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -123,14 +122,7 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
     SearchHistory historyItem(int position) {
         if (historyCursor == null || historyCursor.isClosed()) return null;
         historyCursor.moveToPosition(position);
-        SearchHistory object = new SearchHistory();
-        object.route = historyCursor.getString(historyCursor.getColumnIndex(SuggestionTable.COLUMN_TEXT));
-        object.recordType = historyCursor.getString(historyCursor.getColumnIndex(SuggestionTable.COLUMN_TYPE));
-        object.company = historyCursor.getString(historyCursor.getColumnIndex(SuggestionTable.COLUMN_COMPANY));
-        if (TextUtils.isEmpty(object.company)) {
-            object.company = "KMB";
-        }
-        return object;
+        return SearchHistoryUtil.fromCursor(historyCursor);
     }
 
     @Override
@@ -281,7 +273,7 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
                 if (context == null) return;
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setClass(context, SearchActivity.class);
-                intent.putExtra(C.EXTRA.COMPANY, info.company);
+                intent.putExtra(C.EXTRA.COMPANY_CODE, info.companyCode);
                 intent.putExtra(C.EXTRA.ROUTE_NO, info.route);
                 context.startActivity(intent);
             });

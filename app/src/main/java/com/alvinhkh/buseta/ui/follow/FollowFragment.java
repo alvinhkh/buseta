@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta.ui.follow;
 
-import android.app.SearchManager;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ShortcutInfo;
@@ -239,7 +238,7 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setClass(getContext(), SearchActivity.class);
                     intent.putExtra(C.EXTRA.STOP_OBJECT_STRING, new Gson().toJson(busRouteStop));
-                    shortcuts.add(new ShortcutInfo.Builder(getContext(), "buseta-" + busRouteStop.company + busRouteStop.route + busRouteStop.direction + busRouteStop.code)
+                    shortcuts.add(new ShortcutInfo.Builder(getContext(), "buseta-" + busRouteStop.companyCode + busRouteStop.route + busRouteStop.direction + busRouteStop.code)
                             .setShortLabel(busRouteStop.route + " " + busRouteStop.name)
                             .setLongLabel(busRouteStop.route + " " + busRouteStop.name + " " + getString(R.string.destination, busRouteStop.destination))
                             .setIcon(Icon.createWithResource(getContext(), R.drawable.ic_shortcut_directions_bus))
@@ -250,8 +249,8 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setClass(getContext(), SearchActivity.class);
                     intent.putExtra(C.EXTRA.ROUTE_NO, searchHistory.route);
-                    intent.putExtra(C.EXTRA.COMPANY, searchHistory.company);
-                    shortcuts.add(new ShortcutInfo.Builder(getContext(), "buseta-q-" + searchHistory.company + searchHistory.route)
+                    intent.putExtra(C.EXTRA.COMPANY_CODE, searchHistory.companyCode);
+                    shortcuts.add(new ShortcutInfo.Builder(getContext(), "buseta-q-" + searchHistory.companyCode + searchHistory.route)
                             .setShortLabel(searchHistory.route)
                             .setLongLabel(searchHistory.route)
                             .setIcon(Icon.createWithResource(getContext(), R.drawable.ic_shortcut_search))

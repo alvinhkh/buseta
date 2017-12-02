@@ -7,7 +7,7 @@ public class BusRouteStop implements Parcelable {
 
     public String code;
 
-    public String company;
+    public String companyCode;
 
     public String destination;
 
@@ -45,7 +45,7 @@ public class BusRouteStop implements Parcelable {
     }
 
     public String toString() {
-        return "BusRouteStop{code=" + this.code + ", company=" + this.company
+        return "BusRouteStop{code=" + this.code + ", companyCode=" + this.companyCode
                 + ", destination=" + this.destination + ", direction=" + this.direction
                 + ", etaGet=" + this.etaGet + ", fare=" + this.fare  + ", fareHoliday=" + this.fareHoliday
                 + ", imageUrl=" + this.imageUrl + ", latitude=" + this.latitude +
@@ -60,7 +60,7 @@ public class BusRouteStop implements Parcelable {
      */
     public BusRouteStop(Parcel p) {
         this.code = p.readString();
-        this.company = p.readString();
+        this.companyCode = p.readString();
         this.destination = p.readString();
         this.direction = p.readString();
         this.etaGet = p.readString();
@@ -86,7 +86,7 @@ public class BusRouteStop implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         //The parcelable object has to be the first one
         dest.writeString(this.code);
-        dest.writeString(this.company);
+        dest.writeString(this.companyCode);
         dest.writeString(this.destination);
         dest.writeString(this.direction);
         dest.writeString(this.etaGet);

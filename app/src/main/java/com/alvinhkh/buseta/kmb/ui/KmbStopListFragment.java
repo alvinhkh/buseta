@@ -82,18 +82,6 @@ public class KmbStopListFragment extends Fragment implements
         SharedPreferences.OnSharedPreferenceChangeListener,
         OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
-    private static final String ARG_ROUTE_NUMBER = "route_number";
-
-    private static final String ARG_ROUTE_BOUND = "route_bound";
-
-    private static final String ARG_ROUTE_SERVICE_TYPE = "route_service_type";
-
-    private static final String ARG_ROUTE_LOCATION_START = "route_location_start";
-
-    private static final String ARG_ROUTE_LOCATION_END = "route_location_end";
-
-    private static final String ARG_ROUTE_DESCRIPTION = "route_description";
-
     private final KmbService kmbService = KmbService.webSearch.create(KmbService.class);
 
     private final CompositeDisposable disposables = new CompositeDisposable();
@@ -134,12 +122,7 @@ public class KmbStopListFragment extends Fragment implements
                                                   @Nullable BusRouteStop busRouteStop) {
         KmbStopListFragment fragment = new KmbStopListFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_ROUTE_NUMBER, busRoute.getName());
-        args.putString(ARG_ROUTE_BOUND, busRoute.getSequence());
-        args.putString(ARG_ROUTE_SERVICE_TYPE, busRoute.getServiceType());
-        args.putString(ARG_ROUTE_LOCATION_START, busRoute.getLocationStartName());
-        args.putString(ARG_ROUTE_LOCATION_END, busRoute.getLocationEndName());
-        args.putString(ARG_ROUTE_DESCRIPTION, busRoute.getDescription());
+        args.putParcelable(C.EXTRA.ROUTE_OBJECT, busRoute);
         args.putParcelable(C.EXTRA.STOP_OBJECT, busRouteStop);
         fragment.setArguments(args);
         return fragment;
@@ -151,14 +134,7 @@ public class KmbStopListFragment extends Fragment implements
         setHasOptionsMenu(true);
 
         if (getArguments() != null) {
-            busRoute = new BusRoute();
-            busRoute.setName(getArguments().getString(ARG_ROUTE_NUMBER));
-            busRoute.setCompanyCode(BusRoute.COMPANY_KMB);
-            busRoute.setSequence(getArguments().getString(ARG_ROUTE_BOUND));
-            busRoute.setServiceType(getArguments().getString(ARG_ROUTE_SERVICE_TYPE));
-            busRoute.setLocationStartName(getArguments().getString(ARG_ROUTE_LOCATION_START));
-            busRoute.setLocationEndName(getArguments().getString(ARG_ROUTE_LOCATION_END));
-            busRoute.setDescription(getArguments().getString(ARG_ROUTE_DESCRIPTION));
+            busRoute = getArguments().getParcelable(C.EXTRA.ROUTE_OBJECT);
         }
 
         PreferenceManager.getDefaultSharedPreferences(getContext())

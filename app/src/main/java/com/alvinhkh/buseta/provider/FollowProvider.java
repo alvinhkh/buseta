@@ -16,7 +16,7 @@ import android.text.TextUtils;
 
 public class FollowProvider extends ContentProvider {
 
-    private RouteOpenHelper mHelper;
+    private FollowOpenHelper mHelper;
 
     private static final String AUTHORITY = "com.alvinhkh.buseta.FollowProvider";
     private static final String BASE_PATH_FOLLOW = "follows";
@@ -34,7 +34,7 @@ public class FollowProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        mHelper = new RouteOpenHelper(getContext());
+        mHelper = new FollowOpenHelper(getContext());
         return false;
     }
 
@@ -180,6 +180,7 @@ public class FollowProvider extends ContentProvider {
     private void checkColumns(String[] projection) {
         String[] available = {
                 FollowTable.COLUMN_ID,
+                FollowTable.COLUMN_COMPANY,
                 FollowTable.COLUMN_DATE,
                 FollowTable.COLUMN_ROUTE,
                 FollowTable.COLUMN_BOUND,
@@ -187,7 +188,8 @@ public class FollowProvider extends ContentProvider {
                 FollowTable.COLUMN_DESTINATION,
                 FollowTable.COLUMN_STOP_SEQ,
                 FollowTable.COLUMN_STOP_CODE,
-                FollowTable.COLUMN_STOP_NAME
+                FollowTable.COLUMN_STOP_NAME,
+                FollowTable.COLUMN_ORDER
         };
         if (projection != null) {
             HashSet<String> requestedColumns = new HashSet<>(Arrays.asList(projection));

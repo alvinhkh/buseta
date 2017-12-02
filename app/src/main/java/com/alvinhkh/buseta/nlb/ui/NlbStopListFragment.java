@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.lwb.ui;
+package com.alvinhkh.buseta.nlb.ui;
 
 import android.Manifest;
 import android.content.Context;
@@ -35,20 +35,22 @@ import android.widget.Toast;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.lwb.LwbService;
-import com.alvinhkh.buseta.lwb.model.LwbRouteStop;
 import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.model.BusRouteStop;
 import com.alvinhkh.buseta.model.FollowStop;
+import com.alvinhkh.buseta.nlb.NlbService;
+import com.alvinhkh.buseta.nlb.model.NlbDatabase;
+import com.alvinhkh.buseta.nlb.model.NlbRoute;
+import com.alvinhkh.buseta.nlb.model.NlbRouteStop;
+import com.alvinhkh.buseta.nlb.model.NlbStop;
 import com.alvinhkh.buseta.service.EtaService;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
-import com.alvinhkh.buseta.ui.route.RouteStopListAdapter;
 import com.alvinhkh.buseta.ui.route.RouteAnnounceActivity;
+import com.alvinhkh.buseta.ui.route.RouteStopListAdapter;
 import com.alvinhkh.buseta.utils.BusRouteStopUtil;
 import com.alvinhkh.buseta.utils.RetryWithDelay;
-import com.alvinhkh.buseta.utils.Utils;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -65,7 +67,10 @@ import com.google.android.gms.maps.model.RoundCap;
 import com.google.maps.android.ui.IconGenerator;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -74,15 +79,13 @@ import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
 
-// TODO: better way to find nearest stop
-// TODO: keep (nearest) stop on top
-public class LwbStopListFragment extends Fragment implements
+public class NlbStopListFragment extends Fragment implements
         ArrayListRecyclerViewAdapter.OnClickItemListener,
         SwipeRefreshLayout.OnRefreshListener,
         SharedPreferences.OnSharedPreferenceChangeListener,
         OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
-    private final LwbService lwbService = LwbService.retrofit.create(LwbService.class);
+    private final NlbService nlbService = NlbService.api.create(NlbService.class);
 
     private final CompositeDisposable disposables = new CompositeDisposable();
 
@@ -100,7 +103,7 @@ public class LwbStopListFragment extends Fragment implements
 
     private GoogleMap map;
 
-    public LwbStopListFragment() {}
+    public NlbStopListFragment() {}
 
     private final Handler refreshHandler = new Handler();
 
@@ -118,9 +121,9 @@ public class LwbStopListFragment extends Fragment implements
      * Returns a new instance of this fragment for the given section
      * number.
      */
-    public static LwbStopListFragment newInstance(@NonNull BusRoute busRoute,
+    public static NlbStopListFragment newInstance(@NonNull BusRoute busRoute,
                                                   @Nullable BusRouteStop busRouteStop) {
-        LwbStopListFragment fragment = new LwbStopListFragment();
+        NlbStopListFragment fragment = new NlbStopListFragment();
         Bundle args = new Bundle();
         args.putParcelable(C.EXTRA.ROUTE_OBJECT, busRoute);
         args.putParcelable(C.EXTRA.STOP_OBJECT, busRouteStop);
@@ -147,7 +150,7 @@ public class LwbStopListFragment extends Fragment implements
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_list, container, false);
         recyclerView = rootView.findViewById(R.id.recycler_view);
@@ -185,7 +188,8 @@ public class LwbStopListFragment extends Fragment implements
             mapFragment.getMapAsync(this);
         }
 
-        if (getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
+        if (getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE
+                && getActivity() != null) {
             AppBarLayout appBar = getActivity().findViewById(R.id.appbar);
             if (appBar != null) {
                 Guideline guideTopInfo = rootView.findViewById(R.id.guideline);
@@ -205,11 +209,11 @@ public class LwbStopListFragment extends Fragment implements
             }
         }
 
-        disposables.add(lwbService.getRouteMap(busRoute.getName(), busRoute.getSequence(), busRoute.getServiceType())
+        disposables.add(nlbService.getDatabase()
                 .retryWhen(new RetryWithDelay(5, 3000))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(routeMapObserver(goToStopPos)));
+                .subscribeWith(databaseObserver(goToStopPos)));
         return rootView;
     }
 
@@ -224,12 +228,14 @@ public class LwbStopListFragment extends Fragment implements
         if (swipeRefreshLayout != null) {
             swipeRefreshLayout.setOnRefreshListener(this);
         }
-        AppBarLayout appBar = getActivity().findViewById(R.id.appbar);
-        if (appBar != null) {
-            Guideline guideTopInfo = getView().findViewById(R.id.guideline);
-            ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) guideTopInfo.getLayoutParams();
-            params.guidePercent = .45f;
-            guideTopInfo.setLayoutParams(params);
+        if (getActivity() != null) {
+            AppBarLayout appBar = getActivity().findViewById(R.id.appbar);
+            if (appBar != null) {
+                Guideline guideTopInfo = getView().findViewById(R.id.guideline);
+                ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) guideTopInfo.getLayoutParams();
+                params.guidePercent = .45f;
+                guideTopInfo.setLayoutParams(params);
+            }
         }
         refreshHandler.post(refreshRunnable);
     }
@@ -237,8 +243,10 @@ public class LwbStopListFragment extends Fragment implements
     @Override
     public void onDestroy() {
         disposables.clear();
-        PreferenceManager.getDefaultSharedPreferences(getContext())
-                .unregisterOnSharedPreferenceChangeListener(this);
+        if (getContext() != null) {
+            PreferenceManager.getDefaultSharedPreferences(getContext())
+                    .unregisterOnSharedPreferenceChangeListener(this);
+        }
         super.onDestroy();
     }
 
@@ -269,12 +277,6 @@ public class LwbStopListFragment extends Fragment implements
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals("load_wheelchair_icon") || key.equals("load_wifi_icon")) {
-            // to reflect changes when toggle display icon
-            if (adapter != null && adapter.getItemCount() > 0) {
-                adapter.notifyDataSetChanged();
-            }
-        }
     }
 
     @Override
@@ -321,7 +323,7 @@ public class LwbStopListFragment extends Fragment implements
     @Override
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
-        if (map == null) return;
+        if (map == null || getContext() == null) return;
         map.setMapStyle(MapStyleOptions.loadRawResourceStyle(getContext(), R.raw.map_style));
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(22.3964, 114.1095), 10));
         GoogleMapOptions options = new GoogleMapOptions();
@@ -367,6 +369,7 @@ public class LwbStopListFragment extends Fragment implements
 
     @Override
     public boolean onMarkerClick(Marker marker) {
+        if (getContext() == null) return false;
         if (marker.getTag() instanceof BusRouteStop) {
             BusRouteStop stop = (BusRouteStop) marker.getTag();
             if (stop != null) {
@@ -474,20 +477,31 @@ public class LwbStopListFragment extends Fragment implements
         };
     }
 
-    DisposableObserver<List<LwbRouteStop>> routeMapObserver(Integer scrollToPosition) {
-        return new DisposableObserver<List<LwbRouteStop>>() {
+    DisposableObserver<NlbDatabase> databaseObserver(Integer scrollToPosition) {
+        return new DisposableObserver<NlbDatabase>() {
             @Override
-            public void onNext(List<LwbRouteStop> data) {
+            public void onNext(NlbDatabase database) {
                 if (swipeRefreshLayout != null && !swipeRefreshLayout.isRefreshing()) {
                     swipeRefreshLayout.setRefreshing(true);
                 }
-                if (data != null && adapter != null) {
-                    if (data.size() < 1) {
-                        Timber.d("empty route map.");
+                if (database != null && adapter != null) {
+                    Map<String, NlbRouteStop> map = new HashMap<>();
+                    for (NlbRouteStop routeStop: database.route_stops) {
+                        if (!routeStop.route_id.equals(busRoute.getSequence())) continue;
+                        map.put(routeStop.stop_id, routeStop);
+                    }
+                    Map<Integer, BusRouteStop> map2 = new TreeMap<>();
+                    for (NlbStop stop: database.stops) {
+                        if (!map.containsKey(stop.stop_id)) continue;
+                        map2.put(Integer.parseInt(map.get(stop.stop_id).stop_sequence),
+                                BusRouteStopUtil.fromNlb(map.get(stop.stop_id), stop, busRoute));
                     }
                     List<Item> items = new ArrayList<>();
-                    for (int i = 0; i < data.size(); i++) {
-                        items.add(new Item(Item.TYPE_DATA, BusRouteStopUtil.fromLwb(data.get(i), busRoute, i, i >= data.size() - 1)));
+                    int i = 0;
+                    for (BusRouteStop stop: map2.values()) {
+                        stop.sequence = Integer.toString(i);
+                        items.add(new Item(Item.TYPE_DATA, stop));
+                        i++;
                     }
                     adapter.addAll(items);
                 }
@@ -503,6 +517,7 @@ public class LwbStopListFragment extends Fragment implements
 
             @Override
             public void onComplete() {
+                if (getContext() == null) return;
                 if (recyclerView != null) {
                     RecyclerView.SmoothScroller smoothScroller = new LinearSmoothScroller(getContext()) {
                         @Override protected int getVerticalSnapPreference() {
@@ -516,7 +531,7 @@ public class LwbStopListFragment extends Fragment implements
                     adapter.setLoaded();
                     if (adapter.getItemCount() < 1) {
                         Toast.makeText(getContext(), R.string.message_fail_to_request, Toast.LENGTH_SHORT).show();
-                    } else {
+                    } else if (getActivity() != null) {
                         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
                         if (fab != null) {
                             fab.show();

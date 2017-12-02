@@ -49,7 +49,7 @@ public class SuggestionProvider extends ContentProvider {
     public Cursor query(Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
 
-        // Uisng SQLiteQueryBuilder instead of query() method
+        // Using SQLiteQueryBuilder instead of query() method
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
         // check if the caller has requested a column which does not exists
         checkColumns(projection);
@@ -71,28 +71,24 @@ public class SuggestionProvider extends ContentProvider {
                 // Set the table
                 queryBuilder.setTables("(" +
                         // 3 history
-                        " SELECT * " + " FROM " + SuggestionTable.TABLE_NAME +
+                        " SELECT * FROM " + SuggestionTable.TABLE_NAME +
                         " WHERE " + SuggestionTable.COLUMN_TEXT + " LIKE '" + queryText + "%'" +
                         " AND " + SuggestionTable.COLUMN_TYPE + " = '" + SuggestionTable.TYPE_HISTORY + "'" +
-                        " ORDER BY " + SuggestionTable.COLUMN_DATE + " DESC" +
+                        " ORDER BY " + SuggestionTable.COLUMN_DATE + " DESC, " +
+                        SuggestionTable.COLUMN_TEXT + " ASC, " + SuggestionTable.COLUMN_COMPANY + " ASC" +
                         " LIMIT 0,3" +
                         " ) UNION SELECT * FROM (" +
                         // All others
-                        " SELECT * FROM " + SuggestionTable.TABLE_NAME +
+                        " SELECT a.* FROM " + SuggestionTable.TABLE_NAME + " a " +
                         " WHERE " + SuggestionTable.COLUMN_TEXT + " LIKE '" + queryText + "%'" +
                         " AND " + SuggestionTable.COLUMN_TYPE + " = '" + SuggestionTable.TYPE_DEFAULT + "'" +
-                        " AND " + SuggestionTable.COLUMN_TEXT + " NOT IN (" +
                         // exclude 3 history
-                        " SELECT " + SuggestionTable.COLUMN_TEXT + " FROM " + SuggestionTable.TABLE_NAME +
-                        " WHERE " + SuggestionTable.COLUMN_TEXT + " LIKE '" + queryText + "%'" +
-                        " AND " + SuggestionTable.COLUMN_TYPE + " = '" + SuggestionTable.TYPE_HISTORY + "'" +
-                        " ORDER BY " + SuggestionTable.COLUMN_DATE + " DESC" +
-                        " LIMIT 0,3" +
-                        " )" +
-                        " ORDER BY " + SuggestionTable.COLUMN_TEXT + " ASC" +
+                        // TODO: hide duplicate shown history results
+                        " ORDER BY " + SuggestionTable.COLUMN_TEXT + " ASC," + SuggestionTable.COLUMN_COMPANY + " ASC" +
                         " )");
-                if (null == sortOrder) {
-                    sortOrder = SuggestionTable.COLUMN_DATE + " DESC";
+                if (TextUtils.isEmpty(sortOrder)) {
+                    sortOrder = SuggestionTable.COLUMN_DATE + " DESC, " +
+                            SuggestionTable.COLUMN_TEXT + " ASC," + SuggestionTable.COLUMN_COMPANY + " ASC";
                 }
                 break;
             case SUGGESTION:

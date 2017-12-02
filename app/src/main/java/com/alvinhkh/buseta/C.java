@@ -24,7 +24,7 @@ public class C {
     }
 
     public interface EXTRA {
-        String COMPANY = "com.alvinhkh.buseta.COMPANY";
+        String COMPANY_CODE = "com.alvinhkh.buseta.COMPANY_CODE";
 
         String COMPLETE = "com.alvinhkh.buseta.COMPLETE";
 

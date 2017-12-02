@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.kmb.ui;
+package com.alvinhkh.buseta.nlb.ui;
 
 import android.content.ContentValues;
 import android.content.SharedPreferences;
@@ -8,8 +8,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.preference.PreferenceManager;
@@ -24,28 +22,21 @@ import android.widget.Toast;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.SearchHistory;
-import com.alvinhkh.buseta.kmb.KmbService;
-import com.alvinhkh.buseta.kmb.model.KmbRoute;
-import com.alvinhkh.buseta.kmb.model.KmbRouteBound;
-import com.alvinhkh.buseta.kmb.model.network.KmbRouteBoundRes;
-import com.alvinhkh.buseta.kmb.model.network.KmbSpecialRouteRes;
 import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.model.SearchHistory;
+import com.alvinhkh.buseta.nlb.NlbService;
+import com.alvinhkh.buseta.nlb.model.NlbDatabase;
+import com.alvinhkh.buseta.nlb.model.NlbRoute;
 import com.alvinhkh.buseta.provider.SuggestionProvider;
 import com.alvinhkh.buseta.provider.SuggestionTable;
 import com.alvinhkh.buseta.ui.BaseActivity;
 import com.alvinhkh.buseta.ui.route.RoutePagerAdapter;
 import com.alvinhkh.buseta.utils.AdViewUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
+import com.alvinhkh.buseta.utils.RetryWithDelay;
 import com.alvinhkh.buseta.utils.SearchHistoryUtil;
 import com.google.android.gms.ads.AdView;
-import com.google.firebase.appindexing.Action;
-import com.google.firebase.appindexing.FirebaseUserActions;
-import com.google.firebase.appindexing.builders.Actions;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -53,10 +44,10 @@ import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
-public class KmbActivity extends BaseActivity
+public class NlbActivity extends BaseActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener {
 
-    private final KmbService kmbService = KmbService.webSearch.create(KmbService.class);
+    private final NlbService nlbService = NlbService.api.create(NlbService.class);
 
     private final CompositeDisposable disposables = new CompositeDisposable();
 
@@ -65,12 +56,12 @@ public class KmbActivity extends BaseActivity
     private FrameLayout adViewContainer;
 
     /**
-     * The {@link PagerAdapter} that will provide
+     * The {@link android.support.v4.view.PagerAdapter} that will provide
      * fragments for each of the sections. We use a
      * {@link FragmentPagerAdapter} derivative, which will keep every
      * loaded fragment in memory. If this becomes too memory intensive, it
      * may be best to switch to a
-     * {@link FragmentStatePagerAdapter}.
+     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
     public RoutePagerAdapter pagerAdapter;
 
@@ -126,8 +117,8 @@ public class KmbActivity extends BaseActivity
         fab = findViewById(R.id.fab);
         fab.setOnClickListener(v -> {
             if (currentFragment != null) {
-                if (currentFragment instanceof KmbStopListFragment) {
-                    KmbStopListFragment f = (KmbStopListFragment) currentFragment;
+                if (currentFragment instanceof NlbStopListFragment) {
+                    NlbStopListFragment f = (NlbStopListFragment) currentFragment;
                     f.onRefresh();
                 }
             }
@@ -269,66 +260,47 @@ public class KmbActivity extends BaseActivity
             return;
         }
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(String.format("%s %s", getString(R.string.provider_short_kmb), no));
+            getSupportActionBar().setTitle(String.format("%s %s", getString(R.string.provider_short_nlb), no));
         }
         showLoadingView();
 
-        disposables.add(kmbService.getRouteBound(no)
+        disposables.add(nlbService.getDatabase()
+                .retryWhen(new RetryWithDelay(5, 3000))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(getRouteBoundObserver()));
+                .subscribeWith(databaseObserver()));
     }
 
-    public DisposableObserver<KmbRouteBoundRes> getRouteBoundObserver() {
-        return new DisposableObserver<KmbRouteBoundRes>() {
+    DisposableObserver<NlbDatabase> databaseObserver() {
+        return new DisposableObserver<NlbDatabase>() {
+
+            Integer fragNo = 0;
+
             @Override
-            public void onNext(KmbRouteBoundRes res) {
-                if (res != null && res.data != null) {
+            public void onNext(NlbDatabase database) {
+                if (database != null && database.routes != null) {
+                    pagerAdapter.setRoute("");
                     pagerAdapter.clearSequence();
-                    List<Integer> list = new ArrayList<>();
-                    for (KmbRouteBound bound : res.data) {
-                        if (list.contains(bound.bound)) continue;
-                        list.add(bound.bound);
-                        disposables.add(kmbService.getSpecialRoute(bound.route, String.valueOf(bound.bound))
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribeWith(getSpecialRouteObserver(bound.route)));
-                    }
-                }
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                Timber.d(e);
-                showEmptyView();
-                if (emptyText != null) {
-                    emptyText.setText(e.getMessage());
-                }
-            }
-
-            @Override
-            public void onComplete() {}
-        };
-    }
-
-    public DisposableObserver<KmbSpecialRouteRes> getSpecialRouteObserver(String routeNo) {
-        return new DisposableObserver<KmbSpecialRouteRes>() {
-            @Override
-            public void onNext(KmbSpecialRouteRes res) {
-                if (res != null && res.data != null) {
-                    pagerAdapter.setRoute(routeNo);
-                    for (KmbRoute route : res.data.routes) {
-                        if (route == null || route.route == null || !route.route.equals(routeNo)) continue;
-                        BusRoute busRoute = new BusRoute();
-                        busRoute.setCompanyCode(BusRoute.COMPANY_KMB);
-                        busRoute.setLocationEndName(route.destinationTc);
-                        busRoute.setLocationStartName(route.originTc);
-                        busRoute.setName(route.route);
-                        busRoute.setSequence(route.bound);
-                        busRoute.setServiceType(TextUtils.isEmpty(route.serviceType) ? route.serviceType : route.serviceType.trim());
-                        busRoute.setDescription(TextUtils.isEmpty(route.descTc) ? route.descTc : route.descTc.trim());
-                        Timber.d("%s", busRoute.toString());
-                        pagerAdapter.addSequence(busRoute);
+                    int i = 0;
+                    for (NlbRoute route : database.routes) {
+                        if (route == null) continue;
+                        if (route.route_no.equals(routeNo)) {
+                            pagerAdapter.setRoute(routeNo);
+                            BusRoute busRoute = new BusRoute();
+                            busRoute.setCompanyCode(BusRoute.COMPANY_NLB);
+                            String[] location = route.route_name_c.split(" > ");
+                            if (location.length > 1) {
+                                busRoute.setLocationEndName(location[1]);
+                            }
+                            busRoute.setLocationStartName(location[0]);
+                            busRoute.setName(route.route_no);
+                            busRoute.setSequence(route.route_id);
+                            pagerAdapter.addSequence(busRoute);
+                            if (stopFromIntent != null && stopFromIntent.routeId.equals(route.route_id)) {
+                                fragNo = i;
+                            }
+                            i++;
+                        }
                     }
                 }
             }
@@ -349,12 +321,12 @@ public class KmbActivity extends BaseActivity
             @Override
             public void onComplete() {
                 if (stopFromIntent != null) {
-                    viewPager.setCurrentItem(Integer.parseInt(stopFromIntent.direction) - 1, false);
+                    viewPager.setCurrentItem(fragNo, false);
                 }
                 if (pagerAdapter.getCount() > 0) {
                     getContentResolver().insert(SuggestionProvider.CONTENT_URI,
                             SearchHistoryUtil.toContentValues(
-                                    SearchHistoryUtil.createInstance(routeNo, BusRoute.COMPANY_KMB)));
+                                    SearchHistoryUtil.createInstance(routeNo, BusRoute.COMPANY_NLB)));
                     if (emptyView != null) {
                         emptyView.setVisibility(View.GONE);
                     }
@@ -363,31 +335,5 @@ public class KmbActivity extends BaseActivity
                 }
             }
         };
-    }
-
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    public Action getIndexApiAction() {
-        return Actions.newView("Kmb", "http://[ENTER-YOUR-URL-HERE]");
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        FirebaseUserActions.getInstance().start(getIndexApiAction());
-    }
-
-    @Override
-    public void onStop() {
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        FirebaseUserActions.getInstance().end(getIndexApiAction());
-        super.onStop();
     }
 }

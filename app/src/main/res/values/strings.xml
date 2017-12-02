@@ -125,6 +125,11 @@
     <string name="arrival_alert_entered">進入落車提示車站範圍</string>
     <string name="arrival_alert_leaving">離開落車提示車站範圍</string>
     <string name="arrival_alert_unknown">到站落車提示: 未知問題</string>
+    <string name="latest_news">最新消息</string>
+    <string name="provider_kmb">九龍巴士</string>
+    <string name="provider_nlb">新大嶼山巴士</string>
+    <string name="provider_short_kmb">九巴</string>
+    <string name="provider_short_nlb">嶼巴</string>
 
     <string name="search_shortcut_short_label">@string/search_route</string>
     <string name="search_shortcut_long_label">@string/search_route</string>

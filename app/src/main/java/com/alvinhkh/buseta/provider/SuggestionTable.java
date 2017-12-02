@@ -34,10 +34,16 @@ public class SuggestionTable {
     }
 
     public static void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if (oldVersion == 2) {
+        if (oldVersion <= 3) {
             Timber.d("Upgrading database from version %s to %s, try to preserve old data", oldVersion, newVersion);
             db.execSQL(DATABASE_CREATE(TABLE_NAME + "_TEMP"));
-            db.execSQL("INSERT INTO " + TABLE_NAME + "_TEMP (" + COLUMN_TEXT + ", " + COLUMN_TYPE + ", " + COLUMN_DATE + ") SELECT " + COLUMN_TEXT + ", " + COLUMN_TYPE + ", " + COLUMN_DATE + " FROM " + TABLE_NAME);
+            db.execSQL("INSERT INTO " + TABLE_NAME + "_TEMP (" +
+                    COLUMN_TEXT + ", " + COLUMN_TYPE + ", " + COLUMN_DATE +
+                    ") SELECT " +
+                    COLUMN_TEXT + ", " + COLUMN_TYPE + ", " + COLUMN_DATE +
+                    " FROM " + TABLE_NAME);
+            db.execSQL("UPDATE " + TABLE_NAME + "_TEMP SET " + COLUMN_COMPANY + " = 'KMB' WHERE (" +
+                    COLUMN_COMPANY + " IS NULL OR " + COLUMN_COMPANY + " IS ''" + ")");
             db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
             db.execSQL("ALTER TABLE " + TABLE_NAME + "_TEMP RENAME TO " + TABLE_NAME);
         } else {

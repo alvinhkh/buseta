@@ -4,23 +4,23 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-public class SuggestionOpenHelper extends SQLiteOpenHelper {
+public class FollowOpenHelper extends SQLiteOpenHelper {
 
-    public static final String DATABASE_NAME = "suggestions.db";
-    private static final int DATABASE_VERSION = 4;
+    public static final String DATABASE_NAME = "route.db";
+    private static final int DATABASE_VERSION = 7;
 
-    public SuggestionOpenHelper(Context context) {
+    public FollowOpenHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override
     public void onCreate(SQLiteDatabase database) {
-        SuggestionTable.onCreate(database);
+        FollowTable.onCreate(database);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
-        SuggestionTable.onUpgrade(database, oldVersion, newVersion);
+        FollowTable.onUpgrade(database, oldVersion, newVersion);
     }
 
 }

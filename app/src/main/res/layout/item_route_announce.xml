@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tool="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -24,6 +23,19 @@
         tool:src="@mipmap/ic_launcher"/>
 
     <TextView
+        android:visibility="gone"
+        android:id="@+id/iconText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_centerInParent="true"
+        android:layout_marginStart="@dimen/card_item_icon_margin_start"
+        android:layout_marginLeft="@dimen/card_item_icon_margin_start"
+        android:contentDescription="@string/content_description_icon"
+        tool:text="31/12" />
+
+    <TextView
         android:id="@+id/title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -32,6 +44,8 @@
         android:layout_centerInParent="true"
         android:layout_marginStart="@dimen/card_item_text_margin_start"
         android:layout_marginLeft="@dimen/card_item_text_margin_start"
+        android:layout_marginRight="@dimen/card_item_horizontal_padding"
+        android:layout_marginEnd="@dimen/card_item_horizontal_padding"
         android:gravity="center_vertical"
         style="@style/TextAppearance.AppCompat.Title"
         tool:text="乘客通告 1\n...\n暫時沒有任何通告" />

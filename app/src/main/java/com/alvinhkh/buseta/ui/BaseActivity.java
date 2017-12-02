@@ -30,11 +30,13 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.FilterQueryProvider;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.model.AppUpdate;
+import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.provider.SuggestionProvider;
 import com.alvinhkh.buseta.provider.SuggestionTable;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
@@ -84,20 +86,22 @@ abstract public class BaseActivity extends AppCompatActivity
         // Set Suggestion Adapter
         String[] columns = new String[]{
                 SuggestionTable.COLUMN_TEXT,
+                SuggestionTable.COLUMN_COMPANY,
                 SuggestionTable.COLUMN_TYPE,
         };
         int[] columnTextId = new int[]{
                 android.R.id.text1,
+                R.id.company,
                 R.id.icon,
         };
         adapter = new SuggestionSimpleCursorAdapter(getApplicationContext(),
                 R.layout.row_route, cursor, columns, columnTextId, 0);
         adapter.setViewBinder((aView, aCursor, aColumnIndex) -> {
             if (aColumnIndex == aCursor.getColumnIndexOrThrow(SuggestionTable.COLUMN_TYPE)) {
-                String icon_text = aCursor.getString(aColumnIndex);
+                String iconText = aCursor.getString(aColumnIndex);
                 Drawable drawable;
                 ImageView imageView = aView.findViewById(R.id.icon);
-                switch (icon_text) {
+                switch (iconText) {
                     case SuggestionTable.TYPE_HISTORY:
                         drawable = ContextCompat.getDrawable(this, R.drawable.ic_history_black_24dp);
                         break;
@@ -108,6 +112,22 @@ abstract public class BaseActivity extends AppCompatActivity
                 }
                 if (imageView != null) {
                     imageView.setImageDrawable(drawable);
+                }
+                return true;
+            }
+            if (aColumnIndex == aCursor.getColumnIndexOrThrow(SuggestionTable.COLUMN_COMPANY)) {
+                String companyCode = aCursor.getString(aColumnIndex);
+                TextView textView = aView.findViewById(R.id.company);
+                switch (companyCode) {
+                    case BusRoute.COMPANY_KMB:
+                        textView.setText(R.string.provider_short_kmb);
+                        break;
+                    case BusRoute.COMPANY_NLB:
+                        textView.setText(R.string.provider_short_nlb);
+                        break;
+                    default:
+                        textView.setText(companyCode);
+                        break;
                 }
                 return true;
             }
@@ -134,7 +154,7 @@ abstract public class BaseActivity extends AppCompatActivity
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
         searchMenuItem = menu.findItem(R.id.action_search);
         searchView = (SearchView) searchMenuItem.getActionView();
-        if (searchView != null) {
+        if (searchView != null && searchManager != null) {
             searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
             searchView.setIconified(false);
             searchView.onActionViewCollapsed();
@@ -206,7 +226,9 @@ abstract public class BaseActivity extends AppCompatActivity
         // hide the keyboard in order to avoid getTextBeforeCursor on inactive InputConnection
         InputMethodManager inputMethodManager =
                 (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-        inputMethodManager.hideSoftInputFromWindow(new View(this).getWindowToken(), 0);
+        if (inputMethodManager != null) {
+            inputMethodManager.hideSoftInputFromWindow(new View(this).getWindowToken(), 0);
+        }
         super.onPause();
     }
 
@@ -247,7 +269,7 @@ abstract public class BaseActivity extends AppCompatActivity
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setClass(this, SearchActivity.class);
         intent.putExtra(C.EXTRA.ROUTE_NO, routeNo);
-        intent.putExtra(C.EXTRA.COMPANY, company);
+        intent.putExtra(C.EXTRA.COMPANY_CODE, company);
         startActivity(intent);
         return true;
     }
