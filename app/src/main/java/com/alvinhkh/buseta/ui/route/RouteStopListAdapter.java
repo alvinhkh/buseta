@@ -80,9 +80,10 @@ public class RouteStopListAdapter
             View root;
 
             switch (viewType) {
+                case Item.TYPE_HEADER:
                 case Item.TYPE_FOOTER:
                     root = inflater.inflate(R.layout.item_note, parent, false);
-                    return new FooterViewHolder(root, viewType, listener, busRoute);
+                    return new NoteViewHolder(root, viewType, listener, busRoute);
                 case Item.TYPE_DATA:
                     root = inflater.inflate(R.layout.item_route_stop, parent, false);
                     return new DataViewHolder(root, viewType, listener, fm, busRoute, currentLocation);
@@ -97,27 +98,22 @@ public class RouteStopListAdapter
 
     static class EmptyViewHolder extends ViewHolder {
 
-        View itemView;
-        TextView noteText;
-
         EmptyViewHolder(View itemView, int viewType, OnClickItemListener listener) {
             super(itemView, viewType, listener);
-            this.itemView = itemView;
-            this.noteText = itemView.findViewById(R.id.note);
+            itemView.setVisibility(View.GONE);
         }
 
         @Override
-        public void bindItem(RouteStopListAdapter adapter, Item item, int position) {
-        }
+        public void bindItem(RouteStopListAdapter adapter, Item item, int position) { }
     }
 
-    static class FooterViewHolder extends ViewHolder {
+    static class NoteViewHolder extends ViewHolder {
 
         View itemView;
         TextView noteText;
         BusRoute busRoute;
 
-        FooterViewHolder(View itemView, int viewType, OnClickItemListener listener, BusRoute busRoute) {
+        NoteViewHolder(View itemView, int viewType, OnClickItemListener listener, BusRoute busRoute) {
             super(itemView, viewType, listener);
             this.itemView = itemView;
             this.noteText = itemView.findViewById(R.id.note);

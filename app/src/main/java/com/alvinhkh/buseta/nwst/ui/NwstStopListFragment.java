@@ -167,6 +167,9 @@ public class NwstStopListFragment extends Fragment implements
         recyclerView.setHasFixedSize(true);
         adapter = new RouteStopListAdapter(getFragmentManager(), recyclerView, busRoute);
         adapter.setOnClickItemListener(this);
+        if (!TextUtils.isEmpty(busRoute.getDescription())) {
+            adapter.add(new Item(Item.TYPE_HEADER, busRoute.getDescription()));
+        }
         if (ActivityCompat.checkSelfPermission(getContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(getContext(),
