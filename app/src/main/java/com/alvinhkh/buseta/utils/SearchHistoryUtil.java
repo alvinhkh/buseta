@@ -6,9 +6,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 
-import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.model.SearchHistory;
 import com.alvinhkh.buseta.provider.RxCursorIterable;
 import com.alvinhkh.buseta.provider.SuggestionProvider;
@@ -26,7 +24,7 @@ public class SearchHistoryUtil {
                 + " AND " + SuggestionTable.COLUMN_TYPE + " = ?";
         Cursor query = context.getContentResolver().query(SuggestionProvider.CONTENT_URI,  null,
                 selection, new String[] {
-                        history == null ? "%%" : history.route,
+                        history == null ? "%%" : history.getRoute(),
                         SuggestionTable.TYPE_HISTORY
                 }, SuggestionTable.COLUMN_DATE + " DESC, " + SuggestionTable.COLUMN_TEXT + " ASC");
         return Observable.fromIterable(RxCursorIterable.from(query)).doFinally(() -> {
@@ -42,36 +40,36 @@ public class SearchHistoryUtil {
                         + SuggestionTable.COLUMN_COMPANY + "=? AND "
                         + SuggestionTable.COLUMN_TEXT + "=?",
                 new String[]{
-                        history.recordType,
-                        history.companyCode,
-                        history.route
+                        history.getType(),
+                        history.getCompanyCode(),
+                        history.getRoute()
                 });
     }
 
     public static ContentValues toContentValues(@NonNull SearchHistory history) {
         ContentValues values = new ContentValues();
-        values.put(SuggestionTable.COLUMN_TEXT, history.route);
-        values.put(SuggestionTable.COLUMN_COMPANY, history.companyCode);
+        values.put(SuggestionTable.COLUMN_TEXT, history.getRoute());
+        values.put(SuggestionTable.COLUMN_COMPANY, history.getCompanyCode());
         values.put(SuggestionTable.COLUMN_TYPE, SuggestionTable.TYPE_HISTORY);
-        values.put(SuggestionTable.COLUMN_DATE, history.timestamp);
+        values.put(SuggestionTable.COLUMN_DATE, history.getTimestamp());
         return values;
     }
 
     public static SearchHistory fromCursor(@NonNull Cursor cursor) {
         SearchHistory object = new SearchHistory();
-        object.route = cursor.getString(cursor.getColumnIndex(SuggestionTable.COLUMN_TEXT));
-        object.recordType = cursor.getString(cursor.getColumnIndex(SuggestionTable.COLUMN_TYPE));
-        object.companyCode = cursor.getString(cursor.getColumnIndex(SuggestionTable.COLUMN_COMPANY));
-        object.timestamp = Long.parseLong(cursor.getString(cursor.getColumnIndex(SuggestionTable.COLUMN_DATE)));
+        object.setCompanyCode(cursor.getString(cursor.getColumnIndex(SuggestionTable.COLUMN_COMPANY)));
+        object.setRoute(cursor.getString(cursor.getColumnIndex(SuggestionTable.COLUMN_TEXT)));
+        object.setTimestamp(Long.parseLong(cursor.getString(cursor.getColumnIndex(SuggestionTable.COLUMN_DATE))));
+        object.setType(cursor.getString(cursor.getColumnIndex(SuggestionTable.COLUMN_TYPE)));
         return object;
     }
 
     public static SearchHistory createInstance(@NonNull String routeNo, @NonNull String companyCode) {
         SearchHistory object = new SearchHistory();
-        object.route = routeNo;
-        object.companyCode = companyCode;
-        object.recordType = SuggestionTable.TYPE_HISTORY;
-        object.timestamp = System.currentTimeMillis() / 1000L;
+        object.setCompanyCode(companyCode);
+        object.setRoute(routeNo);
+        object.setTimestamp(System.currentTimeMillis() / 1000L);
+        object.setType(SuggestionTable.TYPE_HISTORY);
         return object;
     }
 

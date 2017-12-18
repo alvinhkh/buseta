@@ -38,7 +38,7 @@ import java.util.List;
 
 /*
  * An adapter that handle both follow stop and search history
- * show follow in front of search history
+ * display follow item above history item
  */
 public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -170,9 +170,18 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
                         .setMessage(context.getString(R.string.message_remove_from_follow_list))
                         .setNegativeButton(R.string.action_cancel, (dialoginterface, i) -> dialoginterface.cancel())
                         .setPositiveButton(R.string.action_confirm, (dialoginterface, i) -> {
+                            int pos = position;
+                            int j = 0;
+                            for (FollowStop stop: getFollowItems()) {
+                                if (stop._id.equals(object._id)) {
+                                    pos = j;
+                                    break;
+                                }
+                                j++;
+                            }
                             if (FollowStopUtil.delete(context, object) > 0) {
                                 updateFollow();
-                                notifyItemRemoved(position);
+                                notifyItemRemoved(pos);
                             }
                         })
                         .show();
@@ -276,11 +285,11 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
 
         if (viewHolder instanceof HistoryViewHolder) {
-            SearchHistory info = historyItem(position - getFollowCount());
+            SearchHistory object = historyItem(position - getFollowCount());
             HistoryViewHolder vh = (HistoryViewHolder) viewHolder;
-            vh.routeText.setText(info.route);
+            vh.routeText.setText(object.getRoute());
             Drawable drawable;
-            switch (info.recordType) {
+            switch (object.getType()) {
                 case SuggestionTable.TYPE_HISTORY:
                     drawable = ContextCompat.getDrawable(context, R.drawable.ic_history_black_24dp);
                     break;
@@ -297,21 +306,30 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
                 if (context == null) return;
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setClass(context, SearchActivity.class);
-                intent.putExtra(C.EXTRA.COMPANY_CODE, info.companyCode);
-                intent.putExtra(C.EXTRA.ROUTE_NO, info.route);
+                intent.putExtra(C.EXTRA.COMPANY_CODE, object.getCompanyCode());
+                intent.putExtra(C.EXTRA.ROUTE_NO, object.getRoute());
                 context.startActivity(intent);
             });
             vh.itemView.setOnLongClickListener(v -> {
                 Context context = v.getContext();
                 if (context == null) return false;
                 new AlertDialog.Builder(context)
-                        .setTitle(info.route + "?")
+                        .setTitle(object.getRoute() + "?")
                         .setMessage(context.getString(R.string.message_remove_from_search_history))
                         .setNegativeButton(R.string.action_cancel, (dialoginterface, i) -> dialoginterface.cancel())
                         .setPositiveButton(R.string.action_confirm, (dialoginterface, i) -> {
-                            if (SearchHistoryUtil.delete(context, info) > 0) {
+                            int pos = position;
+                            int j = 0;
+                            for (SearchHistory history: getHistoryItems()) {
+                                if (history.equals(object)) {
+                                    pos = j + getFollowCount();
+                                    break;
+                                }
+                                j++;
+                            }
+                            if (SearchHistoryUtil.delete(context, object) > 0) {
                                 updateHistory();
-                                notifyItemRemoved(position);
+                                notifyItemRemoved(pos);
                             }
                         })
                         .show();

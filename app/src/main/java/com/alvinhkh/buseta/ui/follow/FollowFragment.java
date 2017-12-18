@@ -248,11 +248,11 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
                     SearchHistory searchHistory = (SearchHistory) object;
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setClass(getContext(), SearchActivity.class);
-                    intent.putExtra(C.EXTRA.ROUTE_NO, searchHistory.route);
-                    intent.putExtra(C.EXTRA.COMPANY_CODE, searchHistory.companyCode);
-                    shortcuts.add(new ShortcutInfo.Builder(getContext(), "buseta-q-" + searchHistory.companyCode + searchHistory.route)
-                            .setShortLabel(searchHistory.route)
-                            .setLongLabel(searchHistory.route)
+                    intent.putExtra(C.EXTRA.ROUTE_NO, searchHistory.getRoute());
+                    intent.putExtra(C.EXTRA.COMPANY_CODE, searchHistory.getCompanyCode());
+                    shortcuts.add(new ShortcutInfo.Builder(getContext(), "buseta-q-" + searchHistory.getCompanyCode() + searchHistory.getRoute())
+                            .setShortLabel(searchHistory.getRoute())
+                            .setLongLabel(searchHistory.getRoute())
                             .setIcon(Icon.createWithResource(getContext(), R.drawable.ic_shortcut_search))
                             .setIntent(intent)
                             .build());
@@ -281,11 +281,9 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
                     if (row >= 0 && row < followAndHistoryAdapter.getFollowCount()) {
                         followAndHistoryAdapter.notifyItemChanged(row);
                     } else {
-                        // followAndHistoryAdapter.notifyItemRangeChanged(0, followAndHistoryAdapter.getFollowCount());
+                        followAndHistoryAdapter.notifyDataSetChanged();
                     }
                 }
-                // if (bundle.getBoolean(C.EXTRA.UPDATING)) { }
-                // if (bundle.getBoolean(C.EXTRA.FAIL)) { }
             }
 
             @Override
