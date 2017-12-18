@@ -79,13 +79,13 @@ public class KmbEtaUtil {
                     // they only provide eta within 60 minutes
                     estimateMinutes = "";
                 }
-                // grey out
-                object.expired = minutes <= -3    // time past
-                        || TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - generatedDate.getTime()) >= 5;    // maybe outdated
+                object.expired = minutes <= -3;  // time past
+                object.expired |= TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - object.updatedAt) >= 5; // maybe outdated
+                object.expired |= TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - generatedDate.getTime()) >= 5;  // maybe outdated
                 if (!TextUtils.isEmpty(object.expire)) {
                     Date etaExpireDate = etaExpireDateFormat.parse(object.expire);
                     if (etaExpireDate != null)
-                        object.expired |= TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - etaExpireDate.getTime()) >= 0;    // expired
+                        object.expired |= TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - etaExpireDate.getTime()) >= 0;  // expired
                 }
             } catch (ParseException |ArrayIndexOutOfBoundsException ep) {
                 Timber.d(ep);

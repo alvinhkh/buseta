@@ -89,9 +89,6 @@ public class FollowStopUtil {
         FollowStop object = new FollowStop();
         object._id = cursor.getString(cursor.getColumnIndex(FollowTable.COLUMN_ID));
         object.companyCode = cursor.getString(cursor.getColumnIndex(FollowTable.COLUMN_COMPANY));
-        if (TextUtils.isEmpty(object.companyCode)) {
-            object.companyCode = BusRoute.COMPANY_KMB;
-        }
         object.route = cursor.getString(cursor.getColumnIndex(FollowTable.COLUMN_ROUTE));
         object.routeId = cursor.getString(cursor.getColumnIndex(FollowTable.COLUMN_ROUTE_ID));
         object.direction = cursor.getString(cursor.getColumnIndex(FollowTable.COLUMN_BOUND));

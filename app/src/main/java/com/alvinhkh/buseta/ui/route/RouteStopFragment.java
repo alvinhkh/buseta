@@ -684,14 +684,21 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
             vh.nameText.setText(TextUtils.isEmpty(busRouteStop.name) ? "" : busRouteStop.name.trim());
             vh.routeNoText.setText(TextUtils.isEmpty(busRouteStop.route) ? "" : busRouteStop.route.trim());
             if (!TextUtils.isEmpty(busRouteStop.origin) && !TextUtils.isEmpty(busRouteStop.destination)) {
-                vh.routeLocationText.setText(getString(R.string.route_path,
-                        busRouteStop.origin, busRouteStop.destination));
+                vh.routeLocationText.setText(getString(R.string.destination, busRouteStop.destination));
             }
             vh.stopLocationText.setText(TextUtils.isEmpty(busRouteStop.location) ? "" : busRouteStop.location.trim());
-            vh.fareText.setText(String.format(Locale.ENGLISH, "$%1$,.1f", Float.valueOf(busRouteStop.fare)));
+            StringBuilder fareText = new StringBuilder();
+            fareText.append(String.format(Locale.ENGLISH, "$%1$,.1f", Float.valueOf(busRouteStop.fare)));
             if (!TextUtils.isEmpty(busRouteStop.fareHoliday)) {
-                vh.fareText.setText(String.format(Locale.ENGLISH, "$%1$,.1f/$%2$,.1f", Float.valueOf(busRouteStop.fare), Float.valueOf(busRouteStop.fareHoliday)));
+                fareText.append(String.format(Locale.ENGLISH, "/$%1$,.1f", Float.valueOf(busRouteStop.fareHoliday)));
             }
+            if (!TextUtils.isEmpty(busRouteStop.fareChild)) {
+                fareText.append(String.format(Locale.ENGLISH, "/$%1$,.1f", Float.valueOf(busRouteStop.fareChild)));
+            }
+            if (!TextUtils.isEmpty(busRouteStop.fareSenior)) {
+                fareText.append(String.format(Locale.ENGLISH, "/$%1$,.1f", Float.valueOf(busRouteStop.fareSenior)));
+            }
+            vh.fareText.setText(fareText);
             updateDistanceDisplay();
             // ETA
             vh.etaView.setVisibility(View.INVISIBLE);
@@ -780,6 +787,9 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                             }
                             if (!TextUtils.isEmpty(arrivalTime.estimate)) {
                                 etaText.append(" (").append(arrivalTime.estimate).append(")");
+                            }
+                            if (arrivalTime.distanceKM >= 0) {
+                                etaText.append(" ").append(context.getString(R.string.km, arrivalTime.distanceKM));
                             }
                             if (arrivalTime.capacity >= 0) {
                                 Drawable drawable = null;

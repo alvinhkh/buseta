@@ -80,7 +80,7 @@
             android:label="@string/app_name" />
         <activity
             android:name=".ui.route.RouteAnnounceActivity"
-            android:label="@string/passenger_notice" />
+            android:label="@string/notice" />
         <activity
             android:name=".ui.image.ImageActivity"
             android:label="@string/app_name"
@@ -95,15 +95,19 @@
         </activity>
         <activity
             android:name=".lwb.ui.LwbActivity"
-            android:label="@string/route"
+            android:label="@string/provider_kmb"
             android:hardwareAccelerated="true" />
         <activity
             android:name=".kmb.ui.KmbActivity"
-            android:label="@string/route"
+            android:label="@string/provider_kmb"
             android:hardwareAccelerated="true" />
         <activity
             android:name=".nlb.ui.NlbActivity"
-            android:label="@string/route"
+            android:label="@string/provider_nlb"
+            android:hardwareAccelerated="true" />
+        <activity
+            android:name=".nwst.ui.NwstActivity"
+            android:label="@string/provider_nwst"
             android:hardwareAccelerated="true" />
 
         <!-- Google Play Services AdActivity -->

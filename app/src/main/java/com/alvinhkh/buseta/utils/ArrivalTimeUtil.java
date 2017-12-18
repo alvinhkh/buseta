@@ -12,6 +12,7 @@ import com.alvinhkh.buseta.model.ArrivalTime;
 import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.model.BusRouteStop;
 import com.alvinhkh.buseta.nlb.util.NlbEtaUtil;
+import com.alvinhkh.buseta.nwst.util.NwstEtaUtil;
 import com.alvinhkh.buseta.provider.EtaContract.EtaEntry;
 import com.alvinhkh.buseta.provider.RxCursorIterable;
 
@@ -33,6 +34,10 @@ public class ArrivalTimeUtil {
                     return KmbEtaUtil.estimate(context, object);
                 case BusRoute.COMPANY_NLB:
                     return NlbEtaUtil.estimate(context, object);
+                case BusRoute.COMPANY_CTB:
+                case BusRoute.COMPANY_NWFB:
+                case BusRoute.COMPANY_NWST:
+                    return NwstEtaUtil.estimate(context, object);
             }
         }
         return object;
@@ -80,8 +85,11 @@ public class ArrivalTimeUtil {
 
         values.put(EtaEntry.COLUMN_ETA_EXPIRE, eta.expire);
         values.put(EtaEntry.COLUMN_ETA_ID, eta.id);
-        values.put(EtaEntry.COLUMN_ETA_MISC, Boolean.toString(eta.hasWheelchair) + "," +
-                Integer.toString(eta.capacity) + "," + Boolean.toString(eta.hasWifi));
+        values.put(
+                EtaEntry.COLUMN_ETA_MISC, Boolean.toString(eta.hasWheelchair) + "," +
+                Integer.toString(eta.capacity) + "," + Boolean.toString(eta.hasWifi) + "," +
+                eta.isoTime.replaceAll(",", "") + "," + Float.toString(eta.distanceKM)
+        );
         values.put(EtaEntry.COLUMN_ETA_SCHEDULED, Boolean.toString(eta.isSchedule));
         values.put(EtaEntry.COLUMN_ETA_TIME, eta.text);
         values.put(EtaEntry.COLUMN_ETA_URL, stop.etaGet);
@@ -97,8 +105,20 @@ public class ArrivalTimeUtil {
         object.id = cursor.getString(cursor.getColumnIndex(EtaEntry.COLUMN_ETA_ID));
         String[] misc = cursor.getString(cursor.getColumnIndex(EtaEntry.COLUMN_ETA_MISC)).split(",");
         object.hasWheelchair = Boolean.valueOf(misc[0]);
-        object.capacity = KmbEtaUtil.parseCapacity(misc[1]);
-        object.hasWifi = Boolean.valueOf(misc[2]);
+        if (misc.length > 1) {
+            if (object.companyCode.equals(BusRoute.COMPANY_KMB)) {
+                object.capacity = KmbEtaUtil.parseCapacity(misc[1]);
+            }
+        }
+        if (misc.length > 2) {
+            object.hasWifi = Boolean.valueOf(misc[2]);
+        }
+        if (misc.length > 3) {
+            object.isoTime = misc[3];
+        }
+        if (misc.length > 4) {
+            object.distanceKM = Float.valueOf(misc[4]);
+        }
         object.isSchedule = Boolean.valueOf(cursor.getString(cursor.getColumnIndex(EtaEntry.COLUMN_ETA_SCHEDULED)));
         object.text = cursor.getString(cursor.getColumnIndex(EtaEntry.COLUMN_ETA_TIME));
         object.generatedAt = cursor.getLong(cursor.getColumnIndex(EtaEntry.COLUMN_GENERATED_AT));

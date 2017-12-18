@@ -92,7 +92,7 @@ public class ImageFragment extends Fragment {
         imageTitle = getArguments().getString(ARG_TITLE);
         imageUrl = getArguments().getString(ARG_URL);
         // Overview task
-        setTaskDescription(getString(R.string.passenger_notice) +
+        setTaskDescription(getString(R.string.notice) +
                 getString(R.string.interpunct) + getString(R.string.app_name));
         // Set Toolbar
         mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
@@ -137,7 +137,7 @@ public class ImageFragment extends Fragment {
     public void onResume() {
         super.onResume();
         if (null != mActionBar) {
-            mActionBar.setTitle(R.string.passenger_notice);
+            mActionBar.setTitle(R.string.notice);
             mActionBar.setSubtitle(null);
         }
     }

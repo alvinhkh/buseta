@@ -6,9 +6,15 @@ import android.support.annotation.NonNull;
 
 public class BusRoute implements Parcelable {
 
+    public static final String COMPANY_CTB = "CTB";
+
     public static final String COMPANY_KMB = "KMB";
 
     public static final String COMPANY_NLB = "NLB";
+
+    public static final String COMPANY_NWFB = "NWFB";
+
+    public static final String COMPANY_NWST = "NWST";
 
     private String companyCode;
 
@@ -23,6 +29,10 @@ public class BusRoute implements Parcelable {
     private String serviceType;
 
     private String description;
+
+    private Boolean isSpecial = false;
+
+    private Integer stopsStartSequence = 0;
 
     public BusRoute() {
     }
@@ -63,6 +73,14 @@ public class BusRoute implements Parcelable {
         return description;
     }
 
+    public Boolean getSpecial() {
+        return isSpecial;
+    }
+
+    public Integer getStopsStartSequence() {
+        return stopsStartSequence;
+    }
+
     public void setCompanyCode(String companyCode) {
         this.companyCode = companyCode;
     }
@@ -89,6 +107,14 @@ public class BusRoute implements Parcelable {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public void setSpecial(Boolean special) {
+        this.isSpecial = special;
+    }
+
+    public void setStopsStartSequence(Integer stopsStartSequence) {
+        this.stopsStartSequence = stopsStartSequence;
     }
 
     private String childKey;
@@ -118,9 +144,11 @@ public class BusRoute implements Parcelable {
     public String toString() {
         return "BusRoute{companyCode=" + this.companyCode
                 + ", description=" + this.description
+                + ", isSpecial=" + this.isSpecial
                 + ", locationEndName=" + this.locationEndName
                 + ", locationStartName=" + this.locationStartName + ", name=" + this.name
                 + ", sequence=" + this.sequence + ", serviceType=" + this.serviceType
+                + ", stopsStartSequence=" + this.stopsStartSequence
                 + ", key=" + this.key + ", childKey=" + this.childKey + "}";
     }
 
@@ -136,6 +164,8 @@ public class BusRoute implements Parcelable {
         this.sequence = p.readString();
         this.serviceType = p.readString();
         this.description = p.readString();
+        this.isSpecial = p.readInt() == 1;
+        this.stopsStartSequence = p.readInt();
     }
 
     @Override
@@ -153,6 +183,8 @@ public class BusRoute implements Parcelable {
         dest.writeString(this.sequence);
         dest.writeString(this.serviceType);
         dest.writeString(this.description);
+        dest.writeInt(this.isSpecial ? 1 : 0);
+        dest.writeInt(this.stopsStartSequence);
     }
 
     /*

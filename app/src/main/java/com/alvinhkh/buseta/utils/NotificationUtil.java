@@ -69,6 +69,9 @@ public class NotificationUtil {
                     etaSmallText.append(" (").append(arrivalTime.estimate).append(")");
                     etaText.append(" (").append(arrivalTime.estimate).append(")");
                 }
+                if (arrivalTime.distanceKM >= 0) {
+                    etaText.append(" ").append(context.getString(R.string.km, arrivalTime.distanceKM));
+                }
                 if (arrivalTime.capacity >= 0) {
                     String capacity = "";
                     if (arrivalTime.capacity == 0) {

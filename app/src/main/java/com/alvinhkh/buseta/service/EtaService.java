@@ -7,7 +7,6 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.alvinhkh.buseta.C;
-import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.kmb.KmbService;
 import com.alvinhkh.buseta.kmb.model.network.KmbEtaRes;
 import com.alvinhkh.buseta.kmb.util.KmbEtaUtil;
@@ -18,21 +17,30 @@ import com.alvinhkh.buseta.nlb.NlbService;
 import com.alvinhkh.buseta.nlb.model.NlbEtaRequest;
 import com.alvinhkh.buseta.nlb.model.NlbEtaRes;
 import com.alvinhkh.buseta.nlb.util.NlbEtaUtil;
+import com.alvinhkh.buseta.nwst.NwstService;
+import com.alvinhkh.buseta.nwst.model.NwstEta;
+import com.alvinhkh.buseta.nwst.util.NwstEtaUtil;
+import com.alvinhkh.buseta.nwst.util.NwstRequestUtil;
 import com.alvinhkh.buseta.provider.EtaContract.EtaEntry;
 import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableObserver;
+import okhttp3.ResponseBody;
 import timber.log.Timber;
+
+import static com.alvinhkh.buseta.nwst.NwstService.*;
 
 public class EtaService extends IntentService {
 
@@ -41,6 +49,8 @@ public class EtaService extends IntentService {
     private final KmbService kmbEtaApi = KmbService.etav3.create(KmbService.class);
 
     private final NlbService nlbApi = NlbService.api.create(NlbService.class);
+
+    private final NwstService nwstApi = NwstService.api.create(NwstService.class);
 
     public EtaService() {
         super(EtaService.class.getSimpleName());
@@ -91,6 +101,25 @@ public class EtaService extends IntentService {
                         NlbEtaRequest request = new NlbEtaRequest(routeStop.routeId, routeStop.code, "zh");
                         disposables.add(nlbApi.eta(request)
                                 .subscribeWith(nlbEtaObserver(routeStop, widgetId, notificationId, row, i == busRouteStopList.size() - 1)));
+                        break;
+                    case BusRoute.COMPANY_CTB:
+                    case BusRoute.COMPANY_NWFB:
+                    case BusRoute.COMPANY_NWST:
+                        Map<String, String> options = new HashMap<>();
+                        options.put(QUERY_STOP_ID, Integer.toString(Integer.parseInt(routeStop.code)));
+                        options.put(QUERY_SERVICE_NO, routeStop.route);
+                        options.put("removeRepeatedSuspend", "Y");
+                        options.put("interval", "60");
+                        options.put(QUERY_BOUND, routeStop.direction);
+                        options.put(QUERY_STOP_SEQ, routeStop.sequence);
+                        options.put(QUERY_RDV, routeStop.routeId.replaceAll("-1$", "-2")); // TODO: why -1 to -2
+                        options.put("showtime", "Y");
+                        options.put(QUERY_LANGUAGE, LANGUAGE_TC);
+                        options.put(QUERY_PLATFORM, PLATFORM);
+                        options.put(QUERY_APP_VERSION, APP_VERSION);
+                        options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
+                        disposables.add(nwstApi.eta(options)
+                                .subscribeWith(nwstEtaObserver(routeStop, widgetId, notificationId, row, i == busRouteStopList.size() - 1)));
                         break;
                     default:
                         notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId, row);
@@ -173,7 +202,6 @@ public class EtaService extends IntentService {
             @Override
             public void onNext(NlbEtaRes res) {
                 if (res != null && res.estimatedArrivalTime != null && !TextUtils.isEmpty(res.estimatedArrivalTime.html)) {
-                    Timber.d("%s", res.estimatedArrivalTime.html);
                     Document doc = Jsoup.parse(res.estimatedArrivalTime.html);
                     Elements divs = doc.body().getElementsByTag("div");
                     if (divs != null && divs.size() > 0) {
@@ -204,6 +232,58 @@ public class EtaService extends IntentService {
                 Timber.d(e);
                 ArrivalTime arrivalTime = ArrivalTimeUtil.emptyInstance(getApplicationContext());
                 arrivalTime.companyCode = BusRoute.COMPANY_NLB;
+                arrivalTime.text = e.getMessage();
+                getContentResolver().insert(EtaEntry.CONTENT_URI,
+                        ArrivalTimeUtil.toContentValues(busRouteStop, arrivalTime));
+                notifyUpdate(busRouteStop, C.EXTRA.FAIL, widgetId, notificationId, rowNo);
+            }
+
+            @Override
+            public void onComplete() {
+                if (isLast) notifyUpdate(busRouteStop, C.EXTRA.COMPLETE, widgetId, notificationId, rowNo);
+            }
+        };
+    }
+
+    DisposableObserver<ResponseBody> nwstEtaObserver(@NonNull final BusRouteStop busRouteStop,
+                                                     final Integer widgetId,
+                                                     final Integer notificationId,
+                                                     final Integer rowNo,
+                                                     final Boolean isLast) {
+        return new DisposableObserver<ResponseBody>() {
+            @Override
+            public void onNext(ResponseBody body) {
+                try {
+                    String text = body.string();
+                    String serverTime = text.split("\\|")[0].trim();
+                    String[] data = text.trim().replaceFirst("^[^|]*\\|##\\|", "").split("<br>");
+                    for (int i = 0; i < data.length; i++) {
+                        NwstEta nwstEta = NwstEta.Companion.fromString(data[i]);
+                        if (nwstEta == null) continue;
+                        nwstEta.setServerTime(serverTime);
+                        ArrivalTime arrivalTime = NwstEtaUtil.toArrivalTime(getApplicationContext(), nwstEta);
+                        arrivalTime.id = Integer.toString(i);
+                        getContentResolver().insert(EtaEntry.CONTENT_URI,
+                                ArrivalTimeUtil.toContentValues(busRouteStop, arrivalTime));
+                    }
+                    notifyUpdate(busRouteStop, C.EXTRA.UPDATED, widgetId, notificationId, rowNo);
+                    return;
+                } catch (IOException e) {
+                    Timber.d(e);
+                }
+                ArrivalTime arrivalTime = ArrivalTimeUtil.emptyInstance(getApplicationContext());
+                arrivalTime.companyCode = BusRoute.COMPANY_NWST;
+                arrivalTime.generatedAt = System.currentTimeMillis();
+                getContentResolver().insert(EtaEntry.CONTENT_URI,
+                        ArrivalTimeUtil.toContentValues(busRouteStop, arrivalTime));
+                notifyUpdate(busRouteStop, C.EXTRA.FAIL, widgetId, notificationId, rowNo);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Timber.d(e);
+                ArrivalTime arrivalTime = ArrivalTimeUtil.emptyInstance(getApplicationContext());
+                arrivalTime.companyCode = BusRoute.COMPANY_NWST;
                 arrivalTime.text = e.getMessage();
                 getContentResolver().insert(EtaEntry.CONTENT_URI,
                         ArrivalTimeUtil.toContentValues(busRouteStop, arrivalTime));

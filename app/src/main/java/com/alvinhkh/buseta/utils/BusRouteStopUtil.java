@@ -11,6 +11,8 @@ import com.alvinhkh.buseta.model.BusRouteStop;
 import com.alvinhkh.buseta.model.FollowStop;
 import com.alvinhkh.buseta.nlb.model.NlbRouteStop;
 import com.alvinhkh.buseta.nlb.model.NlbStop;
+import com.alvinhkh.buseta.nwst.model.NwstRoute;
+import com.alvinhkh.buseta.nwst.model.NwstStop;
 
 import org.osgeo.proj4j.CRSFactory;
 import org.osgeo.proj4j.CoordinateReferenceSystem;
@@ -99,13 +101,11 @@ public class BusRouteStopUtil {
         object.destination = busRoute.getLocationEndName();
         object.origin = busRoute.getLocationStartName();
 
-        if (object.companyCode != null && object.companyCode.equals(BusRoute.COMPANY_KMB)) {
-            if (!TextUtils.isEmpty(object.code)) {
-                object.imageUrl = "http://www.kmb.hk/chi/img.php?file=" + object.code;
-            }
-            object.etaGet = String.format("/?action=geteta&lang=tc&route=%s&bound=%s&stop=%s&stop_seq=%s",
-                    object.route, object.direction, object.code, isLastStop ? 999 : object.sequence);
+        if (!TextUtils.isEmpty(object.code)) {
+            object.imageUrl = "http://www.kmb.hk/chi/img.php?file=" + object.code;
         }
+        object.etaGet = String.format("/?action=geteta&lang=tc&route=%s&bound=%s&stop=%s&stop_seq=%s",
+                object.route, object.direction, object.code, isLastStop ? 999 : object.sequence);
         return object;
     }
 
@@ -128,13 +128,11 @@ public class BusRouteStopUtil {
         object.destination = busRoute.getLocationEndName();
         object.origin = busRoute.getLocationStartName();
 
-        if (object.companyCode != null && object.companyCode.equals(BusRoute.COMPANY_KMB)) {
-            if (!TextUtils.isEmpty(object.code)) {
-                object.imageUrl = "http://www.kmb.hk/chi/img.php?file=" + object.code;
-            }
-            object.etaGet = String.format("/?action=geteta&lang=tc&route=%s&bound=%s&stop=%s&stop_seq=%s",
-                    object.route, object.direction, object.code, isLastStop ? 999 : object.sequence);
+        if (!TextUtils.isEmpty(object.code)) {
+            object.imageUrl = "http://www.kmb.hk/chi/img.php?file=" + object.code;
         }
+        object.etaGet = String.format("/?action=geteta&lang=tc&route=%s&bound=%s&stop=%s&stop_seq=%s",
+                object.route, object.direction, object.code, isLastStop ? 999 : object.sequence);
         return object;
     }
 
@@ -154,6 +152,30 @@ public class BusRouteStopUtil {
         object.longitude = nlbStop.longitude;
         object.destination = busRoute.getLocationEndName();
         object.origin = busRoute.getLocationStartName();
+        return object;
+    }
+
+    public static BusRouteStop fromNwst(@NonNull NwstStop nwstStop,
+                                        @NonNull BusRoute busRoute) {
+        BusRouteStop object = new BusRouteStop();
+        object.code = nwstStop.getStopId();
+        object.companyCode = busRoute.getCompanyCode();
+        object.destination = busRoute.getLocationEndName();
+        object.direction = busRoute.getSequence();
+        object.fare = Double.toString(nwstStop.getAdultFare());
+        object.fareChild = Double.toString(nwstStop.getChildFare());
+        object.fareSenior = Double.toString(nwstStop.getSeniorFare());
+        object.latitude = Double.toString(nwstStop.getLatitude());
+        object.longitude = Double.toString(nwstStop.getLongitude());
+        object.name = TextUtils.isEmpty(nwstStop.getStopName()) ? nwstStop.getStopName() : nwstStop.getStopName().split(",")[0];
+        object.origin = busRoute.getLocationStartName();
+        object.route = busRoute.getName();
+        object.routeId = nwstStop.getRdv();
+        object.sequence = Integer.toString(nwstStop.getSequence());
+        object.etaGet = Boolean.toString(nwstStop.isEta());
+        if (!TextUtils.isEmpty(nwstStop.getPoleId())) {
+            object.imageUrl = "http://mobile.nwstbus.com.hk/api6/getstopphoto.php?filename=w" + nwstStop.getPoleId() + "001.jpg";
+        }
         return object;
     }
 }

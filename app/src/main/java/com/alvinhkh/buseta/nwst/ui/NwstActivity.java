@@ -1,6 +1,5 @@
-package com.alvinhkh.buseta.kmb.ui;
+package com.alvinhkh.buseta.nwst.ui;
 
-import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -8,8 +7,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.preference.PreferenceManager;
@@ -24,39 +21,39 @@ import android.widget.Toast;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.SearchHistory;
-import com.alvinhkh.buseta.kmb.KmbService;
-import com.alvinhkh.buseta.kmb.model.KmbRoute;
-import com.alvinhkh.buseta.kmb.model.KmbRouteBound;
-import com.alvinhkh.buseta.kmb.model.network.KmbRouteBoundRes;
-import com.alvinhkh.buseta.kmb.model.network.KmbSpecialRouteRes;
 import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.nwst.NwstService;
+import com.alvinhkh.buseta.nwst.model.NwstRoute;
+import com.alvinhkh.buseta.nwst.model.NwstVariant;
+import com.alvinhkh.buseta.nwst.util.NwstRequestUtil;
 import com.alvinhkh.buseta.provider.SuggestionProvider;
-import com.alvinhkh.buseta.provider.SuggestionTable;
 import com.alvinhkh.buseta.ui.BaseActivity;
 import com.alvinhkh.buseta.ui.route.RoutePagerAdapter;
 import com.alvinhkh.buseta.utils.AdViewUtil;
+import com.alvinhkh.buseta.utils.BusRouteUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
+import com.alvinhkh.buseta.utils.RetryWithDelay;
 import com.alvinhkh.buseta.utils.SearchHistoryUtil;
 import com.google.android.gms.ads.AdView;
-import com.google.firebase.appindexing.Action;
-import com.google.firebase.appindexing.FirebaseUserActions;
-import com.google.firebase.appindexing.builders.Actions;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
+import okhttp3.ResponseBody;
 import timber.log.Timber;
 
-public class KmbActivity extends BaseActivity
+import static com.alvinhkh.buseta.nwst.NwstService.*;
+
+public class NwstActivity extends BaseActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener {
 
-    private final KmbService kmbService = KmbService.webSearch.create(KmbService.class);
+    private final NwstService nwstService = NwstService.api.create(NwstService.class);
 
     private final CompositeDisposable disposables = new CompositeDisposable();
 
@@ -65,12 +62,12 @@ public class KmbActivity extends BaseActivity
     private FrameLayout adViewContainer;
 
     /**
-     * The {@link PagerAdapter} that will provide
+     * The {@link android.support.v4.view.PagerAdapter} that will provide
      * fragments for each of the sections. We use a
      * {@link FragmentPagerAdapter} derivative, which will keep every
      * loaded fragment in memory. If this becomes too memory intensive, it
      * may be best to switch to a
-     * {@link FragmentStatePagerAdapter}.
+     * {@link android.support.v4.app.FragmentStatePagerAdapter}.
      */
     public RoutePagerAdapter pagerAdapter;
 
@@ -92,6 +89,8 @@ public class KmbActivity extends BaseActivity
     private String routeNo;
 
     private Fragment currentFragment;
+
+    private int pageNo = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,8 +125,8 @@ public class KmbActivity extends BaseActivity
         fab = findViewById(R.id.fab);
         fab.setOnClickListener(v -> {
             if (currentFragment != null) {
-                if (currentFragment instanceof KmbStopListFragment) {
-                    KmbStopListFragment f = (KmbStopListFragment) currentFragment;
+                if (currentFragment instanceof NwstStopListFragment) {
+                    NwstStopListFragment f = (NwstStopListFragment) currentFragment;
                     f.onRefresh();
                 }
             }
@@ -164,7 +163,6 @@ public class KmbActivity extends BaseActivity
             public void onPageScrollStateChanged(int state) {
             }
         });
-
 
         if (!TextUtils.isEmpty(routeNo)) {
             loadRouteNo(routeNo);
@@ -264,73 +262,64 @@ public class KmbActivity extends BaseActivity
     }
 
     private void loadRouteNo(String no) {
+        loadRouteNo(no, TYPE_ALL_ROUTES);
+    }
+
+    private void loadRouteNo(String no, String mode) {
         if (TextUtils.isEmpty(no)) {
             showEmptyView();
             return;
         }
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(String.format("%s %s", getString(R.string.provider_short_kmb), no));
+            getSupportActionBar().setTitle(String.format("%s %s", getString(R.string.provider_short_nwst), no));
         }
         showLoadingView();
 
-        disposables.add(kmbService.getRouteBound(no)
+        Map<String, String> options = new HashMap<>();
+        options.put(QUERY_ROUTE_NO, mode.equals(TYPE_ALL_ROUTES) ? "" : no);
+        options.put(QUERY_MODE, mode);
+        options.put(QUERY_LANGUAGE, LANGUAGE_TC);
+        options.put(QUERY_PLATFORM, PLATFORM);
+        options.put(QUERY_APP_VERSION, APP_VERSION);
+        options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
+        disposables.add(nwstService.routeList(options)
+                .retryWhen(new RetryWithDelay(5, 3000))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(getRouteBoundObserver()));
+                .subscribeWith(routeListObserver(no)));
     }
 
-    public DisposableObserver<KmbRouteBoundRes> getRouteBoundObserver() {
-        return new DisposableObserver<KmbRouteBoundRes>() {
+    DisposableObserver<ResponseBody> routeListObserver(String routeNo) {
+
+        return new DisposableObserver<ResponseBody>() {
             @Override
-            public void onNext(KmbRouteBoundRes res) {
-                if (res != null && res.data != null) {
-                    pagerAdapter.clearSequence();
-                    List<Integer> list = new ArrayList<>();
-                    for (KmbRouteBound bound : res.data) {
-                        if (list.contains(bound.bound)) continue;
-                        list.add(bound.bound);
-                        disposables.add(kmbService.getSpecialRoute(bound.route, String.valueOf(bound.bound))
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribeWith(getSpecialRouteObserver(bound.route)));
+            public void onNext(ResponseBody body) {
+                try {
+                    String[] routes = body.string().split("\\|\\*\\|", -1);
+                    Map<String, String> options;
+                    String sysCode = NwstRequestUtil.syscode();
+                    for (String route : routes) {
+                        String text = route.replace("<br>", "").trim();
+                        if (TextUtils.isEmpty(text)) continue;
+                        NwstRoute nwstRoute = NwstRoute.Companion.fromString(text);
+                        if (nwstRoute != null &&
+                                !TextUtils.isEmpty(nwstRoute.getRouteNo()) &&
+                                nwstRoute.getRouteNo().equals(routeNo)) {
+                            options = new HashMap<>();
+                            options.put(QUERY_ID, nwstRoute.getRdv());
+                            options.put(QUERY_LANGUAGE, LANGUAGE_TC);
+                            options.put(QUERY_PLATFORM, PLATFORM);
+                            options.put(QUERY_APP_VERSION, APP_VERSION);
+                            options.put(QUERY_SYSCODE, sysCode);
+                            disposables.add(nwstService.variantList(options)
+                                    .retryWhen(new RetryWithDelay(5, 3000))
+                                    .subscribeOn(Schedulers.io())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribeWith(variantListObserver(nwstRoute)));
+                        }
                     }
-                }
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                Timber.d(e);
-                showEmptyView();
-                if (emptyText != null) {
-                    emptyText.setText(e.getMessage());
-                }
-            }
-
-            @Override
-            public void onComplete() {}
-        };
-    }
-
-    public DisposableObserver<KmbSpecialRouteRes> getSpecialRouteObserver(String routeNo) {
-        return new DisposableObserver<KmbSpecialRouteRes>() {
-            @Override
-            public void onNext(KmbSpecialRouteRes res) {
-                if (res != null && res.data != null) {
-                    pagerAdapter.setRoute(routeNo);
-                    for (KmbRoute route : res.data.routes) {
-                        if (route == null || route.route == null || !route.route.equals(routeNo)) continue;
-                        BusRoute busRoute = new BusRoute();
-                        busRoute.setCompanyCode(BusRoute.COMPANY_KMB);
-                        busRoute.setLocationEndName(route.destinationTc);
-                        busRoute.setLocationStartName(route.originTc);
-                        busRoute.setName(route.route);
-                        busRoute.setSequence(route.bound);
-                        busRoute.setServiceType(TextUtils.isEmpty(route.serviceType) ? route.serviceType : route.serviceType.trim());
-                        busRoute.setDescription(TextUtils.isEmpty(route.descTc) ? route.descTc : route.descTc.trim());
-                        busRoute.setSpecial(!TextUtils.isEmpty(route.descTc));
-                        Timber.d("%s", busRoute.toString());
-                        pagerAdapter.addSequence(busRoute);
-                    }
+                } catch (IOException e) {
+                    Timber.d(e);
                 }
             }
 
@@ -349,13 +338,76 @@ public class KmbActivity extends BaseActivity
 
             @Override
             public void onComplete() {
-                if (stopFromIntent != null) {
-                    viewPager.setCurrentItem(Integer.parseInt(stopFromIntent.direction) - 1, false);
+                pagerAdapter.setRoute(routeNo);
+            }
+        };
+    }
+
+    DisposableObserver<ResponseBody> variantListObserver(NwstRoute nwstRoute) {
+        return new DisposableObserver<ResponseBody>() {
+
+            String companyCode = BusRoute.COMPANY_NWST;
+
+            Boolean isScrollToPage = false;
+
+            @Override
+            public void onNext(ResponseBody body) {
+                try {
+                    String[] routes = body.string().split("\\|\\*\\|", -1);
+                    for (String route: routes) {
+                        String text = route.replace("<br>", "").trim();
+                        if (TextUtils.isEmpty(text)) continue;
+                        NwstVariant variant = NwstVariant.Companion.fromString(text);
+                        BusRoute busRoute = BusRouteUtil.fromNwst(nwstRoute, variant);
+                        if (busRoute.getName().equals(routeNo)) {
+                            companyCode = busRoute.getCompanyCode();
+                            if (getSupportActionBar() != null) {
+                                String companyName;
+                                switch (busRoute.getCompanyCode()) {
+                                    case BusRoute.COMPANY_CTB:
+                                        companyName = getString(R.string.provider_short_ctb);
+                                        break;
+                                    case BusRoute.COMPANY_NWFB:
+                                        companyName = getString(R.string.provider_short_nwfb);
+                                        break;
+                                    default:
+                                        companyName = getString(R.string.provider_short_nwst);
+                                        break;
+                                }
+                                getSupportActionBar().setTitle(String.format("%s %s", companyName, busRoute.getName()));
+                            }
+                            pagerAdapter.addSequence(busRoute);
+                            if (stopFromIntent != null && busRoute.getSequence().equals(stopFromIntent.direction)) {
+                                pageNo = pagerAdapter.getCount();
+                                isScrollToPage = true;
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    Timber.d(e);
                 }
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Timber.d(e);
+                showEmptyView();
+                if (emptyText != null) {
+                    if (!ConnectivityUtil.isConnected(getApplicationContext())) {
+                        emptyText.setText(R.string.message_no_internet_connection);
+                    } else {
+                        emptyText.setText(R.string.message_fail_to_request);
+                    }
+                }
+            }
+
+            @Override
+            public void onComplete() {
+                if (isScrollToPage) viewPager.setCurrentItem(pageNo, false);
                 if (pagerAdapter.getCount() > 0) {
                     getContentResolver().insert(SuggestionProvider.CONTENT_URI,
                             SearchHistoryUtil.toContentValues(
-                                    SearchHistoryUtil.createInstance(routeNo, BusRoute.COMPANY_KMB)));
+                                    SearchHistoryUtil.createInstance(routeNo, companyCode)));
                     if (emptyView != null) {
                         emptyView.setVisibility(View.GONE);
                     }
@@ -364,31 +416,5 @@ public class KmbActivity extends BaseActivity
                 }
             }
         };
-    }
-
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    public Action getIndexApiAction() {
-        return Actions.newView("Kmb", "http://[ENTER-YOUR-URL-HERE]");
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        FirebaseUserActions.getInstance().start(getIndexApiAction());
-    }
-
-    @Override
-    public void onStop() {
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        FirebaseUserActions.getInstance().end(getIndexApiAction());
-        super.onStop();
     }
 }

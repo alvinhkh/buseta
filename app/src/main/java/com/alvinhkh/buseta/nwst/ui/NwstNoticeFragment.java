@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.nlb.ui;
+package com.alvinhkh.buseta.nwst.ui;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -14,65 +14,78 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.nlb.NlbService;
-import com.alvinhkh.buseta.nlb.model.NlbNews;
-import com.alvinhkh.buseta.nlb.model.NlbNewsList;
-import com.alvinhkh.buseta.nlb.model.NlbNewsListRequest;
+import com.alvinhkh.buseta.model.BusRoute;
+import com.alvinhkh.buseta.nwst.NwstService;
+import com.alvinhkh.buseta.nwst.model.NwstNotice;
+import com.alvinhkh.buseta.nwst.util.NwstRequestUtil;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
+import okhttp3.ResponseBody;
 import timber.log.Timber;
 
+import static com.alvinhkh.buseta.nwst.NwstService.*;
 
-public class NlbNewsFragment extends Fragment
-        implements SwipeRefreshLayout.OnRefreshListener {
 
-    private final NlbService nlbService = NlbService.api.create(NlbService.class);
+public class NwstNoticeFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+
+    private final NwstService nwstService = NwstService.api.create(NwstService.class);
 
     private final CompositeDisposable disposables = new CompositeDisposable();
 
     private SwipeRefreshLayout swipeRefreshLayout;
 
-    private NlbNewsAdapter adapter;
+    private NwstNoticeAdapter adapter;
 
     private FloatingActionButton fab;
+
+    private BusRoute busRoute;
 
     private RecyclerView recyclerView;
 
     private View emptyView;
 
-    public NlbNewsFragment() {
+    public NwstNoticeFragment() {
     }
 
     /**
      * Returns a new instance of this fragment for the given section
      * number.
      */
-    public static NlbNewsFragment newInstance() {
-        return new NlbNewsFragment();
+    public static NwstNoticeFragment newInstance(@NonNull BusRoute busRoute) {
+        Timber.d(busRoute.toString());
+        NwstNoticeFragment fragment = new NwstNoticeFragment();
+        Bundle args = new Bundle();
+        args.putParcelable(C.EXTRA.ROUTE_OBJECT, busRoute);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            busRoute = getArguments().getParcelable(C.EXTRA.ROUTE_OBJECT);
+        }
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        if (getActivity() != null && ((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
-            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.latest_news);
-            ((AppCompatActivity) getActivity()).getSupportActionBar().setSubtitle(R.string.provider_nlb);
-        }
         View rootView = inflater.inflate(R.layout.fragment_list, container, false);
         recyclerView = rootView.findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
-        adapter = new NlbNewsAdapter(recyclerView);
+        adapter = new NwstNoticeAdapter(recyclerView);
         recyclerView.setAdapter(adapter);
         emptyView = rootView.findViewById(R.id.empty_view);
         TextView emptyText = rootView.findViewById(R.id.empty_text);
@@ -106,7 +119,13 @@ public class NlbNewsFragment extends Fragment
 
     @Override
     public void onRefresh() {
-        loadNews();
+        if (busRoute != null) {
+            loadRouteNotice(busRoute);
+            return;
+        }
+        if (swipeRefreshLayout != null) {
+            swipeRefreshLayout.setRefreshing(false);
+        }
     }
 
     @Override
@@ -126,31 +145,43 @@ public class NlbNewsFragment extends Fragment
         super.onDestroyView();
     }
 
-    private void loadNews() {
+    private void loadRouteNotice(@NonNull BusRoute route) {
         if (swipeRefreshLayout != null) {
             swipeRefreshLayout.setRefreshing(true);
         }
         if (adapter != null) {
             adapter.clear();
         }
-        disposables.add(nlbService.getNewList(new NlbNewsListRequest("zh"))
+        Map<String, String> options = new HashMap<>();
+        options.put(QUERY_ROUTE, route.getName());
+        options.put(QUERY_LANGUAGE, LANGUAGE_TC);
+        options.put(QUERY_PLATFORM, PLATFORM);
+        options.put(QUERY_APP_VERSION, APP_VERSION);
+        options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
+        disposables.add(nwstService.notice(options)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(newsListObserver()));
+                .subscribeWith(noticeObserver()));
     }
 
-    DisposableObserver<NlbNewsList> newsListObserver() {
-        return new DisposableObserver<NlbNewsList>() {
+    DisposableObserver<ResponseBody> noticeObserver() {
+        return new DisposableObserver<ResponseBody>() {
             @Override
-            public void onNext(NlbNewsList list) {
+            public void onNext(ResponseBody body) {
                 if (swipeRefreshLayout != null) {
                     swipeRefreshLayout.setRefreshing(true);
                 }
-                if (adapter != null) {
-                    if (list != null && list.newses != null) {
-                        for (NlbNews news : list.newses) {
-                            adapter.add(new Item(Item.TYPE_DATA, news));
+                if (adapter != null && body != null) {
+                    try {
+                        String[] notices = body.string().split("\\|\\*\\|", -1);
+                        for (String notice : notices) {
+                            notice = notice.replace("<br>", "").trim();
+                            NwstNotice nwstNotice = NwstNotice.Companion.fromString(notice);
+                            if (nwstNotice == null) continue;
+                            adapter.add(new Item(Item.TYPE_DATA, nwstNotice));
                         }
+                    } catch (IOException e) {
+                        Timber.d(e);
                     }
                 }
             }

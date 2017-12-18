@@ -18,6 +18,7 @@ import com.alvinhkh.buseta.lwb.ui.LwbActivity;
 import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.model.BusRouteStop;
 import com.alvinhkh.buseta.nlb.ui.NlbActivity;
+import com.alvinhkh.buseta.nwst.ui.NwstActivity;
 import com.alvinhkh.buseta.service.LocationService;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
 import com.crashlytics.android.answers.Answers;
@@ -69,6 +70,11 @@ public class SearchActivity extends AppCompatActivity {
         switch (companyCode) {
             case BusRoute.COMPANY_NLB:
                 intent = new Intent(getApplicationContext(), NlbActivity.class);
+                break;
+            case BusRoute.COMPANY_CTB:
+            case BusRoute.COMPANY_NWFB:
+            case BusRoute.COMPANY_NWST:
+                intent = new Intent(getApplicationContext(), NwstActivity.class);
                 break;
             case BusRoute.COMPANY_KMB:
             default:

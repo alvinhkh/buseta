@@ -119,11 +119,20 @@ abstract public class BaseActivity extends AppCompatActivity
                 String companyCode = aCursor.getString(aColumnIndex);
                 TextView textView = aView.findViewById(R.id.company);
                 switch (companyCode) {
+                    case BusRoute.COMPANY_CTB:
+                        textView.setText(R.string.provider_short_ctb);
+                        break;
                     case BusRoute.COMPANY_KMB:
                         textView.setText(R.string.provider_short_kmb);
                         break;
                     case BusRoute.COMPANY_NLB:
                         textView.setText(R.string.provider_short_nlb);
+                        break;
+                    case BusRoute.COMPANY_NWFB:
+                        textView.setText(R.string.provider_short_nwfb);
+                        break;
+                    case BusRoute.COMPANY_NWST:
+                        textView.setText(R.string.provider_short_nwst);
                         break;
                     default:
                         textView.setText(companyCode);

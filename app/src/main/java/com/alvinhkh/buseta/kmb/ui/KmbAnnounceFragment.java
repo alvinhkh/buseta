@@ -88,7 +88,7 @@ public class KmbAnnounceFragment extends Fragment
         recyclerView.setAdapter(adapter);
         emptyView = rootView.findViewById(R.id.empty_view);
         TextView emptyText = rootView.findViewById(R.id.empty_text);
-        emptyText.setText(R.string.message_no_passenger_notice);
+        emptyText.setText(R.string.message_no_notice);
         if (adapter.getDataItemCount() > 0) {
             recyclerView.setVisibility(View.VISIBLE);
             emptyView.setVisibility(View.GONE);

@@ -19,6 +19,10 @@ public class BusRouteStop implements Parcelable {
 
     public String fareHoliday;
 
+    public String fareChild;
+
+    public String fareSenior;
+
     public String imageUrl;
 
     public String latitude;
@@ -31,9 +35,9 @@ public class BusRouteStop implements Parcelable {
 
     public String origin;
 
-    public String route;
-
     public String sequence;
+
+    public String route;
 
     public String routeId;
 
@@ -47,11 +51,12 @@ public class BusRouteStop implements Parcelable {
     public String toString() {
         return "BusRouteStop{code=" + this.code + ", companyCode=" + this.companyCode
                 + ", destination=" + this.destination + ", direction=" + this.direction
-                + ", etaGet=" + this.etaGet + ", fare=" + this.fare  + ", fareHoliday=" + this.fareHoliday
-                + ", imageUrl=" + this.imageUrl + ", latitude=" + this.latitude +
-                ", location=" + this.location + ", longitude=" + this.longitude
-                + ", name=" + this.name + ", origin=" + this.origin + ", route=" + this.route
-                + ", sequence=" + this.sequence + ", routeId=" + this.routeId + "}";
+                + ", etaGet=" + this.etaGet + ", fare=" + this.fare + ", fareHoliday=" + this.fareHoliday
+                + ", fareChild=" + this.fareChild + ", fares=" + this.fareSenior
+                + ", imageUrl=" + this.imageUrl + ", latitude=" + this.latitude
+                + ", location=" + this.location + ", longitude=" + this.longitude
+                + ", name=" + this.name + ", origin=" + this.origin + ", sequence=" + this.sequence
+                + ", route=" + this.route + ", routeId=" + this.routeId + "}";
     }
 
     /**
@@ -66,14 +71,16 @@ public class BusRouteStop implements Parcelable {
         this.etaGet = p.readString();
         this.fare = p.readString();
         this.fareHoliday = p.readString();
+        this.fareChild = p.readString();
+        this.fareSenior = p.readString();
         this.imageUrl = p.readString();
         this.latitude = p.readString();
         this.location = p.readString();
         this.longitude = p.readString();
         this.name = p.readString();
         this.origin = p.readString();
-        this.route = p.readString();
         this.sequence = p.readString();
+        this.route = p.readString();
         this.routeId = p.readString();
     }
 
@@ -92,14 +99,16 @@ public class BusRouteStop implements Parcelable {
         dest.writeString(this.etaGet);
         dest.writeString(this.fare);
         dest.writeString(this.fareHoliday);
+        dest.writeString(this.fareChild);
+        dest.writeString(this.fareSenior);
         dest.writeString(this.imageUrl);
         dest.writeString(this.latitude);
         dest.writeString(this.location);
         dest.writeString(this.longitude);
         dest.writeString(this.name);
         dest.writeString(this.origin);
-        dest.writeString(this.route);
         dest.writeString(this.sequence);
+        dest.writeString(this.route);
         dest.writeString(this.routeId);
     }
 

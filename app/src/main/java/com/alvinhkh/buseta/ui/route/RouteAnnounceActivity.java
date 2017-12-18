@@ -14,6 +14,7 @@ import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.kmb.ui.KmbAnnounceFragment;
 import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.nlb.ui.NlbNewsFragment;
+import com.alvinhkh.buseta.nwst.ui.NwstNoticeFragment;
 import com.alvinhkh.buseta.ui.BaseActivity;
 import com.alvinhkh.buseta.utils.NightModeUtil;
 
@@ -42,7 +43,7 @@ public class RouteAnnounceActivity extends BaseActivity {
         setToolbar();
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
-            actionBar.setTitle(R.string.passenger_notice);
+            actionBar.setTitle(R.string.notice);
             actionBar.setSubtitle(routeNo);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
@@ -56,16 +57,21 @@ public class RouteAnnounceActivity extends BaseActivity {
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        BusRoute busRoute = new BusRoute();
+        busRoute.setCompanyCode(routeCompany);
+        busRoute.setName(routeNo);
+        busRoute.setSequence(routeSeq);
         switch (routeCompany) {
             case BusRoute.COMPANY_KMB:
-                BusRoute busRoute = new BusRoute();
-                busRoute.setCompanyCode(routeCompany);
-                busRoute.setName(routeNo);
-                busRoute.setSequence(routeSeq);
                 fragmentTransaction.replace(R.id.fragment_container, KmbAnnounceFragment.newInstance(busRoute));
                 break;
             case BusRoute.COMPANY_NLB:
                 fragmentTransaction.replace(R.id.fragment_container, NlbNewsFragment.newInstance());
+                break;
+            case BusRoute.COMPANY_CTB:
+            case BusRoute.COMPANY_NWFB:
+            case BusRoute.COMPANY_NWST:
+                fragmentTransaction.replace(R.id.fragment_container, NwstNoticeFragment.newInstance(busRoute));
                 break;
             default:
                 Toast.makeText(this, "invalid company: " + routeCompany, Toast.LENGTH_SHORT).show();

@@ -13,7 +13,9 @@ import org.jsoup.nodes.Element;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,13 +40,15 @@ public class NlbEtaUtil {
             Pattern p = Pattern.compile("(\\d*)(分鐘| min\\(s\\))");
             Matcher m = p.matcher(object.text);
             if (m.find()) {
-                Integer minute = Integer.parseInt(m.group(1));
-                if (minute > 0 && minute < 60) {
+                int minutes = Integer.parseInt(m.group(1));
+                if (minutes > 0 && minutes < 60) {
                     Calendar calendar = Calendar.getInstance();
-                    calendar.add(Calendar.MINUTE, minute);
+                    calendar.add(Calendar.MINUTE, minutes);
                     SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.ENGLISH);
                     object.estimate = sdf.format(calendar.getTime());
                 }
+                object.expired = minutes <= -3;  // time past
+                object.expired |= TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - object.updatedAt) >= 5; // maybe outdated
             }
         }
         return object;

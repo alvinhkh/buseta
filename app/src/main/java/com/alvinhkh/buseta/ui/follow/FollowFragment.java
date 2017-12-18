@@ -306,12 +306,7 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
                 Bundle bundle = intent.getExtras();
                 if (bundle == null) return;
                 if (bundle.getBoolean(C.EXTRA.UPDATED)) {
-                    Timber.d("follow updated");
                     if (followAndHistoryAdapter != null) {
-                        FollowStop followStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
-                        if (followStop != null) {
-                            // TODO: only change item changed
-                        }
                         followAndHistoryAdapter.updateFollow();
                         followAndHistoryAdapter.notifyDataSetChanged();
                     }
@@ -340,7 +335,6 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
                 Bundle bundle = intent.getExtras();
                 if (bundle == null) return;
                 if (bundle.getBoolean(C.EXTRA.UPDATED)) {
-                    Timber.d("history updated");
                     if (followAndHistoryAdapter != null) {
                         followAndHistoryAdapter.updateHistory();
                         followAndHistoryAdapter.notifyDataSetChanged();

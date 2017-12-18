@@ -8,7 +8,6 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetDialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.res.ResourcesCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.Spannable;
@@ -32,7 +31,6 @@ import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter;
 import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
 import com.alvinhkh.buseta.utils.BusRouteStopUtil;
 import com.alvinhkh.buseta.utils.FollowStopUtil;
-import com.alvinhkh.buseta.utils.FontChangeCrawler;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
 
 import java.text.DecimalFormat;
@@ -237,6 +235,9 @@ public class RouteStopListAdapter
                         }
                         if (!TextUtils.isEmpty(arrivalTime.estimate)) {
                             etaText.append(" (").append(arrivalTime.estimate).append(")");
+                        }
+                        if (arrivalTime.distanceKM >= 0) {
+                            etaText.append(" ").append(context.getString(R.string.km_short, arrivalTime.distanceKM));
                         }
                         if (arrivalTime.capacity >= 0) {
                             Drawable drawable = null;

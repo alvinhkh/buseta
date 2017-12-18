@@ -33,6 +33,9 @@ import com.alvinhkh.buseta.utils.FollowStopUtil;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
 import com.alvinhkh.buseta.utils.SearchHistoryUtil;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /*
  * An adapter that handle both follow stop and search history
  * show follow in front of search history
@@ -43,14 +46,14 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
 
     public static final int ITEM_VIEW_TYPE_HISTORY = 1;
 
-    private Context mContext;
+    private Context context;
 
     private Cursor historyCursor;
 
     private Cursor followCursor;
 
     FollowAndHistoryAdapter(Context context) {
-        this.mContext = context;
+        this.context = context;
         this.historyCursor = null;
         this.followCursor = null;
     }
@@ -86,9 +89,25 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
         return (followCursor == null) ? 0 : followCursor.getCount();
     }
 
+    public List<FollowStop> getFollowItems() {
+        List<FollowStop> list = new ArrayList<>();
+        for (int i = 0; i < getFollowCount(); i++) {
+            list.add((FollowStop) getItem(i));
+        }
+        return list;
+    }
+
+    public List<SearchHistory> getHistoryItems() {
+        List<SearchHistory> list = new ArrayList<>();
+        for (int i = getFollowCount(); i < getHistoryCount(); i++) {
+            list.add((SearchHistory) getItem(i));
+        }
+        return list;
+    }
+
     void updateHistory() {
-        if (mContext == null) return;
-        Cursor newCursor = mContext.getContentResolver().query(SuggestionProvider.CONTENT_URI, null,
+        if (context == null) return;
+        Cursor newCursor = context.getContentResolver().query(SuggestionProvider.CONTENT_URI, null,
                 SuggestionTable.COLUMN_TEXT + " LIKE ?" + " AND " + SuggestionTable.COLUMN_TYPE + " = ?",
                 new String[] {
                         "%%",
@@ -103,8 +122,8 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
     }
 
     void updateFollow() {
-        if (mContext == null) return;
-        Cursor newCursor = FollowStopUtil.queryAll(mContext);
+        if (context == null) return;
+        Cursor newCursor = FollowStopUtil.queryAll(context);
         if (followCursor == newCursor) return;
         Cursor oldCursor = followCursor;
         this.followCursor = newCursor;
@@ -164,7 +183,9 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
             ArrivalTimeUtil.query(context, BusRouteStopUtil.fromFollowStop(object)).subscribe(cursor -> {
                 // Cursor has been moved +1 position forward.
                 ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
+                if (arrivalTime == null) return;
                 arrivalTime = ArrivalTimeUtil.estimate(context, arrivalTime);
+                if (arrivalTime == null) return;
                 if (arrivalTime.id != null) {
                     SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.text);
                     Integer pos = Integer.parseInt(arrivalTime.id);
@@ -176,6 +197,9 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
                     }
                     if (!TextUtils.isEmpty(arrivalTime.estimate)) {
                         etaText.append(" (").append(arrivalTime.estimate).append(")");
+                    }
+                    if (arrivalTime.distanceKM >= 0) {
+                        etaText.append(" ").append(context.getString(R.string.km_short, arrivalTime.distanceKM));
                     }
                     if (arrivalTime.capacity >= 0) {
                         Drawable drawable = null;
@@ -258,11 +282,11 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
             Drawable drawable;
             switch (info.recordType) {
                 case SuggestionTable.TYPE_HISTORY:
-                    drawable = ContextCompat.getDrawable(mContext, R.drawable.ic_history_black_24dp);
+                    drawable = ContextCompat.getDrawable(context, R.drawable.ic_history_black_24dp);
                     break;
                 case SuggestionTable.TYPE_DEFAULT:
                 default:
-                    drawable = ContextCompat.getDrawable(mContext, R.drawable.ic_directions_bus_black_24dp);
+                    drawable = ContextCompat.getDrawable(context, R.drawable.ic_directions_bus_black_24dp);
                     break;
             }
             if (vh.iconImage != null && drawable != null) {
