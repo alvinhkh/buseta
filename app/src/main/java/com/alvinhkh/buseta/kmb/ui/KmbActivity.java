@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta.kmb.ui;
 
-import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -24,7 +23,6 @@ import android.widget.Toast;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.SearchHistory;
 import com.alvinhkh.buseta.kmb.KmbService;
 import com.alvinhkh.buseta.kmb.model.KmbRoute;
 import com.alvinhkh.buseta.kmb.model.KmbRouteBound;
@@ -33,16 +31,12 @@ import com.alvinhkh.buseta.kmb.model.network.KmbSpecialRouteRes;
 import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.model.BusRouteStop;
 import com.alvinhkh.buseta.provider.SuggestionProvider;
-import com.alvinhkh.buseta.provider.SuggestionTable;
 import com.alvinhkh.buseta.ui.BaseActivity;
 import com.alvinhkh.buseta.ui.route.RoutePagerAdapter;
 import com.alvinhkh.buseta.utils.AdViewUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.alvinhkh.buseta.utils.SearchHistoryUtil;
 import com.google.android.gms.ads.AdView;
-import com.google.firebase.appindexing.Action;
-import com.google.firebase.appindexing.FirebaseUserActions;
-import com.google.firebase.appindexing.builders.Actions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -264,6 +258,9 @@ public class KmbActivity extends BaseActivity
     }
 
     private void loadRouteNo(String no) {
+        if (pagerAdapter != null) {
+            pagerAdapter.clearSequence();
+        }
         if (TextUtils.isEmpty(no)) {
             showEmptyView();
             return;
@@ -284,7 +281,6 @@ public class KmbActivity extends BaseActivity
             @Override
             public void onNext(KmbRouteBoundRes res) {
                 if (res != null && res.data != null) {
-                    pagerAdapter.clearSequence();
                     List<Integer> list = new ArrayList<>();
                     for (KmbRouteBound bound : res.data) {
                         if (list.contains(bound.bound)) continue;
@@ -364,31 +360,5 @@ public class KmbActivity extends BaseActivity
                 }
             }
         };
-    }
-
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    public Action getIndexApiAction() {
-        return Actions.newView("Kmb", "http://[ENTER-YOUR-URL-HERE]");
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        FirebaseUserActions.getInstance().start(getIndexApiAction());
-    }
-
-    @Override
-    public void onStop() {
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        FirebaseUserActions.getInstance().end(getIndexApiAction());
-        super.onStop();
     }
 }

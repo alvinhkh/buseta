@@ -111,10 +111,18 @@ public class NlbStopListFragment extends Fragment implements
     private final Runnable refreshRunnable = new Runnable() {
         @Override
         public void run() {
+            if (getContext() != null) {
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+                if (preferences != null && preferences.getBoolean("load_etas", false)) {
+                    onRefresh();
+                    refreshHandler.postDelayed(this, 30000);  // refresh every 30 sec
+                    return;
+                }
+            }
             if (adapter != null && adapter.getItemCount() > 0) {
                 adapter.notifyDataSetChanged();
             }
-            refreshHandler.postDelayed(this, 30000);  // refresh eta every half minute
+            refreshHandler.postDelayed(this, 30000);  // refresh every 30 sec
         }
     };
 
@@ -212,7 +220,6 @@ public class NlbStopListFragment extends Fragment implements
                 });
             }
         }
-
         disposables.add(nlbService.getDatabase()
                 .retryWhen(new RetryWithDelay(5, 3000))
                 .subscribeOn(Schedulers.io())
@@ -241,7 +248,7 @@ public class NlbStopListFragment extends Fragment implements
                 guideTopInfo.setLayoutParams(params);
             }
         }
-        refreshHandler.post(refreshRunnable);
+        refreshHandler.postDelayed(refreshRunnable, 100);
     }
 
     @Override
@@ -538,7 +545,10 @@ public class NlbStopListFragment extends Fragment implements
                     } else if (getActivity() != null) {
                         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
                         if (fab != null) {
-                            fab.show();
+                            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                            if (preferences == null || !preferences.getBoolean("load_etas", false)) {
+                                fab.show();
+                            }
                         }
                     }
                 }
@@ -576,6 +586,7 @@ public class NlbStopListFragment extends Fragment implements
                 if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
                     swipeRefreshLayout.setRefreshing(false);
                 }
+                refreshHandler.post(refreshRunnable);
             }
         };
     }

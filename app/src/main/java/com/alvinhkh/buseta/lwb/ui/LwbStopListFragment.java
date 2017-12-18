@@ -107,10 +107,18 @@ public class LwbStopListFragment extends Fragment implements
     private final Runnable refreshRunnable = new Runnable() {
         @Override
         public void run() {
+            if (getContext() != null) {
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+                if (preferences != null && preferences.getBoolean("load_etas", false)) {
+                    onRefresh();
+                    refreshHandler.postDelayed(this, 30000);  // refresh every 30 sec
+                    return;
+                }
+            }
             if (adapter != null && adapter.getItemCount() > 0) {
                 adapter.notifyDataSetChanged();
             }
-            refreshHandler.postDelayed(this, 30000);  // refresh eta every half minute
+            refreshHandler.postDelayed(this, 30000);  // refresh every 30 sec
         }
     };
 
@@ -204,7 +212,6 @@ public class LwbStopListFragment extends Fragment implements
                 });
             }
         }
-
         disposables.add(lwbService.getRouteMap(busRoute.getName(), busRoute.getSequence(), busRoute.getServiceType())
                 .retryWhen(new RetryWithDelay(5, 3000))
                 .subscribeOn(Schedulers.io())
@@ -231,7 +238,7 @@ public class LwbStopListFragment extends Fragment implements
             params.guidePercent = .45f;
             guideTopInfo.setLayoutParams(params);
         }
-        refreshHandler.post(refreshRunnable);
+        refreshHandler.postDelayed(refreshRunnable, 100);
     }
 
     @Override
@@ -516,10 +523,13 @@ public class LwbStopListFragment extends Fragment implements
                     adapter.setLoaded();
                     if (adapter.getItemCount() < 1) {
                         Toast.makeText(getContext(), R.string.message_fail_to_request, Toast.LENGTH_SHORT).show();
-                    } else {
+                    } else if (getActivity() != null) {
                         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
                         if (fab != null) {
-                            fab.show();
+                            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                            if (preferences == null || !preferences.getBoolean("load_etas", false)) {
+                                fab.show();
+                            }
                         }
                     }
                 }
@@ -557,6 +567,7 @@ public class LwbStopListFragment extends Fragment implements
                 if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
                     swipeRefreshLayout.setRefreshing(false);
                 }
+                refreshHandler.post(refreshRunnable);
             }
         };
     }

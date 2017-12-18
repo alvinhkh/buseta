@@ -266,6 +266,9 @@ public class NwstActivity extends BaseActivity
     }
 
     private void loadRouteNo(String no, String mode) {
+        if (pagerAdapter != null) {
+            pagerAdapter.clearSequence();
+        }
         if (TextUtils.isEmpty(no)) {
             showEmptyView();
             return;
@@ -290,7 +293,6 @@ public class NwstActivity extends BaseActivity
     }
 
     DisposableObserver<ResponseBody> routeListObserver(String routeNo) {
-
         return new DisposableObserver<ResponseBody>() {
             @Override
             public void onNext(ResponseBody body) {

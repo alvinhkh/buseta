@@ -119,10 +119,18 @@ public class NwstStopListFragment extends Fragment implements
     private final Runnable refreshRunnable = new Runnable() {
         @Override
         public void run() {
+            if (getContext() != null) {
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+                if (preferences != null && preferences.getBoolean("load_etas", false)) {
+                    onRefresh();
+                    refreshHandler.postDelayed(this, 30000);  // refresh every 30 sec
+                    return;
+                }
+            }
             if (adapter != null && adapter.getItemCount() > 0) {
                 adapter.notifyDataSetChanged();
             }
-            refreshHandler.postDelayed(this, 30000);  // refresh eta every half minute
+            refreshHandler.postDelayed(this, 30000);  // refresh every 30 sec
         }
     };
 
@@ -220,14 +228,12 @@ public class NwstStopListFragment extends Fragment implements
                 });
             }
         }
-
         Map<String, String> options = new LinkedHashMap<>();
         options.put(QUERY_INFO, NwstRequestUtil.paramInfo(busRoute));
         options.put(QUERY_LANGUAGE, LANGUAGE_TC);
         options.put(QUERY_PLATFORM, PLATFORM);
         options.put(QUERY_APP_VERSION, APP_VERSION);
         options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
-        Timber.d("%s", options);
         disposables.add(nwstService.stopList(options)
                 .retryWhen(new RetryWithDelay(5, 3000))
                 .subscribeOn(Schedulers.io())
@@ -256,7 +262,7 @@ public class NwstStopListFragment extends Fragment implements
                 guideTopInfo.setLayoutParams(params);
             }
         }
-        refreshHandler.post(refreshRunnable);
+        refreshHandler.postDelayed(refreshRunnable, 100);
     }
 
     @Override
@@ -571,7 +577,10 @@ public class NwstStopListFragment extends Fragment implements
                     } else if (getActivity() != null) {
                         FloatingActionButton fab = getActivity().findViewById(R.id.fab);
                         if (fab != null) {
-                            fab.show();
+                            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+                            if (preferences == null || !preferences.getBoolean("load_etas", false)) {
+                                fab.show();
+                            }
                         }
                     }
                 }
@@ -610,6 +619,7 @@ public class NwstStopListFragment extends Fragment implements
                 if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
                     swipeRefreshLayout.setRefreshing(false);
                 }
+                refreshHandler.post(refreshRunnable);
             }
         };
     }

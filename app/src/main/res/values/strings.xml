@@ -27,6 +27,7 @@
     <string name="dots" translatable="false">&#8230;</string>
     <string name="enabled">啟用</string>
     <string name="eta">到站時間預報</string>
+    <string name="eta_short">ETA</string>
     <string name="hint_enter_route">輸入路線&#8230;</string>
     <string name="interpunct" translatable="false">\u00A0&#183;\u00A0</string>
     <string name="minutes">%1$s分鐘</string>

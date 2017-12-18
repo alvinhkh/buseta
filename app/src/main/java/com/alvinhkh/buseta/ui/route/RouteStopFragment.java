@@ -117,7 +117,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                     getContext().startService(intent);
                 }
             } catch (IllegalStateException ignored) {}
-            refreshHandler.postDelayed(this, 30000);  // refresh eta every half minute
+            refreshHandler.postDelayed(this, 30000);  // refresh every 30 sec
         }
     };
 

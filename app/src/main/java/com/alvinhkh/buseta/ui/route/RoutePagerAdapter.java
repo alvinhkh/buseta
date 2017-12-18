@@ -79,6 +79,7 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
 
     public void clearSequence() {
         routes.clear();
+        fragments.clear();
         pagerAdapterPosChanged = POSITION_NONE;
         notifyDataSetChanged();
     }
@@ -131,11 +132,6 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public int getItemPosition(Object object) {
-        //  This check make sures getItem() is called only for the required Fragment
-        if (object instanceof LwbStopListFragment) {
-            // Note: any fragment require to refresh should be here
-            return pagerAdapterPosChanged;
-        }
-        return POSITION_UNCHANGED;
+        return pagerAdapterPosChanged;
     }
 }

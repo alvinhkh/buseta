@@ -254,6 +254,9 @@ public class LwbActivity extends BaseActivity
     }
 
     private void loadRouteNo(String no) {
+        if (pagerAdapter != null) {
+            pagerAdapter.clearSequence();
+        }
         if (TextUtils.isEmpty(no)) {
             showEmptyView();
             return;
@@ -275,7 +278,6 @@ public class LwbActivity extends BaseActivity
             public void onNext(LwbRouteBoundRes res) {
                 if (res != null && res.bus_arr != null) {
                     pagerAdapter.setRoute(routeNo);
-                    pagerAdapter.clearSequence();
                     int i = 1;
                     for (LwbRouteBound bound : res.bus_arr) {
                         if (bound == null) continue;

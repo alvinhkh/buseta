@@ -255,6 +255,9 @@ public class NlbActivity extends BaseActivity
     }
 
     private void loadRouteNo(String no) {
+        if (pagerAdapter != null) {
+            pagerAdapter.clearSequence();
+        }
         if (TextUtils.isEmpty(no)) {
             showEmptyView();
             return;
@@ -279,8 +282,6 @@ public class NlbActivity extends BaseActivity
             @Override
             public void onNext(NlbDatabase database) {
                 if (database != null && database.routes != null) {
-                    pagerAdapter.setRoute("");
-                    pagerAdapter.clearSequence();
                     int i = 0;
                     for (NlbRoute route : database.routes) {
                         if (route == null) continue;
