@@ -50,7 +50,7 @@
             android:orientation="vertical"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/map_container"
+            app:layout_constraintTop_toBottomOf="@+id/map"
             app:layout_constraintBottom_toBottomOf="parent" >
 
             <ProgressBar

@@ -73,6 +73,8 @@ import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
+import static com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item.TYPE_DATA;
+
 
 // TODO: better way to find nearest stop
 // TODO: keep (nearest) stop on top
@@ -408,11 +410,21 @@ public class KmbStopListFragment extends Fragment implements
                 if (bundle == null) return;
                 BusRouteStop busRouteStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
                 if (busRouteStop == null) return;
+                if (!busRouteStop.route.equals(busRoute.getName())) return;
+                if (!busRouteStop.direction.equals(busRoute.getSequence())) return;
                 if (bundle.getBoolean(C.EXTRA.UPDATED) || bundle.getBoolean(C.EXTRA.FAIL)) {
                     if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
                         swipeRefreshLayout.setRefreshing(false);
                     }
-                    adapter.notifyItemChanged(Integer.parseInt(busRouteStop.sequence));
+                    int i = 0;
+                    for (Item item : adapter.getItems()) {
+                        if (item.getType() == TYPE_DATA &&
+                                ((BusRouteStop) item.getObject()).sequence.equals(busRouteStop.sequence)) {
+                            adapter.notifyItemChanged(i);
+                            break;
+                        }
+                        i++;
+                    }
                 }
             }
 
@@ -439,7 +451,15 @@ public class KmbStopListFragment extends Fragment implements
                 FollowStop followStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
                 if (followStop == null) return;
                 if (bundle.getBoolean(C.EXTRA.UPDATED)) {
-                    adapter.notifyItemChanged(Integer.parseInt(followStop.sequence));
+                    int i = 0;
+                    for (Item item : adapter.getItems()) {
+                        if (item.getType() == TYPE_DATA &&
+                                ((BusRouteStop) item.getObject()).sequence.equals(followStop.sequence)) {
+                            adapter.notifyItemChanged(i);
+                            break;
+                        }
+                        i++;
+                    }
                 }
             }
 

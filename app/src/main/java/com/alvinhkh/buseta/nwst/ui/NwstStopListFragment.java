@@ -86,6 +86,7 @@ import static com.alvinhkh.buseta.nwst.NwstService.QUERY_INFO;
 import static com.alvinhkh.buseta.nwst.NwstService.QUERY_LANGUAGE;
 import static com.alvinhkh.buseta.nwst.NwstService.QUERY_PLATFORM;
 import static com.alvinhkh.buseta.nwst.NwstService.QUERY_SYSCODE;
+import static com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item.TYPE_DATA;
 
 
 public class NwstStopListFragment extends Fragment implements
@@ -175,7 +176,7 @@ public class NwstStopListFragment extends Fragment implements
         recyclerView.setHasFixedSize(true);
         adapter = new RouteStopListAdapter(getFragmentManager(), recyclerView, busRoute);
         adapter.setOnClickItemListener(this);
-        if (!TextUtils.isEmpty(busRoute.getDescription())) {
+        if (!TextUtils.isEmpty(busRoute.getDescription()) && !busRoute.getDescription().equals("正常路線")) {
             adapter.add(new Item(Item.TYPE_HEADER, busRoute.getDescription()));
         }
         if (ActivityCompat.checkSelfPermission(getContext(),
@@ -327,7 +328,7 @@ public class NwstStopListFragment extends Fragment implements
 
     @Override
     public void onClickItem(Item item) {
-        if (item.getType() == Item.TYPE_DATA) {
+        if (item.getType() == TYPE_DATA) {
             if (map != null) {
                 BusRouteStop stop = (BusRouteStop) item.getObject();
                 if (stop != null) {
@@ -431,14 +432,18 @@ public class NwstStopListFragment extends Fragment implements
                 if (bundle == null) return;
                 BusRouteStop busRouteStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
                 if (busRouteStop == null) return;
+                if (!busRouteStop.route.equals(busRoute.getName())) return;
+                if (!busRouteStop.direction.equals(busRoute.getSequence())) return;
                 if (bundle.getBoolean(C.EXTRA.UPDATED) || bundle.getBoolean(C.EXTRA.FAIL)) {
                     if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
                         swipeRefreshLayout.setRefreshing(false);
                     }
                     int i = 0;
-                    for (Item item: adapter.getDataItems()) {
-                        if (((BusRouteStop) item.getObject()).sequence.equals(busRouteStop.sequence)) {
+                    for (Item item : adapter.getItems()) {
+                        if (item.getType() == TYPE_DATA &&
+                                ((BusRouteStop) item.getObject()).sequence.equals(busRouteStop.sequence)) {
                             adapter.notifyItemChanged(i);
+                            break;
                         }
                         i++;
                     }
@@ -469,9 +474,11 @@ public class NwstStopListFragment extends Fragment implements
                 if (followStop == null) return;
                 if (bundle.getBoolean(C.EXTRA.UPDATED)) {
                     int i = 0;
-                    for (Item item : adapter.getDataItems()) {
-                        if (((BusRouteStop) item.getObject()).sequence.equals(followStop.sequence)) {
+                    for (Item item : adapter.getItems()) {
+                        if (item.getType() == TYPE_DATA &&
+                                ((BusRouteStop) item.getObject()).sequence.equals(followStop.sequence)) {
                             adapter.notifyItemChanged(i);
+                            break;
                         }
                         i++;
                     }
@@ -541,7 +548,7 @@ public class NwstStopListFragment extends Fragment implements
                         if (nwstStop != null) {
                             BusRouteStop stop = BusRouteStopUtil.fromNwst(nwstStop, busRoute);
                             stop.sequence = Integer.toString(i);
-                            items.add(new Item(Item.TYPE_DATA, stop));
+                            items.add(new Item(TYPE_DATA, stop));
                             if (busRoute != null && busRoute.getSequence().equals(stop.direction) &&
                                     i == scrollToStopSequence) {
                                 scrollToPosition = i - busRoute.getStopsStartSequence();
@@ -593,7 +600,7 @@ public class NwstStopListFragment extends Fragment implements
                             .color(ContextCompat.getColor(getContext(), R.color.colorAccent));
                     for (int j = 0; j < adapter.getItemCount(); j++) {
                         Item item = adapter.getItem(j);
-                        if (item.getType() != Item.TYPE_DATA) continue;
+                        if (item.getType() != TYPE_DATA) continue;
                         BusRouteStop stop = (BusRouteStop) item.getObject();
                         busRouteStops.add(stop);
 

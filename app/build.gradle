@@ -90,13 +90,20 @@ dependencies {
     implementation ('com.firebaseui:firebase-ui-firestore:3.1.0') {
         exclude group: 'com.google.firebase'
     }
-    implementation group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1'
+    implementation (group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1') {
+        exclude group: 'stax', module: 'stax-api'
+        exclude group: 'xpp3', module: 'xpp3'
+    }
     implementation 'org.jsoup:jsoup:1.10.3'
     implementation 'com.github.chrisbanes:PhotoView:1.3.1'
     implementation 'com.squareup.retrofit2:retrofit:2.3.0'
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
-    implementation 'com.squareup.retrofit2:converter-simplexml:2.3.0'
+    implementation ('com.squareup.retrofit2:converter-gson:2.3.0') {
+        exclude group: 'com.google.code.gson', module: 'gson'
+    }
+    implementation ('com.squareup.retrofit2:converter-simplexml:2.3.0') {
+        exclude group: 'org.simpleframework', module: 'simple-xml'
+    }
     implementation 'com.jakewharton.timber:timber:4.6.0'
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
     implementation 'io.reactivex.rxjava2:rxjava:2.1.7'

@@ -90,7 +90,6 @@ public class EtaService extends IntentService {
         for (int i = 0; i < busRouteStopList.size(); i++) {
             BusRouteStop routeStop = busRouteStopList.get(i);
             if (!TextUtils.isEmpty(routeStop.companyCode)) {
-
                 // notifyUpdate(routeStop, C.EXTRA.UPDATING, widgetId, notificationId, row);
                 switch (routeStop.companyCode) {
                     case BusRoute.COMPANY_KMB:
