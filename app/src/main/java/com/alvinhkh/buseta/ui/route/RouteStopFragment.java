@@ -473,6 +473,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
         vh.notificationButton = contentView.findViewById(R.id.notification_button);
         vh.streetviewButton = contentView.findViewById(R.id.open_streetview_button);
         vh.arrivalAlertButton = contentView.findViewById(R.id.arrival_alert_button);
+        vh.arrivalAlertButton.setVisibility(BuildConfig.DEBUG ? View.VISIBLE : View.GONE);
 
         vh.nameText = contentView.findViewById(R.id.stop_name);
         vh.routeNoText = contentView.findViewById(R.id.route_no);

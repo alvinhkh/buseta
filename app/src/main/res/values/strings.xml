@@ -128,7 +128,8 @@
     <string name="latest_news">最新消息</string>
     <string name="notice">通告</string>
     <string name="km">%1$.2f公里</string>
-    <string name="km_short">%1$.2fKM</string>
+    <string name="km_short">%1$.2fkm</string>
+    <string name="map_direction_api">Direction API</string>
     <string name="provider_ctb">城巴</string>
     <string name="provider_kmb">九龍巴士</string>
     <string name="provider_nlb">新大嶼山巴士</string>

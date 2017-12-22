@@ -69,15 +69,6 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/stop_location"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/white"
-                    android:maxLines="1"
-                    style="@style/TextAppearance.AppCompat.Small"
-                    tools:text="ADDRESS"/>
-
-                <TextView
                     android:id="@+id/distance"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -85,6 +76,15 @@
                     android:maxLines="1"
                     style="@style/TextAppearance.AppCompat.Small"
                     tools:text="~5.00km"/>
+
+                <TextView
+                    android:id="@+id/stop_location"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:maxLines="1"
+                    style="@style/TextAppearance.AppCompat.Small"
+                    tools:text="ADDRESS"/>
 
                 <TextView
                     android:id="@+id/fare"

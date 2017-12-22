@@ -92,6 +92,7 @@ public class BusRouteStopUtil {
         object.sequence = Integer.toString(position);
         object.name = HKSCSUtil.convert(kmbRouteStop.nameTc);
         object.fare = kmbRouteStop.airFare;
+        object.location = kmbRouteStop.locationTc;
         Pair<Double, Double> longlat = fromHK80toWGS84(
                 new Pair<>(Double.parseDouble(kmbRouteStop.X), Double.parseDouble(kmbRouteStop.Y)));
         if (longlat != null) {
@@ -124,6 +125,7 @@ public class BusRouteStopUtil {
         object.fare = lwbRouteStop.air_cond_fare;
         object.latitude = lwbRouteStop.lat;
         object.longitude = lwbRouteStop.lng;
+        object.location = lwbRouteStop.address_tc;
 
         object.destination = busRoute.getLocationEndName();
         object.origin = busRoute.getLocationStartName();
@@ -150,6 +152,7 @@ public class BusRouteStopUtil {
         object.fareHoliday = nlbRouteStop.fare_holiday;
         object.latitude = nlbStop.latitude;
         object.longitude = nlbStop.longitude;
+        object.location = nlbStop.stop_location_c;
         object.destination = busRoute.getLocationEndName();
         object.origin = busRoute.getLocationStartName();
         return object;

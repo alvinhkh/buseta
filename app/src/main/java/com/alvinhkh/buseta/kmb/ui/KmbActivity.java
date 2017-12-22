@@ -37,6 +37,7 @@ import com.alvinhkh.buseta.utils.AdViewUtil;
 import com.alvinhkh.buseta.utils.BusRouteUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.alvinhkh.buseta.utils.HKSCSUtil;
+import com.alvinhkh.buseta.utils.RetryWithDelay;
 import com.alvinhkh.buseta.utils.SearchHistoryUtil;
 import com.google.android.gms.ads.AdView;
 
@@ -275,6 +276,7 @@ public class KmbActivity extends BaseActivity
         showLoadingView();
 
         disposables.add(kmbService.getRouteBound(no)
+                .retryWhen(new RetryWithDelay(5, 3000))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(getRouteBoundObserver()));
@@ -290,6 +292,7 @@ public class KmbActivity extends BaseActivity
                         if (list.contains(bound.bound)) continue;
                         list.add(bound.bound);
                         disposables.add(kmbService.getSpecialRoute(bound.route, String.valueOf(bound.bound))
+                                .retryWhen(new RetryWithDelay(5, 3000))
                                 .subscribeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribeWith(getSpecialRouteObserver(bound.route)));

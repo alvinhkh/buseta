@@ -126,6 +126,9 @@ public class SettingActivity extends BasePreferenceActivity {
             //
             Preference shareApp = getPreferenceScreen().findPreference("share_app");
             shareApp.setOnPreferenceClickListener(this);
+            //
+            SwitchPreferenceCompat mapDirectionApi = (SwitchPreferenceCompat) getPreferenceScreen().findPreference("map_direction_api");
+            mapDirectionApi.setVisible(BuildConfig.DEBUG);
             // hide ad
             SwitchPreferenceCompat hideAd = (SwitchPreferenceCompat) getPreferenceScreen().findPreference(C.PREF.AD_HIDE);
             if (hideAd != null) {

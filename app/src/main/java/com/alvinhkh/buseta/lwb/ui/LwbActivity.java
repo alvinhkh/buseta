@@ -34,6 +34,7 @@ import com.alvinhkh.buseta.ui.BaseActivity;
 import com.alvinhkh.buseta.ui.route.RoutePagerAdapter;
 import com.alvinhkh.buseta.utils.AdViewUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
+import com.alvinhkh.buseta.utils.RetryWithDelay;
 import com.alvinhkh.buseta.utils.SearchHistoryUtil;
 import com.google.android.gms.ads.AdView;
 
@@ -267,6 +268,7 @@ public class LwbActivity extends BaseActivity
         showLoadingView();
 
         disposables.add(lwbService.getRouteBound(no, Math.random())
+                .retryWhen(new RetryWithDelay(5, 3000))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(getRouteBoundObserver()));
