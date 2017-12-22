@@ -32,6 +32,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.alvinhkh.buseta.C;
@@ -93,6 +95,12 @@ public class KmbStopListFragment extends Fragment implements
     private SwipeRefreshLayout swipeRefreshLayout;
 
     private RecyclerView recyclerView;
+
+    private View emptyView;
+
+    private ProgressBar progressBar;
+
+    private TextView emptyText;
 
     private BusRoute busRoute;
 
@@ -161,7 +169,14 @@ public class KmbStopListFragment extends Fragment implements
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_list, container, false);
+        emptyView = rootView.findViewById(R.id.empty_view);
+        emptyView.setVisibility(View.VISIBLE);
+        progressBar = rootView.findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.VISIBLE);
+        emptyText = rootView.findViewById(R.id.empty_text);
+        emptyText.setText(R.string.message_loading);
         recyclerView = rootView.findViewById(R.id.recycler_view);
+        recyclerView.setVisibility(View.GONE);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
         adapter = new RouteStopListAdapter(getFragmentManager(), recyclerView, busRoute);
@@ -536,18 +551,22 @@ public class KmbStopListFragment extends Fragment implements
                 if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
                     swipeRefreshLayout.setRefreshing(false);
                 }
+                if (recyclerView != null) {
+                    recyclerView.setVisibility(View.GONE);
+                    emptyView.setVisibility(View.VISIBLE);
+                    progressBar.setVisibility(View.GONE);
+                    emptyText.setText(e.getMessage());
+                }
             }
 
             @Override
             public void onComplete() {
                 if (recyclerView != null) {
-                    RecyclerView.SmoothScroller smoothScroller = new LinearSmoothScroller(getContext()) {
-                        @Override protected int getVerticalSnapPreference() {
-                            return LinearSmoothScroller.SNAP_TO_START;
-                        }
-                    };
-                    smoothScroller.setTargetPosition(scrollToPosition);
-                    recyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
+                    recyclerView.setVisibility(View.VISIBLE);
+                    emptyView.setVisibility(View.GONE);
+                    progressBar.setVisibility(View.GONE);
+                    emptyText.setText(R.string.message_loading);
+                    recyclerView.scrollToPosition(scrollToPosition);
                 }
                 if (adapter != null) {
                     adapter.setLoaded();

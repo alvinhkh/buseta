@@ -15,7 +15,7 @@
 
     <string-array name="kmb_api_entries">
         <item>舊API</item>
-        <item>新API（會出現香港字問題）</item>
+        <item>新API</item>
     </string-array>
 
     <string-array name="kmb_api_values">

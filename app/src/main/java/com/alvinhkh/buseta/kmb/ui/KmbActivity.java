@@ -34,7 +34,9 @@ import com.alvinhkh.buseta.provider.SuggestionProvider;
 import com.alvinhkh.buseta.ui.BaseActivity;
 import com.alvinhkh.buseta.ui.route.RoutePagerAdapter;
 import com.alvinhkh.buseta.utils.AdViewUtil;
+import com.alvinhkh.buseta.utils.BusRouteUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
+import com.alvinhkh.buseta.utils.HKSCSUtil;
 import com.alvinhkh.buseta.utils.SearchHistoryUtil;
 import com.google.android.gms.ads.AdView;
 
@@ -86,6 +88,8 @@ public class KmbActivity extends BaseActivity
     private String routeNo;
 
     private Fragment currentFragment;
+
+    private int pageNo = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -309,23 +313,21 @@ public class KmbActivity extends BaseActivity
 
     public DisposableObserver<KmbSpecialRouteRes> getSpecialRouteObserver(String routeNo) {
         return new DisposableObserver<KmbSpecialRouteRes>() {
+
+            Boolean isScrollToPage = false;
+
             @Override
             public void onNext(KmbSpecialRouteRes res) {
                 if (res != null && res.data != null) {
                     pagerAdapter.setRoute(routeNo);
                     for (KmbRoute route : res.data.routes) {
                         if (route == null || route.route == null || !route.route.equals(routeNo)) continue;
-                        BusRoute busRoute = new BusRoute();
-                        busRoute.setCompanyCode(BusRoute.COMPANY_KMB);
-                        busRoute.setLocationEndName(route.destinationTc);
-                        busRoute.setLocationStartName(route.originTc);
-                        busRoute.setName(route.route);
-                        busRoute.setSequence(route.bound);
-                        busRoute.setServiceType(TextUtils.isEmpty(route.serviceType) ? route.serviceType : route.serviceType.trim());
-                        busRoute.setDescription(TextUtils.isEmpty(route.descTc) ? route.descTc : route.descTc.trim());
-                        busRoute.setSpecial(!TextUtils.isEmpty(route.descTc));
-                        Timber.d("%s", busRoute.toString());
+                        BusRoute busRoute = BusRouteUtil.fromKmb(route);
                         pagerAdapter.addSequence(busRoute);
+                        if (stopFromIntent != null && busRoute.getSequence().equals(stopFromIntent.direction)) {
+                            pageNo = pagerAdapter.getCount();
+                            isScrollToPage = true;
+                        }
                     }
                 }
             }
@@ -345,8 +347,8 @@ public class KmbActivity extends BaseActivity
 
             @Override
             public void onComplete() {
-                if (stopFromIntent != null) {
-                    viewPager.setCurrentItem(Integer.parseInt(stopFromIntent.direction) - 1, false);
+                if (isScrollToPage) {
+                    viewPager.setCurrentItem(pageNo, false);
                 }
                 if (pagerAdapter.getCount() > 0) {
                     getContentResolver().insert(SuggestionProvider.CONTENT_URI,
@@ -355,6 +357,7 @@ public class KmbActivity extends BaseActivity
                     if (emptyView != null) {
                         emptyView.setVisibility(View.GONE);
                     }
+                    viewPager.setOffscreenPageLimit(Math.min(pagerAdapter.getCount(), 10));
                 } else {
                     showEmptyView();
                 }

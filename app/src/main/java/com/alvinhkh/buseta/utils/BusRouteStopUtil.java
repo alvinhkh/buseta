@@ -90,7 +90,7 @@ public class BusRouteStopUtil {
         object.direction = kmbRouteStop.bound;
         object.code = kmbRouteStop.bsiCode;
         object.sequence = Integer.toString(position);
-        object.name = kmbRouteStop.nameTc;
+        object.name = HKSCSUtil.convert(kmbRouteStop.nameTc);
         object.fare = kmbRouteStop.airFare;
         Pair<Double, Double> longlat = fromHK80toWGS84(
                 new Pair<>(Double.parseDouble(kmbRouteStop.X), Double.parseDouble(kmbRouteStop.Y)));

@@ -155,8 +155,6 @@ public class RouteStopListAdapter
             this.busRoute = busRoute;
             this.fragmentManager = fragmentManager;
             this.currentLocation = currentLocation;
-            // FontChangeCrawler fontChanger = new FontChangeCrawler(ResourcesCompat.getFont(itemView.getContext(), R.font.hkscsiic));
-            // fontChanger.replaceFonts((ViewGroup) itemView);
         }
 
         @Override

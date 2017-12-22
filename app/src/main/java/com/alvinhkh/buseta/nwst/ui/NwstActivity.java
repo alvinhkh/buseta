@@ -405,7 +405,9 @@ public class NwstActivity extends BaseActivity
 
             @Override
             public void onComplete() {
-                if (isScrollToPage) viewPager.setCurrentItem(pageNo, false);
+                if (isScrollToPage) {
+                    viewPager.setCurrentItem(pageNo, false);
+                }
                 if (pagerAdapter.getCount() > 0) {
                     getContentResolver().insert(SuggestionProvider.CONTENT_URI,
                             SearchHistoryUtil.toContentValues(
