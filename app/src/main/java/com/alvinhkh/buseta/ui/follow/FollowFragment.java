@@ -227,9 +227,11 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
     private void updateAppShortcuts() {
         if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return;
+        if (getContext() == null) return;
         // Dynamic App Shortcut
         try {
             ShortcutManager shortcutManager = getContext().getSystemService(ShortcutManager.class);
+            if (shortcutManager == null) return;
             ArrayList<ShortcutInfo> shortcuts = new ArrayList<>();
             for (int i = 0; i < shortcutManager.getMaxShortcutCountPerActivity()-1 && i < followAndHistoryAdapter.getItemCount(); i++) {
                 Object object = followAndHistoryAdapter.getItem(i);

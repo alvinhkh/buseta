@@ -84,12 +84,14 @@ public class GeofenceTransitionsIntentService extends IntentService {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager notificationManager =
                     (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            NotificationChannel channel = new NotificationChannel(C.NOTIFICATION.CHANNEL_ARRIVAL_ALERT,
-                    getString(R.string.channel_name_arrival_alert), NotificationManager.IMPORTANCE_HIGH);
-            channel.setDescription(getString(R.string.channel_description_arrival_alert));
-            channel.enableLights(true);
-            channel.enableVibration(true);
-            notificationManager.createNotificationChannel(channel);
+            if (notificationManager != null) {
+                NotificationChannel channel = new NotificationChannel(C.NOTIFICATION.CHANNEL_ARRIVAL_ALERT,
+                        getString(R.string.channel_name_arrival_alert), NotificationManager.IMPORTANCE_HIGH);
+                channel.setDescription(getString(R.string.channel_description_arrival_alert));
+                channel.enableLights(true);
+                channel.enableVibration(true);
+                notificationManager.createNotificationChannel(channel);
+            }
         }
 
         // Create an explicit content Intent that starts the main Activity.

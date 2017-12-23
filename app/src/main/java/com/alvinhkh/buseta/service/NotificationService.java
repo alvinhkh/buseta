@@ -49,18 +49,21 @@ public class NotificationService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager notificationManager =
                     (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            NotificationChannel etaChannel = new NotificationChannel(C.NOTIFICATION.CHANNEL_ETA,
-                    getString(R.string.channel_name_eta), NotificationManager.IMPORTANCE_HIGH);
-            etaChannel.setDescription(getString(R.string.channel_description_eta));
-            etaChannel.enableLights(false);
-            etaChannel.enableVibration(false);
-            notificationManager.createNotificationChannel(etaChannel);
-            NotificationChannel foregroundChannel = new NotificationChannel(C.NOTIFICATION.CHANNEL_FOREGROUND,
-                    getString(R.string.channel_name_foreground, getString(R.string.app_name)), NotificationManager.IMPORTANCE_MIN);
-            foregroundChannel.setDescription(getString(R.string.channel_description_foreground));
-            foregroundChannel.enableLights(false);
-            foregroundChannel.enableVibration(false);
-            notificationManager.createNotificationChannel(foregroundChannel);
+            if (notificationManager != null) {
+                NotificationChannel etaChannel = new NotificationChannel(C.NOTIFICATION.CHANNEL_ETA,
+                        getString(R.string.channel_name_eta), NotificationManager.IMPORTANCE_HIGH);
+                etaChannel.setDescription(getString(R.string.channel_description_eta));
+                etaChannel.enableLights(false);
+                etaChannel.enableVibration(false);
+                notificationManager.createNotificationChannel(etaChannel);
+                NotificationChannel foregroundChannel = new NotificationChannel(C.NOTIFICATION.CHANNEL_FOREGROUND,
+                        getString(R.string.channel_name_foreground, getString(R.string.app_name)), NotificationManager.IMPORTANCE_MIN);
+                foregroundChannel.setDescription(getString(R.string.channel_description_foreground));
+                foregroundChannel.enableLights(false);
+                foregroundChannel.enableVibration(false);
+                foregroundChannel.setImportance(NotificationManager.IMPORTANCE_NONE);
+                notificationManager.createNotificationChannel(foregroundChannel);
+            }
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             showForegroundNotification();

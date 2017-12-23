@@ -40,13 +40,15 @@ public class EtaJobService extends JobService {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager notificationManager =
                     (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            CharSequence name = getString(R.string.channel_name_eta);
-            String description = getString(R.string.channel_description_eta);
-            NotificationChannel channel = new NotificationChannel(C.NOTIFICATION.CHANNEL_ETA, name, NotificationManager.IMPORTANCE_HIGH);
-            channel.setDescription(description);
-            channel.enableLights(false);
-            channel.enableVibration(false);
-            notificationManager.createNotificationChannel(channel);
+            if (notificationManager != null) {
+                CharSequence name = getString(R.string.channel_name_eta);
+                String description = getString(R.string.channel_description_eta);
+                NotificationChannel channel = new NotificationChannel(C.NOTIFICATION.CHANNEL_ETA, name, NotificationManager.IMPORTANCE_HIGH);
+                channel.setDescription(description);
+                channel.enableLights(false);
+                channel.enableVibration(false);
+                notificationManager.createNotificationChannel(channel);
+            }
         }
         disposables.add(RxBroadcastReceiver.create(this, new IntentFilter(C.ACTION.ETA_UPDATE))
                 .share()

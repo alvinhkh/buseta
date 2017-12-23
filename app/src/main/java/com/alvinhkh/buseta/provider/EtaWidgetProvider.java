@@ -85,7 +85,7 @@ public class EtaWidgetProvider extends AppWidgetProvider {
             for (FollowStop stop: followStops) {
                 busRouteStops.add(BusRouteStopUtil.fromFollowStop(stop));
             }
-                try {
+            try {
                 Intent intent = new Intent(context, EtaService.class);
                 intent.putExtra(C.EXTRA.WIDGET_UPDATE, widgetId);
                 intent.putParcelableArrayListExtra(C.EXTRA.STOP_LIST, busRouteStops);

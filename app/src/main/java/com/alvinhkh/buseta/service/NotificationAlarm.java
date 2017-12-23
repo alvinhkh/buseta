@@ -29,8 +29,10 @@ public class NotificationAlarm {
                 PendingIntent.FLAG_CANCEL_CURRENT);
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        // RTC does not wake the device up
-        alarmManager.setRepeating(AlarmManager.RTC, calendar.getTimeInMillis(), interval_millis, pendingIntent);
+        if (alarmManager != null) {
+            // RTC does not wake the device up
+            alarmManager.setRepeating(AlarmManager.RTC, calendar.getTimeInMillis(), interval_millis, pendingIntent);
+        }
     }
 
     public void stopAlarm() {
@@ -39,7 +41,9 @@ public class NotificationAlarm {
                 PendingIntent.FLAG_CANCEL_CURRENT);
 
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        alarmManager.cancel(pendingIntent);
+        if (alarmManager != null) {
+            alarmManager.cancel(pendingIntent);
+        }
     }
 
 }

@@ -18,7 +18,6 @@ import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.service.CheckUpdateService;
 import com.alvinhkh.buseta.service.LocationService;
 import com.alvinhkh.buseta.ui.BaseActivity;
-import com.alvinhkh.buseta.ui.search.SearchActivity;
 import com.alvinhkh.buseta.utils.AdViewUtil;
 import com.google.android.gms.ads.AdView;
 
@@ -80,7 +79,6 @@ public class FollowActivity extends BaseActivity implements SharedPreferences.On
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
         return super.onOptionsItemSelected(item);
     }
 
