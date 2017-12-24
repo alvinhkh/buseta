@@ -18,7 +18,7 @@ public class FollowTable {
     public final static String COLUMN_STOP_SEQ = "stop_seq";
     public final static String COLUMN_STOP_CODE = "stop_code";
     public final static String COLUMN_STOP_NAME = "stop_name";
-    public final static String COLUMN_ORDER = "display_order";
+    public final static String COLUMN_DISPLAY_ORDER = "display_order";
 
     private static String DATABASE_CREATE(String tableName) {
         return "CREATE TABLE "
@@ -35,7 +35,7 @@ public class FollowTable {
                 + COLUMN_STOP_SEQ + " TEXT not NULL, "
                 + COLUMN_STOP_CODE + " TEXT not NULL, "
                 + COLUMN_STOP_NAME + " TEXT not NULL, "
-                + COLUMN_ORDER + " INTEGER DEFAULT 0, "
+                + COLUMN_DISPLAY_ORDER + " INTEGER DEFAULT 0, "
                 + "UNIQUE (" + COLUMN_COMPANY + ", " + COLUMN_ROUTE + ", "
                 + COLUMN_BOUND + ", " + COLUMN_STOP_CODE
                 + ") ON CONFLICT REPLACE"

@@ -79,6 +79,15 @@ public class FollowActivity extends BaseActivity implements SharedPreferences.On
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_edit_follow:
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.fragment_container, EditFollowFragment.newInstance());
+                fragmentTransaction.addToBackStack("follow_list");
+                fragmentTransaction.commit();
+                return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -136,11 +145,12 @@ public class FollowActivity extends BaseActivity implements SharedPreferences.On
 
     @Override
     public void onBackPressed() {
-        int count = getSupportFragmentManager().getBackStackEntryCount();
-        if (count <= 2) {
+        if (getSupportFragmentManager().getBackStackEntryCount() < 2) {
             finish();
-            return;
+        } else if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+            getSupportFragmentManager().popBackStack();
+        } else {
+            super.onBackPressed();
         }
-        super.onBackPressed();
     }
 }

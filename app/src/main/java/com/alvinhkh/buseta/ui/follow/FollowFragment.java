@@ -46,7 +46,7 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
     private final CompositeDisposable disposables = new CompositeDisposable();
 
-    private FloatingActionButton mFab;
+    private FloatingActionButton fab;
 
     private FollowAndHistoryAdapter followAndHistoryAdapter;
 
@@ -122,7 +122,7 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
             emptyView.setVisibility(followAndHistoryAdapter != null &&
                     followAndHistoryAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
         }
-        mFab = getActivity().findViewById(R.id.fab);
+        fab = getActivity().findViewById(R.id.fab);
 
         return rootView;
     }
@@ -144,8 +144,8 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
             }
             updateAppShortcuts();
         }
-        if (mFab != null) {
-            mFab.show();
+        if (fab != null) {
+            fab.show();
         }
         disposables.add(RxBroadcastReceiver.create(getContext(), new IntentFilter(C.ACTION.ETA_UPDATE))
                 .share().subscribeWith(etaObserver()));

@@ -26,6 +26,7 @@
     <string name="disabled">禁用</string>
     <string name="dots" translatable="false">&#8230;</string>
     <string name="enabled">啟用</string>
+    <string name="edit">編輯</string>
     <string name="eta">到站時間預報</string>
     <string name="eta_short">ETA</string>
     <string name="hint_enter_route">輸入路線&#8230;</string>
@@ -33,6 +34,7 @@
     <string name="minutes">%1$s分鐘</string>
     <string name="now">現在</string>
     <string name="open_source_license">開放原始碼授權</string>
+    <string name="undo">復原</string>
     <string name="orig">從</string>
     <string name="origin">從%s</string>
     <string name="search_route">搜尋路線</string>
@@ -90,6 +92,9 @@
     <string name="message_share_text">快啲下載 BusETA 巴士到站時間預報 App :)\nhttp://buseta.alvinhkh.com</string>
     <string name="message_shown_as_notification">已顯示在通知欄</string>
     <string name="message_total_routes">(共 %s 條路線)</string>
+    <string name="no_follow_stops">沒有追蹤車站</string>
+    <string name="removed_from_follow_list">「%1$s」已從追蹤名單中移除</string>
+    <string name="swipe_to_remove_follow_stop">向左右掃即可移除追蹤車站</string>
 
     <string name="url_app" translatable="false">http://buseta.alvinhkh.com</string>
     <string name="url_developer" translatable="false">http://www.alvinhkh.com</string>
@@ -99,6 +104,7 @@
     <string name="clear_history">清除搜尋記錄</string>
     <string name="clear_follow">清除追蹤名單</string>
     <string name="display">顯示</string>
+    <string name="edit_follow_list">編輯追蹤名單</string>
     <string name="hide">隱藏</string>
     <string name="missing_input">Missing Input</string>
     <string name="map">地圖</string>

@@ -20,7 +20,7 @@ public class FollowProvider extends ContentProvider {
 
     private static final String AUTHORITY = "com.alvinhkh.buseta.FollowProvider";
     private static final String BASE_PATH_FOLLOW = "follows";
-    public static final Uri CONTENT_URI_FOLLOW = Uri.parse("content://" + AUTHORITY
+    public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY
             + "/" + BASE_PATH_FOLLOW);
 
     // used for the UriMatcher
@@ -189,7 +189,7 @@ public class FollowProvider extends ContentProvider {
                 FollowTable.COLUMN_STOP_SEQ,
                 FollowTable.COLUMN_STOP_CODE,
                 FollowTable.COLUMN_STOP_NAME,
-                FollowTable.COLUMN_ORDER
+                FollowTable.COLUMN_DISPLAY_ORDER
         };
         if (projection != null) {
             HashSet<String> requestedColumns = new HashSet<>(Arrays.asList(projection));
