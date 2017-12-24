@@ -272,6 +272,12 @@ abstract public class BaseActivity extends AppCompatActivity
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
+        int currentNightMode = getResources().getConfiguration().uiMode &
+                Configuration.UI_MODE_NIGHT_MASK;
+        if (currentNightMode == Configuration.UI_MODE_NIGHT_YES) {
+            newConfig.uiMode = (newConfig.uiMode & ~Configuration.UI_MODE_NIGHT_MASK) |
+                    Configuration.UI_MODE_NIGHT_YES;
+        }
         super.onConfigurationChanged(newConfig);
         if (adViewContainer != null) {
             adView = AdViewUtil.banner(adViewContainer, adView, false);
