@@ -121,21 +121,6 @@ public class NwstActivity extends RouteActivity {
                         BusRoute busRoute = BusRouteUtil.fromNwst(nwstRoute, variant);
                         if (busRoute.getName().equals(routeNo)) {
                             companyCode = busRoute.getCompanyCode();
-                            if (getSupportActionBar() != null) {
-                                String companyName;
-                                switch (busRoute.getCompanyCode()) {
-                                    case BusRoute.COMPANY_CTB:
-                                        companyName = getString(R.string.provider_short_ctb);
-                                        break;
-                                    case BusRoute.COMPANY_NWFB:
-                                        companyName = getString(R.string.provider_short_nwfb);
-                                        break;
-                                    default:
-                                        companyName = getString(R.string.provider_short_nwst);
-                                        break;
-                                }
-                                getSupportActionBar().setTitle(String.format("%s %s", companyName, busRoute.getName()));
-                            }
                             pagerAdapter.addSequence(busRoute);
                             if (stopFromIntent != null && busRoute.getSequence().equals(stopFromIntent.direction)) {
                                 fragNo = pagerAdapter.getCount();

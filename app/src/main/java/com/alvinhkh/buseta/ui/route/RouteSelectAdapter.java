@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter;
+import com.alvinhkh.buseta.utils.BusRouteUtil;
 
 public class RouteSelectAdapter extends ArrayListRecyclerViewAdapter<RouteSelectAdapter.ViewHolder> {
 
@@ -75,27 +76,8 @@ public class RouteSelectAdapter extends ArrayListRecyclerViewAdapter<RouteSelect
         public void bindItem(RouteSelectAdapter adapter, Item item, int position) {
             final BusRoute busRoute = (BusRoute) item.getObject();
             assert busRoute != null;
-            String companyName;
-            switch (busRoute.getCompanyCode()) {
-                case BusRoute.COMPANY_CTB:
-                    companyName = context.getString(R.string.provider_short_ctb);
-                    break;
-                case BusRoute.COMPANY_KMB:
-                    companyName = context.getString(R.string.provider_short_kmb);
-                    break;
-                case BusRoute.COMPANY_NLB:
-                    companyName = context.getString(R.string.provider_short_nlb);
-                    break;
-                case BusRoute.COMPANY_NWFB:
-                    companyName = context.getString(R.string.provider_short_nwfb);
-                    break;
-                case BusRoute.COMPANY_NWST:
-                    companyName = context.getString(R.string.provider_short_nwst);
-                    break;
-                default:
-                    companyName = context.getString(R.string.route);
-            }
-            String routeName = companyName + " " + busRoute.getName();
+            String routeName = BusRouteUtil.getCompanyName(context, busRoute.getCompanyCode(), busRoute.getName()) +
+                    " " + busRoute.getName();
             routeTv.setText(routeName);
             locationTv.setText(context.getString(R.string.route_path,
                     busRoute.getLocationStartName(), busRoute.getLocationEndName()));

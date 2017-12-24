@@ -28,6 +28,7 @@ import com.alvinhkh.buseta.model.BusRouteStop;
 import com.alvinhkh.buseta.provider.SuggestionProvider;
 import com.alvinhkh.buseta.ui.BaseActivity;
 import com.alvinhkh.buseta.utils.AdViewUtil;
+import com.alvinhkh.buseta.utils.BusRouteUtil;
 import com.alvinhkh.buseta.utils.SearchHistoryUtil;
 import com.google.android.gms.ads.AdView;
 
@@ -227,27 +228,7 @@ public abstract class RouteActivity extends BaseActivity {
 
     protected void onCompleteRoute(Boolean isScrollToPage, String companyCode) {
         if (getSupportActionBar() != null) {
-            String companyName;
-            switch (companyCode) {
-                case BusRoute.COMPANY_CTB:
-                    companyName = getString(R.string.provider_short_ctb);
-                    break;
-                case BusRoute.COMPANY_KMB:
-                    companyName = getString(R.string.provider_short_kmb);
-                    break;
-                case BusRoute.COMPANY_NLB:
-                    companyName = getString(R.string.provider_short_nlb);
-                    break;
-                case BusRoute.COMPANY_NWFB:
-                    companyName = getString(R.string.provider_short_nwfb);
-                    break;
-                case BusRoute.COMPANY_NWST:
-                    companyName = getString(R.string.provider_short_nwst);
-                    break;
-                default:
-                    companyName = getString(R.string.route);
-            }
-            String routeName = companyName + " " + routeNo;
+            String routeName = BusRouteUtil.getCompanyName(this, companyCode, routeNo) + " " + routeNo;
             getSupportActionBar().setTitle(routeName);
         }
         if (isScrollToPage) {
