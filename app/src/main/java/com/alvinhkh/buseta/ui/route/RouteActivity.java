@@ -35,14 +35,9 @@ import java.util.ArrayList;
 
 import io.reactivex.disposables.CompositeDisposable;
 
-public abstract class RouteActivity extends BaseActivity
-        implements SharedPreferences.OnSharedPreferenceChangeListener {
+public abstract class RouteActivity extends BaseActivity {
 
     protected final CompositeDisposable disposables = new CompositeDisposable();
-
-    protected AdView adView;
-
-    protected FrameLayout adViewContainer;
 
     /**
      * The {@link PagerAdapter} that will provide
@@ -103,7 +98,7 @@ public abstract class RouteActivity extends BaseActivity
 
         adViewContainer = findViewById(R.id.adView_container);
         if (adViewContainer != null) {
-            adView = AdViewUtil.banner(adViewContainer, adView);
+            adView = AdViewUtil.banner(adViewContainer, adView, false);
         }
         fab = findViewById(R.id.fab);
         fab.setOnClickListener(v -> {
@@ -162,9 +157,6 @@ public abstract class RouteActivity extends BaseActivity
             Toast.makeText(this, R.string.missing_input, Toast.LENGTH_SHORT).show();
             finish();
         }
-
-        PreferenceManager.getDefaultSharedPreferences(this)
-                .registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -187,39 +179,8 @@ public abstract class RouteActivity extends BaseActivity
     }
 
     @Override
-    public void onSharedPreferenceChanged(SharedPreferences sp, String key) {
-        super.onSharedPreferenceChanged(sp, key);
-        if (key.matches(C.PREF.AD_HIDE)) {
-            if (adViewContainer != null) {
-                adView = AdViewUtil.banner(adViewContainer, adView);
-            }
-        }
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        if (adViewContainer != null) {
-            adView = AdViewUtil.banner(adViewContainer, adView);
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (adView != null) {
-            adView.resume();
-        }
-    }
-
-    @Override
     public void onDestroy() {
         disposables.clear();
-        if (adView != null) {
-            adView.pause();
-        }
-        PreferenceManager.getDefaultSharedPreferences(this)
-                .unregisterOnSharedPreferenceChangeListener(this);
         super.onDestroy();
     }
 

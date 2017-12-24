@@ -16,6 +16,7 @@ import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.nlb.ui.NlbNewsFragment;
 import com.alvinhkh.buseta.nwst.ui.NwstNoticeFragment;
 import com.alvinhkh.buseta.ui.BaseActivity;
+import com.alvinhkh.buseta.utils.AdViewUtil;
 import com.alvinhkh.buseta.utils.NightModeUtil;
 
 
@@ -47,6 +48,12 @@ public class RouteAnnounceActivity extends BaseActivity {
             actionBar.setSubtitle(routeNo);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
+
+        adViewContainer = findViewById(R.id.adView_container);
+        if (adViewContainer != null) {
+            adView = AdViewUtil.banner(adViewContainer, adView, false);
+        }
+
         fab = findViewById(R.id.fab);
 
         if (TextUtils.isEmpty(routeNo) || TextUtils.isEmpty(routeSeq) || TextUtils.isEmpty(routeCompany)) {

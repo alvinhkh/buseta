@@ -17,7 +17,9 @@ import com.google.android.gms.ads.AdView;
 
 public class AdViewUtil {
 
-    public static AdView banner(@NonNull final FrameLayout adViewContainer, @Nullable AdView adView) {
+    public static AdView banner(@NonNull FrameLayout adViewContainer,
+                                @Nullable AdView adView,
+                                Boolean isForce) {
         Context context = adViewContainer.getContext();
         if (context == null) return adView;
         if (adView != null) {
@@ -30,7 +32,7 @@ public class AdViewUtil {
             return adView;
         }
         boolean hideAdView = preferences.getBoolean(C.PREF.AD_HIDE, false);
-        if (!hideAdView) {
+        if (!hideAdView || isForce) {
             adView = new AdView(context);
             adView.setAdUnitId(context.getString(R.string.AD_BANNER_UNIT_ID));
             adView.setAdSize(AdSize.SMART_BANNER);

@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -29,6 +30,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.FilterQueryProvider;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -42,10 +44,12 @@ import com.alvinhkh.buseta.provider.SuggestionTable;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
 import com.alvinhkh.buseta.ui.search.SearchActivity;
 import com.alvinhkh.buseta.ui.setting.SettingActivity;
+import com.alvinhkh.buseta.utils.AdViewUtil;
 import com.alvinhkh.buseta.utils.NightModeUtil;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
 import com.alvinhkh.buseta.ui.search.SuggestionSimpleCursorAdapter;
 import com.alvinhkh.buseta.utils.SearchHistoryUtil;
+import com.google.android.gms.ads.AdView;
 
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableObserver;
@@ -57,6 +61,10 @@ abstract public class BaseActivity extends AppCompatActivity
         SearchView.OnQueryTextListener, SearchView.OnSuggestionListener, FilterQueryProvider {
 
     private final CompositeDisposable disposables = new CompositeDisposable();
+
+    protected AdView adView;
+
+    protected FrameLayout adViewContainer;
 
     private Context context;
 
@@ -149,6 +157,9 @@ abstract public class BaseActivity extends AppCompatActivity
     public void onDestroy() {
         PreferenceManager.getDefaultSharedPreferences(this)
                 .unregisterOnSharedPreferenceChangeListener(this);
+        if (adView != null) {
+            adView.pause();
+        }
         disposables.clear();
         if (cursor != null) cursor.close();
         super.onDestroy();
@@ -219,6 +230,9 @@ abstract public class BaseActivity extends AppCompatActivity
             recreate();
             return;
         }
+        if (adView != null) {
+            adView.resume();
+        }
         // Set Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         if (null != toolbar) {
@@ -243,9 +257,24 @@ abstract public class BaseActivity extends AppCompatActivity
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sp, String key) {
-        if (key.matches("app_theme")) {
-            NightModeUtil.update(this);
-            this.recreate();
+        switch (key) {
+            case "app_theme":
+                NightModeUtil.update(this);
+                this.recreate();
+                return;
+            case C.PREF.AD_HIDE:
+                if (adViewContainer != null) {
+                    adView = AdViewUtil.banner(adViewContainer, adView, false);
+                }
+                return;
+        }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (adViewContainer != null) {
+            adView = AdViewUtil.banner(adViewContainer, adView, false);
         }
     }
 

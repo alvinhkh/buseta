@@ -1,17 +1,13 @@
 package com.alvinhkh.buseta.ui.follow;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
-import android.support.v7.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.FrameLayout;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
@@ -19,15 +15,9 @@ import com.alvinhkh.buseta.service.CheckUpdateService;
 import com.alvinhkh.buseta.service.LocationService;
 import com.alvinhkh.buseta.ui.BaseActivity;
 import com.alvinhkh.buseta.utils.AdViewUtil;
-import com.google.android.gms.ads.AdView;
 
 
-// TODO: sort follow stop
-public class FollowActivity extends BaseActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
-
-    private AdView adView;
-
-    private FrameLayout adViewContainer;
+public class FollowActivity extends BaseActivity {
 
     private FloatingActionButton fab;
 
@@ -48,7 +38,7 @@ public class FollowActivity extends BaseActivity implements SharedPreferences.On
 
         adViewContainer = findViewById(R.id.adView_container);
         if (adViewContainer != null) {
-            adView = AdViewUtil.banner(adViewContainer, adView);
+            adView = AdViewUtil.banner(adViewContainer, adView, false);
         }
 
         fab = findViewById(R.id.fab);
@@ -60,10 +50,9 @@ public class FollowActivity extends BaseActivity implements SharedPreferences.On
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, FollowFragment.newInstance());
+        //fragmentTransaction.replace(R.id.fragment_container, ListFragment.newInstance(ListFragment.TYPE_LINE, null));
         fragmentTransaction.addToBackStack("follow_list");
         fragmentTransaction.commit();
-
-        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
 
         Intent intent = new Intent(this, CheckUpdateService.class);
         startService(intent);
@@ -92,29 +81,8 @@ public class FollowActivity extends BaseActivity implements SharedPreferences.On
     }
 
     @Override
-    public void onSharedPreferenceChanged(SharedPreferences sp, String key) {
-        super.onSharedPreferenceChanged(sp, key);
-        if (key.matches(C.PREF.AD_HIDE)) {
-            if (adViewContainer != null) {
-                adView = AdViewUtil.banner(adViewContainer, adView);
-            }
-        }
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        if (adViewContainer != null) {
-            adView = AdViewUtil.banner(adViewContainer, adView);
-        }
-    }
-
-    @Override
     protected void onResume() {
         super.onResume();
-        if (adView != null) {
-            adView.resume();
-        }
         if (fab != null) {
             fab.show();
         }
@@ -130,11 +98,6 @@ public class FollowActivity extends BaseActivity implements SharedPreferences.On
 
     @Override
     public void onDestroy() {
-        if (adView != null) {
-            adView.pause();
-        }
-        PreferenceManager.getDefaultSharedPreferences(this)
-                .unregisterOnSharedPreferenceChangeListener(this);
         try {
             Intent intent = new Intent(this, LocationService.class);
             intent.setAction(C.ACTION.CANCEL);
