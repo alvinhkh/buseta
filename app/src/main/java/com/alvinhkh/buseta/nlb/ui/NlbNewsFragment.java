@@ -64,6 +64,7 @@ public class NlbNewsFragment extends Fragment
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
         if (getActivity() != null && ((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
             ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.latest_news);
             ((AppCompatActivity) getActivity()).getSupportActionBar().setSubtitle(R.string.provider_nlb);
