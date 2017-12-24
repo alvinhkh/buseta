@@ -116,10 +116,7 @@ public class SettingActivity extends BasePreferenceActivity {
             Preference appVersion = getPreferenceScreen().findPreference("app_version");
             final int versionCode = BuildConfig.VERSION_CODE;
             final String versionName = BuildConfig.VERSION_NAME;
-            appVersion.setSummary(versionName);
-            if (BuildConfig.DEBUG) {
-                appVersion.setSummary(versionName + "(" + versionCode +")");
-            }
+            appVersion.setSummary(versionName + " (" + versionCode +")");
             // Developer
             Preference developer = getPreferenceScreen().findPreference("developer");
             developer.setSummary(getString(R.string.summary_developer) + " (" + getString(R.string.url_developer) + ")");

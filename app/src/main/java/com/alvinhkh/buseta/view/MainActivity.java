@@ -8,6 +8,7 @@ import com.alvinhkh.buseta.ui.follow.FollowActivity;
 
 public class MainActivity extends AppCompatActivity {
 
+    // legacy placeholder activity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
