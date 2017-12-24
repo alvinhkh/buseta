@@ -9,10 +9,10 @@
     android:minHeight="@dimen/card_item_height"
     android:paddingTop="@dimen/card_item_vertical_padding"
     android:paddingBottom="@dimen/card_item_vertical_padding"
-    android:layout_marginStart="@dimen/card_item_icon_margin_start"
-    android:layout_marginLeft="@dimen/card_item_icon_margin_start"
-    android:layout_marginRight="@dimen/card_item_horizontal_padding"
-    android:layout_marginEnd="@dimen/card_item_horizontal_padding"
+    android:paddingStart="@dimen/card_item_horizontal_padding"
+    android:paddingLeft="@dimen/card_item_horizontal_padding"
+    android:paddingRight="@dimen/card_item_horizontal_padding"
+    android:paddingEnd="@dimen/card_item_horizontal_padding"
     android:orientation="vertical">
 
     <TextView
