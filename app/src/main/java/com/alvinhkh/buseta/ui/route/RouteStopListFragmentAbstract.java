@@ -18,6 +18,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.util.Pair;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -104,6 +105,10 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
     protected String goToStopSequence = "0";
 
     protected GoogleMap map;
+
+    protected List<Pair<Double, Double>> mapCoordinates = new ArrayList<>();
+
+    protected Boolean hasMapCoordinates = false;
 
     public RouteStopListFragmentAbstract() {}
 
@@ -452,6 +457,9 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                     }
                 }
             }
+            if (hasMapCoordinates) {
+                isSnapToRoad = false;
+            }
 
             // note: there is an api free limit
             GeoApiContext geoApiContext = null;
@@ -461,42 +469,49 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                         .build();
             }
             map.clear();
+            if (!hasMapCoordinates) {
+                mapCoordinates.clear();
+            }
             if (adapter.getItemCount() > 0) {
                 List<BusRouteStop> busRouteStops = new ArrayList<>();
-                PolylineOptions singleLine = new PolylineOptions().width(20).zIndex(1)
-                        .color(ContextCompat.getColor(getContext(), R.color.colorAccent))
-                        .startCap(new RoundCap()).endCap(new RoundCap());
                 for (int i = 0, j = 0; i < adapter.getItemCount(); i++) {
                     Item item = adapter.getItem(i);
                     if (item.getType() != Item.TYPE_DATA) continue;
                     BusRouteStop stop = (BusRouteStop) item.getObject();
                     busRouteStops.add(stop);
-
+                    if (!hasMapCoordinates) {
+                        mapCoordinates.add(new Pair<>(Double.parseDouble(stop.latitude), Double.parseDouble(stop.longitude)));
+                    }
                     if (busRoute != null && busRoute.getSequence().equals(stop.direction) &&
                             stop.sequence.equals(goToStopSequence)) {
                         scrollToPosition = j;
                         isScrollToPosition = true;
                     }
-
-                    LatLng latLng = new LatLng(Double.parseDouble(stop.latitude), Double.parseDouble(stop.longitude));
                     IconGenerator iconFactory = new IconGenerator(getContext());
                     Bitmap bmp = iconFactory.makeIcon(stop.sequence + ": " + stop.name);
-                    map.addMarker(new MarkerOptions().position(latLng)
+                    map.addMarker(new MarkerOptions()
+                            .position(new LatLng(Double.parseDouble(stop.latitude), Double.parseDouble(stop.longitude)))
                             .icon(BitmapDescriptorFactory.fromBitmap(bmp))).setTag(stop);
-                    singleLine.add(latLng);
                     j++;
+                }
+                PolylineOptions singleLine = new PolylineOptions().width(20).zIndex(1)
+                        .color(ContextCompat.getColor(getContext(), R.color.colorAccent))
+                        .startCap(new RoundCap()).endCap(new RoundCap());
+                for (Pair<Double, Double> pair: mapCoordinates) {
+                    if (pair.first == null || pair.second == null) continue;
+                    singleLine.add(new LatLng(pair.first, pair.second));
                 }
                 Boolean hasError = false;
                 if (isSnapToRoad) {
-                    for (int i = 0; i < busRouteStops.size(); i++) {
+                    for (int i = 0; i < mapCoordinates.size(); i++) {
                         if (hasError) break;
                         List<LatLng> path = new ArrayList<>();
-                        BusRouteStop stop = busRouteStops.get(i);
-                        if (i + 1 < busRouteStops.size() && busRouteStops.get(i + 1) != null) {
-                            BusRouteStop nextStop = busRouteStops.get(i + 1);
+                        Pair<Double, Double> pair = mapCoordinates.get(i);
+                        if (i + 1 < mapCoordinates.size() && mapCoordinates.get(i + 1) != null) {
+                            Pair<Double, Double> nextPair = mapCoordinates.get(i + 1);
                             // https://stackoverflow.com/a/47556917/2411672
                             DirectionsApiRequest req = DirectionsApi.getDirections(geoApiContext,
-                                    stop.latitude + "," + stop.longitude, nextStop.latitude + "," + nextStop.longitude);
+                                    pair.first + "," + pair.second, nextPair.first + "," + nextPair.second);
                             try {
                                 DirectionsResult res = req.await();
                                 // loop through legs and steps to get encoded polylines of each step
@@ -551,7 +566,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                         }
                     }
                 }
-                if (!isSnapToRoad || hasError) {
+                if (hasMapCoordinates || !isSnapToRoad || hasError) {
                     map.addPolyline(singleLine);
                 }
                 if (busRouteStops.size() > 0 && scrollToPosition < busRouteStops.size()) {

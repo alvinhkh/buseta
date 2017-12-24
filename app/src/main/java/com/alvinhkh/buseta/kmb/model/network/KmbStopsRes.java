@@ -6,6 +6,7 @@ import com.alvinhkh.buseta.kmb.model.KmbRouteStop;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class KmbStopsRes {
 
@@ -39,6 +40,13 @@ public class KmbStopsRes {
 
             @SerializedName("route")
             public String route;
+
+            public class LineGeometry {
+
+                @SerializedName("paths")
+                public List<List<List<Double>>> paths;
+
+            }
         }
     }
 

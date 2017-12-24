@@ -3,6 +3,8 @@ package com.alvinhkh.buseta.kmb.ui;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.util.Pair;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +18,8 @@ import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
 import com.alvinhkh.buseta.ui.route.RouteStopListFragmentAbstract;
 import com.alvinhkh.buseta.utils.BusRouteStopUtil;
 import com.alvinhkh.buseta.utils.RetryWithDelay;
+import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,13 +72,31 @@ public class KmbStopListFragment extends RouteStopListFragmentAbstract {
                 if (res != null && res.data != null && adapter != null) {
                     if (res.data.routeStops != null) {
                         List<Item> items = new ArrayList<>();
-                        int i = busRoute.getStopsStartSequence();
-                        for (int j = 0; j < res.data.routeStops.size(); j++) {
-                            BusRouteStop stop = BusRouteStopUtil.fromKmbRouteStop(res.data.routeStops.get(j),
-                                    busRoute, j, j >= res.data.routeStops.size() - 1);
+                        for (int i = 0; i < res.data.routeStops.size(); i++) {
+                            BusRouteStop stop = BusRouteStopUtil.fromKmbRouteStop(res.data.routeStops.get(i),
+                                    busRoute, i, i >= res.data.routeStops.size() - 1);
                             items.add(new Item(Item.TYPE_DATA, stop));
                         }
                         adapter.addAll(items);
+                    }
+                    hasMapCoordinates = false;
+                    mapCoordinates.clear();
+                    if (!TextUtils.isEmpty(res.data.route.lineGeometry)) {
+                        try {
+                            hasMapCoordinates = true;
+                            Gson gson = new Gson();
+                            KmbStopsRes.Data.Route.LineGeometry lineGeometry = gson.fromJson(res.data.route.lineGeometry,
+                                    KmbStopsRes.Data.Route.LineGeometry.class);
+                            for (int i = 0; i < lineGeometry.paths.size(); i++) {
+                                List<List<Double>> path = lineGeometry.paths.get(i);
+                                for (int j = 0; j < path.size(); j++) {
+                                    List<Double> p = path.get(j);
+                                    mapCoordinates.add(BusRouteStopUtil.fromHK80toWGS84(new Pair<>(p.get(0), p.get(1))));
+                                }
+                            }
+                        } catch (JsonParseException e) {
+                            hasMapCoordinates = false;
+                        }
                     }
                 }
             }

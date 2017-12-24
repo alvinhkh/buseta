@@ -59,7 +59,7 @@ public class BusRouteStopUtil {
         return object;
     }
 
-    private static Pair<Double, Double> fromHK80toWGS84(@NonNull Pair<Double, Double> pair) {
+    public static Pair<Double, Double> fromHK80toWGS84(@NonNull Pair<Double, Double> pair) {
         try {
             // reference: blog.tiger-workshop.com/hk1980-grid-to-wgs84/
             CoordinateTransformFactory ctFactory = new CoordinateTransformFactory();
@@ -72,7 +72,7 @@ public class BusRouteStopUtil {
             p.x = pair.first;
             p.y = pair.second;
             trans.transform(p, p2);
-            return new Pair<>(p2.x, p2.y);
+            return new Pair<>(p2.y, p2.x);
         } catch (IllegalStateException e) {
             Timber.e(e);
         }
@@ -93,11 +93,11 @@ public class BusRouteStopUtil {
         object.name = HKSCSUtil.convert(kmbRouteStop.nameTc);
         object.fare = kmbRouteStop.airFare;
         object.location = kmbRouteStop.locationTc;
-        Pair<Double, Double> longlat = fromHK80toWGS84(
+        Pair<Double, Double> latlong = fromHK80toWGS84(
                 new Pair<>(Double.parseDouble(kmbRouteStop.X), Double.parseDouble(kmbRouteStop.Y)));
-        if (longlat != null) {
-            object.latitude = String.valueOf(longlat.second);
-            object.longitude = String.valueOf(longlat.first);
+        if (latlong != null) {
+            object.latitude = String.valueOf(latlong.first);
+            object.longitude = String.valueOf(latlong.second);
         }
         object.destination = busRoute.getLocationEndName();
         object.origin = busRoute.getLocationStartName();
