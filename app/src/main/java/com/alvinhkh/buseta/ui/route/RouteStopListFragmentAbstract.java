@@ -483,9 +483,8 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                     singleLine.add(latLng);
                     j++;
                 }
-                if (!isSnapToRoad) {
-                    map.addPolyline(singleLine);
-                } else {
+                Boolean hasError = false;
+                if (isSnapToRoad) {
                     for (int i = 0; i < busRouteStops.size(); i++) {
                         List<LatLng> path = new ArrayList<>();
                         BusRouteStop stop = busRouteStops.get(i);
@@ -533,16 +532,20 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                                 }
                             } catch (InterruptedException|ApiException|IOException e) {
                                 Timber.d(e);
+                                hasError = true;
                             }
                         }
 
-                        if (path.size() > 0) {
+                        if (!hasError && path.size() > 0) {
                             PolylineOptions line = new PolylineOptions().width(20).zIndex(1)
                                     .color(ContextCompat.getColor(getContext(), R.color.colorAccent))
                                     .startCap(new RoundCap()).endCap(new RoundCap());
                             map.addPolyline(line.addAll(path));
                         }
                     }
+                }
+                if (!isSnapToRoad || hasError) {
+                    map.addPolyline(singleLine);
                 }
                 if (busRouteStops.size() > 0 && scrollToPosition < busRouteStops.size()) {
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(
