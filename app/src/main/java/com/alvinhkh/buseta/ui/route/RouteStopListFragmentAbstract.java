@@ -495,7 +495,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                     j++;
                 }
                 PolylineOptions singleLine = new PolylineOptions().width(20).zIndex(1)
-                        .color(ContextCompat.getColor(getContext(), R.color.colorAccent))
+                        .color(ContextCompat.getColor(getContext(), R.color.grey))
                         .startCap(new RoundCap()).endCap(new RoundCap());
                 for (Pair<Double, Double> pair: mapCoordinates) {
                     if (pair.first == null || pair.second == null) continue;
@@ -560,7 +560,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
 
                         if (!hasError && path.size() > 0) {
                             PolylineOptions line = new PolylineOptions().width(20).zIndex(1)
-                                    .color(ContextCompat.getColor(getContext(), R.color.colorAccent))
+                                    .color(ContextCompat.getColor(getContext(), R.color.grey))
                                     .startCap(new RoundCap()).endCap(new RoundCap());
                             map.addPolyline(line.addAll(path));
                         }

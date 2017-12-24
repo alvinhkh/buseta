@@ -34,6 +34,8 @@ public interface NwstService {
 
     String QUERY_PLATFORM = "p";
 
+    String QUERY_R = "r";
+
     String QUERY_RDV = "rdv";
 
     String QUERY_ROUTE = "route";
@@ -76,5 +78,8 @@ public interface NwstService {
 
     @GET("api6/getnextbus2.php")
     Observable<ResponseBody> eta(@QueryMap Map<String, String> options);
+
+    @GET("api6/getline_multi2.php")
+    Observable<ResponseBody> latlongList(@QueryMap Map<String, String> options);
 
 }

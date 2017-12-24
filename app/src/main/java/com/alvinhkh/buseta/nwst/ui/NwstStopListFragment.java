@@ -3,6 +3,7 @@ package com.alvinhkh.buseta.nwst.ui;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.util.Pair;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,7 +13,9 @@ import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.model.BusRouteStop;
 import com.alvinhkh.buseta.nwst.NwstService;
+import com.alvinhkh.buseta.nwst.model.NwstLatLong;
 import com.alvinhkh.buseta.nwst.model.NwstStop;
+import com.alvinhkh.buseta.nwst.model.NwstVariant;
 import com.alvinhkh.buseta.nwst.util.NwstRequestUtil;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
 import com.alvinhkh.buseta.ui.route.RouteStopListFragmentAbstract;
@@ -31,14 +34,7 @@ import io.reactivex.schedulers.Schedulers;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
 
-import static com.alvinhkh.buseta.nwst.NwstService.APP_VERSION;
-import static com.alvinhkh.buseta.nwst.NwstService.LANGUAGE_TC;
-import static com.alvinhkh.buseta.nwst.NwstService.PLATFORM;
-import static com.alvinhkh.buseta.nwst.NwstService.QUERY_APP_VERSION;
-import static com.alvinhkh.buseta.nwst.NwstService.QUERY_INFO;
-import static com.alvinhkh.buseta.nwst.NwstService.QUERY_LANGUAGE;
-import static com.alvinhkh.buseta.nwst.NwstService.QUERY_PLATFORM;
-import static com.alvinhkh.buseta.nwst.NwstService.QUERY_SYSCODE;
+import static com.alvinhkh.buseta.nwst.NwstService.*;
 import static com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item.TYPE_DATA;
 
 
@@ -110,6 +106,61 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
             public void onError(Throwable e) {
                 Timber.d(e);
                 onStopListError(e);
+            }
+
+            @Override
+            public void onComplete() {
+                Map<String, String> options = new LinkedHashMap<>();
+                String routeInfo = busRoute.getChildKey();
+                NwstVariant variant = NwstVariant.Companion.parseInfo(routeInfo);
+                if (variant == null) {
+                    onStopListComplete();
+                    return;
+                }
+                options.put(QUERY_R, variant.getRdv());
+                options.put(QUERY_LANGUAGE, LANGUAGE_TC);
+                options.put(QUERY_PLATFORM, PLATFORM);
+                options.put(QUERY_APP_VERSION, APP_VERSION);
+                options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
+                disposables.add(nwstService.latlongList(options)
+                        .retryWhen(new RetryWithDelay(5, 3000))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeWith(latlongListObserver()));
+            }
+        };
+    }
+
+    DisposableObserver<ResponseBody> latlongListObserver() {
+        return new DisposableObserver<ResponseBody>() {
+            @Override
+            public void onNext(ResponseBody body) {
+                if (swipeRefreshLayout != null && !swipeRefreshLayout.isRefreshing()) {
+                    swipeRefreshLayout.setRefreshing(true);
+                }
+                mapCoordinates.clear();
+                try {
+                    hasMapCoordinates = true;
+                    String[] data = body.string().split("\\|\\*\\|");
+                    for (String text: data) {
+                        if (TextUtils.isEmpty(text)) continue;
+                        NwstLatLong nwstLatLong = NwstLatLong.Companion.fromString(text);
+                        if (nwstLatLong != null && nwstLatLong.getPath().size() > 0) {
+                            for (kotlin.Pair<Double, Double> pair : nwstLatLong.getPath()) {
+                                mapCoordinates.add(new Pair<>(pair.getFirst(), pair.getSecond()));
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    hasMapCoordinates = false;
+                    Timber.d(e);
+                }
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Timber.d(e);
+                onStopListComplete();
             }
 
             @Override
