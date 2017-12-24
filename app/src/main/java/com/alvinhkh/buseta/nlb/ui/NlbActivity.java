@@ -5,7 +5,7 @@ import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.nlb.NlbService;
 import com.alvinhkh.buseta.nlb.model.NlbDatabase;
 import com.alvinhkh.buseta.nlb.model.NlbRoute;
-import com.alvinhkh.buseta.ui.route.RouteActivity;
+import com.alvinhkh.buseta.ui.route.RouteActivityAbstract;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.alvinhkh.buseta.utils.RetryWithDelay;
 
@@ -14,7 +14,7 @@ import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
-public class NlbActivity extends RouteActivity {
+public class NlbActivity extends RouteActivityAbstract {
 
     private final NlbService nlbService = NlbService.api.create(NlbService.class);
 

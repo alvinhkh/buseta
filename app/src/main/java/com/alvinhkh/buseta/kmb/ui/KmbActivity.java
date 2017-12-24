@@ -7,7 +7,7 @@ import com.alvinhkh.buseta.kmb.model.KmbRouteBound;
 import com.alvinhkh.buseta.kmb.model.network.KmbRouteBoundRes;
 import com.alvinhkh.buseta.kmb.model.network.KmbSpecialRouteRes;
 import com.alvinhkh.buseta.model.BusRoute;
-import com.alvinhkh.buseta.ui.route.RouteActivity;
+import com.alvinhkh.buseta.ui.route.RouteActivityAbstract;
 import com.alvinhkh.buseta.utils.BusRouteUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.alvinhkh.buseta.utils.RetryWithDelay;
@@ -20,7 +20,7 @@ import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
-public class KmbActivity extends RouteActivity {
+public class KmbActivity extends RouteActivityAbstract {
 
     private final KmbService kmbService = KmbService.webSearch.create(KmbService.class);
 

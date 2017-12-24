@@ -8,7 +8,7 @@ import com.alvinhkh.buseta.nwst.NwstService;
 import com.alvinhkh.buseta.nwst.model.NwstRoute;
 import com.alvinhkh.buseta.nwst.model.NwstVariant;
 import com.alvinhkh.buseta.nwst.util.NwstRequestUtil;
-import com.alvinhkh.buseta.ui.route.RouteActivity;
+import com.alvinhkh.buseta.ui.route.RouteActivityAbstract;
 import com.alvinhkh.buseta.utils.BusRouteUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.alvinhkh.buseta.utils.RetryWithDelay;
@@ -25,7 +25,7 @@ import timber.log.Timber;
 
 import static com.alvinhkh.buseta.nwst.NwstService.*;
 
-public class NwstActivity extends RouteActivity {
+public class NwstActivity extends RouteActivityAbstract {
 
     private final NwstService nwstService = NwstService.api.create(NwstService.class);
 

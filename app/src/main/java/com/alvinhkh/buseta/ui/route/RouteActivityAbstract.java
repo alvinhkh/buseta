@@ -1,7 +1,5 @@
 package com.alvinhkh.buseta.ui.route;
 
-import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
@@ -11,12 +9,10 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
-import android.support.v7.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,13 +26,12 @@ import com.alvinhkh.buseta.ui.BaseActivity;
 import com.alvinhkh.buseta.utils.AdViewUtil;
 import com.alvinhkh.buseta.utils.BusRouteUtil;
 import com.alvinhkh.buseta.utils.SearchHistoryUtil;
-import com.google.android.gms.ads.AdView;
 
 import java.util.ArrayList;
 
 import io.reactivex.disposables.CompositeDisposable;
 
-public abstract class RouteActivity extends BaseActivity {
+public abstract class RouteActivityAbstract extends BaseActivity {
 
     protected final CompositeDisposable disposables = new CompositeDisposable();
 

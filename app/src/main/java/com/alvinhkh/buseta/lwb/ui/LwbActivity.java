@@ -5,7 +5,7 @@ import com.alvinhkh.buseta.lwb.LwbService;
 import com.alvinhkh.buseta.lwb.model.LwbRouteBound;
 import com.alvinhkh.buseta.lwb.model.network.LwbRouteBoundRes;
 import com.alvinhkh.buseta.model.BusRoute;
-import com.alvinhkh.buseta.ui.route.RouteActivity;
+import com.alvinhkh.buseta.ui.route.RouteActivityAbstract;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.alvinhkh.buseta.utils.RetryWithDelay;
 
@@ -14,7 +14,7 @@ import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
-public class LwbActivity extends RouteActivity {
+public class LwbActivity extends RouteActivityAbstract {
 
     private final LwbService lwbService = LwbService.retrofit.create(LwbService.class);
 
