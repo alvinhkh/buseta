@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,8 +24,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import timber.log.Timber;
-
 
 public class NwstNoticeAdapter extends ArrayListRecyclerViewAdapter<NwstNoticeAdapter.ViewHolder> {
 
@@ -41,7 +38,7 @@ public class NwstNoticeAdapter extends ArrayListRecyclerViewAdapter<NwstNoticeAd
 
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
-        viewHolder.bindItem(this, mItems.get(position), position);
+        viewHolder.bindItem(this, items.get(position), position);
     }
 
     static abstract class ViewHolder extends ArrayListRecyclerViewAdapter.ViewHolder {

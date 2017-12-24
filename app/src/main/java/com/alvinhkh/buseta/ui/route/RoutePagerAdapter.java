@@ -84,6 +84,10 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
         notifyDataSetChanged();
     }
 
+    public List<BusRoute> getRoutes() {
+        return this.routes;
+    }
+
     @Override
     public Fragment getItem(int position) {
         if (position > getCount()) {

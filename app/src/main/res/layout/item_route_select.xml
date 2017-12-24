@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tool="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:minHeight="@dimen/card_item_height"
+    android:paddingTop="@dimen/card_item_vertical_padding"
+    android:paddingBottom="@dimen/card_item_vertical_padding"
+    android:layout_marginStart="@dimen/card_item_icon_margin_start"
+    android:layout_marginLeft="@dimen/card_item_icon_margin_start"
+    android:layout_marginRight="@dimen/card_item_horizontal_padding"
+    android:layout_marginEnd="@dimen/card_item_horizontal_padding"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/route"
+        style="@style/TextAppearance.AppCompat.Caption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:textColor="@color/textSecondary"
+        tool:text="@string/route" />
+
+    <TextView
+        android:id="@+id/location"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        style="@style/TextAppearance.AppCompat.Small"
+        android:textColor="@color/textPrimary"
+        tool:text="@string/route_path" />
+
+    <TextView
+        android:id="@+id/description"
+        style="@style/TextAppearance.AppCompat.Small"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:textColor="@color/textSecondary"
+        tool:text="@string/route" />
+
+</LinearLayout>

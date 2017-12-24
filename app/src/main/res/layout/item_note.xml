@@ -17,8 +17,9 @@
         android:id="@+id/note"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="@style/TextAppearance.AppCompat.Subhead.Inverse"
         android:layout_gravity="center_vertical"
+        android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+        android:textColor="@color/white"
         tool:text="NOTE" />
 
 </FrameLayout>

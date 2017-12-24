@@ -50,7 +50,7 @@ public class KmbAnnounceAdapter
 
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
-        viewHolder.bindItem(this, mItems.get(position), position);
+        viewHolder.bindItem(this, items.get(position), position);
     }
 
     static abstract class ViewHolder extends ArrayListRecyclerViewAdapter.ViewHolder {

@@ -303,7 +303,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
     }
 
     @Override
-    public void onClickItem(Item item) {
+    public void onClickItem(Item item, int position) {
         if (item.getType() == Item.TYPE_DATA) {
             if (map != null) {
                 BusRouteStop stop = (BusRouteStop) item.getObject();
@@ -454,9 +454,12 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
             }
 
             // note: there is an api free limit
-            GeoApiContext context = new GeoApiContext.Builder()
-                    .apiKey(getString(R.string.DIRECTION_API_KEY))
-                    .build();
+            GeoApiContext geoApiContext = null;
+            if (isSnapToRoad) {
+                geoApiContext = new GeoApiContext.Builder()
+                        .apiKey(getString(R.string.DIRECTION_API_KEY))
+                        .build();
+            }
             map.clear();
             if (adapter.getItemCount() > 0) {
                 List<BusRouteStop> busRouteStops = new ArrayList<>();
@@ -486,12 +489,14 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                 Boolean hasError = false;
                 if (isSnapToRoad) {
                     for (int i = 0; i < busRouteStops.size(); i++) {
+                        if (hasError) break;
                         List<LatLng> path = new ArrayList<>();
                         BusRouteStop stop = busRouteStops.get(i);
                         if (i + 1 < busRouteStops.size() && busRouteStops.get(i + 1) != null) {
                             BusRouteStop nextStop = busRouteStops.get(i + 1);
                             // https://stackoverflow.com/a/47556917/2411672
-                            DirectionsApiRequest req = DirectionsApi.getDirections(context, stop.latitude + "," + stop.longitude, nextStop.latitude + "," + nextStop.longitude);
+                            DirectionsApiRequest req = DirectionsApi.getDirections(geoApiContext,
+                                    stop.latitude + "," + stop.longitude, nextStop.latitude + "," + nextStop.longitude);
                             try {
                                 DirectionsResult res = req.await();
                                 // loop through legs and steps to get encoded polylines of each step
@@ -530,8 +535,10 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                                         }
                                     }
                                 }
-                            } catch (InterruptedException|ApiException|IOException e) {
+                            } catch (InterruptedException|IOException e) {
                                 Timber.d(e);
+                                hasError = true;
+                            } catch (ApiException e) {
                                 hasError = true;
                             }
                         }

@@ -1,12 +1,9 @@
 package com.alvinhkh.buseta.nlb.ui;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.support.annotation.NonNull;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,7 +44,7 @@ public class NlbNewsAdapter
 
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
-        viewHolder.bindItem(this, mItems.get(position), position);
+        viewHolder.bindItem(this, items.get(position), position);
     }
 
     static abstract class ViewHolder extends ArrayListRecyclerViewAdapter.ViewHolder {

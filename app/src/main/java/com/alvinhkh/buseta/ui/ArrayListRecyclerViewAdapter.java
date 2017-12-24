@@ -17,7 +17,7 @@ public abstract class ArrayListRecyclerViewAdapter<VH extends ArrayListRecyclerV
         extends RecyclerView.Adapter<VH>
         implements PinnedHeaderItemDecoration.PinnedHeaderAdapter {
 
-    protected List<Item> mItems;
+    protected List<Item> items;
 
     protected int lastVisibleItem, totalItemCount;
 
@@ -59,7 +59,7 @@ public abstract class ArrayListRecyclerViewAdapter<VH extends ArrayListRecyclerV
     }
 
     public ArrayListRecyclerViewAdapter(@NonNull RecyclerView recyclerView) {
-        mItems = new ArrayList<>();
+        items = new ArrayList<>();
 
         recyclerView.addItemDecoration(new PinnedHeaderItemDecoration());
         if (recyclerView.getLayoutManager() instanceof LinearLayoutManager) {
@@ -86,17 +86,17 @@ public abstract class ArrayListRecyclerViewAdapter<VH extends ArrayListRecyclerV
 
     @Override
     public int getItemViewType(int position) {
-        return mItems.get(position).type;
+        return items.get(position).type;
     }
 
     @Override
     public int getItemCount() {
-        return mItems.size();
+        return items.size();
     }
 
     public int getDataItemCount() {
         int count = 0;
-        for (Item item : mItems)
+        for (Item item : items)
             if (item.getType() == Item.TYPE_DATA)
                 count++;
         return count;
@@ -104,16 +104,16 @@ public abstract class ArrayListRecyclerViewAdapter<VH extends ArrayListRecyclerV
 
     public List<Item> getDataItems() {
         List<Item> list = new ArrayList<>();
-        for (Item item : mItems)
+        for (Item item : items)
             if (item.getType() == Item.TYPE_DATA)
                 list.add(item);
         return list;
     }
 
     public Item getLastSection() {
-        for (int i = mItems.size() - 1; i >= 0; i--) {
-            if (mItems.get(i).getType() == Item.TYPE_SECTION && mItems.get(i).getText() != null)
-                return mItems.get(i);
+        for (int i = items.size() - 1; i >= 0; i--) {
+            if (items.get(i).getType() == Item.TYPE_SECTION && items.get(i).getText() != null)
+                return items.get(i);
         }
         return null;
     }
@@ -129,38 +129,38 @@ public abstract class ArrayListRecyclerViewAdapter<VH extends ArrayListRecyclerV
     }
 
     public void add(Item item) {
-        mItems.add(item);
+        items.add(item);
         notifyItemInserted(getItemCount());
     }
 
     public void addAll(List<Item> list) {
         final int size = getItemCount();
-        mItems.addAll(list);
+        items.addAll(list);
         notifyItemRangeInserted(size, list.size());
     }
 
     public void clear() {
         final int size = getItemCount();
-        mItems.clear();
+        items.clear();
         notifyItemRangeRemoved(0, size);
     }
 
     public Item getItem(int i) {
-        return mItems.get(i);
+        return items.get(i);
     }
 
     public List<Item> getItems() {
-        return mItems;
+        return items;
     }
 
     public void remove(Item item) {
-        final int position = mItems.indexOf(item);
-        mItems.remove(item);
+        final int position = items.indexOf(item);
+        items.remove(item);
         notifyItemRemoved(position);
     }
 
     public void remove(int position) {
-        mItems.remove(position);
+        items.remove(position);
         notifyItemRemoved(position);
     }
 
@@ -186,7 +186,7 @@ public abstract class ArrayListRecyclerViewAdapter<VH extends ArrayListRecyclerV
     }
 
     public interface OnClickItemListener {
-        void onClickItem(Item item);
+        void onClickItem(Item item, int position);
     }
 
     abstract public static class ViewHolder extends RecyclerView.ViewHolder {

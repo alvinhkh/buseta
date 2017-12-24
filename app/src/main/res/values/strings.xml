@@ -110,7 +110,7 @@
     <string name="map">地圖</string>
     <string name="streetview">街景</string>
     <string name="route">路線</string>
-    <string name="route_path">從%1$s 往%2$s</string>
+    <string name="route_path">%1$s 往%2$s</string>
     <string name="scheduled_bus">預定班次</string>
     <string name="general">一般</string>
     <string name="github_issues">問題回報 (via GitHub)</string>

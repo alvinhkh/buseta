@@ -60,7 +60,7 @@ public class RouteStopListAdapter
 
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
-        viewHolder.bindItem(this, mItems.get(position), position);
+        viewHolder.bindItem(this, items.get(position), position);
     }
 
     public void setCurrentLocation(Location location) {
@@ -188,7 +188,7 @@ public class RouteStopListAdapter
             this.itemView.setOnLongClickListener(null);
             this.itemView.setOnClickListener(v -> {
                 if (this.listener != null) {
-                    this.listener.onClickItem(item);
+                    this.listener.onClickItem(item, position);
                 }
                 this.etaText.setText(null);
                 this.etaNextText.setText(null);
