@@ -132,7 +132,8 @@ public class RouteStopListAdapter
         TextView nameText;
         TextView distanceText;
         TextView etaText;
-        TextView etaNextText;
+        TextView eta2Text;
+        TextView eta3Text;
         TextView fareText;
         ImageView followImage;
         ImageView nearbyImage;
@@ -148,7 +149,8 @@ public class RouteStopListAdapter
             this.nameText = itemView.findViewById(R.id.name);
             this.distanceText = itemView.findViewById(R.id.distance);
             this.etaText = itemView.findViewById(R.id.eta);
-            this.etaNextText = itemView.findViewById(R.id.eta_next);
+            this.eta2Text = itemView.findViewById(R.id.eta2);
+            this.eta3Text = itemView.findViewById(R.id.eta3);
             this.fareText = itemView.findViewById(R.id.fare);
             this.followImage = itemView.findViewById(R.id.follow);
             this.nearbyImage = itemView.findViewById(R.id.nearby);
@@ -165,7 +167,8 @@ public class RouteStopListAdapter
             this.distanceText.setText(null);
             this.fareText.setText(String.format(Locale.ENGLISH, "$%1$,.1f", Float.valueOf(stop.fare)));
             this.etaText.setText(null);
-            this.etaNextText.setText(null);
+            this.eta2Text.setText(null);
+            this.eta3Text.setText(null);
             this.followImage.setVisibility(View.GONE);
             this.nearbyImage.setVisibility(View.GONE);
 
@@ -191,7 +194,8 @@ public class RouteStopListAdapter
                     this.listener.onClickItem(item, position);
                 }
                 this.etaText.setText(null);
-                this.etaNextText.setText(null);
+                this.eta2Text.setText(null);
+                this.eta3Text.setText(null);
                 Intent intent = new Intent(v.getContext(), EtaService.class);
                 intent.putExtra(C.EXTRA.STOP_OBJECT, stop);
                 v.getContext().startService(intent);
@@ -250,13 +254,17 @@ public class RouteStopListAdapter
                                 drawable = DrawableCompat.wrap(drawable);
                                 if (pos == 0) {
                                     drawable.setBounds(0, 0, this.etaText.getLineHeight(), this.etaText.getLineHeight());
+                                } else if (pos == 1) {
+                                    drawable.setBounds(0, 0, this.eta2Text.getLineHeight(), this.eta2Text.getLineHeight());
                                 } else {
-                                    drawable.setBounds(0, 0, this.etaNextText.getLineHeight(), this.etaNextText.getLineHeight());
+                                    drawable.setBounds(0, 0, this.eta3Text.getLineHeight(), this.eta3Text.getLineHeight());
                                 }
                                 DrawableCompat.setTint(drawable.mutate(), colorInt);
                                 ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
                                 etaText.append(" ");
-                                etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                                if (etaText.length() > 0) {
+                                    etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                                }
                             }
                         }
                         if (arrivalTime.hasWheelchair && PreferenceUtil.isShowWheelchairIcon(context)) {
@@ -264,43 +272,51 @@ public class RouteStopListAdapter
                             drawable = DrawableCompat.wrap(drawable);
                             if (pos == 0) {
                                 drawable.setBounds(0, 0, this.etaText.getLineHeight(), this.etaText.getLineHeight());
+                            } else if (pos == 1) {
+                                drawable.setBounds(0, 0, this.eta2Text.getLineHeight(), this.eta2Text.getLineHeight());
                             } else {
-                                drawable.setBounds(0, 0, this.etaNextText.getLineHeight(), this.etaNextText.getLineHeight());
+                                drawable.setBounds(0, 0, this.eta3Text.getLineHeight(), this.eta3Text.getLineHeight());
                             }
                             DrawableCompat.setTint(drawable.mutate(), colorInt);
                             ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
                             etaText.append(" ");
-                            etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                            if (etaText.length() > 0) {
+                                etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                            }
                         }
                         if (arrivalTime.hasWifi && PreferenceUtil.isShowWifiIcon(context)) {
                             Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_network_wifi_black_18dp);
                             drawable = DrawableCompat.wrap(drawable);
                             if (pos == 0) {
                                 drawable.setBounds(0, 0, this.etaText.getLineHeight(), this.etaText.getLineHeight());
+                            } else if (pos == 1) {
+                                drawable.setBounds(0, 0, this.eta2Text.getLineHeight(), this.eta2Text.getLineHeight());
                             } else {
-                                drawable.setBounds(0, 0, this.etaNextText.getLineHeight(), this.etaNextText.getLineHeight());
+                                drawable.setBounds(0, 0, this.eta3Text.getLineHeight(), this.eta3Text.getLineHeight());
                             }
                             DrawableCompat.setTint(drawable.mutate(), colorInt);
                             ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
                             etaText.append(" ");
-                            etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                            if (etaText.length() > 0) {
+                                etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                            }
                         }
                         etaText.setSpan(new ForegroundColorSpan(colorInt), 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
                         switch(pos) {
                             case 0:
                                 this.etaText.setText(etaText);
-                                this.etaNextText.setText(null);
+                                this.eta2Text.setText(null);
+                                this.eta3Text.setText(null);
                                 break;
                             case 1:
-                                etaText.insert(0, this.etaNextText.getText());
-                                this.etaNextText.setText(etaText);
+                                etaText.insert(0, this.eta2Text.getText());
+                                this.eta2Text.setText(etaText);
                                 break;
                             case 2:
                             default:
-                                etaText.insert(0, "  ");
-                                etaText.insert(0, this.etaNextText.getText());
-                                this.etaNextText.setText(etaText);
+                                etaText.insert(0, this.eta3Text.getText());
+                                this.eta3Text.setText(etaText);
                                 break;
                         }
                     }

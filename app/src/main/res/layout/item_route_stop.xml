@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:foreground="?android:attr/selectableItemBackground"
     android:layout_gravity="center"
-    android:minHeight="@dimen/card_item_height"
+    android:minHeight="@dimen/card_item_height_3lines"
     android:paddingTop="@dimen/card_item_vertical_padding"
     android:paddingBottom="@dimen/card_item_vertical_padding"
     android:paddingLeft="@dimen/card_item_horizontal_padding"
@@ -38,15 +37,17 @@
                 android:layout_marginEnd="4dp"
                 android:contentDescription="@string/content_description_icon"
                 android:tint="@color/icons"
-                android:src="@drawable/ic_bookmark_black_24dp"/>
+                android:src="@drawable/ic_bookmark_black_24dp"
+                tools:visibility="visible" />
 
             <TextView
                 android:id="@+id/name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:maxLines="1"
-                style="@style/TextAppearance.AppCompat.Title"
-                android:text="@string/stop_name" />
+                style="@style/TextAppearance.AppCompat.Medium"
+                android:textColor="@color/textPrimary"
+                tools:text="@string/stop_name" />
 
         </LinearLayout>
 
@@ -71,7 +72,7 @@
         android:layout_height="match_parent"
         android:orientation="horizontal"
         android:layout_gravity="start">
-
+        
         <TextView
             android:id="@+id/fare"
             style="@style/TextAppearance.AppCompat.Small"
@@ -82,30 +83,49 @@
             android:text="@string/dots"
             tools:text="$10.0" />
 
+        <TextView
+            android:id="@+id/eta2"
+            style="@style/TextAppearance.AppCompat.Small"
+            android:textColor="@color/textPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:maxLines="1"
+            android:gravity="end"
+            tools:text="@string/eta" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:layout_gravity="start">
+
+        <TextView
+            android:id="@+id/distance"
+            style="@style/TextAppearance.AppCompat.Small"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:maxLines="1"
+            android:text="@string/dots"
+            tools:text="~1.1m" />
+
         <ImageView
             android:visibility="gone"
             android:id="@+id/nearby"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_gravity="start"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginStart="4dp"
             android:contentDescription="@string/content_description_icon"
             android:tint="@color/icons"
-            android:src="@drawable/ic_my_location_black_24dp"/>
+            android:src="@drawable/ic_my_location_black_24dp"
+            tools:visibility="visible" />
 
         <TextView
-            android:id="@+id/distance"
-            style="@style/TextAppearance.AppCompat.Small"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_gravity="start"
-            android:maxLines="1"
-            android:text="@string/dots"
-            tools:text="~1.1m" />
-
-        <TextView
-            android:id="@+id/eta_next"
+            android:id="@+id/eta3"
             style="@style/TextAppearance.AppCompat.Small"
             android:textColor="@color/textPrimary"
             android:layout_width="match_parent"

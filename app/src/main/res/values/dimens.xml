@@ -14,6 +14,7 @@
     <dimen name="card_elevation">2dp</dimen>
     <dimen name="card_item_height">72dp</dimen>
     <dimen name="card_item_height_singleline">48dp</dimen>
+    <dimen name="card_item_height_3lines">88dp</dimen>
     <dimen name="card_item_icon">24dp</dimen>
     <dimen name="card_item_icon_touch_target_dense">24dp</dimen>
     <dimen name="card_item_icon_margin_start">16dp</dimen>
