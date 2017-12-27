@@ -113,9 +113,10 @@ public class NwstActivity extends RouteActivityAbstract {
             @Override
             public void onNext(ResponseBody body) {
                 try {
-                    String[] routes = body.string().split("\\|\\*\\|", -1);
+                    String b = body.string();
+                    String[] routes = b.split("<br>");
                     for (String route: routes) {
-                        String text = route.replace("<br>", "").trim();
+                        String text = route.trim();
                         if (TextUtils.isEmpty(text)) continue;
                         NwstVariant variant = NwstVariant.Companion.fromString(text);
                         BusRoute busRoute = BusRouteUtil.fromNwst(nwstRoute, variant);

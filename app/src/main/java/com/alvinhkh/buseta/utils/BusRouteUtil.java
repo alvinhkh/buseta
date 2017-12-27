@@ -44,6 +44,7 @@ public class BusRouteUtil {
             object.setStopsStartSequence(variant.getStartSequence());
             object.setChildKey(variant.getRouteInfo());
             object.setDescription(variant.getRemark());
+            object.setSpecial(!TextUtils.isEmpty(variant.getRemark()) && !variant.getRemark().equals("正常路線"));
         }
         return object;
     }

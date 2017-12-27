@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.alvinhkh.buseta.C;
+import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.model.BusRouteStop;
 import com.alvinhkh.buseta.nwst.NwstService;
@@ -60,17 +61,22 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = super.onCreateView(inflater, container, savedInstanceState);
-        Map<String, String> options = new LinkedHashMap<>();
-        options.put(QUERY_INFO, NwstRequestUtil.paramInfo(busRoute));
-        options.put(QUERY_LANGUAGE, LANGUAGE_TC);
-        options.put(QUERY_PLATFORM, PLATFORM);
-        options.put(QUERY_APP_VERSION, APP_VERSION);
-        options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
-        disposables.add(nwstService.stopList(options)
-                .retryWhen(new RetryWithDelay(5, 3000))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(stopListObserver()));
+        String qInfo = NwstRequestUtil.paramInfo(busRoute);
+        if (!TextUtils.isEmpty(qInfo)) {
+            Map<String, String> options = new LinkedHashMap<>();
+            options.put(QUERY_INFO, qInfo);
+            options.put(QUERY_LANGUAGE, LANGUAGE_TC);
+            options.put(QUERY_PLATFORM, PLATFORM);
+            options.put(QUERY_APP_VERSION, APP_VERSION);
+            options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
+            disposables.add(nwstService.stopList(options)
+                    .retryWhen(new RetryWithDelay(5, 3000))
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeWith(stopListObserver()));
+        } else {
+            onStopListError(new Error(getString(R.string.message_fail_to_request)));
+        }
         return rootView;
     }
 

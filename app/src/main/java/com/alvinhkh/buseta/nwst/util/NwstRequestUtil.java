@@ -1,6 +1,7 @@
 package com.alvinhkh.buseta.nwst.util;
 
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.nwst.model.NwstVariant;
@@ -24,11 +25,17 @@ public class NwstRequestUtil {
         return timestamp + randomInt + md5(timestamp + randomInt + secret);
     }
 
-    public static String paramInfo(@NonNull BusRoute busRoute) {
+    public static String paramInfo(BusRoute busRoute) {
+        if (busRoute == null) {
+            return null;
+        }
         String routeInfo = busRoute.getChildKey();
+        if (TextUtils.isEmpty(routeInfo)) {
+            return null;
+        }
         NwstVariant variant = NwstVariant.Companion.parseInfo(routeInfo);
         if (variant == null) {
-            return "";
+            return null;
         }
         return "1|*|" + busRoute.getCompanyCode() + "||" + variant.getRdv() + "||" + variant.getStartSequence() + "||" + variant.getEndSequence() + "||" + busRoute.getSequence();
     }

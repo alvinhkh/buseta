@@ -19,7 +19,7 @@ data class NwstVariant(
     companion object {
         fun fromString(text: String): NwstVariant? {
             if (text.isBlank()) return null
-            val data = text.replace("<br>", "").trim().split("\\|\\|".toRegex()).dropLastWhile { it.isBlank() }.toTypedArray()
+            val data = text.replace("<br>", "").trim().split("||").dropLastWhile { it.isBlank() }.toTypedArray()
             if (data.size < 5) return null
             val obj = NwstVariant()
             obj.rank = data[0]
