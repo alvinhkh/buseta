@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.kmb.KmbService;
 import com.alvinhkh.buseta.kmb.model.KmbAnnounce;
@@ -28,12 +29,7 @@ import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
 
-public class KmbAnnounceFragment extends Fragment
-        implements SwipeRefreshLayout.OnRefreshListener {
-
-    private static final String ARG_ROUTE_NUMBER = "route_number";
-
-    private static final String ARG_ROUTE_BOUND = "route_bound";
+public class KmbAnnounceFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
     private final KmbService kmbService = KmbService.webSearch.create(KmbService.class);
 
@@ -45,9 +41,7 @@ public class KmbAnnounceFragment extends Fragment
 
     private FloatingActionButton fab;
 
-    private String routeBound;
-
-    private String routeNo;
+    private BusRoute busRoute;
 
     private RecyclerView recyclerView;
 
@@ -61,11 +55,9 @@ public class KmbAnnounceFragment extends Fragment
      * number.
      */
     public static KmbAnnounceFragment newInstance(BusRoute busRoute) {
-        Timber.d(busRoute.toString());
         KmbAnnounceFragment fragment = new KmbAnnounceFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_ROUTE_NUMBER, busRoute.getName());
-        args.putString(ARG_ROUTE_BOUND, Integer.toString(Integer.parseInt(busRoute.getSequence()) + 1));
+        args.putParcelable(C.EXTRA.ROUTE_OBJECT, busRoute);
         fragment.setArguments(args);
         return fragment;
     }
@@ -73,12 +65,10 @@ public class KmbAnnounceFragment extends Fragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        routeNo = getArguments().getString(ARG_ROUTE_NUMBER);
-        routeBound = getArguments().getString(ARG_ROUTE_BOUND);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         setHasOptionsMenu(true);
         View rootView = inflater.inflate(R.layout.fragment_list, container, false);
@@ -101,6 +91,10 @@ public class KmbAnnounceFragment extends Fragment
         swipeRefreshLayout.setOnRefreshListener(this);
 
         fab = rootView.findViewById(R.id.fab);
+
+        if (getArguments() != null) {
+            busRoute = getArguments().getParcelable(C.EXTRA.ROUTE_OBJECT);
+        }
         return rootView;
     }
 
@@ -119,9 +113,12 @@ public class KmbAnnounceFragment extends Fragment
 
     @Override
     public void onRefresh() {
-        if (!TextUtils.isEmpty(routeNo) && !TextUtils.isEmpty(routeBound)) {
-            loadRouteAnnounce(routeNo, routeBound);
-            return;
+        if (busRoute != null) {
+            if (!TextUtils.isEmpty(busRoute.getName()) && !TextUtils.isEmpty(busRoute.getSequence())) {
+                Timber.d("%s %s", busRoute.getName(), busRoute.getSequence());
+                loadAnnounce(busRoute.getName(), busRoute.getSequence());
+                return;
+            }
         }
         if (swipeRefreshLayout != null) {
             swipeRefreshLayout.setRefreshing(false);
@@ -145,7 +142,7 @@ public class KmbAnnounceFragment extends Fragment
         super.onDestroyView();
     }
 
-    private void loadRouteAnnounce(@NonNull String route, @NonNull String bound) {
+    private void loadAnnounce(@NonNull String route, @NonNull String bound) {
         if (swipeRefreshLayout != null) {
             swipeRefreshLayout.setRefreshing(true);
         }
@@ -155,13 +152,14 @@ public class KmbAnnounceFragment extends Fragment
         disposables.add(kmbService.getAnnounce(route, bound)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(getRouteAnnounceObserver()));
+                .subscribeWith(announceObserver()));
     }
 
-    DisposableObserver<KmbAnnounceRes> getRouteAnnounceObserver() {
+    DisposableObserver<KmbAnnounceRes> announceObserver() {
         return new DisposableObserver<KmbAnnounceRes>() {
             @Override
             public void onNext(KmbAnnounceRes res) {
+                Timber.d("%s", res.data);
                 if (swipeRefreshLayout != null) {
                     swipeRefreshLayout.setRefreshing(true);
                 }

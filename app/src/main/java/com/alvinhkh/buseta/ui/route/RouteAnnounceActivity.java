@@ -10,6 +10,7 @@ import android.support.v7.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.widget.Toast;
 
+import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.kmb.ui.KmbAnnounceFragment;
 import com.alvinhkh.buseta.model.BusRoute;
@@ -22,12 +23,6 @@ import com.alvinhkh.buseta.utils.NightModeUtil;
 
 public class RouteAnnounceActivity extends BaseActivity {
 
-    public static final String ROUTE_COMPANY = "route_company";
-
-    public static final String ROUTE_NO = "route_no";
-
-    public static final String ROUTE_SEQ = "route_seq";
-
     private FloatingActionButton fab;
 
     @Override
@@ -36,16 +31,22 @@ public class RouteAnnounceActivity extends BaseActivity {
         setContentView(R.layout.activity_main);
 
         Bundle bundle = getIntent().getExtras();
-        String routeCompany = bundle.getString(ROUTE_COMPANY);
-        String routeNo = bundle.getString(ROUTE_NO);
-        String routeSeq = bundle.getString(ROUTE_SEQ);
+        BusRoute busRoute = null;
+        if (bundle != null) {
+            busRoute = bundle.getParcelable(C.EXTRA.ROUTE_OBJECT);
+        }
+        if (busRoute == null || TextUtils.isEmpty(busRoute.getName()) || TextUtils.isEmpty(busRoute.getCompanyCode())) {
+            Toast.makeText(this, R.string.missing_input, Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
         // set action bar
         setToolbar();
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setTitle(R.string.notice);
-            actionBar.setSubtitle(routeNo);
+            actionBar.setSubtitle(busRoute.getName());
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
@@ -56,19 +57,9 @@ public class RouteAnnounceActivity extends BaseActivity {
 
         fab = findViewById(R.id.fab);
 
-        if (TextUtils.isEmpty(routeNo) || TextUtils.isEmpty(routeSeq) || TextUtils.isEmpty(routeCompany)) {
-            Toast.makeText(this, R.string.missing_input, Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        BusRoute busRoute = new BusRoute();
-        busRoute.setCompanyCode(routeCompany);
-        busRoute.setName(routeNo);
-        busRoute.setSequence(routeSeq);
-        switch (routeCompany) {
+        switch (busRoute.getCompanyCode()) {
             case BusRoute.COMPANY_KMB:
                 fragmentTransaction.replace(R.id.fragment_container, KmbAnnounceFragment.newInstance(busRoute));
                 break;
@@ -81,7 +72,7 @@ public class RouteAnnounceActivity extends BaseActivity {
                 fragmentTransaction.replace(R.id.fragment_container, NwstNoticeFragment.newInstance(busRoute));
                 break;
             default:
-                Toast.makeText(this, "invalid company: " + routeCompany, Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "invalid company: " + busRoute.getCompanyCode(), Toast.LENGTH_SHORT).show();
                 finish();
                 return;
         }

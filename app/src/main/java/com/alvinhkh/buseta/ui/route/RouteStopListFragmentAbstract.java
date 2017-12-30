@@ -255,8 +255,6 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.menu_route, menu);
-        MenuItem noticeMenuItem = menu.findItem(R.id.action_notice);
-        noticeMenuItem.setEnabled(true);
     }
 
     @Override
@@ -266,9 +264,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
             case R.id.action_notice:
                 if (busRoute != null) {
                     Intent intent = new Intent(getContext(), RouteAnnounceActivity.class);
-                    intent.putExtra(RouteAnnounceActivity.ROUTE_COMPANY, busRoute.getCompanyCode());
-                    intent.putExtra(RouteAnnounceActivity.ROUTE_NO, busRoute.getName());
-                    intent.putExtra(RouteAnnounceActivity.ROUTE_SEQ, busRoute.getSequence());
+                    intent.putExtra(C.EXTRA.ROUTE_OBJECT, busRoute);
                     startActivity(intent);
                 }
                 break;
