@@ -28,12 +28,14 @@ public class FollowStopUtil {
         String selection = FollowTable.COLUMN_COMPANY + " = ?" +
                 " AND " + FollowTable.COLUMN_ROUTE + " = ?" +
                 " AND " + FollowTable.COLUMN_BOUND + " = ?" +
+                " AND " + FollowTable.COLUMN_STOP_CODE + " = ?" +
                 " AND " + FollowTable.COLUMN_STOP_SEQ + " = ?";
         Cursor query = context.getContentResolver().query(FollowProvider.CONTENT_URI, null,
                 selection, new String[] {
                         followStop.companyCode,
                         followStop.route,
                         followStop.direction,
+                        followStop.code,
                         followStop.sequence
                 }, FollowTable.COLUMN_DISPLAY_ORDER + " ASC");
         return Observable.fromIterable(RxCursorIterable.from(query)).doFinally(() -> {
@@ -54,11 +56,13 @@ public class FollowStopUtil {
                 FollowTable.COLUMN_COMPANY + " = ?" +
                         " AND " + FollowTable.COLUMN_ROUTE + " = ?" +
                         " AND " + FollowTable.COLUMN_BOUND + " = ?" +
+                        " AND " + FollowTable.COLUMN_STOP_CODE + " = ?" +
                         " AND " + FollowTable.COLUMN_STOP_SEQ + " = ?",
                 new String[] {
                         followStop.companyCode,
                         followStop.route,
                         followStop.direction,
+                        followStop.code,
                         followStop.sequence
                 });
     }

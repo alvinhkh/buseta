@@ -817,7 +817,9 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                                     DrawableCompat.setTint(drawable.mutate(), colorInt);
                                     ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
                                     etaText.append(" ");
-                                    etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                                    if (etaText.length() > 0) {
+                                        etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                                    }
                                 }
                                 if (!TextUtils.isEmpty(capacity)) {
                                     etaText.append(capacity);
@@ -830,7 +832,9 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                                 DrawableCompat.setTint(drawable.mutate(), colorInt);
                                 ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
                                 etaText.append(" ");
-                                etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                                if (etaText.length() > 0) {
+                                    etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                                }
                             }
                             if (arrivalTime.hasWifi) {
                                 Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_network_wifi_black_18dp);
@@ -839,9 +843,13 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                                 DrawableCompat.setTint(drawable.mutate(), colorInt);
                                 ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
                                 etaText.append(" ");
-                                etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                                if (etaText.length() > 0) {
+                                    etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                                }
                             }
-                            etaText.setSpan(new ForegroundColorSpan(colorInt), 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                            if (etaText.length() > 0) {
+                                etaText.setSpan(new ForegroundColorSpan(colorInt), 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                            }
                             if (TextUtils.isEmpty(vh.etaText.getText())) {
                                 vh.etaText.setText(etaText);
                             } else {

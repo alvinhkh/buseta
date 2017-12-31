@@ -29,9 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.observers.DisposableObserver;
-import io.reactivex.schedulers.Schedulers;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
 
@@ -63,6 +61,9 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
         View rootView = super.onCreateView(inflater, container, savedInstanceState);
         String qInfo = NwstRequestUtil.paramInfo(busRoute);
         if (!TextUtils.isEmpty(qInfo)) {
+            if (swipeRefreshLayout != null && !swipeRefreshLayout.isRefreshing()) {
+                swipeRefreshLayout.setRefreshing(true);
+            }
             Map<String, String> options = new LinkedHashMap<>();
             options.put(QUERY_INFO, qInfo);
             options.put(QUERY_LANGUAGE, LANGUAGE_TC);
@@ -71,8 +72,6 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
             options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
             disposables.add(nwstService.stopList(options)
                     .retryWhen(new RetryWithDelay(5, 3000))
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribeWith(stopListObserver()));
         } else {
             onStopListError(new Error(getString(R.string.message_fail_to_request)));
@@ -82,13 +81,12 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
 
     DisposableObserver<ResponseBody> stopListObserver() {
         return new DisposableObserver<ResponseBody>() {
+
+            List<Item> items = new ArrayList<>();
+
             @Override
             public void onNext(ResponseBody body) {
-                if (swipeRefreshLayout != null && !swipeRefreshLayout.isRefreshing()) {
-                    swipeRefreshLayout.setRefreshing(true);
-                }
                 try {
-                    List<Item> items = new ArrayList<>();
                     String[] routes = body.string().split("<br>", -1);
                     int i = busRoute.getStopsStartSequence();
                     for (String route : routes) {
@@ -102,7 +100,6 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
                             i++;
                         }
                     }
-                    adapter.addAll(items);
                 } catch (IOException e) {
                     Timber.d(e);
                 }
@@ -111,11 +108,16 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
             @Override
             public void onError(Throwable e) {
                 Timber.d(e);
-                onStopListError(e);
+                getActivity().runOnUiThread(() -> onStopListError(e));
             }
 
             @Override
             public void onComplete() {
+                getActivity().runOnUiThread(() -> {
+                    if (adapter != null && items != null) {
+                        adapter.addAll(items);
+                    }
+                });
                 Map<String, String> options = new LinkedHashMap<>();
                 String routeInfo = busRoute.getChildKey();
                 NwstVariant variant = NwstVariant.Companion.parseInfo(routeInfo);
@@ -130,8 +132,6 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
                 options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
                 disposables.add(nwstService.latlongList(options)
                         .retryWhen(new RetryWithDelay(5, 3000))
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribeWith(latlongListObserver()));
             }
         };
@@ -141,9 +141,6 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
         return new DisposableObserver<ResponseBody>() {
             @Override
             public void onNext(ResponseBody body) {
-                if (swipeRefreshLayout != null && !swipeRefreshLayout.isRefreshing()) {
-                    swipeRefreshLayout.setRefreshing(true);
-                }
                 mapCoordinates.clear();
                 try {
                     hasMapCoordinates = true;
@@ -166,12 +163,12 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
             @Override
             public void onError(Throwable e) {
                 Timber.d(e);
-                onStopListComplete();
+                getActivity().runOnUiThread(() -> onStopListError(e));
             }
 
             @Override
             public void onComplete() {
-                onStopListComplete();
+                getActivity().runOnUiThread(() -> onStopListComplete());
             }
         };
     }

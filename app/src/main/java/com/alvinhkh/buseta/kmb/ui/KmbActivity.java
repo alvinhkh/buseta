@@ -15,9 +15,7 @@ import com.alvinhkh.buseta.utils.RetryWithDelay;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.observers.DisposableObserver;
-import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
 public class KmbActivity extends RouteActivityAbstract {
@@ -29,9 +27,8 @@ public class KmbActivity extends RouteActivityAbstract {
         super.loadRouteNo(no);
         disposables.add(kmbService.getRouteBound(no)
                 .retryWhen(new RetryWithDelay(5, 3000))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(routeBoundObserver()));
+                .subscribeWith(routeBoundObserver())
+        );
     }
 
     DisposableObserver<KmbRouteBoundRes> routeBoundObserver() {
@@ -45,8 +42,6 @@ public class KmbActivity extends RouteActivityAbstract {
                         list.add(bound.bound);
                         disposables.add(kmbService.getSpecialRoute(bound.route, String.valueOf(bound.bound))
                                 .retryWhen(new RetryWithDelay(5, 3000))
-                                .subscribeOn(Schedulers.io())
-                                .observeOn(AndroidSchedulers.mainThread())
                                 .subscribeWith(specialRouteObserver(bound.route)));
                     }
                 }
@@ -55,10 +50,12 @@ public class KmbActivity extends RouteActivityAbstract {
             @Override
             public void onError(Throwable e) {
                 Timber.d(e);
-                showEmptyView();
-                if (emptyText != null) {
-                    emptyText.setText(e.getMessage());
-                }
+                runOnUiThread(() -> {
+                    showEmptyView();
+                    if (emptyText != null) {
+                        emptyText.setText(e.getMessage());
+                    }
+                });
             }
 
             @Override
@@ -69,20 +66,14 @@ public class KmbActivity extends RouteActivityAbstract {
     DisposableObserver<KmbSpecialRouteRes> specialRouteObserver(String routeNo) {
         return new DisposableObserver<KmbSpecialRouteRes>() {
 
-            Boolean isScrollToPage = false;
+            List<BusRoute> busRoutes = new ArrayList<>();
 
             @Override
             public void onNext(KmbSpecialRouteRes res) {
                 if (res != null && res.data != null) {
-                    pagerAdapter.setRoute(routeNo);
                     for (KmbRoute route : res.data.routes) {
                         if (route == null || route.route == null || !route.route.equals(routeNo)) continue;
-                        BusRoute busRoute = BusRouteUtil.fromKmb(route);
-                        pagerAdapter.addSequence(busRoute);
-                        if (stopFromIntent != null && busRoute.getSequence().equals(stopFromIntent.direction)) {
-                            fragNo = pagerAdapter.getCount();
-                            isScrollToPage = true;
-                        }
+                        busRoutes.add(BusRouteUtil.fromKmb(route));
                     }
                 }
             }
@@ -90,19 +81,21 @@ public class KmbActivity extends RouteActivityAbstract {
             @Override
             public void onError(Throwable e) {
                 Timber.d(e);
-                showEmptyView();
-                if (emptyText != null) {
-                    if (!ConnectivityUtil.isConnected(getApplicationContext())) {
-                        emptyText.setText(R.string.message_no_internet_connection);
-                    } else {
-                        emptyText.setText(R.string.message_fail_to_request);
+                runOnUiThread(() -> {
+                    showEmptyView();
+                    if (emptyText != null) {
+                        if (!ConnectivityUtil.isConnected(getApplicationContext())) {
+                            emptyText.setText(R.string.message_no_internet_connection);
+                        } else {
+                            emptyText.setText(R.string.message_fail_to_request);
+                        }
                     }
-                }
+                });
             }
 
             @Override
             public void onComplete() {
-                onCompleteRoute(isScrollToPage, BusRoute.COMPANY_KMB);
+                runOnUiThread(() -> onCompleteRoute(busRoutes, BusRoute.COMPANY_KMB));
             }
         };
     }

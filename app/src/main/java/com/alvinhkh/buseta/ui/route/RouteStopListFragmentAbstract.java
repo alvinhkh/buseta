@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.Guideline;
 import android.support.design.widget.AppBarLayout;
@@ -102,13 +103,17 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
 
     protected BusRoute busRoute;
 
-    protected String goToStopSequence = "0";
+    protected BusRouteStop navToStop = null;
 
     protected GoogleMap map;
 
     protected List<Pair<Double, Double>> mapCoordinates = new ArrayList<>();
 
     protected Boolean hasMapCoordinates = false;
+
+    private Boolean isScrollToPosition = false;
+
+    private Integer scrollToPosition = 0;
 
     public RouteStopListFragmentAbstract() {}
 
@@ -152,7 +157,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_list, container, false);
         emptyView = rootView.findViewById(R.id.empty_view);
@@ -167,6 +172,27 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         recyclerView.setHasFixedSize(true);
         adapter = new RouteStopListAdapter(getFragmentManager(), recyclerView, busRoute);
         adapter.setOnClickItemListener(this);
+        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                super.onChanged();
+                if (adapter != null && adapter.getItemCount() > 0) {
+                    if (recyclerView != null) {
+                        recyclerView.setVisibility(View.VISIBLE);
+                        if (isScrollToPosition) {
+                            recyclerView.scrollToPosition(scrollToPosition);
+                            isScrollToPosition = false;
+                        }
+                    }
+                    if (emptyView != null) {
+                        emptyView.setVisibility(View.GONE);
+                    }
+                    if (progressBar != null) {
+                        progressBar.setVisibility(View.GONE);
+                    }
+                }
+            }
+        });
         if (!TextUtils.isEmpty(busRoute.getDescription())) {
             adapter.add(new Item(Item.TYPE_HEADER, busRoute.getDescription()));
         }
@@ -185,10 +211,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         swipeRefreshLayout.setOnRefreshListener(this);
 
         if (getArguments() != null) {
-            BusRouteStop routeStop = getArguments().getParcelable(C.EXTRA.STOP_OBJECT);
-            if (routeStop != null) {
-                goToStopSequence = routeStop.sequence;
-            }
+            navToStop = getArguments().getParcelable(C.EXTRA.STOP_OBJECT);
         }
         swipeRefreshLayout.setVisibility(View.VISIBLE);
         swipeRefreshLayout.setRefreshing(true);
@@ -199,12 +222,14 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
             mapFragment.getMapAsync(this);
         }
 
-        if (getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
+        if (getActivity() != null &&
+                getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
             AppBarLayout appBar = getActivity().findViewById(R.id.appbar);
             if (appBar != null) {
                 Guideline guideTopInfo = rootView.findViewById(R.id.guideline);
                 ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) guideTopInfo.getLayoutParams();
                 appBar.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> {
+                    if (recyclerView.getVisibility() != View.VISIBLE) return;
                     if (Math.abs(verticalOffset) == appBarLayout.getTotalScrollRange()) {
                         params.guidePercent = .2f;
                     } else if (verticalOffset == 0) {
@@ -233,12 +258,14 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         if (swipeRefreshLayout != null) {
             swipeRefreshLayout.setOnRefreshListener(this);
         }
-        AppBarLayout appBar = getActivity().findViewById(R.id.appbar);
-        if (appBar != null) {
-            Guideline guideTopInfo = getView().findViewById(R.id.guideline);
-            ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) guideTopInfo.getLayoutParams();
-            params.guidePercent = .45f;
-            guideTopInfo.setLayoutParams(params);
+        if (getActivity() != null) {
+            AppBarLayout appBar = getActivity().findViewById(R.id.appbar);
+            if (appBar != null) {
+                Guideline guideTopInfo = getView().findViewById(R.id.guideline);
+                ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) guideTopInfo.getLayoutParams();
+                params.guidePercent = .45f;
+                guideTopInfo.setLayoutParams(params);
+            }
         }
         refreshHandler.postDelayed(refreshRunnable, 100);
     }
@@ -327,8 +354,8 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
         if (map == null) return;
-        map.setMapStyle(MapStyleOptions.loadRawResourceStyle(getContext(), R.raw.map_style));
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(22.3964, 114.1095), 10));
+        googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(getContext(), R.raw.map_style));
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(22.3964, 114.1095), 10));
         GoogleMapOptions options = new GoogleMapOptions();
         options.mapToolbarEnabled(false);
         options.compassEnabled(true);
@@ -337,15 +364,15 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         options.tiltGesturesEnabled(true);
         options.zoomControlsEnabled(false);
         options.zoomGesturesEnabled(true);
-        map.setBuildingsEnabled(false);
-        map.setIndoorEnabled(false);
-        map.setTrafficEnabled(false);
-        map.setOnMarkerClickListener(this);
+        googleMap.setBuildingsEnabled(false);
+        googleMap.setIndoorEnabled(false);
+        googleMap.setTrafficEnabled(false);
+        googleMap.setOnMarkerClickListener(this);
         if (ActivityCompat.checkSelfPermission(getContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(getContext(),
                         Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            map.setMyLocationEnabled(true);
+            googleMap.setMyLocationEnabled(true);
         }
         onStopListComplete();
     }
@@ -370,8 +397,10 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                     }
                     recyclerView.getLayoutManager().startSmoothScroll(smoothScroller);
                 }
-                map.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                        new LatLng(Double.parseDouble(stop.latitude), Double.parseDouble(stop.longitude)), 16));
+                if (map != null) {
+                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                            new LatLng(Double.parseDouble(stop.latitude), Double.parseDouble(stop.longitude)), 16));
+                }
                 Intent intent = new Intent(getContext(), EtaService.class);
                 intent.putExtra(C.EXTRA.STOP_OBJECT, stop);
                 getContext().startService(intent);
@@ -433,14 +462,10 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
     }
 
     protected void onStopListComplete() {
-        Boolean isScrollToPosition = false;
-        Integer scrollToPosition = 0;
-
-        recyclerView.setVisibility(View.VISIBLE);
-        emptyView.setVisibility(View.GONE);
-        progressBar.setVisibility(View.GONE);
+        isScrollToPosition = false;
+        scrollToPosition = 0;
+        List<BusRouteStop> busRouteStops = new ArrayList<>();
         if (map != null && adapter != null) {
-            adapter.setLoaded();
             Boolean isSnapToRoad = false;
             if (getActivity() != null) {
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
@@ -469,7 +494,6 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                 mapCoordinates.clear();
             }
             if (adapter.getItemCount() > 0) {
-                List<BusRouteStop> busRouteStops = new ArrayList<>();
                 for (int i = 0, j = 0; i < adapter.getItemCount(); i++) {
                     Item item = adapter.getItem(i);
                     if (item.getType() != Item.TYPE_DATA) continue;
@@ -478,8 +502,14 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                     if (!hasMapCoordinates) {
                         mapCoordinates.add(new Pair<>(Double.parseDouble(stop.latitude), Double.parseDouble(stop.longitude)));
                     }
-                    if (busRoute != null && busRoute.getSequence().equals(stop.direction) &&
-                            stop.sequence.equals(goToStopSequence)) {
+                    if (
+                            navToStop != null &&
+                            stop.companyCode.equals(navToStop.companyCode) &&
+                            stop.route.equals(navToStop.route) &&
+                            stop.name.equals(navToStop.name) &&
+                            stop.direction.equals(navToStop.direction) &&
+                            stop.sequence.equals(navToStop.sequence)
+                    ) {
                         scrollToPosition = j;
                         isScrollToPosition = true;
                     }
@@ -572,13 +602,11 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                 }
             }
         }
-        if (isScrollToPosition) {
-            recyclerView.scrollToPosition(scrollToPosition);
         }
         if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
             swipeRefreshLayout.setRefreshing(false);
         }
-        refreshHandler.post(refreshRunnable);
+        refreshHandler.postDelayed(refreshRunnable, 1000);
     }
 
     DisposableObserver<Intent> followObserver() {

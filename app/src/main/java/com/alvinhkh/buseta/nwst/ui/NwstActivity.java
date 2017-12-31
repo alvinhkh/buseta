@@ -14,12 +14,12 @@ import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.alvinhkh.buseta.utils.RetryWithDelay;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.observers.DisposableObserver;
-import io.reactivex.schedulers.Schedulers;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
 
@@ -36,28 +36,26 @@ public class NwstActivity extends RouteActivityAbstract {
 
     private void loadRouteNo(String no, String mode) {
         super.loadRouteNo(no);
+        String sysCode = NwstRequestUtil.syscode();
         Map<String, String> options = new HashMap<>();
         options.put(QUERY_ROUTE_NO, mode.equals(TYPE_ALL_ROUTES) ? "" : no);
         options.put(QUERY_MODE, mode);
         options.put(QUERY_LANGUAGE, LANGUAGE_TC);
         options.put(QUERY_PLATFORM, PLATFORM);
         options.put(QUERY_APP_VERSION, APP_VERSION);
-        options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
+        options.put(QUERY_SYSCODE, sysCode);
         disposables.add(nwstService.routeList(options)
                 .retryWhen(new RetryWithDelay(5, 3000))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(routeListObserver(no)));
+                .subscribeWith(routeListObserver(no, sysCode)));
     }
 
-    DisposableObserver<ResponseBody> routeListObserver(String routeNo) {
+    DisposableObserver<ResponseBody> routeListObserver(String routeNo, String sysCode) {
         return new DisposableObserver<ResponseBody>() {
             @Override
             public void onNext(ResponseBody body) {
                 try {
                     String[] routes = body.string().split("\\|\\*\\|", -1);
                     Map<String, String> options;
-                    String sysCode = NwstRequestUtil.syscode();
                     for (String route : routes) {
                         String text = route.replace("<br>", "").trim();
                         if (TextUtils.isEmpty(text)) continue;
@@ -73,8 +71,6 @@ public class NwstActivity extends RouteActivityAbstract {
                             options.put(QUERY_SYSCODE, sysCode);
                             disposables.add(nwstService.variantList(options)
                                     .retryWhen(new RetryWithDelay(5, 3000))
-                                    .subscribeOn(Schedulers.io())
-                                    .observeOn(AndroidSchedulers.mainThread())
                                     .subscribeWith(variantListObserver(nwstRoute)));
                         }
                     }
@@ -85,30 +81,28 @@ public class NwstActivity extends RouteActivityAbstract {
 
             @Override
             public void onError(Throwable e) {
-                Timber.d(e);
-                showEmptyView();
-                if (emptyText != null) {
-                    if (!ConnectivityUtil.isConnected(getApplicationContext())) {
-                        emptyText.setText(R.string.message_no_internet_connection);
-                    } else {
-                        emptyText.setText(R.string.message_fail_to_request);
+                Timber.e(e);
+                runOnUiThread(() -> {
+                    showEmptyView();
+                    if (emptyText != null) {
+                        if (!ConnectivityUtil.isConnected(getApplicationContext())) {
+                            emptyText.setText(R.string.message_no_internet_connection);
+                        } else {
+                            emptyText.setText(R.string.message_fail_to_request);
+                        }
                     }
-                }
+                });
             }
 
             @Override
-            public void onComplete() {
-                pagerAdapter.setRoute(routeNo);
-            }
+            public void onComplete() { }
         };
     }
 
     DisposableObserver<ResponseBody> variantListObserver(NwstRoute nwstRoute) {
         return new DisposableObserver<ResponseBody>() {
 
-            String companyCode = BusRoute.COMPANY_NWST;
-
-            Boolean isScrollToPage = false;
+            List<BusRoute> busRoutes = new ArrayList<>();
 
             @Override
             public void onNext(ResponseBody body) {
@@ -121,12 +115,7 @@ public class NwstActivity extends RouteActivityAbstract {
                         NwstVariant variant = NwstVariant.Companion.fromString(text);
                         BusRoute busRoute = BusRouteUtil.fromNwst(nwstRoute, variant);
                         if (busRoute.getName().equals(routeNo)) {
-                            companyCode = busRoute.getCompanyCode();
-                            pagerAdapter.addSequence(busRoute);
-                            if (stopFromIntent != null && busRoute.getSequence().equals(stopFromIntent.direction)) {
-                                fragNo = pagerAdapter.getCount();
-                                isScrollToPage = true;
-                            }
+                            busRoutes.add(busRoute);
                         }
                     }
                 } catch (IOException e) {
@@ -136,20 +125,22 @@ public class NwstActivity extends RouteActivityAbstract {
 
             @Override
             public void onError(Throwable e) {
-                Timber.d(e);
-                showEmptyView();
-                if (emptyText != null) {
-                    if (!ConnectivityUtil.isConnected(getApplicationContext())) {
-                        emptyText.setText(R.string.message_no_internet_connection);
-                    } else {
-                        emptyText.setText(R.string.message_fail_to_request);
+                Timber.e(e);
+                runOnUiThread(() -> {
+                    showEmptyView();
+                    if (emptyText != null) {
+                        if (!ConnectivityUtil.isConnected(getApplicationContext())) {
+                            emptyText.setText(R.string.message_no_internet_connection);
+                        } else {
+                            emptyText.setText(R.string.message_fail_to_request);
+                        }
                     }
-                }
+                });
             }
 
             @Override
             public void onComplete() {
-                onCompleteRoute(isScrollToPage, companyCode);
+                runOnUiThread(() -> onCompleteRoute(busRoutes, BusRoute.COMPANY_NWST));
             }
         };
     }

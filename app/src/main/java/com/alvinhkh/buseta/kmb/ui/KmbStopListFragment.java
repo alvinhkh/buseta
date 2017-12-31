@@ -24,9 +24,7 @@ import com.google.gson.JsonParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.observers.DisposableObserver;
-import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
 
@@ -54,30 +52,34 @@ public class KmbStopListFragment extends RouteStopListFragmentAbstract {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = super.onCreateView(inflater, container, savedInstanceState);
+        if (swipeRefreshLayout != null && !swipeRefreshLayout.isRefreshing()) {
+            swipeRefreshLayout.setRefreshing(true);
+        }
         disposables.add(kmbService.getStops(busRoute.getName(), busRoute.getSequence(), busRoute.getServiceType())
                 .retryWhen(new RetryWithDelay(5, 3000))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(routeStopsObserver()));
         return rootView;
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+    }
+
     DisposableObserver<KmbStopsRes> routeStopsObserver() {
         return new DisposableObserver<KmbStopsRes>() {
+
+            List<Item> items = new ArrayList<>();
+
             @Override
             public void onNext(KmbStopsRes res) {
-                if (swipeRefreshLayout != null && !swipeRefreshLayout.isRefreshing()) {
-                    swipeRefreshLayout.setRefreshing(true);
-                }
                 if (res != null && res.data != null && adapter != null) {
                     if (res.data.routeStops != null) {
-                        List<Item> items = new ArrayList<>();
                         for (int i = 0; i < res.data.routeStops.size(); i++) {
                             BusRouteStop stop = BusRouteStopUtil.fromKmbRouteStop(res.data.routeStops.get(i),
                                     busRoute, i, i >= res.data.routeStops.size() - 1);
                             items.add(new Item(Item.TYPE_DATA, stop));
                         }
-                        adapter.addAll(items);
                     }
                     hasMapCoordinates = false;
                     mapCoordinates.clear();
@@ -104,12 +106,18 @@ public class KmbStopListFragment extends RouteStopListFragmentAbstract {
             @Override
             public void onError(Throwable e) {
                 Timber.d(e);
-                onStopListError(e);
+                getActivity().runOnUiThread(() -> onStopListError(e));
             }
 
             @Override
             public void onComplete() {
-                onStopListComplete();
+                Timber.d("onComplete");
+                getActivity().runOnUiThread(() -> {
+                    if (adapter != null && items != null) {
+                        adapter.addAll(items);
+                    }
+                    onStopListComplete();
+                });
             }
         };
     }

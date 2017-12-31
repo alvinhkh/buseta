@@ -103,6 +103,9 @@ public class LwbStopListFragment extends RouteStopListFragmentAbstract {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = super.onCreateView(inflater, container, savedInstanceState);
+        if (swipeRefreshLayout != null && !swipeRefreshLayout.isRefreshing()) {
+            swipeRefreshLayout.setRefreshing(true);
+        }
         disposables.add(lwbService.getRouteMap(busRoute.getName(), busRoute.getSequence(), busRoute.getServiceType())
                 .retryWhen(new RetryWithDelay(5, 3000))
                 .subscribeOn(Schedulers.io())
@@ -113,32 +116,35 @@ public class LwbStopListFragment extends RouteStopListFragmentAbstract {
 
     DisposableObserver<List<LwbRouteStop>> routeMapObserver() {
         return new DisposableObserver<List<LwbRouteStop>>() {
+
+            List<Item> items = new ArrayList<>();
+
             @Override
             public void onNext(List<LwbRouteStop> data) {
-                if (swipeRefreshLayout != null && !swipeRefreshLayout.isRefreshing()) {
-                    swipeRefreshLayout.setRefreshing(true);
-                }
                 if (data != null && adapter != null) {
                     if (data.size() < 1) {
                         Timber.d("empty route map.");
                     }
-                    List<Item> items = new ArrayList<>();
                     for (int i = 0; i < data.size(); i++) {
                         items.add(new Item(Item.TYPE_DATA, BusRouteStopUtil.fromLwb(data.get(i), busRoute, i, i >= data.size() - 1)));
                     }
-                    adapter.addAll(items);
                 }
             }
 
             @Override
             public void onError(Throwable e) {
                 Timber.d(e);
-                onStopListError(e);
+                getActivity().runOnUiThread(() -> onStopListError(e));
             }
 
             @Override
             public void onComplete() {
-                onStopListComplete();
+                getActivity().runOnUiThread(() -> {
+                    if (adapter != null && items != null) {
+                        adapter.addAll(items);
+                    }
+                    onStopListComplete();
+                });
             }
         };
     }

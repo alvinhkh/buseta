@@ -1,5 +1,6 @@
 package com.alvinhkh.buseta.ui.route;
 
+import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
@@ -21,6 +22,7 @@ import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.model.SearchHistory;
 import com.alvinhkh.buseta.provider.SuggestionProvider;
 import com.alvinhkh.buseta.ui.BaseActivity;
 import com.alvinhkh.buseta.utils.AdViewUtil;
@@ -28,6 +30,7 @@ import com.alvinhkh.buseta.utils.BusRouteUtil;
 import com.alvinhkh.buseta.utils.SearchHistoryUtil;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import io.reactivex.disposables.CompositeDisposable;
 
@@ -64,7 +67,9 @@ public abstract class RouteActivityAbstract extends BaseActivity {
 
     protected Fragment currentFragment;
 
-    protected int fragNo = 0;
+    private Boolean isScrollToPage = false;
+
+    private Integer fragNo = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -146,6 +151,25 @@ public abstract class RouteActivityAbstract extends BaseActivity {
             }
         });
 
+        pagerAdapter.registerDataSetObserver(new DataSetObserver() {
+            @Override
+            public void onChanged() {
+                super.onChanged();
+                if (isScrollToPage) {
+                    viewPager.setCurrentItem(fragNo, false);
+                    isScrollToPage = false;
+                }
+                if (pagerAdapter.getCount() > 0) {
+                    if (emptyView != null) {
+                        emptyView.setVisibility(View.GONE);
+                    }
+                    viewPager.setOffscreenPageLimit(Math.min(pagerAdapter.getCount(), 10));
+                } else {
+                    showEmptyView();
+                }
+            }
+        });
+
 
         if (!TextUtils.isEmpty(routeNo)) {
             loadRouteNo(routeNo);
@@ -221,24 +245,27 @@ public abstract class RouteActivityAbstract extends BaseActivity {
         showLoadingView();
     }
 
-    protected void onCompleteRoute(Boolean isScrollToPage, String companyCode) {
+    protected void onCompleteRoute(List<BusRoute> busRoutes, String companyCode) {
+        pagerAdapter.setRoute(routeNo);
+        for (BusRoute busRoute : busRoutes) {
+            companyCode = busRoute.getCompanyCode();
+            if (stopFromIntent != null &&
+                    !busRoute.getSpecial() &&
+                    busRoute.getCompanyCode().equals(stopFromIntent.companyCode) &&
+                    busRoute.getSequence().equals(stopFromIntent.direction)) {
+                // TODO: handle select which page from stopFromIntent, i.e. service type
+                fragNo = pagerAdapter.getCount();
+                isScrollToPage = true;
+            }
+            pagerAdapter.addSequence(busRoute);
+        }
         if (getSupportActionBar() != null) {
             String routeName = BusRouteUtil.getCompanyName(this, companyCode, routeNo) + " " + routeNo;
             getSupportActionBar().setTitle(routeName);
         }
-        if (isScrollToPage) {
-            viewPager.setCurrentItem(fragNo, false);
-        }
-        if (pagerAdapter.getCount() > 0) {
-            getContentResolver().insert(SuggestionProvider.CONTENT_URI,
-                    SearchHistoryUtil.toContentValues(
-                            SearchHistoryUtil.createInstance(routeNo, companyCode)));
-            if (emptyView != null) {
-                emptyView.setVisibility(View.GONE);
-            }
-            viewPager.setOffscreenPageLimit(Math.min(pagerAdapter.getCount(), 10));
-        } else {
-            showEmptyView();
+        if (busRoutes.size() > 0) {
+            SearchHistory history = SearchHistoryUtil.createInstance(routeNo, companyCode);
+            getContentResolver().insert(SuggestionProvider.CONTENT_URI, SearchHistoryUtil.toContentValues(history));
         }
     }
 }

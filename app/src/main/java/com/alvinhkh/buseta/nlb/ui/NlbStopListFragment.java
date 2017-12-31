@@ -55,6 +55,9 @@ public class NlbStopListFragment extends RouteStopListFragmentAbstract {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = super.onCreateView(inflater, container, savedInstanceState);
+        if (swipeRefreshLayout != null && !swipeRefreshLayout.isRefreshing()) {
+            swipeRefreshLayout.setRefreshing(true);
+        }
         disposables.add(nlbService.getDatabase()
                 .retryWhen(new RetryWithDelay(5, 3000))
                 .subscribeOn(Schedulers.io())
@@ -65,11 +68,11 @@ public class NlbStopListFragment extends RouteStopListFragmentAbstract {
 
     DisposableObserver<NlbDatabase> databaseObserver() {
         return new DisposableObserver<NlbDatabase>() {
+
+            List<Item> items = new ArrayList<>();
+
             @Override
             public void onNext(NlbDatabase database) {
-                if (swipeRefreshLayout != null && !swipeRefreshLayout.isRefreshing()) {
-                    swipeRefreshLayout.setRefreshing(true);
-                }
                 if (database != null && adapter != null) {
                     Map<String, NlbRouteStop> map = new HashMap<>();
                     for (NlbRouteStop routeStop: database.route_stops) {
@@ -82,26 +85,29 @@ public class NlbStopListFragment extends RouteStopListFragmentAbstract {
                         map2.put(Integer.parseInt(map.get(stop.stop_id).stop_sequence),
                                 BusRouteStopUtil.fromNlb(map.get(stop.stop_id), stop, busRoute));
                     }
-                    List<Item> items = new ArrayList<>();
                     int i = 0;
                     for (BusRouteStop stop: map2.values()) {
                         stop.sequence = Integer.toString(i);
                         items.add(new Item(Item.TYPE_DATA, stop));
                         i++;
                     }
-                    adapter.addAll(items);
                 }
             }
 
             @Override
             public void onError(Throwable e) {
                 Timber.d(e);
-                onStopListError(e);
+                getActivity().runOnUiThread(() -> onStopListError(e));
             }
 
             @Override
             public void onComplete() {
-                onStopListComplete();
+                getActivity().runOnUiThread(() -> {
+                    if (adapter != null && items != null) {
+                        adapter.addAll(items);
+                    }
+                    onStopListComplete();
+                });
             }
         };
     }

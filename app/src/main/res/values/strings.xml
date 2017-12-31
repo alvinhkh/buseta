@@ -47,7 +47,7 @@
     <string name="title_settings">設定</string>
     <string name="title_app_theme">主題</string>
     <string name="category_about">關於</string>
-    <string name="title_app_name" translatable="false">%s \u00A9 2017</string>
+    <string name="title_app_name" translatable="false">%s \u00A9 2018</string>
     <string name="title_app_version">版本</string>
     <string name="summary_app_version" translatable="false">%1$s (%2$s)</string>
     <string name="title_developer">開發者</string>

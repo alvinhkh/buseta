@@ -159,7 +159,6 @@ public class KmbAnnounceFragment extends Fragment implements SwipeRefreshLayout.
         return new DisposableObserver<KmbAnnounceRes>() {
             @Override
             public void onNext(KmbAnnounceRes res) {
-                Timber.d("%s", res.data);
                 if (swipeRefreshLayout != null) {
                     swipeRefreshLayout.setRefreshing(true);
                 }
