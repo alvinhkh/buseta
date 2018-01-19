@@ -65,7 +65,7 @@ public abstract class RouteActivityAbstract extends BaseActivity {
 
     protected String routeNo;
 
-    protected Fragment currentFragment;
+    protected Fragment currentFragment = null;
 
     private Boolean isScrollToPage = false;
 
@@ -102,14 +102,6 @@ public abstract class RouteActivityAbstract extends BaseActivity {
             adView = AdViewUtil.banner(adViewContainer, adView, false);
         }
         fab = findViewById(R.id.fab);
-        fab.setOnClickListener(v -> {
-            if (currentFragment != null) {
-                if (currentFragment instanceof RouteStopListFragmentAbstract) {
-                    RouteStopListFragmentAbstract f = (RouteStopListFragmentAbstract) currentFragment;
-                    f.onRefresh();
-                }
-            }
-        });
 
         emptyView = findViewById(android.R.id.empty);
         progressBar = findViewById(R.id.progressBar);
@@ -136,18 +128,14 @@ public abstract class RouteActivityAbstract extends BaseActivity {
             }
         });
 
-        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                currentFragment = pagerAdapter.getFragment(position);
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
+                Fragment f = pagerAdapter.getFragment(position);
+                if (currentFragment == null) {
+                    f.setUserVisibleHint(true);
+                }
+                currentFragment = f;
             }
         });
 
@@ -177,12 +165,6 @@ public abstract class RouteActivityAbstract extends BaseActivity {
             Toast.makeText(this, R.string.missing_input, Toast.LENGTH_SHORT).show();
             finish();
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
-        return true;
     }
 
     @Override

@@ -96,8 +96,12 @@ public class NotificationUtil {
                     etaText.append(" [WIFI]");
                 }
                 ForegroundColorSpan textColour = new ForegroundColorSpan(colorInt);
-                etaSmallText.setSpan(textColour, 0, etaSmallText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                etaText.setSpan(textColour, 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                if (etaSmallText.length() > 0) {
+                    etaSmallText.setSpan(textColour, 0, etaSmallText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }
+                if (etaText.length() > 0) {
+                    etaText.setSpan(textColour, 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                }
 
                 switch(pos) {
                     case 0:

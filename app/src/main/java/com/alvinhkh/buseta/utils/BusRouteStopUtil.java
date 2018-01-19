@@ -105,8 +105,8 @@ public class BusRouteStopUtil {
         if (!TextUtils.isEmpty(object.code)) {
             object.imageUrl = "http://www.kmb.hk/chi/img.php?file=" + object.code;
         }
-        object.etaGet = String.format("/?action=geteta&lang=tc&route=%s&bound=%s&stop=%s&stop_seq=%s",
-                object.route, object.direction, object.code, isLastStop ? 999 : object.sequence);
+        object.etaGet = String.format("/?action=geteta&lang=tc&route=%s&bound=%s&stop=%s&stop_seq=%s&serviceType=%s",
+                object.route, object.direction, object.code, isLastStop ? 999 : object.sequence, busRoute.getServiceType());
         return object;
     }
 
@@ -133,8 +133,8 @@ public class BusRouteStopUtil {
         if (!TextUtils.isEmpty(object.code)) {
             object.imageUrl = "http://www.kmb.hk/chi/img.php?file=" + object.code;
         }
-        object.etaGet = String.format("/?action=geteta&lang=tc&route=%s&bound=%s&stop=%s&stop_seq=%s",
-                object.route, object.direction, object.code, isLastStop ? 999 : object.sequence);
+        object.etaGet = String.format("/?action=geteta&lang=tc&route=%s&bound=%s&stop=%s&stop_seq=%s&serviceType=%s",
+                object.route, object.direction, object.code, isLastStop ? 999 : object.sequence, busRoute.getServiceType());
         return object;
     }
 

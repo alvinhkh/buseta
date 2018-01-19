@@ -75,7 +75,7 @@ public class FollowActivity extends BaseActivity {
                 fragmentTransaction.replace(R.id.fragment_container, EditFollowFragment.newInstance());
                 fragmentTransaction.addToBackStack("follow_list");
                 fragmentTransaction.commit();
-                return true;
+                break;
         }
         return super.onOptionsItemSelected(item);
     }

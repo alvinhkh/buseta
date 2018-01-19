@@ -271,6 +271,7 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
                 Bundle bundle = intent.getExtras();
                 if (bundle == null) return;
                 Integer row = bundle.getInt(C.EXTRA.ROW, -1);
+                if (row < 0) return;  // not requested by this fragment
                 BusRouteStop busRouteStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
                 if (busRouteStop == null) return;
                 if (followAndHistoryAdapter == null) return;

@@ -47,6 +47,7 @@ public class ArrivalTimeUtil {
         String selection = EtaEntry.COLUMN_ROUTE_COMPANY + "=? AND "
                 + EtaEntry.COLUMN_ROUTE_NO + "=? AND "
                 + EtaEntry.COLUMN_ROUTE_SEQ + "=? AND "
+                + EtaEntry.COLUMN_STOP_ID + "=? AND "
                 + EtaEntry.COLUMN_STOP_SEQ + "=? AND "
                 + EtaEntry.COLUMN_UPDATED_AT + ">? AND "
                 + EtaEntry.COLUMN_ETA_EXPIRE + ">?";
@@ -55,6 +56,7 @@ public class ArrivalTimeUtil {
                         stop.companyCode,
                         stop.route,
                         stop.direction,
+                        stop.code,
                         stop.sequence,
                         String.valueOf(System.currentTimeMillis() - 600000),
                         String.valueOf(System.currentTimeMillis())
@@ -82,7 +84,6 @@ public class ArrivalTimeUtil {
         values.put(EtaEntry.COLUMN_ROUTE_SEQ, stop.direction);
         values.put(EtaEntry.COLUMN_STOP_SEQ, stop.sequence);
         values.put(EtaEntry.COLUMN_STOP_ID, stop.code);
-
         values.put(EtaEntry.COLUMN_ETA_EXPIRE, eta.expire);
         values.put(EtaEntry.COLUMN_ETA_ID, eta.id);
         values.put(

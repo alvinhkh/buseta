@@ -61,6 +61,13 @@
             android:defaultValue="false" />
 
         <SwitchPreferenceCompat
+            android:key="load_map"
+            android:title="@string/map"
+            android:summaryOn="@string/auto_load"
+            android:summaryOff="@string/manual"
+            android:defaultValue="true" />
+
+        <SwitchPreferenceCompat
             android:key="load_etas"
             android:title="@string/eta_short"
             android:summaryOn="@string/auto_load"

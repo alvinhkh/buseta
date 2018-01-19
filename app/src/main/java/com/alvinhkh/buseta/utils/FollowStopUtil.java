@@ -93,6 +93,7 @@ public class FollowStopUtil {
     }
     
     public static FollowStop fromCursor(@NonNull Cursor cursor) {
+        // TODO: follow stop store bus service type
         FollowStop object = new FollowStop();
         object._id = cursor.getString(cursor.getColumnIndex(FollowTable.COLUMN_ID));
         object.companyCode = cursor.getString(cursor.getColumnIndex(FollowTable.COLUMN_COMPANY));
@@ -107,7 +108,7 @@ public class FollowStopUtil {
         object.updatedAt = cursor.getLong(cursor.getColumnIndex(FollowTable.COLUMN_DATE));
         object.order = cursor.getInt(cursor.getColumnIndex(FollowTable.COLUMN_DISPLAY_ORDER));
         if (object.companyCode.equals(BusRoute.COMPANY_KMB)) {
-            object.etaGet = String.format("/?action=geteta&lang=tc&route=%s&bound=%s&stop=%s&stop_seq=%s", object.route, object.direction, object.code, object.sequence);
+            object.etaGet = String.format("/?action=geteta&lang=tc&route=%s&bound=%s&stop=%s&stop_seq=%s&serviceType=%s", object.route, object.direction, object.code, object.sequence, "01");
         }
         return object;
     }

@@ -301,7 +301,9 @@ public class RouteStopListAdapter
                                 etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
                             }
                         }
-                        etaText.setSpan(new ForegroundColorSpan(colorInt), 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        if (etaText.length() > 0) {
+                            etaText.setSpan(new ForegroundColorSpan(colorInt), 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                        }
 
                         switch(pos) {
                             case 0:

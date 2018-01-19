@@ -48,7 +48,7 @@ public class KmbEtaUtil {
         SimpleDateFormat etaExpireDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
         Date generatedDate = object.generatedAt == null ? new Date() : new Date(object.generatedAt);
         // given timeText
-        if (!TextUtils.isEmpty(object.text) && object.text.matches(".*\\d.*")) {
+        if (!TextUtils.isEmpty(object.text) && object.text.matches(".*\\d.*") && !object.text.contains("unexpected")) {
             // if text has digit
             String estimateMinutes = "";
             long differences = new Date().getTime() - generatedDate.getTime(); // get device timeText and compare to server timeText

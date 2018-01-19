@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.alvinhkh.buseta.C;
+import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.kmb.KmbService;
 import com.alvinhkh.buseta.kmb.model.network.KmbEtaRes;
 import com.alvinhkh.buseta.kmb.util.KmbEtaUtil;
@@ -34,6 +35,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableObserver;
@@ -94,11 +96,13 @@ public class EtaService extends IntentService {
                 switch (routeStop.companyCode) {
                     case BusRoute.COMPANY_KMB:
                         disposables.add(kmbEtaApi.getEta(routeStop.etaGet)
+                                .timeout(30, TimeUnit.SECONDS)
                                 .subscribeWith(kmbEtaObserver(routeStop, widgetId, notificationId, row, i == busRouteStopList.size() - 1)));
                         break;
                     case BusRoute.COMPANY_NLB:
                         NlbEtaRequest request = new NlbEtaRequest(routeStop.routeId, routeStop.code, "zh");
                         disposables.add(nlbApi.eta(request)
+                                .timeout(30, TimeUnit.SECONDS)
                                 .subscribeWith(nlbEtaObserver(routeStop, widgetId, notificationId, row, i == busRouteStopList.size() - 1)));
                         break;
                     case BusRoute.COMPANY_CTB:
@@ -118,6 +122,7 @@ public class EtaService extends IntentService {
                         options.put(QUERY_APP_VERSION, APP_VERSION);
                         options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
                         disposables.add(nwstApi.eta(options)
+                                .timeout(30, TimeUnit.SECONDS)
                                 .subscribeWith(nwstEtaObserver(routeStop, widgetId, notificationId, row, i == busRouteStopList.size() - 1)));
                         break;
                     default:
@@ -168,7 +173,6 @@ public class EtaService extends IntentService {
                 }
                 ArrivalTime arrivalTime = ArrivalTimeUtil.emptyInstance(getApplicationContext());
                 arrivalTime.companyCode = BusRoute.COMPANY_KMB;
-                arrivalTime.generatedAt = res.generated;
                 getContentResolver().insert(EtaEntry.CONTENT_URI,
                         ArrivalTimeUtil.toContentValues(busRouteStop, arrivalTime));
                 notifyUpdate(busRouteStop, C.EXTRA.FAIL, widgetId, notificationId, rowNo);
@@ -179,7 +183,7 @@ public class EtaService extends IntentService {
                 Timber.d(e);
                 ArrivalTime arrivalTime = ArrivalTimeUtil.emptyInstance(getApplicationContext());
                 arrivalTime.companyCode = BusRoute.COMPANY_KMB;
-                arrivalTime.text = e.getMessage();
+                arrivalTime.text = getString(R.string.message_fail_to_request);
                 getContentResolver().insert(EtaEntry.CONTENT_URI,
                         ArrivalTimeUtil.toContentValues(busRouteStop, arrivalTime));
                 notifyUpdate(busRouteStop, C.EXTRA.FAIL, widgetId, notificationId, rowNo);
@@ -231,7 +235,7 @@ public class EtaService extends IntentService {
                 Timber.d(e);
                 ArrivalTime arrivalTime = ArrivalTimeUtil.emptyInstance(getApplicationContext());
                 arrivalTime.companyCode = BusRoute.COMPANY_NLB;
-                arrivalTime.text = e.getMessage();
+                arrivalTime.text = getString(R.string.message_fail_to_request);
                 getContentResolver().insert(EtaEntry.CONTENT_URI,
                         ArrivalTimeUtil.toContentValues(busRouteStop, arrivalTime));
                 notifyUpdate(busRouteStop, C.EXTRA.FAIL, widgetId, notificationId, rowNo);
@@ -283,7 +287,7 @@ public class EtaService extends IntentService {
                 Timber.d(e);
                 ArrivalTime arrivalTime = ArrivalTimeUtil.emptyInstance(getApplicationContext());
                 arrivalTime.companyCode = BusRoute.COMPANY_NWST;
-                arrivalTime.text = e.getMessage();
+                arrivalTime.text = getString(R.string.message_fail_to_request);
                 getContentResolver().insert(EtaEntry.CONTENT_URI,
                         ArrivalTimeUtil.toContentValues(busRouteStop, arrivalTime));
                 notifyUpdate(busRouteStop, C.EXTRA.FAIL, widgetId, notificationId, rowNo);

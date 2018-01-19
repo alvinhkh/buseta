@@ -27,7 +27,8 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
 
-        httpClient = new OkHttpClient.Builder().build();
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        httpClient = builder.build();
 
         Crashlytics crashlytics = new Crashlytics.Builder()
                 .core(new CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build())

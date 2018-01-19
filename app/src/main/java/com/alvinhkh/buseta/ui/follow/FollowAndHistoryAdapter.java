@@ -147,83 +147,100 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
         if (viewHolder instanceof FollowViewHolder) {
-            FollowViewHolder vh = (FollowViewHolder) viewHolder;
-            Context context = vh.itemView.getContext();
             FollowStop object = followItem(position);
-            vh.nameText.setText(object.name);
-            vh.routeNo.setText(object.route);
-            vh.routeLocationEnd.setText(context.getString(R.string.destination, object.locationEnd));
-            vh.etaText.setText(null);
-            vh.etaNextText.setText(null);
-            vh.itemView.setOnClickListener(null);
-            vh.itemView.setOnLongClickListener(null);
+            if (object != null) {
+                FollowViewHolder vh = (FollowViewHolder) viewHolder;
+                Context context = vh.itemView.getContext();
+                vh.nameText.setText(object.name);
+                vh.routeNo.setText(object.route);
+                vh.routeLocationEnd.setText(context.getString(R.string.destination, object.locationEnd));
+                vh.etaText.setText(null);
+                vh.etaNextText.setText(null);
+                vh.itemView.setOnClickListener(null);
+                vh.itemView.setOnLongClickListener(null);
 
-            vh.itemView.setOnClickListener(v -> {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setClass(context, SearchActivity.class);
-                intent.putExtra(C.EXTRA.STOP_OBJECT, BusRouteStopUtil.fromFollowStop(object));
-                context.startActivity(intent);
-            });
-            vh.itemView.setOnLongClickListener(v -> {
-                new AlertDialog.Builder(context)
-                        .setTitle(object.route + "?")
-                        .setMessage(context.getString(R.string.message_remove_from_follow_list))
-                        .setNegativeButton(R.string.action_cancel, (dialoginterface, i) -> dialoginterface.cancel())
-                        .setPositiveButton(R.string.action_confirm, (dialoginterface, i) -> {
-                            int pos = position;
-                            int j = 0;
-                            for (FollowStop stop: getFollowItems()) {
-                                if (stop._id.equals(object._id)) {
-                                    pos = j;
-                                    break;
+                vh.itemView.setOnClickListener(v -> {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setClass(context, SearchActivity.class);
+                    intent.putExtra(C.EXTRA.STOP_OBJECT, BusRouteStopUtil.fromFollowStop(object));
+                    context.startActivity(intent);
+                });
+                vh.itemView.setOnLongClickListener(v -> {
+                    new AlertDialog.Builder(context)
+                            .setTitle(object.route + "?")
+                            .setMessage(context.getString(R.string.message_remove_from_follow_list))
+                            .setNegativeButton(R.string.action_cancel, (dialoginterface, i) -> dialoginterface.cancel())
+                            .setPositiveButton(R.string.action_confirm, (dialoginterface, i) -> {
+                                int pos = position;
+                                int j = 0;
+                                for (FollowStop stop: getFollowItems()) {
+                                    if (stop._id.equals(object._id)) {
+                                        pos = j;
+                                        break;
+                                    }
+                                    j++;
                                 }
-                                j++;
-                            }
-                            if (FollowStopUtil.delete(context, object) > 0) {
-                                updateFollow();
-                                notifyItemRemoved(pos);
-                            }
-                        })
-                        .show();
-                return true;
-            });
+                                if (FollowStopUtil.delete(context, object) > 0) {
+                                    updateFollow();
+                                    notifyItemRemoved(pos);
+                                }
+                            })
+                            .show();
+                    return true;
+                });
 
-            // ETA
-            ArrivalTimeUtil.query(context, BusRouteStopUtil.fromFollowStop(object)).subscribe(cursor -> {
-                // Cursor has been moved +1 position forward.
-                ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
-                if (arrivalTime == null) return;
-                arrivalTime = ArrivalTimeUtil.estimate(context, arrivalTime);
-                if (arrivalTime == null) return;
-                if (arrivalTime.id != null) {
-                    SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.text);
-                    Integer pos = Integer.parseInt(arrivalTime.id);
-                    Integer colorInt = ContextCompat.getColor(context,
-                            arrivalTime.expired ? R.color.textDiminish :
-                                    (pos > 0 ? R.color.textPrimary : R.color.textHighlighted));
-                    if (arrivalTime.isSchedule) {
-                        etaText.append("*");
-                    }
-                    if (!TextUtils.isEmpty(arrivalTime.estimate)) {
-                        etaText.append(" (").append(arrivalTime.estimate).append(")");
-                    }
-                    if (arrivalTime.distanceKM >= 0) {
-                        etaText.append(" ").append(context.getString(R.string.km_short, arrivalTime.distanceKM));
-                    }
-                    if (arrivalTime.capacity >= 0) {
-                        Drawable drawable = null;
-                        if (arrivalTime.capacity == 0) {
-                            drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_0_black);
-                        } else if (arrivalTime.capacity > 0 && arrivalTime.capacity <= 3) {
-                            drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_20_black);
-                        } else if (arrivalTime.capacity > 3 && arrivalTime.capacity <= 6) {
-                            drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_50_black);
-                        } else if (arrivalTime.capacity > 6 && arrivalTime.capacity <= 9) {
-                            drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_80_black);
-                        } else if (arrivalTime.capacity >= 10) {
-                            drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_100_black);
+                // ETA
+                ArrivalTimeUtil.query(context, BusRouteStopUtil.fromFollowStop(object)).subscribe(cursor -> {
+                    // Cursor has been moved +1 position forward.
+                    ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
+                    if (arrivalTime == null) return;
+                    arrivalTime = ArrivalTimeUtil.estimate(context, arrivalTime);
+                    if (arrivalTime == null) return;
+                    if (arrivalTime.id != null) {
+                        SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.text);
+                        Integer pos = Integer.parseInt(arrivalTime.id);
+                        Integer colorInt = ContextCompat.getColor(context,
+                                arrivalTime.expired ? R.color.textDiminish :
+                                        (pos > 0 ? R.color.textPrimary : R.color.textHighlighted));
+                        if (arrivalTime.isSchedule) {
+                            etaText.append("*");
                         }
-                        if (drawable != null) {
+                        if (!TextUtils.isEmpty(arrivalTime.estimate)) {
+                            etaText.append(" (").append(arrivalTime.estimate).append(")");
+                        }
+                        if (arrivalTime.distanceKM >= 0) {
+                            etaText.append(" ").append(context.getString(R.string.km_short, arrivalTime.distanceKM));
+                        }
+                        if (arrivalTime.capacity >= 0) {
+                            Drawable drawable = null;
+                            if (arrivalTime.capacity == 0) {
+                                drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_0_black);
+                            } else if (arrivalTime.capacity > 0 && arrivalTime.capacity <= 3) {
+                                drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_20_black);
+                            } else if (arrivalTime.capacity > 3 && arrivalTime.capacity <= 6) {
+                                drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_50_black);
+                            } else if (arrivalTime.capacity > 6 && arrivalTime.capacity <= 9) {
+                                drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_80_black);
+                            } else if (arrivalTime.capacity >= 10) {
+                                drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_100_black);
+                            }
+                            if (drawable != null) {
+                                drawable = DrawableCompat.wrap(drawable);
+                                if (pos == 0) {
+                                    drawable.setBounds(0, 0, vh.etaText.getLineHeight(), vh.etaText.getLineHeight());
+                                } else {
+                                    drawable.setBounds(0, 0, vh.etaNextText.getLineHeight(), vh.etaNextText.getLineHeight());
+                                }
+                                DrawableCompat.setTint(drawable.mutate(), colorInt);
+                                ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
+                                etaText.append(" ");
+                                if (etaText.length() > 0) {
+                                    etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                                }
+                            }
+                        }
+                        if (arrivalTime.hasWheelchair && PreferenceUtil.isShowWheelchairIcon(context)) {
+                            Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_accessible_black_18dp);
                             drawable = DrawableCompat.wrap(drawable);
                             if (pos == 0) {
                                 drawable.setBounds(0, 0, vh.etaText.getLineHeight(), vh.etaText.getLineHeight());
@@ -237,110 +254,99 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
                                 etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
                             }
                         }
-                    }
-                    if (arrivalTime.hasWheelchair && PreferenceUtil.isShowWheelchairIcon(context)) {
-                        Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_accessible_black_18dp);
-                        drawable = DrawableCompat.wrap(drawable);
-                        if (pos == 0) {
-                            drawable.setBounds(0, 0, vh.etaText.getLineHeight(), vh.etaText.getLineHeight());
-                        } else {
-                            drawable.setBounds(0, 0, vh.etaNextText.getLineHeight(), vh.etaNextText.getLineHeight());
+                        if (arrivalTime.hasWifi && PreferenceUtil.isShowWifiIcon(context)) {
+                            Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_network_wifi_black_18dp);
+                            drawable = DrawableCompat.wrap(drawable);
+                            if (pos == 0) {
+                                drawable.setBounds(0, 0, vh.etaText.getLineHeight(), vh.etaText.getLineHeight());
+                            } else {
+                                drawable.setBounds(0, 0, vh.etaNextText.getLineHeight(), vh.etaNextText.getLineHeight());
+                            }
+                            DrawableCompat.setTint(drawable.mutate(), colorInt);
+                            ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
+                            etaText.append(" ");
+                            if (etaText.length() > 0) {
+                                etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                            }
                         }
-                        DrawableCompat.setTint(drawable.mutate(), colorInt);
-                        ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
-                        etaText.append(" ");
                         if (etaText.length() > 0) {
-                            etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                            etaText.setSpan(new ForegroundColorSpan(colorInt), 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                         }
-                    }
-                    if (arrivalTime.hasWifi && PreferenceUtil.isShowWifiIcon(context)) {
-                        Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_network_wifi_black_18dp);
-                        drawable = DrawableCompat.wrap(drawable);
-                        if (pos == 0) {
-                            drawable.setBounds(0, 0, vh.etaText.getLineHeight(), vh.etaText.getLineHeight());
-                        } else {
-                            drawable.setBounds(0, 0, vh.etaNextText.getLineHeight(), vh.etaNextText.getLineHeight());
-                        }
-                        DrawableCompat.setTint(drawable.mutate(), colorInt);
-                        ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
-                        etaText.append(" ");
-                        if (etaText.length() > 0) {
-                            etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-                        }
-                    }
-                    etaText.setSpan(new ForegroundColorSpan(colorInt), 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-                    switch(pos) {
-                        case 0:
-                            vh.etaText.setText(etaText);
-                            vh.etaNextText.setText(null);
-                            break;
-                        case 1:
-                            etaText.insert(0, vh.etaNextText.getText());
-                            vh.etaNextText.setText(etaText);
-                            break;
-                        case 2:
-                        default:
-                            etaText.insert(0, "  ");
-                            etaText.insert(0, vh.etaNextText.getText());
-                            vh.etaNextText.setText(etaText);
-                            break;
+                        switch(pos) {
+                            case 0:
+                                vh.etaText.setText(etaText);
+                                vh.etaNextText.setText(null);
+                                break;
+                            case 1:
+                                etaText.insert(0, vh.etaNextText.getText());
+                                vh.etaNextText.setText(etaText);
+                                break;
+                            case 2:
+                            default:
+                                etaText.insert(0, "  ");
+                                etaText.insert(0, vh.etaNextText.getText());
+                                vh.etaNextText.setText(etaText);
+                                break;
+                        }
                     }
-                }
-            });
+                });
+            }
         }
 
         if (viewHolder instanceof HistoryViewHolder) {
             SearchHistory object = historyItem(position - getFollowCount());
-            HistoryViewHolder vh = (HistoryViewHolder) viewHolder;
-            vh.routeText.setText(object.getRoute());
-            Drawable drawable;
-            switch (object.getType()) {
-                case SuggestionTable.TYPE_HISTORY:
-                    drawable = ContextCompat.getDrawable(context, R.drawable.ic_history_black_24dp);
-                    break;
-                case SuggestionTable.TYPE_DEFAULT:
-                default:
-                    drawable = ContextCompat.getDrawable(context, R.drawable.ic_directions_bus_black_24dp);
-                    break;
-            }
-            if (vh.iconImage != null && drawable != null) {
-                vh.iconImage.setImageDrawable(drawable);
-            }
-            vh.itemView.setOnClickListener(v -> {
-                Context context = v.getContext();
-                if (context == null) return;
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setClass(context, SearchActivity.class);
-                intent.putExtra(C.EXTRA.COMPANY_CODE, object.getCompanyCode());
-                intent.putExtra(C.EXTRA.ROUTE_NO, object.getRoute());
-                context.startActivity(intent);
-            });
-            vh.itemView.setOnLongClickListener(v -> {
-                Context context = v.getContext();
-                if (context == null) return false;
-                new AlertDialog.Builder(context)
-                        .setTitle(object.getRoute() + "?")
-                        .setMessage(context.getString(R.string.message_remove_from_search_history))
-                        .setNegativeButton(R.string.action_cancel, (dialoginterface, i) -> dialoginterface.cancel())
-                        .setPositiveButton(R.string.action_confirm, (dialoginterface, i) -> {
-                            int pos = position;
-                            int j = 0;
-                            for (SearchHistory history: getHistoryItems()) {
-                                if (history.equals(object)) {
-                                    pos = j + getFollowCount();
-                                    break;
+            if (object != null) {
+                HistoryViewHolder vh = (HistoryViewHolder) viewHolder;
+                vh.routeText.setText(object.getRoute());
+                Drawable drawable;
+                switch (object.getType()) {
+                    case SuggestionTable.TYPE_HISTORY:
+                        drawable = ContextCompat.getDrawable(context, R.drawable.ic_history_black_24dp);
+                        break;
+                    case SuggestionTable.TYPE_DEFAULT:
+                    default:
+                        drawable = ContextCompat.getDrawable(context, R.drawable.ic_directions_bus_black_24dp);
+                        break;
+                }
+                if (vh.iconImage != null && drawable != null) {
+                    vh.iconImage.setImageDrawable(drawable);
+                }
+                vh.itemView.setOnClickListener(v -> {
+                    Context context = v.getContext();
+                    if (context == null) return;
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setClass(context, SearchActivity.class);
+                    intent.putExtra(C.EXTRA.COMPANY_CODE, object.getCompanyCode());
+                    intent.putExtra(C.EXTRA.ROUTE_NO, object.getRoute());
+                    context.startActivity(intent);
+                });
+                vh.itemView.setOnLongClickListener(v -> {
+                    Context context = v.getContext();
+                    if (context == null) return false;
+                    new AlertDialog.Builder(context)
+                            .setTitle(object.getRoute() + "?")
+                            .setMessage(context.getString(R.string.message_remove_from_search_history))
+                            .setNegativeButton(R.string.action_cancel, (dialoginterface, i) -> dialoginterface.cancel())
+                            .setPositiveButton(R.string.action_confirm, (dialoginterface, i) -> {
+                                int pos = position;
+                                int j = 0;
+                                for (SearchHistory history: getHistoryItems()) {
+                                    if (history.equals(object)) {
+                                        pos = j + getFollowCount();
+                                        break;
+                                    }
+                                    j++;
                                 }
-                                j++;
-                            }
-                            if (SearchHistoryUtil.delete(context, object) > 0) {
-                                updateHistory();
-                                notifyItemRemoved(pos);
-                            }
-                        })
-                        .show();
-                return true;
-            });
+                                if (SearchHistoryUtil.delete(context, object) > 0) {
+                                    updateHistory();
+                                    notifyItemRemoved(pos);
+                                }
+                            })
+                            .show();
+                    return true;
+                });
+            }
         }
     }
 

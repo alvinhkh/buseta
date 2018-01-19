@@ -100,7 +100,7 @@ public class LwbStopListFragment extends RouteStopListFragmentAbstract {
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = super.onCreateView(inflater, container, savedInstanceState);
         if (swipeRefreshLayout != null && !swipeRefreshLayout.isRefreshing()) {

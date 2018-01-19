@@ -24,7 +24,9 @@ import com.google.gson.JsonParseException;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.observers.DisposableObserver;
+import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
 
@@ -49,7 +51,7 @@ public class KmbStopListFragment extends RouteStopListFragmentAbstract {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = super.onCreateView(inflater, container, savedInstanceState);
         if (swipeRefreshLayout != null && !swipeRefreshLayout.isRefreshing()) {
@@ -57,6 +59,8 @@ public class KmbStopListFragment extends RouteStopListFragmentAbstract {
         }
         disposables.add(kmbService.getStops(busRoute.getName(), busRoute.getSequence(), busRoute.getServiceType())
                 .retryWhen(new RetryWithDelay(5, 3000))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(routeStopsObserver()));
         return rootView;
     }
@@ -111,7 +115,6 @@ public class KmbStopListFragment extends RouteStopListFragmentAbstract {
 
             @Override
             public void onComplete() {
-                Timber.d("onComplete");
                 getActivity().runOnUiThread(() -> {
                     if (adapter != null && items != null) {
                         adapter.addAll(items);

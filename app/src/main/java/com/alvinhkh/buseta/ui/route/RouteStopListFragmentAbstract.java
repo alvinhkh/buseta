@@ -18,6 +18,7 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.util.Pair;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -44,6 +45,7 @@ import com.alvinhkh.buseta.service.EtaService;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
+import com.alvinhkh.buseta.utils.Utils;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -85,7 +87,8 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         ArrayListRecyclerViewAdapter.OnClickItemListener,
         SwipeRefreshLayout.OnRefreshListener,
         SharedPreferences.OnSharedPreferenceChangeListener,
-        OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
+        OnMapReadyCallback, GoogleMap.OnMarkerClickListener,
+        AppBarLayout.OnOffsetChangedListener {
 
     protected final CompositeDisposable disposables = new CompositeDisposable();
 
@@ -111,9 +114,9 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
 
     protected Boolean hasMapCoordinates = false;
 
-    private Boolean isScrollToPosition = false;
+    private List<BusRouteStop> busRouteStops = new ArrayList<>();
 
-    private Integer scrollToPosition = 0;
+    private Boolean isShowMapFragment = true;
 
     public RouteStopListFragmentAbstract() {}
 
@@ -122,15 +125,15 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
     protected final Runnable refreshRunnable = new Runnable() {
         @Override
         public void run() {
-            if (getContext() != null) {
-                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-                if (preferences != null && preferences.getBoolean("load_etas", false)) {
-                    onRefresh();
-                    refreshHandler.postDelayed(this, 30000);  // refresh every 30 sec
-                    return;
+            if (adapter != null) {
+                if (getContext() != null) {
+                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+                    if (preferences != null && preferences.getBoolean("load_etas", false)) {
+                        onRefresh();
+                        refreshHandler.postDelayed(this, 60000);  // refresh every 60 sec
+                        return;
+                    }
                 }
-            }
-            if (adapter != null && adapter.getItemCount() > 0) {
                 adapter.notifyDataSetChanged();
             }
             refreshHandler.postDelayed(this, 30000);  // refresh every 30 sec
@@ -141,13 +144,13 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
-
         if (getArguments() != null) {
             busRoute = getArguments().getParcelable(C.EXTRA.ROUTE_OBJECT);
         }
-
-        PreferenceManager.getDefaultSharedPreferences(getContext())
-                .registerOnSharedPreferenceChangeListener(this);
+        if (getContext() != null) {
+            PreferenceManager.getDefaultSharedPreferences(getContext())
+                    .registerOnSharedPreferenceChangeListener(this);
+        }
         disposables.add(RxBroadcastReceiver.create(getContext(), new IntentFilter(C.ACTION.ETA_UPDATE))
                 .share().subscribeWith(etaObserver()));
         disposables.add(RxBroadcastReceiver.create(getContext(), new IntentFilter(C.ACTION.FOLLOW_UPDATE))
@@ -172,27 +175,6 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         recyclerView.setHasFixedSize(true);
         adapter = new RouteStopListAdapter(getFragmentManager(), recyclerView, busRoute);
         adapter.setOnClickItemListener(this);
-        adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
-            @Override
-            public void onChanged() {
-                super.onChanged();
-                if (adapter != null && adapter.getItemCount() > 0) {
-                    if (recyclerView != null) {
-                        recyclerView.setVisibility(View.VISIBLE);
-                        if (isScrollToPosition) {
-                            recyclerView.scrollToPosition(scrollToPosition);
-                            isScrollToPosition = false;
-                        }
-                    }
-                    if (emptyView != null) {
-                        emptyView.setVisibility(View.GONE);
-                    }
-                    if (progressBar != null) {
-                        progressBar.setVisibility(View.GONE);
-                    }
-                }
-            }
-        });
         if (!TextUtils.isEmpty(busRoute.getDescription())) {
             adapter.add(new Item(Item.TYPE_HEADER, busRoute.getDescription()));
         }
@@ -216,65 +198,91 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         swipeRefreshLayout.setVisibility(View.VISIBLE);
         swipeRefreshLayout.setRefreshing(true);
 
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        showMapFragment();
+
+        return rootView;
+    }
+
+    private void showMapFragment() {
+        if (getContext() == null) return;
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        isShowMapFragment = preferences != null && preferences.getBoolean("load_map", true);
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         if (mapFragment != null) {
-            mapFragment.getMapAsync(this);
+            if (isShowMapFragment) {
+                mapFragment.getMapAsync(this);
+            }
+            FragmentTransaction ft = getChildFragmentManager().beginTransaction();
+            if (isShowMapFragment) {
+                ft.show(mapFragment);
+            } else {
+                ft.hide(mapFragment);
+            }
+            ft.commitAllowingStateLoss();
         }
 
         if (getActivity() != null &&
                 getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
             AppBarLayout appBar = getActivity().findViewById(R.id.appbar);
             if (appBar != null) {
-                Guideline guideTopInfo = rootView.findViewById(R.id.guideline);
-                ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) guideTopInfo.getLayoutParams();
-                appBar.addOnOffsetChangedListener((appBarLayout, verticalOffset) -> {
-                    if (recyclerView.getVisibility() != View.VISIBLE) return;
-                    if (Math.abs(verticalOffset) == appBarLayout.getTotalScrollRange()) {
-                        params.guidePercent = .2f;
-                    } else if (verticalOffset == 0) {
-                        params.guidePercent = .45f;
-                    } else {
-                        float guidePercent;
-                        guidePercent = 0.2f + (1.0f - (Math.abs(verticalOffset * 1.0f) / appBarLayout.getTotalScrollRange() * 1.0f)) * 0.25f;
-                        params.guidePercent = params.guidePercent * .9f + guidePercent *.1f;
+                if (isShowMapFragment) {
+                    appBar.addOnOffsetChangedListener(this);
+                } else {
+                    appBar.removeOnOffsetChangedListener(this);
+                    if (getView() != null) {
+                        Guideline guideTopInfo = getView().findViewById(R.id.guideline);
+                        if (guideTopInfo != null) {
+                            ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) guideTopInfo.getLayoutParams();
+                            params.guidePercent = .0f;
+                            guideTopInfo.setLayoutParams(params);
+                        }
                     }
-                    guideTopInfo.setLayoutParams(params);
-                });
+                }
             }
         }
-
-        return rootView;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (getUserVisibleHint()) {
-            if (getView() != null) {
-                swipeRefreshLayout = getView().findViewById(R.id.swipe_refresh_layout);
-            }
-        }
-        if (swipeRefreshLayout != null) {
-            swipeRefreshLayout.setOnRefreshListener(this);
-        }
-        if (getActivity() != null) {
+        if (getActivity() != null && getView() != null) {
             AppBarLayout appBar = getActivity().findViewById(R.id.appbar);
             if (appBar != null) {
                 Guideline guideTopInfo = getView().findViewById(R.id.guideline);
-                ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) guideTopInfo.getLayoutParams();
-                params.guidePercent = .45f;
-                guideTopInfo.setLayoutParams(params);
+                if (guideTopInfo != null) {
+                    ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) guideTopInfo.getLayoutParams();
+                    params.guidePercent = isShowMapFragment ? .45f : .0f;
+                    guideTopInfo.setLayoutParams(params);
+                }
             }
         }
-        refreshHandler.postDelayed(refreshRunnable, 100);
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isUserVisible) {
+        super.setUserVisibleHint(isUserVisible);
+        if (getView() != null) {
+            if (isUserVisible) {
+                refreshHandler.post(refreshRunnable);
+                if (getActivity() != null) {
+                    FloatingActionButton fab = getActivity().findViewById(R.id.fab);
+                    if (fab != null) {
+                        fab.setOnClickListener(v -> onRefresh());
+                    }
+                }
+            } else {
+                refreshHandler.removeCallbacksAndMessages(null);
+            }
+        }
     }
 
     @Override
     public void onDestroy() {
         disposables.clear();
-        PreferenceManager.getDefaultSharedPreferences(getContext())
-                .unregisterOnSharedPreferenceChangeListener(this);
+        if (getContext() != null) {
+            PreferenceManager.getDefaultSharedPreferences(getContext())
+                    .unregisterOnSharedPreferenceChangeListener(this);
+        }
         super.onDestroy();
     }
 
@@ -293,6 +301,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                     Intent intent = new Intent(getContext(), RouteAnnounceActivity.class);
                     intent.putExtra(C.EXTRA.ROUTE_OBJECT, busRoute);
                     startActivity(intent);
+                    return true;
                 }
                 break;
         }
@@ -306,26 +315,34 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
             if (adapter != null && adapter.getItemCount() > 0) {
                 adapter.notifyDataSetChanged();
             }
+        } else if (key.equals("load_map")) {
+            showMapFragment();
         }
     }
 
     @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        System.gc();
+    }
+
+    @Override
     public void onRefresh() {
-        Context context = getContext();
-        if (context != null) {
+        if (getContext() != null && adapter != null && adapter.getDataItemCount() > 0) {
             if (swipeRefreshLayout != null && !swipeRefreshLayout.isRefreshing()) {
                 swipeRefreshLayout.setRefreshing(true);
             }
             ArrayList<BusRouteStop> busRouteStopList = new ArrayList<>();
             for (int i = 0; i < adapter.getItemCount(); i++) {
-                if (adapter.getItem(i).getObject() instanceof BusRouteStop) {
+                if (adapter.getItem(i).getType() == TYPE_DATA &&
+                        adapter.getItem(i).getObject() instanceof BusRouteStop) {
                     busRouteStopList.add((BusRouteStop) adapter.getItem(i).getObject());
                 }
             }
             try {
-                Intent intent = new Intent(context, EtaService.class);
+                Intent intent = new Intent(getContext(), EtaService.class);
                 intent.putParcelableArrayListExtra(C.EXTRA.STOP_LIST, busRouteStopList);
-                context.startService(intent);
+                getContext().startService(intent);
             } catch (IllegalStateException ignored) {}
         }
     }
@@ -333,12 +350,10 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
     @Override
     public void onClickItem(Item item, int position) {
         if (item.getType() == Item.TYPE_DATA) {
-            if (map != null) {
-                BusRouteStop stop = (BusRouteStop) item.getObject();
-                if (stop != null) {
-                    map.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                            new LatLng(Double.parseDouble(stop.latitude), Double.parseDouble(stop.longitude)), 18));
-                }
+            BusRouteStop stop = (BusRouteStop) item.getObject();
+            if (map != null && stop != null) {
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                        new LatLng(Double.parseDouble(stop.latitude), Double.parseDouble(stop.longitude)), 18));
             }
         }
     }
@@ -353,7 +368,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
     @Override
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
-        if (map == null) return;
+        if (map == null || getContext() == null) return;
         googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(getContext(), R.raw.map_style));
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(22.3964, 114.1095), 10));
         GoogleMapOptions options = new GoogleMapOptions();
@@ -374,7 +389,11 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                         Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             googleMap.setMyLocationEnabled(true);
         }
-        onStopListComplete();
+        if (busRouteStops.size() > 0) {
+            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                    new LatLng(Double.parseDouble(busRouteStops.get(0).latitude),
+                            Double.parseDouble(busRouteStops.get(0).longitude)), 16));
+        }
     }
 
     @Override
@@ -401,12 +420,32 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                     map.animateCamera(CameraUpdateFactory.newLatLngZoom(
                             new LatLng(Double.parseDouble(stop.latitude), Double.parseDouble(stop.longitude)), 16));
                 }
-                Intent intent = new Intent(getContext(), EtaService.class);
-                intent.putExtra(C.EXTRA.STOP_OBJECT, stop);
-                getContext().startService(intent);
+                try {
+                    Intent intent = new Intent(getContext(), EtaService.class);
+                    intent.putExtra(C.EXTRA.STOP_OBJECT, stop);
+                    getContext().startService(intent);
+                } catch (IllegalStateException ignored) {}
             }
         }
         return true;
+    }
+
+    @Override
+    public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+        // TODO: CoordinatorLayout.Behavior?
+        if (getView() == null || recyclerView == null || recyclerView.getVisibility() != View.VISIBLE) return;
+        Guideline guideline = getView().findViewById(R.id.guideline);
+        if (guideline == null) return;
+        ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) guideline.getLayoutParams();
+        if (Math.abs(verticalOffset) == appBarLayout.getTotalScrollRange()) {
+            params.guidePercent = .2f;
+        } else if (verticalOffset == 0) {
+            params.guidePercent = .45f;
+        } else {
+            float p = 0.2f + (1.0f - (Math.abs(verticalOffset * 1.0f) / appBarLayout.getTotalScrollRange() * 1.0f)) * 0.25f;
+            params.guidePercent = params.guidePercent * .9f + p *.1f;
+        }
+        guideline.setLayoutParams(params);
     }
 
     DisposableObserver<Intent> etaObserver() {
@@ -462,9 +501,9 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
     }
 
     protected void onStopListComplete() {
-        isScrollToPosition = false;
-        scrollToPosition = 0;
-        List<BusRouteStop> busRouteStops = new ArrayList<>();
+        Boolean isScrollToPosition = false;
+        Integer scrollToPosition = 0;
+        busRouteStops.clear();
         if (map != null && adapter != null) {
             Boolean isSnapToRoad = false;
             if (getActivity() != null) {
@@ -602,11 +641,26 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                 }
             }
         }
+        refreshHandler.post(refreshRunnable);
+        if (adapter != null) {
+            if (adapter.getItemCount() > 0) {
+                if (recyclerView != null) {
+                    recyclerView.setVisibility(View.VISIBLE);
+                    if (isScrollToPosition) {
+                        recyclerView.scrollToPosition(scrollToPosition);
+                    }
+                }
+                if (emptyView != null) {
+                    emptyView.setVisibility(View.GONE);
+                }
+                if (progressBar != null) {
+                    progressBar.setVisibility(View.GONE);
+                }
+            }
         }
         if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
             swipeRefreshLayout.setRefreshing(false);
         }
-        refreshHandler.postDelayed(refreshRunnable, 1000);
     }
 
     DisposableObserver<Intent> followObserver() {
