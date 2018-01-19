@@ -1,11 +1,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto"
       xmlns:tools="http://schemas.android.com/tools"
-      tools:context=".lwb.ui.LwbActivity">
+      tools:context=".ui.route.RouteActivityAbstract">
 
     <item
         android:id="@+id/action_notice"
         android:title="@string/notice"
-        android:orderInCategory="1"
         app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/action_show_map"
+        android:title="@string/map"
+        android:visible="false"
+        app:showAsAction="never"/>
 </menu>

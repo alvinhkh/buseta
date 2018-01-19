@@ -198,6 +198,8 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         swipeRefreshLayout.setVisibility(View.VISIBLE);
         swipeRefreshLayout.setRefreshing(true);
 
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        isShowMapFragment = preferences != null && preferences.getBoolean("load_map", true);
         showMapFragment();
 
         return rootView;
@@ -205,13 +207,9 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
 
     private void showMapFragment() {
         if (getContext() == null) return;
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        isShowMapFragment = preferences != null && preferences.getBoolean("load_map", true);
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         if (mapFragment != null) {
-            if (isShowMapFragment) {
-                mapFragment.getMapAsync(this);
-            }
+            mapFragment.getMapAsync(this);
             FragmentTransaction ft = getChildFragmentManager().beginTransaction();
             if (isShowMapFragment) {
                 ft.show(mapFragment);
@@ -229,15 +227,16 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                     appBar.addOnOffsetChangedListener(this);
                 } else {
                     appBar.removeOnOffsetChangedListener(this);
-                    if (getView() != null) {
-                        Guideline guideTopInfo = getView().findViewById(R.id.guideline);
-                        if (guideTopInfo != null) {
-                            ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) guideTopInfo.getLayoutParams();
-                            params.guidePercent = .0f;
-                            guideTopInfo.setLayoutParams(params);
-                        }
-                    }
                 }
+            }
+        }
+
+        if (getView() != null) {
+            Guideline guideTopInfo = getView().findViewById(R.id.guideline);
+            if (guideTopInfo != null) {
+                ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) guideTopInfo.getLayoutParams();
+                params.guidePercent = isShowMapFragment ? .4f : .0f;
+                guideTopInfo.setLayoutParams(params);
             }
         }
     }
@@ -290,6 +289,11 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.menu_route, menu);
+        MenuItem showMapMenuItem = menu.findItem(R.id.action_show_map);
+        if (getContext() != null) {
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+            showMapMenuItem.setVisible(preferences == null || !preferences.getBoolean("load_map", true));
+        }
     }
 
     @Override
@@ -304,6 +308,10 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                     return true;
                 }
                 break;
+            case R.id.action_show_map:
+                isShowMapFragment = !isShowMapFragment;
+                showMapFragment();
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -316,6 +324,10 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                 adapter.notifyDataSetChanged();
             }
         } else if (key.equals("load_map")) {
+            isShowMapFragment = sharedPreferences != null && sharedPreferences.getBoolean("load_map", true);
+            if (getActivity() != null) {
+                getActivity().invalidateOptionsMenu();
+            }
             showMapFragment();
         }
     }
