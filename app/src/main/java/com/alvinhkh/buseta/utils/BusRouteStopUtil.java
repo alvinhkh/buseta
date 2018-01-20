@@ -1,9 +1,12 @@
 package com.alvinhkh.buseta.utils;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.util.Pair;
 import android.text.TextUtils;
 
+import com.alvinhkh.buseta.datagovhk.model.MtrBusFare;
+import com.alvinhkh.buseta.datagovhk.model.MtrBusStop;
 import com.alvinhkh.buseta.kmb.model.KmbRouteStop;
 import com.alvinhkh.buseta.lwb.model.LwbRouteStop;
 import com.alvinhkh.buseta.model.BusRoute;
@@ -14,6 +17,7 @@ import com.alvinhkh.buseta.nlb.model.NlbStop;
 import com.alvinhkh.buseta.nwst.model.NwstRoute;
 import com.alvinhkh.buseta.nwst.model.NwstStop;
 
+import org.jsoup.parser.Parser;
 import org.osgeo.proj4j.CRSFactory;
 import org.osgeo.proj4j.CoordinateReferenceSystem;
 import org.osgeo.proj4j.CoordinateTransform;
@@ -179,6 +183,33 @@ public class BusRouteStopUtil {
         if (!TextUtils.isEmpty(nwstStop.getPoleId())) {
             object.imageUrl = "http://mobile.nwstbus.com.hk/api6/getstopphoto.php?filename=w" + nwstStop.getPoleId() + "001.jpg";
         }
+        return object;
+    }
+
+    public static BusRouteStop fromMtrBus(@NonNull MtrBusStop mtrBusStop,
+                                          @Nullable MtrBusFare mtrBusFare,
+                                          @NonNull BusRoute busRoute) {
+        BusRouteStop object = new BusRouteStop();
+        object.code = String.valueOf(mtrBusStop.getStationSequenceNo());
+        object.companyCode = busRoute.getCompanyCode();
+        object.destination = busRoute.getLocationEndName();
+        object.direction = busRoute.getSequence();
+        if (mtrBusFare != null) {
+            object.fare = String.valueOf(mtrBusFare.getFareSingleAdult());
+            object.fareChild = String.valueOf(mtrBusFare.getFareSingleChild());
+            object.fareSenior = String.valueOf(mtrBusFare.getFareSingleElderly());
+        }
+        // object.latitude = Double.toString(mtrBusStop.getLatitude());
+        // object.longitude = Double.toString(mtrBusStop.getLongitude());
+        if (!TextUtils.isEmpty(mtrBusStop.getStationNameChi())) {
+            object.name = Parser.unescapeEntities(mtrBusStop.getStationNameChi(), false);
+        }
+        object.origin = busRoute.getLocationStartName();
+        object.route = busRoute.getName();
+        object.routeId = mtrBusStop.getRouteId();
+        object.sequence = String.valueOf(mtrBusStop.getStationSequenceNo());
+        object.etaGet = "";
+        object.imageUrl = "";
         return object;
     }
 }

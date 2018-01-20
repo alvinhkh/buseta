@@ -4,10 +4,13 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.datagovhk.model.MtrBusRoute;
 import com.alvinhkh.buseta.kmb.model.KmbRoute;
 import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.nwst.model.NwstRoute;
 import com.alvinhkh.buseta.nwst.model.NwstVariant;
+
+import org.jsoup.parser.Parser;
 
 import io.reactivex.annotations.NonNull;
 import io.reactivex.annotations.Nullable;
@@ -49,6 +52,25 @@ public class BusRouteUtil {
         return object;
     }
 
+    public static BusRoute fromMtrBus(MtrBusRoute route) {
+        if (route == null) return null;
+        BusRoute object = new BusRoute();
+        object.setCompanyCode(BusRoute.COMPANY_LRTFEEDER);
+        object.setName(route.getRouteId());
+        if (!TextUtils.isEmpty(route.getRouteNameChi())) {
+            route.setRouteNameChi(Parser.unescapeEntities(route.getRouteNameChi(), false));
+            String[] routeName = route.getRouteNameChi().split("至");
+            if (routeName.length == 2) {
+                object.setLocationStartName(routeName[0]);
+                object.setLocationEndName(routeName[1]);
+            } else {
+                object.setLocationEndName(route.getRouteNameChi());
+            }
+        }
+        object.setSequence("0");
+        return object;
+    }
+
     public static String getCompanyName(@NonNull Context context,
                                         @NonNull String companyCode,
                                         @Nullable String routeNo) {
@@ -66,6 +88,9 @@ public class BusRouteUtil {
                         companyName = context.getString(R.string.provider_short_lwb);
                     }
                 }
+                break;
+            case BusRoute.COMPANY_LRTFEEDER:
+                companyName = context.getString(R.string.provider_short_lrtfeeder);
                 break;
             case BusRoute.COMPANY_NLB:
                 companyName = context.getString(R.string.provider_short_nlb);

@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 
 import com.alvinhkh.buseta.C;
+import com.alvinhkh.buseta.datagovhk.ui.MtrBusActivity;
 import com.alvinhkh.buseta.kmb.ui.KmbActivity;
 import com.alvinhkh.buseta.lwb.ui.LwbActivity;
 import com.alvinhkh.buseta.model.BusRoute;
@@ -68,13 +69,16 @@ public class SearchActivity extends AppCompatActivity {
             companyCode = BusRoute.COMPANY_KMB;
         }
         switch (companyCode) {
-            case BusRoute.COMPANY_NLB:
-                intent = new Intent(getApplicationContext(), NlbActivity.class);
-                break;
             case BusRoute.COMPANY_CTB:
             case BusRoute.COMPANY_NWFB:
             case BusRoute.COMPANY_NWST:
                 intent = new Intent(getApplicationContext(), NwstActivity.class);
+                break;
+            case BusRoute.COMPANY_LRTFEEDER:
+                intent = new Intent(getApplicationContext(), MtrBusActivity.class);
+                break;
+            case BusRoute.COMPANY_NLB:
+                intent = new Intent(getApplicationContext(), NlbActivity.class);
                 break;
             case BusRoute.COMPANY_KMB:
             default:
@@ -152,7 +156,7 @@ public class SearchActivity extends AppCompatActivity {
 
     public Action getIndexApiAction(@NonNull String text) {
         return new Action.Builder(Action.Builder.VIEW_ACTION)
-                .setObject(text, Uri.parse(C.URI.APP).buildUpon().appendPath(text).build().toString())
+                .setObject(text, Uri.parse(C.URI.ROUTE).buildUpon().appendPath(text).build().toString())
                 // Keep action data for personal content on the device
                 //.setMetadata(new Action.Metadata.Builder().setUpload(false))
                 .build();

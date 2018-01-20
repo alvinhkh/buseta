@@ -8,6 +8,8 @@ public class BusRoute implements Parcelable {
 
     public static final String COMPANY_CTB = "CTB";
 
+    public static final String COMPANY_LRTFEEDER = "LRTFeeder";
+
     public static final String COMPANY_KMB = "KMB";
 
     public static final String COMPANY_NLB = "NLB";

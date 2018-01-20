@@ -95,6 +95,7 @@
     <string name="no_follow_stops">沒有追蹤車站</string>
     <string name="removed_from_follow_list">「%1$s」已從追蹤名單中移除</string>
     <string name="swipe_to_remove_follow_stop">向左右掃即可移除追蹤車站</string>
+    <string name="provider_no_eta">營運商尚未提供到站時間預報</string>
 
     <string name="url_app" translatable="false">http://buseta.alvinhkh.com</string>
     <string name="url_developer" translatable="false">http://www.alvinhkh.com</string>
@@ -137,12 +138,15 @@
     <string name="km_short">%1$.2fkm</string>
     <string name="map_direction_api">Direction API</string>
     <string name="provider_ctb">城巴</string>
+    <string name="provider_lwb">龍運巴士</string>
+    <string name="provider_lrtfeeder">港鐵巴士</string>
     <string name="provider_kmb">九龍巴士</string>
     <string name="provider_nlb">新大嶼山巴士</string>
     <string name="provider_nwfb">新世界第一巴士</string>
     <string name="provider_nwst">城巴/新世界第一巴士</string>
     <string name="provider_short_ctb">城巴</string>
     <string name="provider_short_lwb">龍運</string>
+    <string name="provider_short_lrtfeeder">港鐵巴士</string>
     <string name="provider_short_kmb">九巴</string>
     <string name="provider_short_nlb">嶼巴</string>
     <string name="provider_short_nwfb">新巴</string>

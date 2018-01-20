@@ -500,31 +500,34 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
             });
 
             // TODO: alert in last few stops
-            mGeofenceList.add(new Geofence.Builder()
-                    .setRequestId(String.format(Locale.ENGLISH, "%s %s", busRouteStop.route, busRouteStop.name))
-                    .setCircularRegion(
-                            Double.parseDouble(busRouteStop.latitude),
-                            Double.parseDouble(busRouteStop.longitude),
-                            C.GEOFENCE.RADIUS_IN_METERS
-                    )
-                    .setExpirationDuration(C.GEOFENCE.EXPIRATION_IN_MILLISECONDS)
-                    .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
-                            Geofence.GEOFENCE_TRANSITION_EXIT)
-                    .build());
+            /*
+            if (!TextUtils.isEmpty(busRouteStop.latitude) && !TextUtils.isEmpty(busRouteStop.longitude)) {
+                mGeofenceList.add(new Geofence.Builder()
+                        .setRequestId(String.format(Locale.ENGLISH, "%s %s", busRouteStop.route, busRouteStop.name))
+                        .setCircularRegion(
+                                Double.parseDouble(busRouteStop.latitude),
+                                Double.parseDouble(busRouteStop.longitude),
+                                C.GEOFENCE.RADIUS_IN_METERS
+                        )
+                        .setExpirationDuration(C.GEOFENCE.EXPIRATION_IN_MILLISECONDS)
+                        .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER |
+                                Geofence.GEOFENCE_TRANSITION_EXIT)
+                        .build());
+            }
+             */
         }
 
         onRefresh();
     }
 
     private void updateDistanceDisplay() {
-        if (busRouteStop.latitude != null && busRouteStop.longitude != null) {
-            Location location = new Location("");
-            location.setLatitude(Double.parseDouble(busRouteStop.latitude));
-            location.setLongitude(Double.parseDouble(busRouteStop.longitude));
-            if (currentLocation != null) {
-                Float distance = currentLocation.distanceTo(location);
-                vh.distanceText.setText(new DecimalFormat("~#.##km").format(distance / 1000));
-            }
+        if (TextUtils.isEmpty(busRouteStop.latitude) || TextUtils.isEmpty(busRouteStop.longitude)) return;
+        Location location = new Location("");
+        location.setLatitude(Double.parseDouble(busRouteStop.latitude));
+        location.setLongitude(Double.parseDouble(busRouteStop.longitude));
+        if (currentLocation != null) {
+            Float distance = currentLocation.distanceTo(location);
+            vh.distanceText.setText(new DecimalFormat("~#.##km").format(distance / 1000));
         }
     }
 
@@ -537,6 +540,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
         vh.streetviewButton.setOnClickListener(null);
         vh.mapButton.setVisibility(View.GONE);
         vh.streetviewButton.setVisibility(View.GONE);
+        vh.arrivalAlertButton.setVisibility(View.GONE);
 
         if (busRouteStop != null) {
             if (!TextUtils.isEmpty(busRouteStop.latitude) && !TextUtils.isEmpty(busRouteStop.longitude)) {
@@ -604,6 +608,26 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                         showSnackbar(getString(R.string.message_no_geo_app));
                     }
                 });
+                vh.arrivalAlertButton.setVisibility(BuildConfig.DEBUG ? View.VISIBLE : View.GONE);
+                vh.arrivalAlertButton.setCompoundDrawablesWithIntrinsicBounds(null,
+                        ContextCompat.getDrawable(getContext(),
+                                isThisGeofencesAdded() ? R.drawable.ic_alarm_on_black_48dp : R.drawable.ic_alarm_black_48dp),
+                        null, null);
+                vh.arrivalAlertButton.setOnClickListener(v -> {
+                    Timber.d("isThisGeofencesAdded: %s", isThisGeofencesAdded());
+                    if (isThisGeofencesAdded()) {
+                        Timber.d("removeGeofencesButtonHandler");
+                        removeGeofencesButtonHandler();
+                    } else if (isGeofencesAdded()) {
+                        showSnackbar(R.string.arrival_alert_existed, R.string.replace, view -> {
+                            Timber.d("addGeofencesButtonHandler");
+                            addGeofencesButtonHandler();
+                        });
+                    } else {
+                        Timber.d("addGeofencesButtonHandler");
+                        addGeofencesButtonHandler();
+                    }
+                });
             }
             vh.followButton.setOnClickListener(v -> {
                 FollowStop followStop = BusRouteStopUtil.toFollowStop(busRouteStop);
@@ -662,25 +686,6 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
 
                 showSnackbar(getString(R.string.message_shown_as_notification));
             });
-            vh.arrivalAlertButton.setCompoundDrawablesWithIntrinsicBounds(null,
-                    ContextCompat.getDrawable(getContext(),
-                            isThisGeofencesAdded() ? R.drawable.ic_alarm_on_black_48dp : R.drawable.ic_alarm_black_48dp),
-                    null, null);
-            vh.arrivalAlertButton.setOnClickListener(v -> {
-                Timber.d("isThisGeofencesAdded: %s", isThisGeofencesAdded());
-                if (isThisGeofencesAdded()) {
-                    Timber.d("removeGeofencesButtonHandler");
-                    removeGeofencesButtonHandler();
-                } else if (isGeofencesAdded()) {
-                    showSnackbar(R.string.arrival_alert_existed, R.string.replace, view -> {
-                        Timber.d("addGeofencesButtonHandler");
-                        addGeofencesButtonHandler();
-                    });
-                } else {
-                    Timber.d("addGeofencesButtonHandler");
-                    addGeofencesButtonHandler();
-                }
-            });
 
             vh.nameText.setText(TextUtils.isEmpty(busRouteStop.name) ? "" : busRouteStop.name.trim());
             vh.routeNoText.setText(TextUtils.isEmpty(busRouteStop.route) ? "" : busRouteStop.route.trim());
@@ -689,7 +694,9 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
             }
             vh.stopLocationText.setText(TextUtils.isEmpty(busRouteStop.location) ? "" : busRouteStop.location.trim());
             StringBuilder fareText = new StringBuilder();
-            fareText.append(String.format(Locale.ENGLISH, "$%1$,.1f", Float.valueOf(busRouteStop.fare)));
+            if (!TextUtils.isEmpty(busRouteStop.fare)) {
+                fareText.append(String.format(Locale.ENGLISH, "$%1$,.1f", Float.valueOf(busRouteStop.fare)));
+            }
             if (!TextUtils.isEmpty(busRouteStop.fareHoliday)) {
                 fareText.append(String.format(Locale.ENGLISH, "/$%1$,.1f", Float.valueOf(busRouteStop.fareHoliday)));
             }

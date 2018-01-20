@@ -79,8 +79,13 @@ public class RouteSelectAdapter extends ArrayListRecyclerViewAdapter<RouteSelect
             String routeName = BusRouteUtil.getCompanyName(context, busRoute.getCompanyCode(), busRoute.getName()) +
                     " " + busRoute.getName();
             routeTv.setText(routeName);
-            locationTv.setText(context.getString(R.string.route_path,
-                    busRoute.getLocationStartName(), busRoute.getLocationEndName()));
+            if (!TextUtils.isEmpty(busRoute.getLocationStartName()) && !TextUtils.isEmpty(busRoute.getLocationEndName())) {
+                locationTv.setVisibility(View.VISIBLE);
+                locationTv.setText(context.getString(R.string.route_path,
+                        busRoute.getLocationStartName(), busRoute.getLocationEndName()));
+            } else {
+                locationTv.setVisibility(View.GONE);
+            }
             descriptionTv.setText(busRoute.getDescription());
             descriptionTv.setVisibility(TextUtils.isEmpty(busRoute.getDescription()) ? View.GONE: View.VISIBLE);
             itemView.setOnClickListener(v -> {

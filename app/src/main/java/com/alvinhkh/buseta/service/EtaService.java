@@ -125,6 +125,14 @@ public class EtaService extends IntentService {
                                 .timeout(30, TimeUnit.SECONDS)
                                 .subscribeWith(nwstEtaObserver(routeStop, widgetId, notificationId, row, i == busRouteStopList.size() - 1)));
                         break;
+                    case BusRoute.COMPANY_LRTFEEDER:
+                        ArrivalTime arrivalTime = ArrivalTimeUtil.emptyInstance(getApplicationContext());
+                        arrivalTime.companyCode = BusRoute.COMPANY_LRTFEEDER;
+                        arrivalTime.text = getString(R.string.provider_no_eta);
+                        getContentResolver().insert(EtaEntry.CONTENT_URI,
+                                ArrivalTimeUtil.toContentValues(busRouteStop, arrivalTime));
+                        notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId, row);
+                        break;
                     default:
                         notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId, row);
                         break;

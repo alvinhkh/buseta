@@ -363,7 +363,8 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
     public void onClickItem(Item item, int position) {
         if (item.getType() == Item.TYPE_DATA) {
             BusRouteStop stop = (BusRouteStop) item.getObject();
-            if (map != null && stop != null) {
+            if (map != null && stop != null && isShowMapFragment &&
+                    !TextUtils.isEmpty(stop.latitude) && !TextUtils.isEmpty(stop.longitude)) {
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(
                         new LatLng(Double.parseDouble(stop.latitude), Double.parseDouble(stop.longitude)), 18));
             }
@@ -402,9 +403,12 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
             googleMap.setMyLocationEnabled(true);
         }
         if (busRouteStops.size() > 0) {
-            googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                    new LatLng(Double.parseDouble(busRouteStops.get(0).latitude),
-                            Double.parseDouble(busRouteStops.get(0).longitude)), 16));
+            BusRouteStop stop = busRouteStops.get(0);
+            if (!TextUtils.isEmpty(stop.latitude) && !TextUtils.isEmpty(stop.longitude)) {
+                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                        new LatLng(Double.parseDouble(stop.latitude),
+                                Double.parseDouble(stop.longitude)), 16));
+            }
         }
     }
 
@@ -550,25 +554,27 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                     if (item.getType() != Item.TYPE_DATA) continue;
                     BusRouteStop stop = (BusRouteStop) item.getObject();
                     busRouteStops.add(stop);
-                    if (!hasMapCoordinates) {
-                        mapCoordinates.add(new Pair<>(Double.parseDouble(stop.latitude), Double.parseDouble(stop.longitude)));
-                    }
                     if (
                             navToStop != null &&
-                            stop.companyCode.equals(navToStop.companyCode) &&
-                            stop.route.equals(navToStop.route) &&
-                            stop.name.equals(navToStop.name) &&
-                            stop.direction.equals(navToStop.direction) &&
-                            stop.sequence.equals(navToStop.sequence)
-                    ) {
+                                    stop.companyCode.equals(navToStop.companyCode) &&
+                                    stop.route.equals(navToStop.route) &&
+                                    stop.name.equals(navToStop.name) &&
+                                    stop.direction.equals(navToStop.direction) &&
+                                    stop.sequence.equals(navToStop.sequence)
+                            ) {
                         scrollToPosition = j;
                         isScrollToPosition = true;
                     }
-                    IconGenerator iconFactory = new IconGenerator(getContext());
-                    Bitmap bmp = iconFactory.makeIcon(stop.sequence + ": " + stop.name);
-                    map.addMarker(new MarkerOptions()
-                            .position(new LatLng(Double.parseDouble(stop.latitude), Double.parseDouble(stop.longitude)))
-                            .icon(BitmapDescriptorFactory.fromBitmap(bmp))).setTag(stop);
+                    if (!TextUtils.isEmpty(stop.latitude) && !TextUtils.isEmpty(stop.longitude)) {
+                        if (!hasMapCoordinates) {
+                            mapCoordinates.add(new Pair<>(Double.parseDouble(stop.latitude), Double.parseDouble(stop.longitude)));
+                        }
+                        IconGenerator iconFactory = new IconGenerator(getContext());
+                        Bitmap bmp = iconFactory.makeIcon(stop.sequence + ": " + stop.name);
+                        map.addMarker(new MarkerOptions()
+                                .position(new LatLng(Double.parseDouble(stop.latitude), Double.parseDouble(stop.longitude)))
+                                .icon(BitmapDescriptorFactory.fromBitmap(bmp))).setTag(stop);
+                    }
                     j++;
                 }
                 PolylineOptions singleLine = new PolylineOptions().width(20).zIndex(1)
@@ -647,9 +653,12 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                     map.addPolyline(singleLine);
                 }
                 if (busRouteStops.size() > 0 && scrollToPosition < busRouteStops.size()) {
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                            new LatLng(Double.parseDouble(busRouteStops.get(scrollToPosition).latitude),
-                                    Double.parseDouble(busRouteStops.get(scrollToPosition).longitude)), 16));
+                    BusRouteStop stop = busRouteStops.get(scrollToPosition);
+                    if (!TextUtils.isEmpty(stop.latitude) && !TextUtils.isEmpty(stop.longitude)) {
+                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                new LatLng(Double.parseDouble(stop.latitude),
+                                        Double.parseDouble(stop.longitude)), 16));
+                    }
                 }
             }
         }

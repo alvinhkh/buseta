@@ -165,25 +165,29 @@ public class RouteStopListAdapter
             if (stop == null) return;
             this.nameText.setText(stop.name);
             this.distanceText.setText(null);
-            this.fareText.setText(String.format(Locale.ENGLISH, "$%1$,.1f", Float.valueOf(stop.fare)));
+            if (!TextUtils.isEmpty(stop.fare)) {
+                this.fareText.setText(String.format(Locale.ENGLISH, "$%1$,.1f", Float.valueOf(stop.fare)));
+            }
             this.etaText.setText(null);
             this.eta2Text.setText(null);
             this.eta3Text.setText(null);
             this.followImage.setVisibility(View.GONE);
             this.nearbyImage.setVisibility(View.GONE);
 
-            Location location = new Location("");
-            location.setLatitude(Double.parseDouble(stop.latitude));
-            location.setLongitude(Double.parseDouble(stop.longitude));
-            if (currentLocation != null) {
-                Float distance = currentLocation.distanceTo(location);
-                // TODO: a better way, to show nearest stop
-                if (distance < 200) {
-                    this.distanceText.setText(new DecimalFormat("~#.##km").format(distance / 1000));
-                    this.nearbyImage.setVisibility(View.VISIBLE);
-                    Drawable drawable = this.nearbyImage.getDrawable();
-                    drawable.setBounds(0, 0, this.distanceText.getLineHeight(), this.distanceText.getLineHeight());
-                    this.nearbyImage.setImageDrawable(drawable);
+            if (!TextUtils.isEmpty(stop.latitude) && !TextUtils.isEmpty(stop.longitude)) {
+                Location location = new Location("");
+                location.setLatitude(Double.parseDouble(stop.latitude));
+                location.setLongitude(Double.parseDouble(stop.longitude));
+                if (currentLocation != null) {
+                    Float distance = currentLocation.distanceTo(location);
+                    // TODO: a better way, to show nearest stop
+                    if (distance < 200) {
+                        this.distanceText.setText(new DecimalFormat("~#.##km").format(distance / 1000));
+                        this.nearbyImage.setVisibility(View.VISIBLE);
+                        Drawable drawable = this.nearbyImage.getDrawable();
+                        drawable.setBounds(0, 0, this.distanceText.getLineHeight(), this.distanceText.getLineHeight());
+                        this.nearbyImage.setImageDrawable(drawable);
+                    }
                 }
             }
 

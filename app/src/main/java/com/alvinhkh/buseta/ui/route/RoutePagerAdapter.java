@@ -11,6 +11,7 @@ import android.util.SparseArray;
 import android.view.ViewGroup;
 
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.datagovhk.ui.MtrBusStopListFragment;
 import com.alvinhkh.buseta.kmb.ui.KmbStopListFragment;
 import com.alvinhkh.buseta.lwb.ui.LwbStopListFragment;
 import com.alvinhkh.buseta.model.BusRoute;
@@ -95,16 +96,22 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
         }
         if (position >= MIN_PAGE) {
             BusRoute busRoute = routes.get(position - MIN_PAGE);
-            if (busRoute.getCompanyCode().equals(BusRoute.COMPANY_NLB)) {
-                return NlbStopListFragment.newInstance(busRoute, busRouteStop);
-            } else if (Arrays.asList(new String[]{BusRoute.COMPANY_CTB, BusRoute.COMPANY_NWFB, BusRoute.COMPANY_NWST}).contains(busRoute.getCompanyCode())) {
-                return NwstStopListFragment.newInstance(busRoute, busRouteStop);
-            } else {
-                if (PreferenceUtil.isUsingNewKmbApi(context)) {
-                    return KmbStopListFragment.newInstance(busRoute, busRouteStop);
-                } else {
-                    return LwbStopListFragment.newInstance(busRoute, busRouteStop);
-                }
+            switch (busRoute.getCompanyCode()) {
+                case BusRoute.COMPANY_CTB:
+                case BusRoute.COMPANY_NWFB:
+                case BusRoute.COMPANY_NWST:
+                    return NwstStopListFragment.newInstance(busRoute, busRouteStop);
+                case BusRoute.COMPANY_LRTFEEDER:
+                    return MtrBusStopListFragment.newInstance(busRoute, busRouteStop);
+                case BusRoute.COMPANY_NLB:
+                    return NlbStopListFragment.newInstance(busRoute, busRouteStop);
+                case BusRoute.COMPANY_KMB:
+                default:
+                    if (PreferenceUtil.isUsingNewKmbApi(context)) {
+                        return KmbStopListFragment.newInstance(busRoute, busRouteStop);
+                    } else {
+                        return LwbStopListFragment.newInstance(busRoute, busRouteStop);
+                    }
             }
         }
         return null;
@@ -124,11 +131,16 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
             case MIN_PAGE:
             default:
                 BusRoute busRoute = routes.get(position - MIN_PAGE);
-                if (busRoute != null && !TextUtils.isEmpty(busRoute.getLocationEndName())) {
-                    return busRoute.getLocationStartName()
-                            + (getCount() > 1 ? "\n" : " ")
-                            + context.getString(R.string.destination, busRoute.getLocationEndName())
-                            + (busRoute.getSpecial() ? "#" : "");
+                if (busRoute != null) {
+                    if (!TextUtils.isEmpty(busRoute.getLocationEndName())) {
+                        return busRoute.getLocationStartName()
+                                + (getCount() > 1 ? "\n" : " ")
+                                + context.getString(R.string.destination, busRoute.getLocationEndName())
+                                + (busRoute.getSpecial() ? "#" : "");
+                    }
+                    if (!TextUtils.isEmpty(busRoute.getName())) {
+                        return busRoute.getName();
+                    }
                 }
                 return context.getString(R.string.route) + " " + position;
         }

@@ -7,6 +7,8 @@ import android.text.TextUtils;
 
 import com.alvinhkh.buseta.Api;
 import com.alvinhkh.buseta.C;
+import com.alvinhkh.buseta.datagovhk.DataGovHkService;
+import com.alvinhkh.buseta.datagovhk.model.MtrBusRoute;
 import com.alvinhkh.buseta.kmb.KmbService;
 import com.alvinhkh.buseta.kmb.model.KmbEtaRoutes;
 import com.alvinhkh.buseta.model.BusRoute;
@@ -106,7 +108,12 @@ public class CheckUpdateService extends IntentService {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(nwstRouteListObserver(manualUpdate)));
-
+        DataGovHkService dataGovHkService = DataGovHkService.resource.create(DataGovHkService.class);
+        disposables.add(dataGovHkService.mtrBusRoutes()
+                .retryWhen(new RetryWithDelay(5, 3000))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeWith(mtrBusRoutesObserver(manualUpdate)));
     }
 
     DisposableObserver<List<AppUpdate>> appUpdateObserver(Boolean manualUpdate) {
@@ -279,4 +286,57 @@ public class CheckUpdateService extends IntentService {
         };
     }
 
+    DisposableObserver<ResponseBody> mtrBusRoutesObserver(Boolean manualUpdate) {
+        return new DisposableObserver<ResponseBody>() {
+            @Override
+            public void onNext(ResponseBody body) {
+                if (body == null) return;
+                try {
+                    List<ContentValues> contentValues = new ArrayList<>();
+                    List<MtrBusRoute> routes = MtrBusRoute.Companion.fromCSV(body.string());
+                    for (MtrBusRoute route: routes) {
+                        if (TextUtils.isEmpty(route.getRouteId())) continue;
+                        ContentValues values = new ContentValues();
+                        values.put(SuggestionTable.COLUMN_TEXT, route.getRouteId());
+                        values.put(SuggestionTable.COLUMN_COMPANY, BusRoute.COMPANY_LRTFEEDER);
+                        values.put(SuggestionTable.COLUMN_TYPE, SuggestionTable.TYPE_DEFAULT);
+                        values.put(SuggestionTable.COLUMN_DATE, "0");
+                        contentValues.add(values);
+                    }
+                    int insertedRows = getContentResolver().bulkInsert(SuggestionProvider.CONTENT_URI,
+                            contentValues.toArray(new ContentValues[contentValues.size()]));
+                    if (insertedRows > 0) {
+                        Timber.d("updated %s: %s", BusRoute.COMPANY_LRTFEEDER, insertedRows);
+                    } else {
+                        Timber.d("error when inserting: %s", BusRoute.COMPANY_LRTFEEDER);
+                    }
+                    Intent i = new Intent(C.ACTION.SUGGESTION_ROUTE_UPDATE);
+                    i.putExtra(C.EXTRA.UPDATED, true);
+                    i.putExtra(C.EXTRA.MANUAL, manualUpdate);
+                    i.putExtra(C.EXTRA.MESSAGE_RID, R.string.message_database_updated);
+                    sendBroadcast(i);
+                } catch (IOException e) {
+                    Timber.d(e);
+                    Intent i = new Intent(C.ACTION.SUGGESTION_ROUTE_UPDATE);
+                    i.putExtra(C.EXTRA.UPDATED, true);
+                    i.putExtra(C.EXTRA.MANUAL, manualUpdate);
+                    i.putExtra(C.EXTRA.MESSAGE_RID, R.string.message_fail_to_request);
+                    sendBroadcast(i);
+                }
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Timber.d(e);
+                Intent i = new Intent(C.ACTION.SUGGESTION_ROUTE_UPDATE);
+                i.putExtra(C.EXTRA.UPDATED, true);
+                i.putExtra(C.EXTRA.MANUAL, manualUpdate);
+                i.putExtra(C.EXTRA.MESSAGE_RID, R.string.message_fail_to_request);
+                sendBroadcast(i);
+            }
+
+            @Override
+            public void onComplete() { }
+        };
+    }
 }
