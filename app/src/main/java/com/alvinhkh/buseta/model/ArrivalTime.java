@@ -18,7 +18,7 @@ public class ArrivalTime {
     public Boolean isSchedule = false;
 
     public Boolean hasWheelchair = false;
-    
+
     public Boolean hasWifi = false;
 
     public String text = "";
@@ -26,6 +26,12 @@ public class ArrivalTime {
     public String isoTime = "";
 
     public Float distanceKM = -1.0f;
+
+    public String plate = "";
+
+    public Double latitude = 0.0;
+
+    public Double longitude = 0.0;
 
     public Long generatedAt = 0L;
 
@@ -39,7 +45,8 @@ public class ArrivalTime {
                 + ", expire=" + this.expire + ", expired=" + this.expired
                 + ", id=" + this.id + ", isoTime=" + this.isoTime
                 + ", isSchedule=" + this.isSchedule + ", hasWheelchair=" + this.hasWheelchair
-                + ", hasWifi=" + this.hasWifi + ", text=" + this.text
+                + ", hasWifi=" + this.hasWifi + ", text=" + this.text + ", plate=" + this.plate
+                + ", latitude=" + this.latitude + ", longitude=" + this.longitude
                 + ", generatedAt=" + this.generatedAt + ", updatedAt=" + this.updatedAt + "}";
     }
 }

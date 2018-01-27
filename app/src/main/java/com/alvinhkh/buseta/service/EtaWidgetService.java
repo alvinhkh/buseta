@@ -121,6 +121,9 @@ public class EtaWidgetService extends RemoteViewsService {
                             if (arrivalTime.distanceKM >= 0) {
                                 etaText.append(" ").append(context.getString(R.string.km_short, arrivalTime.distanceKM));
                             }
+                            if (!TextUtils.isEmpty(arrivalTime.plate)) {
+                                etaText.append(" ").append(arrivalTime.plate);
+                            }
                             if (arrivalTime.capacity >= 0) {
                                 String capacity = "";
                                 if (arrivalTime.capacity == 0) {

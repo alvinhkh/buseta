@@ -74,8 +74,12 @@ public class BusRouteUtil {
     public static String getCompanyName(@NonNull Context context,
                                         @NonNull String companyCode,
                                         @Nullable String routeNo) {
+        if (TextUtils.isEmpty(companyCode)) return "";
         String companyName = companyCode;
         switch (companyCode) {
+            case BusRoute.COMPANY_AESBUS:
+                companyName = context.getString(R.string.provider_short_aes_bus);
+                break;
             case BusRoute.COMPANY_CTB:
                 companyName = context.getString(R.string.provider_short_ctb);
                 break;

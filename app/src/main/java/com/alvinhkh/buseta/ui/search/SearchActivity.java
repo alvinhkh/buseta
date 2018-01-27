@@ -18,6 +18,7 @@ import com.alvinhkh.buseta.kmb.ui.KmbActivity;
 import com.alvinhkh.buseta.lwb.ui.LwbActivity;
 import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.mtr.ui.AESBusActivity;
 import com.alvinhkh.buseta.nlb.ui.NlbActivity;
 import com.alvinhkh.buseta.nwst.ui.NwstActivity;
 import com.alvinhkh.buseta.service.LocationService;
@@ -69,6 +70,9 @@ public class SearchActivity extends AppCompatActivity {
             companyCode = BusRoute.COMPANY_KMB;
         }
         switch (companyCode) {
+            case BusRoute.COMPANY_AESBUS:
+                intent = new Intent(getApplicationContext(), AESBusActivity.class);
+                break;
             case BusRoute.COMPANY_CTB:
             case BusRoute.COMPANY_NWFB:
             case BusRoute.COMPANY_NWST:

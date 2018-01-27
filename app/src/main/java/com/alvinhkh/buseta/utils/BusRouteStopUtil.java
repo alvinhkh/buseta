@@ -12,9 +12,10 @@ import com.alvinhkh.buseta.lwb.model.LwbRouteStop;
 import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.model.BusRouteStop;
 import com.alvinhkh.buseta.model.FollowStop;
+import com.alvinhkh.buseta.mtr.model.AESBusStop;
+import com.alvinhkh.buseta.mtr.model.AESEtaBusStop;
 import com.alvinhkh.buseta.nlb.model.NlbRouteStop;
 import com.alvinhkh.buseta.nlb.model.NlbStop;
-import com.alvinhkh.buseta.nwst.model.NwstRoute;
 import com.alvinhkh.buseta.nwst.model.NwstStop;
 
 import org.jsoup.parser.Parser;
@@ -96,7 +97,7 @@ public class BusRouteStopUtil {
         object.sequence = Integer.toString(position);
         object.name = HKSCSUtil.convert(kmbRouteStop.nameTc);
         object.fare = kmbRouteStop.airFare;
-        object.location = kmbRouteStop.locationTc;
+        object.location = HKSCSUtil.convert(kmbRouteStop.locationTc);
         Pair<Double, Double> latlong = fromHK80toWGS84(
                 new Pair<>(Double.parseDouble(kmbRouteStop.X), Double.parseDouble(kmbRouteStop.Y)));
         if (latlong != null) {
@@ -105,7 +106,6 @@ public class BusRouteStopUtil {
         }
         object.destination = busRoute.getLocationEndName();
         object.origin = busRoute.getLocationStartName();
-
         if (!TextUtils.isEmpty(object.code)) {
             object.imageUrl = "http://www.kmb.hk/chi/img.php?file=" + object.code;
         }
@@ -208,6 +208,26 @@ public class BusRouteStopUtil {
         object.route = busRoute.getName();
         object.routeId = mtrBusStop.getRouteId();
         object.sequence = String.valueOf(mtrBusStop.getStationSequenceNo());
+        object.etaGet = "";
+        object.imageUrl = "";
+        return object;
+    }
+
+    public static BusRouteStop fromAESBus(@NonNull AESBusStop aesBusStop,
+                                          @NonNull BusRoute busRoute) {
+        BusRouteStop object = new BusRouteStop();
+        object.code = String.valueOf(aesBusStop.getStopId());
+        object.companyCode = busRoute.getCompanyCode();
+        object.destination = busRoute.getLocationEndName();
+        object.direction = busRoute.getSequence();
+        object.fare = "0";
+        object.latitude = aesBusStop.getStopLatitude();
+        object.longitude = aesBusStop.getStopLongitude();
+        object.name = aesBusStop.getStopNameCn();
+        object.origin = busRoute.getLocationStartName();
+        object.route = busRoute.getName();
+        object.routeId = aesBusStop.getBusNumber();
+        object.sequence = String.valueOf(aesBusStop.getNearestStopID());
         object.etaGet = "";
         object.imageUrl = "";
         return object;

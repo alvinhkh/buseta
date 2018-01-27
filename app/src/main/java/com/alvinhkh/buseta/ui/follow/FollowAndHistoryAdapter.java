@@ -211,6 +211,9 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
                         if (arrivalTime.distanceKM >= 0) {
                             etaText.append(" ").append(context.getString(R.string.km_short, arrivalTime.distanceKM));
                         }
+                        if (!TextUtils.isEmpty(arrivalTime.plate)) {
+                            etaText.append(" ").append(arrivalTime.plate);
+                        }
                         if (arrivalTime.capacity >= 0) {
                             Drawable drawable = null;
                             if (arrivalTime.capacity == 0) {

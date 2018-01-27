@@ -14,6 +14,11 @@ import com.alvinhkh.buseta.kmb.util.KmbEtaUtil;
 import com.alvinhkh.buseta.model.ArrivalTime;
 import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.mtr.MtrService;
+import com.alvinhkh.buseta.mtr.model.AESEtaBus;
+import com.alvinhkh.buseta.mtr.model.AESEtaBusStop;
+import com.alvinhkh.buseta.mtr.model.AESEtaBusRes;
+import com.alvinhkh.buseta.mtr.model.AESEtaBusStopsRequest;
 import com.alvinhkh.buseta.nlb.NlbService;
 import com.alvinhkh.buseta.nlb.model.NlbEtaRequest;
 import com.alvinhkh.buseta.nlb.model.NlbEtaRes;
@@ -25,15 +30,21 @@ import com.alvinhkh.buseta.nwst.util.NwstRequestUtil;
 import com.alvinhkh.buseta.provider.EtaContract.EtaEntry;
 import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
+import com.alvinhkh.buseta.utils.HashUtil;
+import com.alvinhkh.buseta.utils.RetryWithDelay;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -48,11 +59,13 @@ public class EtaService extends IntentService {
 
     private final CompositeDisposable disposables = new CompositeDisposable();
 
+    private final MtrService aesService = MtrService.aes.create(MtrService.class);
+
     private final KmbService kmbEtaApi = KmbService.etav3.create(KmbService.class);
 
-    private final NlbService nlbApi = NlbService.api.create(NlbService.class);
-
     private final NwstService nwstApi = NwstService.api.create(NwstService.class);
+
+    private final NlbService nlbApi = NlbService.api.create(NlbService.class);
 
     public EtaService() {
         super(EtaService.class.getSimpleName());
@@ -92,17 +105,19 @@ public class EtaService extends IntentService {
         for (int i = 0; i < busRouteStopList.size(); i++) {
             BusRouteStop routeStop = busRouteStopList.get(i);
             if (!TextUtils.isEmpty(routeStop.companyCode)) {
-                // notifyUpdate(routeStop, C.EXTRA.UPDATING, widgetId, notificationId, row);
+                notifyUpdate(routeStop, C.EXTRA.UPDATING, widgetId, notificationId, row);
                 switch (routeStop.companyCode) {
                     case BusRoute.COMPANY_KMB:
                         disposables.add(kmbEtaApi.getEta(routeStop.etaGet)
                                 .timeout(30, TimeUnit.SECONDS)
+                                .retryWhen(new RetryWithDelay(3, 3000))
                                 .subscribeWith(kmbEtaObserver(routeStop, widgetId, notificationId, row, i == busRouteStopList.size() - 1)));
                         break;
                     case BusRoute.COMPANY_NLB:
                         NlbEtaRequest request = new NlbEtaRequest(routeStop.routeId, routeStop.code, "zh");
                         disposables.add(nlbApi.eta(request)
                                 .timeout(30, TimeUnit.SECONDS)
+                                .retryWhen(new RetryWithDelay(3, 3000))
                                 .subscribeWith(nlbEtaObserver(routeStop, widgetId, notificationId, row, i == busRouteStopList.size() - 1)));
                         break;
                     case BusRoute.COMPANY_CTB:
@@ -123,6 +138,7 @@ public class EtaService extends IntentService {
                         options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
                         disposables.add(nwstApi.eta(options)
                                 .timeout(30, TimeUnit.SECONDS)
+                                .retryWhen(new RetryWithDelay(3, 3000))
                                 .subscribeWith(nwstEtaObserver(routeStop, widgetId, notificationId, row, i == busRouteStopList.size() - 1)));
                         break;
                     case BusRoute.COMPANY_LRTFEEDER:
@@ -132,6 +148,18 @@ public class EtaService extends IntentService {
                         getContentResolver().insert(EtaEntry.CONTENT_URI,
                                 ArrivalTimeUtil.toContentValues(busRouteStop, arrivalTime));
                         notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId, row);
+                        break;
+                    case BusRoute.COMPANY_AESBUS:
+                        String key = HashUtil.md5("mtrMobile_" + new SimpleDateFormat("yyyyMMddHHmm", Locale.ENGLISH).format(new Date()));
+                        // Timber.d("key: %s", key);
+                        if (!TextUtils.isEmpty(key)) {
+                            disposables.add(aesService.getBusStopsDetail(new AESEtaBusStopsRequest(routeStop.route, "2", "zh", key))
+                                    .timeout(30, TimeUnit.SECONDS)
+                                    .retryWhen(new RetryWithDelay(3, 3000))
+                                    .subscribeWith(aesBusEtaObserver(routeStop, widgetId, notificationId, row, i == busRouteStopList.size() - 1)));
+                        } else {
+                            notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId, row);
+                        }
                         break;
                     default:
                         notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId, row);
@@ -304,6 +332,86 @@ public class EtaService extends IntentService {
             @Override
             public void onComplete() {
                 if (isLast) notifyUpdate(busRouteStop, C.EXTRA.COMPLETE, widgetId, notificationId, rowNo);
+            }
+        };
+    }
+
+    DisposableObserver<AESEtaBusRes> aesBusEtaObserver(@NonNull final BusRouteStop busRouteStop,
+                                                       final Integer widgetId,
+                                                       final Integer notificationId,
+                                                       final Integer rowNo,
+                                                       final Boolean isLast) {
+        return new DisposableObserver<AESEtaBusRes>() {
+
+            Boolean isError = false;
+
+            @Override
+            public void onNext(AESEtaBusRes res) {
+                if (res != null) {
+                    if (res.getRouteName() == null || !res.getRouteName().equals(busRouteStop.route)) return;
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.ENGLISH);
+                    Date statusTime = new Date();
+                    if (res.getRouteStatusTime() != null) {
+                        try {
+                            statusTime = sdf.parse(res.getRouteStatusTime());
+                        } catch (ParseException ignored) { }
+                    }
+                    Boolean isAvailable = false;
+                    List<AESEtaBusStop> etas = res.getBusStops();
+                    if (etas != null && etas.size() > 0) {
+                        // TODO: better way to store and show aes eta
+                        for (int i = 0; i < etas.size(); i++) {
+                            AESEtaBusStop eta = etas.get(i);
+                            if (eta.getBusStopId() == null) continue;
+                            if (!eta.getBusStopId().equals(busRouteStop.code) && !eta.getBusStopId().equals("999")) continue;
+                            if (eta.getBuses() != null && eta.getBuses().size() > 0) {
+                                for (int j = 0; j < eta.getBuses().size(); j++) {
+                                    isAvailable = true;
+                                    AESEtaBus bus = eta.getBuses().get(j);
+                                    ArrivalTime arrivalTime = AESEtaBus.Companion.toArrivalTime(getApplicationContext(), bus, statusTime, busRouteStop);
+                                    arrivalTime.id = Integer.toString(j);
+                                    arrivalTime.generatedAt = statusTime.getTime();
+                                    arrivalTime.updatedAt = System.currentTimeMillis();
+                                    getContentResolver().insert(EtaEntry.CONTENT_URI,
+                                            ArrivalTimeUtil.toContentValues(busRouteStop, arrivalTime));
+                                }
+                            }
+                            if (isAvailable) {
+                                notifyUpdate(busRouteStop, C.EXTRA.UPDATED, widgetId, notificationId, rowNo);
+                            }
+                        }
+                    }
+                    if (!isAvailable) {
+                        ArrivalTime arrivalTime = ArrivalTimeUtil.emptyInstance(getApplicationContext());
+                        arrivalTime.companyCode = BusRoute.COMPANY_AESBUS;
+                        arrivalTime.text = res.getRouteStatusRemarkTitle();
+                        arrivalTime.generatedAt = System.currentTimeMillis();
+                        getContentResolver().insert(EtaEntry.CONTENT_URI,
+                                ArrivalTimeUtil.toContentValues(busRouteStop, arrivalTime));
+                        notifyUpdate(busRouteStop, C.EXTRA.UPDATED, widgetId, notificationId, rowNo);
+                    }
+                } else {
+                    isError = true;
+                }
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                isError = true;
+                Timber.d(e);
+                ArrivalTime arrivalTime = ArrivalTimeUtil.emptyInstance(getApplicationContext());
+                arrivalTime.companyCode = BusRoute.COMPANY_AESBUS;
+                arrivalTime.text = getString(R.string.message_fail_to_request);
+                getContentResolver().insert(EtaEntry.CONTENT_URI,
+                        ArrivalTimeUtil.toContentValues(busRouteStop, arrivalTime));
+                notifyUpdate(busRouteStop, C.EXTRA.FAIL, widgetId, notificationId, rowNo);
+            }
+
+            @Override
+            public void onComplete() {
+                if (!isError) {
+                    notifyUpdate(busRouteStop, C.EXTRA.COMPLETE, widgetId, notificationId, rowNo);
+                }
             }
         };
     }

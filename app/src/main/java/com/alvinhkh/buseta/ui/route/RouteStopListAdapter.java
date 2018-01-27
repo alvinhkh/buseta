@@ -165,8 +165,11 @@ public class RouteStopListAdapter
             if (stop == null) return;
             this.nameText.setText(stop.name);
             this.distanceText.setText(null);
-            if (!TextUtils.isEmpty(stop.fare)) {
+            if (!TextUtils.isEmpty(stop.fare) && Float.valueOf(stop.fare) > 0) {
+                this.fareText.setVisibility(View.VISIBLE);
                 this.fareText.setText(String.format(Locale.ENGLISH, "$%1$,.1f", Float.valueOf(stop.fare)));
+            } else {
+                this.fareText.setVisibility(View.INVISIBLE);
             }
             this.etaText.setText(null);
             this.eta2Text.setText(null);
@@ -240,6 +243,9 @@ public class RouteStopListAdapter
                         }
                         if (arrivalTime.distanceKM >= 0) {
                             etaText.append(" ").append(context.getString(R.string.km_short, arrivalTime.distanceKM));
+                        }
+                        if (!TextUtils.isEmpty(arrivalTime.plate)) {
+                            etaText.append(" ").append(arrivalTime.plate);
                         }
                         if (arrivalTime.capacity >= 0) {
                             Drawable drawable = null;
@@ -320,7 +326,6 @@ public class RouteStopListAdapter
                                 this.eta2Text.setText(etaText);
                                 break;
                             case 2:
-                            default:
                                 etaText.insert(0, this.eta3Text.getText());
                                 this.eta3Text.setText(etaText);
                                 break;

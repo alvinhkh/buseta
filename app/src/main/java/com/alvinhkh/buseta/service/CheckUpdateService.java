@@ -3,6 +3,9 @@ package com.alvinhkh.buseta.service;
 import android.app.IntentService;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.net.Uri;
+import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.alvinhkh.buseta.Api;
@@ -12,6 +15,10 @@ import com.alvinhkh.buseta.datagovhk.model.MtrBusRoute;
 import com.alvinhkh.buseta.kmb.KmbService;
 import com.alvinhkh.buseta.kmb.model.KmbEtaRoutes;
 import com.alvinhkh.buseta.model.BusRoute;
+import com.alvinhkh.buseta.mtr.MtrService;
+import com.alvinhkh.buseta.mtr.dao.AESBusDatabase;
+import com.alvinhkh.buseta.mtr.model.AESBusRoute;
+import com.alvinhkh.buseta.mtr.model.MtrMobileVersionCheck;
 import com.alvinhkh.buseta.nlb.NlbService;
 import com.alvinhkh.buseta.nlb.model.NlbDatabase;
 import com.alvinhkh.buseta.nwst.NwstService;
@@ -22,9 +29,16 @@ import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.model.AppUpdate;
 import com.alvinhkh.buseta.provider.SuggestionProvider;
 import com.alvinhkh.buseta.provider.SuggestionTable;
+import com.alvinhkh.buseta.utils.DatabaseUtil;
 import com.alvinhkh.buseta.utils.RetryWithDelay;
+import com.alvinhkh.buseta.utils.ZipUtil;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,11 +49,15 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Response;
 import timber.log.Timber;
 
 import static com.alvinhkh.buseta.nwst.NwstService.*;
 
 public class CheckUpdateService extends IntentService {
+
+    MtrService mtrMobService = MtrService.mob.create(MtrService.class);
 
     private final CompositeDisposable disposables = new CompositeDisposable();
 
@@ -76,7 +94,6 @@ public class CheckUpdateService extends IntentService {
         Api apiService = Api.retrofit.create(Api.class);
         apiService.appUpdate()
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(appUpdateObserver(manualUpdate));
         // clear existing suggested routes
         getContentResolver().delete(SuggestionProvider.CONTENT_URI,
@@ -87,13 +104,11 @@ public class CheckUpdateService extends IntentService {
         disposables.add(kmbService.getEtaRoutes()
                 .retryWhen(new RetryWithDelay(3, 3000))
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(kmbRoutesObserver(manualUpdate)));
         NlbService nlbService = NlbService.api.create(NlbService.class);
         disposables.add(nlbService.getDatabase()
                 .retryWhen(new RetryWithDelay(3, 3000))
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(nlbDatabaseObserver(manualUpdate)));
         NwstService nwstService = NwstService.api.create(NwstService.class);
         Map<String, String> options = new HashMap<>();
@@ -106,14 +121,16 @@ public class CheckUpdateService extends IntentService {
         disposables.add(nwstService.routeList(options)
                 .retryWhen(new RetryWithDelay(3, 3000))
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(nwstRouteListObserver(manualUpdate)));
         DataGovHkService dataGovHkService = DataGovHkService.resource.create(DataGovHkService.class);
         disposables.add(dataGovHkService.mtrBusRoutes()
                 .retryWhen(new RetryWithDelay(5, 3000))
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(mtrBusRoutesObserver(manualUpdate)));
+        disposables.add(mtrMobService.zipResources()
+                .retryWhen(new RetryWithDelay(5, 3000))
+                .subscribeOn(Schedulers.io())
+                .subscribeWith(mtrMobResourcesObserver(manualUpdate)));
     }
 
     DisposableObserver<List<AppUpdate>> appUpdateObserver(Boolean manualUpdate) {
@@ -337,6 +354,121 @@ public class CheckUpdateService extends IntentService {
 
             @Override
             public void onComplete() { }
+        };
+    }
+
+    DisposableObserver<MtrMobileVersionCheck> mtrMobResourcesObserver(Boolean manualUpdate) {
+        return new DisposableObserver<MtrMobileVersionCheck>() {
+            @Override
+            public void onNext(MtrMobileVersionCheck xml) {
+                if (xml == null) return;
+                MtrMobileVersionCheck.ResourcesV12 resourcesV12 = xml.getResources();
+                if (resourcesV12.getAes() != null) {
+                    String aesDatabaseFileUrl = resourcesV12.getAes().getUrl();
+                    if (!TextUtils.isEmpty(aesDatabaseFileUrl)) {
+                        Uri uri = Uri.parse(aesDatabaseFileUrl);
+                        deleteDatabase("E_AES.db");
+                        disposables.add(mtrMobService.downloadFile(aesDatabaseFileUrl)
+                                .subscribeOn(Schedulers.io())
+                                .subscribeWith(mtrMobFileObserver(manualUpdate, uri.getLastPathSegment())));
+                    }
+                }
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Timber.d(e);
+            }
+
+            @Override
+            public void onComplete() { }
+        };
+    }
+
+    DisposableObserver<ResponseBody> mtrMobFileObserver(Boolean manualUpdate, String fileName) {
+        return new DisposableObserver<ResponseBody>() {
+            @Override
+            public void onNext(ResponseBody body) {
+                if (body == null) return;
+                try {
+                    File zipFile = downloadFile(body, fileName);
+                    if (zipFile.exists()) {
+                        if (zipFile.getName().endsWith(".zip")) {
+                            ZipUtil.decompress(zipFile);
+                        }
+                        zipFile.deleteOnExit();
+                    }
+                    fileToDatabase();
+                } catch (IOException e) {
+                    Timber.d(e);
+                }
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Timber.d(e);
+            }
+
+            @Override
+            public void onComplete() { }
+
+            private void fileToDatabase() {
+                AESBusDatabase database = DatabaseUtil.Companion.getAESBusDatabase(getApplicationContext());
+                disposables.add(database.aesBusDao().getAllRoutes()
+                        .subscribe(aesBusRoutes -> {
+                            if (aesBusRoutes != null) {
+                                List<ContentValues> contentValues = new ArrayList<>();
+                                for (AESBusRoute aesBusRoute : aesBusRoutes) {
+                                    ContentValues values = new ContentValues();
+                                    values.put(SuggestionTable.COLUMN_TEXT, aesBusRoute.getBusNumber());
+                                    values.put(SuggestionTable.COLUMN_COMPANY, BusRoute.COMPANY_AESBUS);
+                                    values.put(SuggestionTable.COLUMN_TYPE, SuggestionTable.TYPE_DEFAULT);
+                                    values.put(SuggestionTable.COLUMN_DATE, "0");
+                                    contentValues.add(values);
+                                }
+                                int insertedRows = getContentResolver().bulkInsert(SuggestionProvider.CONTENT_URI,
+                                        contentValues.toArray(new ContentValues[contentValues.size()]));
+                                if (insertedRows > 0) {
+                                    Timber.d("updated %s: %s", BusRoute.COMPANY_AESBUS, insertedRows);
+                                } else {
+                                    Timber.d("error when inserting: %s", BusRoute.COMPANY_AESBUS);
+                                }
+                                Intent i = new Intent(C.ACTION.SUGGESTION_ROUTE_UPDATE);
+                                i.putExtra(C.EXTRA.UPDATED, true);
+                                i.putExtra(C.EXTRA.MANUAL, manualUpdate);
+                                i.putExtra(C.EXTRA.MESSAGE_RID, R.string.message_database_updated);
+                                sendBroadcast(i);
+                            }
+                        }));
+            }
+
+            private File downloadFile(@NonNull ResponseBody body, @NonNull String fileName) throws IOException {
+                int count;
+                byte data[] = new byte[1024 * 4];
+                long fileSize = body.contentLength();
+                InputStream bis = new BufferedInputStream(body.byteStream(), 1024 * 8);
+                File outputFile = new File(getCacheDir(), fileName);
+                OutputStream output = new FileOutputStream(outputFile);
+                long total = 0;
+                long startTime = System.currentTimeMillis();
+                int timeCount = 1;
+                int totalFileSize = 0;
+                while ((count = bis.read(data)) != -1) {
+                    total += count;
+                    totalFileSize = (int) (fileSize / (Math.pow(1024, 2)));
+                    double current = Math.round(total / (Math.pow(1024, 2)));
+                    int progress = (int) ((total * 100) / fileSize);
+                    long currentTime = System.currentTimeMillis() - startTime;
+                    if (currentTime > 1000 * timeCount) {
+                        timeCount++;
+                    }
+                    output.write(data, 0, count);
+                }
+                output.flush();
+                output.close();
+                bis.close();
+                return outputFile;
+            }
         };
     }
 }

@@ -16,6 +16,7 @@ import com.alvinhkh.buseta.kmb.ui.KmbStopListFragment;
 import com.alvinhkh.buseta.lwb.ui.LwbStopListFragment;
 import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.mtr.ui.AESBusStopListFragment;
 import com.alvinhkh.buseta.nlb.ui.NlbStopListFragment;
 import com.alvinhkh.buseta.nwst.ui.NwstStopListFragment;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
@@ -97,6 +98,8 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
         if (position >= MIN_PAGE) {
             BusRoute busRoute = routes.get(position - MIN_PAGE);
             switch (busRoute.getCompanyCode()) {
+                case BusRoute.COMPANY_AESBUS:
+                    return AESBusStopListFragment.newInstance(busRoute, busRouteStop);
                 case BusRoute.COMPANY_CTB:
                 case BusRoute.COMPANY_NWFB:
                 case BusRoute.COMPANY_NWST:
@@ -133,8 +136,7 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
                 BusRoute busRoute = routes.get(position - MIN_PAGE);
                 if (busRoute != null) {
                     if (!TextUtils.isEmpty(busRoute.getLocationEndName())) {
-                        return busRoute.getLocationStartName()
-                                + (getCount() > 1 ? "\n" : " ")
+                        return (TextUtils.isEmpty(busRoute.getLocationStartName()) ? "" : (busRoute.getLocationStartName() + (getCount() > 1 ? "\n" : " ")))
                                 + context.getString(R.string.destination, busRoute.getLocationEndName())
                                 + (busRoute.getSpecial() ? "#" : "");
                     }

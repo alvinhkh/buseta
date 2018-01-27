@@ -115,6 +115,10 @@
             android:name=".datagovhk.ui.MtrBusActivity"
             android:label="@string/provider_lrtfeeder"
             android:hardwareAccelerated="true" />
+        <activity
+            android:name=".mtr.ui.AESBusActivity"
+            android:label="@string/provider_mtr"
+            android:hardwareAccelerated="true" />
 
         <!-- Google Play Services AdActivity -->
         <activity

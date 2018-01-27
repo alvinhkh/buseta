@@ -38,6 +38,7 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.model.ArrivalTime;
 import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.model.BusRouteStop;
 import com.alvinhkh.buseta.model.FollowStop;
@@ -45,6 +46,7 @@ import com.alvinhkh.buseta.service.EtaService;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
+import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
 import com.alvinhkh.buseta.utils.Utils;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -72,6 +74,7 @@ import com.google.maps.model.EncodedPolyline;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import io.reactivex.disposables.CompositeDisposable;
@@ -362,6 +365,10 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
     @Override
     public void onClickItem(Item item, int position) {
         if (item.getType() == Item.TYPE_DATA) {
+            for (Marker marker: markerMap.values()) {
+                marker.remove();
+            }
+            markerMap.clear();
             BusRouteStop stop = (BusRouteStop) item.getObject();
             if (map != null && stop != null && isShowMapFragment &&
                     !TextUtils.isEmpty(stop.latitude) && !TextUtils.isEmpty(stop.longitude)) {
@@ -464,6 +471,8 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         guideline.setLayoutParams(params);
     }
 
+    private HashMap<String, Marker> markerMap = new HashMap<>();
+
     DisposableObserver<Intent> etaObserver() {
         return new DisposableObserver<Intent>() {
             @Override
@@ -480,12 +489,38 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                     }
                     int i = 0;
                     for (Item item : adapter.getItems()) {
-                        if (item.getType() == TYPE_DATA &&
-                                ((BusRouteStop) item.getObject()).sequence.equals(busRouteStop.sequence)) {
+                        if (item.getType() == TYPE_DATA
+                                && ((BusRouteStop) item.getObject()).sequence.equals(busRouteStop.sequence)) {
+                            if (getContext() != null) {
+                                ArrivalTimeUtil.query(getContext(), busRouteStop)
+                                        .subscribe(cursor -> {
+                                            ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
+                                            if (arrivalTime.latitude != 0.0 && arrivalTime.longitude != 0.0) {
+                                                // TODO: show bus location on map for all arrivalTime
+                                                if (!TextUtils.isEmpty(arrivalTime.plate)) {
+                                                    IconGenerator iconFactory = new IconGenerator(getContext());
+                                                    Bitmap bmp = iconFactory.makeIcon(arrivalTime.plate);
+                                                    if (markerMap.containsKey(arrivalTime.plate)) {
+                                                        markerMap.get(arrivalTime.plate).remove();
+                                                        markerMap.remove(arrivalTime.plate);
+                                                    }
+                                                    Marker marker = map.addMarker(new MarkerOptions()
+                                                            .position(new LatLng(arrivalTime.latitude, arrivalTime.longitude))
+                                                            .icon(BitmapDescriptorFactory.fromBitmap(bmp)));
+                                                    marker.setTag(arrivalTime);
+                                                    markerMap.put(arrivalTime.plate, marker);
+                                                }
+                                            }
+                                        });
+                            }
                             adapter.notifyItemChanged(i);
                             break;
                         }
                         i++;
+                    }
+                } else if (bundle.getBoolean(C.EXTRA.UPDATING)) {
+                    if (swipeRefreshLayout != null && !swipeRefreshLayout.isRefreshing()) {
+                        swipeRefreshLayout.setRefreshing(true);
                     }
                 }
             }

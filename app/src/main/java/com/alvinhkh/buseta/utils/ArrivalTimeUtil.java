@@ -11,6 +11,7 @@ import com.alvinhkh.buseta.kmb.util.KmbEtaUtil;
 import com.alvinhkh.buseta.model.ArrivalTime;
 import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.mtr.model.AESEtaBus;
 import com.alvinhkh.buseta.nlb.util.NlbEtaUtil;
 import com.alvinhkh.buseta.nwst.util.NwstEtaUtil;
 import com.alvinhkh.buseta.provider.EtaContract.EtaEntry;
@@ -30,14 +31,16 @@ public class ArrivalTimeUtil {
     public static ArrivalTime estimate(@NonNull Context context, @NonNull ArrivalTime object) {
         if (!TextUtils.isEmpty(object.companyCode)) {
             switch (object.companyCode) {
+                case BusRoute.COMPANY_AESBUS:
+                    return AESEtaBus.Companion.estimate(context, object);
                 case BusRoute.COMPANY_KMB:
                     return KmbEtaUtil.estimate(context, object);
-                case BusRoute.COMPANY_NLB:
-                    return NlbEtaUtil.estimate(context, object);
                 case BusRoute.COMPANY_CTB:
                 case BusRoute.COMPANY_NWFB:
                 case BusRoute.COMPANY_NWST:
                     return NwstEtaUtil.estimate(context, object);
+                case BusRoute.COMPANY_NLB:
+                    return NlbEtaUtil.estimate(context, object);
             }
         }
         return object;
@@ -86,10 +89,15 @@ public class ArrivalTimeUtil {
         values.put(EtaEntry.COLUMN_STOP_ID, stop.code);
         values.put(EtaEntry.COLUMN_ETA_EXPIRE, eta.expire);
         values.put(EtaEntry.COLUMN_ETA_ID, eta.id);
-        values.put(
-                EtaEntry.COLUMN_ETA_MISC, Boolean.toString(eta.hasWheelchair) + "," +
-                Integer.toString(eta.capacity) + "," + Boolean.toString(eta.hasWifi) + "," +
-                eta.isoTime.replaceAll(",", "") + "," + Float.toString(eta.distanceKM)
+        values.put(EtaEntry.COLUMN_ETA_MISC,
+                Boolean.toString(eta.hasWheelchair) + "," +
+                        Integer.toString(eta.capacity) + "," +
+                        Boolean.toString(eta.hasWifi) + "," +
+                        eta.isoTime.replaceAll(",", "") + "," +
+                        Float.toString(eta.distanceKM) + "," +
+                        (TextUtils.isEmpty(eta.plate) ? "" : eta.plate) + "," +
+                        Double.toString(eta.latitude) + "," +
+                        Double.toString(eta.longitude)
         );
         values.put(EtaEntry.COLUMN_ETA_SCHEDULED, Boolean.toString(eta.isSchedule));
         values.put(EtaEntry.COLUMN_ETA_TIME, eta.text);
@@ -117,8 +125,17 @@ public class ArrivalTimeUtil {
         if (misc.length > 3) {
             object.isoTime = misc[3];
         }
-        if (misc.length > 4) {
+        if (misc.length > 4 && !TextUtils.isEmpty(misc[4])) {
             object.distanceKM = Float.valueOf(misc[4]);
+        }
+        if (misc.length > 5 && !TextUtils.isEmpty(misc[5])) {
+            object.plate = misc[5];
+        }
+        if (misc.length > 6 && !TextUtils.isEmpty(misc[6])) {
+            object.latitude = Double.valueOf(misc[6]);
+        }
+        if (misc.length > 7 && !TextUtils.isEmpty(misc[7])) {
+            object.longitude = Double.valueOf(misc[7]);
         }
         object.isSchedule = Boolean.valueOf(cursor.getString(cursor.getColumnIndex(EtaEntry.COLUMN_ETA_SCHEDULED)));
         object.text = cursor.getString(cursor.getColumnIndex(EtaEntry.COLUMN_ETA_TIME));

@@ -799,6 +799,9 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                             if (arrivalTime.distanceKM >= 0) {
                                 etaText.append(" ").append(context.getString(R.string.km, arrivalTime.distanceKM));
                             }
+                            if (!TextUtils.isEmpty(arrivalTime.plate)) {
+                                etaText.append(" ").append(arrivalTime.plate);
+                            }
                             if (arrivalTime.capacity >= 0) {
                                 Drawable drawable = null;
                                 String capacity = "";
