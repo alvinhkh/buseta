@@ -19,7 +19,7 @@ import android.support.v4.util.SparseArrayCompat;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.utils.NotificationUtil;
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
 import com.firebase.jobdispatcher.GooglePlayDriver;
@@ -35,7 +35,7 @@ public class NotificationService extends Service {
 
     private final CompositeDisposable disposables = new CompositeDisposable();
 
-    private SparseArrayCompat<BusRouteStop> routeStops = new SparseArrayCompat<>();
+    private SparseArrayCompat<RouteStop> routeStops = new SparseArrayCompat<>();
 
     private NotificationAlarm alarm;
 
@@ -51,13 +51,14 @@ public class NotificationService extends Service {
                     (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             if (notificationManager != null) {
                 NotificationChannel etaChannel = new NotificationChannel(C.NOTIFICATION.CHANNEL_ETA,
-                        getString(R.string.channel_name_eta), NotificationManager.IMPORTANCE_HIGH);
+                        getString(R.string.channel_name_eta), NotificationManager.IMPORTANCE_DEFAULT);
                 etaChannel.setDescription(getString(R.string.channel_description_eta));
                 etaChannel.enableLights(false);
                 etaChannel.enableVibration(false);
+                etaChannel.setImportance(NotificationManager.IMPORTANCE_DEFAULT);
                 notificationManager.createNotificationChannel(etaChannel);
                 NotificationChannel foregroundChannel = new NotificationChannel(C.NOTIFICATION.CHANNEL_FOREGROUND,
-                        getString(R.string.channel_name_foreground, getString(R.string.app_name)), NotificationManager.IMPORTANCE_MIN);
+                        getString(R.string.channel_name_foreground, getString(R.string.app_name)), NotificationManager.IMPORTANCE_NONE);
                 foregroundChannel.setDescription(getString(R.string.channel_description_foreground));
                 foregroundChannel.enableLights(false);
                 foregroundChannel.enableVibration(false);
@@ -113,14 +114,14 @@ public class NotificationService extends Service {
             return START_NOT_STICKY;
         }
 
-        BusRouteStop busRouteStop = extras.getParcelable(C.EXTRA.STOP_OBJECT);
-        if (busRouteStop != null) {
-            notificationId = NotificationUtil.getNotificationId(busRouteStop);
-            NotificationCompat.Builder builder = NotificationUtil.showArrivalTime(this, busRouteStop);
+        RouteStop routeStop = extras.getParcelable(C.EXTRA.STOP_OBJECT);
+        if (routeStop != null) {
+            notificationId = NotificationUtil.getNotificationId(routeStop);
+            NotificationCompat.Builder builder = NotificationUtil.showArrivalTime(this, routeStop);
             notificationManager.notify(notificationId, builder.build());
-            routeStops.put(notificationId, busRouteStop);
+            routeStops.put(notificationId, routeStop);
             Intent startIntent = new Intent(getApplicationContext(), EtaService.class);
-            startIntent.putExtra(C.EXTRA.STOP_OBJECT, busRouteStop);
+            startIntent.putExtra(C.EXTRA.STOP_OBJECT, routeStop);
             startIntent.putExtra(C.EXTRA.NOTIFICATION_ID, notificationId);
             startIntent.putExtra(C.EXTRA.ROW, rowId);
             startIntent.putExtra(C.EXTRA.WIDGET_UPDATE, widgetId);
@@ -175,7 +176,7 @@ public class NotificationService extends Service {
             public void onNext(Intent intent) {
                 Bundle bundle = intent.getExtras();
                 if (bundle == null) return;
-                BusRouteStop routeStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
+                RouteStop routeStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
                 Integer notificationId = bundle.getInt(C.EXTRA.NOTIFICATION_ID);
                 if (routeStop == null) return;
                 if (notificationId > 0 && routeStops.get(notificationId) != null) {

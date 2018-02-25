@@ -4,7 +4,6 @@ import android.app.IntentService;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -14,7 +13,6 @@ import com.alvinhkh.buseta.datagovhk.DataGovHkService;
 import com.alvinhkh.buseta.datagovhk.model.MtrBusRoute;
 import com.alvinhkh.buseta.kmb.KmbService;
 import com.alvinhkh.buseta.kmb.model.KmbEtaRoutes;
-import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.mtr.MtrService;
 import com.alvinhkh.buseta.mtr.dao.AESBusDatabase;
 import com.alvinhkh.buseta.mtr.model.AESBusRoute;
@@ -44,20 +42,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.ResponseBody;
-import retrofit2.Call;
-import retrofit2.Response;
 import timber.log.Timber;
 
 import static com.alvinhkh.buseta.nwst.NwstService.*;
 
 public class CheckUpdateService extends IntentService {
 
-    MtrService mtrMobService = MtrService.mob.create(MtrService.class);
+    MtrService mtrMobService = MtrService.Companion.getMob().create(MtrService.class);
 
     private final CompositeDisposable disposables = new CompositeDisposable();
 
@@ -168,7 +163,7 @@ public class CheckUpdateService extends IntentService {
                 for (int i = 0; i < routeArray.length; i++) {
                     ContentValues values = new ContentValues();
                     values.put(SuggestionTable.COLUMN_TEXT, routeArray[i]);
-                    values.put(SuggestionTable.COLUMN_COMPANY, BusRoute.COMPANY_KMB);
+                    values.put(SuggestionTable.COLUMN_COMPANY, C.PROVIDER.KMB);
                     values.put(SuggestionTable.COLUMN_TYPE, SuggestionTable.TYPE_DEFAULT);
                     values.put(SuggestionTable.COLUMN_DATE, "0");
                     contentValues.add(values);
@@ -176,9 +171,9 @@ public class CheckUpdateService extends IntentService {
                 int insertedRows = getContentResolver().bulkInsert(SuggestionProvider.CONTENT_URI,
                         contentValues.toArray(new ContentValues[contentValues.size()]));
                 if (insertedRows > 0) {
-                    Timber.d("updated %s: %s", BusRoute.COMPANY_KMB, insertedRows);
+                    Timber.d("updated %s: %s", C.PROVIDER.KMB, insertedRows);
                 } else {
-                    Timber.d("error when inserting: %s", BusRoute.COMPANY_KMB);
+                    Timber.d("error when inserting: %s", C.PROVIDER.KMB);
                 }
                 Intent i = new Intent(C.ACTION.SUGGESTION_ROUTE_UPDATE);
                 i.putExtra(C.EXTRA.UPDATED, true);
@@ -212,7 +207,7 @@ public class CheckUpdateService extends IntentService {
                     if (TextUtils.isEmpty(database.routes.get(i).route_no)) continue;
                     ContentValues values = new ContentValues();
                     values.put(SuggestionTable.COLUMN_TEXT, database.routes.get(i).route_no);
-                    values.put(SuggestionTable.COLUMN_COMPANY, BusRoute.COMPANY_NLB);
+                    values.put(SuggestionTable.COLUMN_COMPANY, C.PROVIDER.NLB);
                     values.put(SuggestionTable.COLUMN_TYPE, SuggestionTable.TYPE_DEFAULT);
                     values.put(SuggestionTable.COLUMN_DATE, "0");
                     contentValues.add(values);
@@ -220,9 +215,9 @@ public class CheckUpdateService extends IntentService {
                 int insertedRows = getContentResolver().bulkInsert(SuggestionProvider.CONTENT_URI,
                         contentValues.toArray(new ContentValues[contentValues.size()]));
                 if (insertedRows > 0) {
-                    Timber.d("updated %s: %s", BusRoute.COMPANY_NLB, insertedRows);
+                    Timber.d("updated %s: %s", C.PROVIDER.NLB, insertedRows);
                 } else {
-                    Timber.d("error when inserting: %s", BusRoute.COMPANY_NLB);
+                    Timber.d("error when inserting: %s", C.PROVIDER.NLB);
                 }
                 Intent i = new Intent(C.ACTION.SUGGESTION_ROUTE_UPDATE);
                 i.putExtra(C.EXTRA.UPDATED, true);
@@ -269,9 +264,9 @@ public class CheckUpdateService extends IntentService {
                     int insertedRows = getContentResolver().bulkInsert(SuggestionProvider.CONTENT_URI,
                             contentValues.toArray(new ContentValues[contentValues.size()]));
                     if (insertedRows > 0) {
-                        Timber.d("updated %s: %s", BusRoute.COMPANY_NWST, insertedRows);
+                        Timber.d("updated %s: %s", C.PROVIDER.NWST, insertedRows);
                     } else {
-                        Timber.d("error when inserting: %s", BusRoute.COMPANY_NWST);
+                        Timber.d("error when inserting: %s", C.PROVIDER.NWST);
                     }
                     Intent i = new Intent(C.ACTION.SUGGESTION_ROUTE_UPDATE);
                     i.putExtra(C.EXTRA.UPDATED, true);
@@ -315,7 +310,7 @@ public class CheckUpdateService extends IntentService {
                         if (TextUtils.isEmpty(route.getRouteId())) continue;
                         ContentValues values = new ContentValues();
                         values.put(SuggestionTable.COLUMN_TEXT, route.getRouteId());
-                        values.put(SuggestionTable.COLUMN_COMPANY, BusRoute.COMPANY_LRTFEEDER);
+                        values.put(SuggestionTable.COLUMN_COMPANY, C.PROVIDER.LRTFEEDER);
                         values.put(SuggestionTable.COLUMN_TYPE, SuggestionTable.TYPE_DEFAULT);
                         values.put(SuggestionTable.COLUMN_DATE, "0");
                         contentValues.add(values);
@@ -323,9 +318,9 @@ public class CheckUpdateService extends IntentService {
                     int insertedRows = getContentResolver().bulkInsert(SuggestionProvider.CONTENT_URI,
                             contentValues.toArray(new ContentValues[contentValues.size()]));
                     if (insertedRows > 0) {
-                        Timber.d("updated %s: %s", BusRoute.COMPANY_LRTFEEDER, insertedRows);
+                        Timber.d("updated %s: %s", C.PROVIDER.LRTFEEDER, insertedRows);
                     } else {
-                        Timber.d("error when inserting: %s", BusRoute.COMPANY_LRTFEEDER);
+                        Timber.d("error when inserting: %s", C.PROVIDER.LRTFEEDER);
                     }
                     Intent i = new Intent(C.ACTION.SUGGESTION_ROUTE_UPDATE);
                     i.putExtra(C.EXTRA.UPDATED, true);
@@ -421,7 +416,7 @@ public class CheckUpdateService extends IntentService {
                                 for (AESBusRoute aesBusRoute : aesBusRoutes) {
                                     ContentValues values = new ContentValues();
                                     values.put(SuggestionTable.COLUMN_TEXT, aesBusRoute.getBusNumber());
-                                    values.put(SuggestionTable.COLUMN_COMPANY, BusRoute.COMPANY_AESBUS);
+                                    values.put(SuggestionTable.COLUMN_COMPANY, C.PROVIDER.AESBUS);
                                     values.put(SuggestionTable.COLUMN_TYPE, SuggestionTable.TYPE_DEFAULT);
                                     values.put(SuggestionTable.COLUMN_DATE, "0");
                                     contentValues.add(values);
@@ -429,9 +424,9 @@ public class CheckUpdateService extends IntentService {
                                 int insertedRows = getContentResolver().bulkInsert(SuggestionProvider.CONTENT_URI,
                                         contentValues.toArray(new ContentValues[contentValues.size()]));
                                 if (insertedRows > 0) {
-                                    Timber.d("updated %s: %s", BusRoute.COMPANY_AESBUS, insertedRows);
+                                    Timber.d("updated %s: %s", C.PROVIDER.AESBUS, insertedRows);
                                 } else {
-                                    Timber.d("error when inserting: %s", BusRoute.COMPANY_AESBUS);
+                                    Timber.d("error when inserting: %s", C.PROVIDER.AESBUS);
                                 }
                                 Intent i = new Intent(C.ACTION.SUGGESTION_ROUTE_UPDATE);
                                 i.putExtra(C.EXTRA.UPDATED, true);

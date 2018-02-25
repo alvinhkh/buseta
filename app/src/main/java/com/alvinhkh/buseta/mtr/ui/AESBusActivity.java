@@ -1,6 +1,7 @@
 package com.alvinhkh.buseta.mtr.ui;
 
-import com.alvinhkh.buseta.model.BusRoute;
+import com.alvinhkh.buseta.C;
+import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.mtr.dao.AESBusDatabase;
 import com.alvinhkh.buseta.mtr.model.AESBusDistrict;
 import com.alvinhkh.buseta.mtr.model.AESBusRoute;
@@ -19,7 +20,7 @@ public class AESBusActivity extends RouteActivityAbstract {
     protected void loadRouteNo(String no) {
         super.loadRouteNo(no);
 
-        List<BusRoute> busRoutes = new ArrayList<>();
+        List<Route> routes = new ArrayList<>();
         if (getApplicationContext() != null) {
             AESBusDatabase database = DatabaseUtil.Companion.getAESBusDatabase(getApplicationContext());
             disposables.add(database.aesBusDao().getAllDistricts()
@@ -34,18 +35,18 @@ public class AESBusActivity extends RouteActivityAbstract {
                                 .subscribe(aesBusRoutes -> {
                                     if (aesBusRoutes != null) {
                                         for (AESBusRoute aesBusRoute: aesBusRoutes) {
-                                            BusRoute busRoute = new BusRoute();
-                                            busRoute.setCompanyCode(BusRoute.COMPANY_AESBUS);
-                                            busRoute.setName(aesBusRoute.getBusNumber());
+                                            Route route = new Route();
+                                            route.setCompanyCode(C.PROVIDER.AESBUS);
+                                            route.setName(aesBusRoute.getBusNumber());
                                             if (aesBusRoute.getDistrictID() != null) {
-                                                busRoute.setLocationEndName(districts.get(String.valueOf(aesBusRoute.getDistrictID())));
+                                                route.setOrigin(districts.get(String.valueOf(aesBusRoute.getDistrictID())));
                                             }
-                                            busRoute.setDescription(aesBusRoute.getServiceHours());
-                                            busRoute.setSequence("0");
-                                            busRoutes.add(busRoute);
+                                            route.setDescription(aesBusRoute.getServiceHours());
+                                            route.setSequence("0");
+                                            routes.add(route);
                                         }
                                     }
-                                    onCompleteRoute(busRoutes, BusRoute.COMPANY_AESBUS);
+                                    onCompleteRoute(routes, C.PROVIDER.AESBUS);
                                 }, Timber::d));
                     }, Timber::d));
         }

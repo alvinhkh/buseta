@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="mtr_status_typhoon">#3F51B5</color>
+    <color name="mtr_status_green">#1db058</color>
+    <color name="mtr_status_pink">#ec4783</color>
+    <color name="mtr_status_red">#c11414</color>
+    <color name="mtr_status_yellow">#eabd25</color>
+    <color name="mtr_status_grey">#c3c3c3</color>
+</resources>

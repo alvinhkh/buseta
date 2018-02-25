@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta.service;
 
-import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
@@ -20,15 +19,14 @@ import android.widget.RemoteViewsService;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.model.ArrivalTime;
-import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.model.FollowStop;
 import com.alvinhkh.buseta.ui.search.SearchActivity;
 import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
-import com.alvinhkh.buseta.utils.BusRouteStopUtil;
+import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.alvinhkh.buseta.utils.FollowStopUtil;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
-import com.alvinhkh.buseta.view.MainActivity;
 
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableObserver;
@@ -90,11 +88,11 @@ public class EtaWidgetService extends RemoteViewsService {
             // Return a proper item
             RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.widget_item_eta);
             if (followStop == null) return remoteViews;
-            BusRouteStop stop = BusRouteStopUtil.fromFollowStop(followStop);
+            RouteStop stop = RouteStopUtil.fromFollowStop(followStop);
             if (stop != null) {
-                remoteViews.setTextViewText(R.id.stop_name, stop.name);
-                remoteViews.setTextViewText(R.id.route_no, stop.route);
-                remoteViews.setTextViewText(R.id.route_destination, stop.destination);
+                remoteViews.setTextViewText(R.id.stop_name, stop.getName());
+                remoteViews.setTextViewText(R.id.route_no, stop.getRoute());
+                remoteViews.setTextViewText(R.id.route_destination, stop.getDestination());
                 remoteViews.setTextViewText(R.id.eta, null);
                 remoteViews.setTextViewText(R.id.eta_more, null);
                 // ETA

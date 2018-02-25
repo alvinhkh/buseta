@@ -13,9 +13,9 @@ import android.support.v4.app.NotificationManagerCompat;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.model.FollowStop;
-import com.alvinhkh.buseta.utils.BusRouteStopUtil;
+import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.alvinhkh.buseta.utils.NotificationUtil;
 import com.alvinhkh.buseta.utils.FollowStopUtil;
@@ -65,14 +65,14 @@ public class EtaJobService extends JobService {
     public boolean onStartJob(JobParameters job) {
         Bundle bundle = job.getExtras();
         if (bundle == null) return false;
-        BusRouteStop busRouteStop = new Gson().fromJson(bundle.getString(C.EXTRA.STOP_OBJECT_STRING), BusRouteStop.class);
+        RouteStop routeStop = new Gson().fromJson(bundle.getString(C.EXTRA.STOP_OBJECT_STRING), RouteStop.class);
         Integer notificationId = bundle.getInt(C.EXTRA.NOTIFICATION_ID, -1);
         Integer rowId = bundle.getInt(C.EXTRA.ROW, -1);
         Integer widgetId = bundle.getInt(C.EXTRA.WIDGET_UPDATE, -1);
-        if (busRouteStop != null) {
-            Timber.d(busRouteStop.toString());
+        if (routeStop != null) {
+            Timber.d(routeStop.toString());
             Intent intent = new Intent(getApplicationContext(), EtaService.class);
-            intent.putExtra(C.EXTRA.STOP_OBJECT, busRouteStop);
+            intent.putExtra(C.EXTRA.STOP_OBJECT, routeStop);
             intent.putExtra(C.EXTRA.NOTIFICATION_ID, notificationId);
             intent.putExtra(C.EXTRA.ROW, rowId);
             intent.putExtra(C.EXTRA.WIDGET_UPDATE, widgetId);
@@ -81,14 +81,14 @@ public class EtaJobService extends JobService {
         if (widgetId >= 0) {
             if (ConnectivityUtil.isConnected(this)) {
                 List<FollowStop> followStops = FollowStopUtil.toList(this);
-                ArrayList<BusRouteStop> busRouteStops = new ArrayList<>();
+                ArrayList<RouteStop> routeStops = new ArrayList<>();
                 for (FollowStop stop: followStops) {
-                    busRouteStops.add(BusRouteStopUtil.fromFollowStop(stop));
+                    routeStops.add(RouteStopUtil.fromFollowStop(stop));
                 }
                 try {
                     Intent intent = new Intent(this, EtaService.class);
                     intent.putExtra(C.EXTRA.WIDGET_UPDATE, widgetId);
-                    intent.putParcelableArrayListExtra(C.EXTRA.STOP_LIST, busRouteStops);
+                    intent.putParcelableArrayListExtra(C.EXTRA.STOP_LIST, routeStops);
                     startService(intent);
                 } catch (IllegalStateException ignored) {}
             }
@@ -109,7 +109,7 @@ public class EtaJobService extends JobService {
                 if (bundle == null) return;
                 Integer notificationId = bundle.getInt(C.EXTRA.NOTIFICATION_ID);
                 if (notificationId > 0) {
-                    BusRouteStop routeStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
+                    RouteStop routeStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
                     if (routeStop == null) return;
                     Timber.d("notificationId: %s UPDATE", notificationId);
                     NotificationCompat.Builder builder = NotificationUtil.showArrivalTime(getApplicationContext(), routeStop);

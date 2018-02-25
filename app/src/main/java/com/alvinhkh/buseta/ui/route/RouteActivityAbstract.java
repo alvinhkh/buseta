@@ -11,7 +11,6 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.text.TextUtils;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -20,13 +19,13 @@ import android.widget.Toast;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.BusRoute;
-import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.model.Route;
+import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.model.SearchHistory;
 import com.alvinhkh.buseta.provider.SuggestionProvider;
 import com.alvinhkh.buseta.ui.BaseActivity;
 import com.alvinhkh.buseta.utils.AdViewUtil;
-import com.alvinhkh.buseta.utils.BusRouteUtil;
+import com.alvinhkh.buseta.utils.RouteUtil;
 import com.alvinhkh.buseta.utils.SearchHistoryUtil;
 
 import java.util.ArrayList;
@@ -61,7 +60,7 @@ public abstract class RouteActivityAbstract extends BaseActivity {
 
     protected TextView emptyText;
 
-    protected BusRouteStop stopFromIntent;
+    protected RouteStop stopFromIntent;
 
     protected String routeNo;
 
@@ -82,7 +81,7 @@ public abstract class RouteActivityAbstract extends BaseActivity {
         }
         if (TextUtils.isEmpty(routeNo)) {
             if (stopFromIntent != null) {
-                routeNo = stopFromIntent.route;
+                routeNo = stopFromIntent.getRoute();
             }
         }
 
@@ -122,8 +121,8 @@ public abstract class RouteActivityAbstract extends BaseActivity {
         tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
-                ArrayList<BusRoute> busRoutes = new ArrayList<>(pagerAdapter.getRoutes());
-                RouteSelectDialogFragment fragment = RouteSelectDialogFragment.newInstance(busRoutes, viewPager);
+                ArrayList<Route> routes = new ArrayList<>(pagerAdapter.getRoutes());
+                RouteSelectDialogFragment fragment = RouteSelectDialogFragment.newInstance(routes, viewPager);
                 fragment.show(getSupportFragmentManager(), "route_select_dialog_fragment");
             }
         });
@@ -227,25 +226,25 @@ public abstract class RouteActivityAbstract extends BaseActivity {
         showLoadingView();
     }
 
-    protected void onCompleteRoute(List<BusRoute> busRoutes, String companyCode) {
+    protected void onCompleteRoute(List<Route> routes, String companyCode) {
         pagerAdapter.setRoute(routeNo);
-        for (BusRoute busRoute : busRoutes) {
-            companyCode = busRoute.getCompanyCode();
+        for (Route route : routes) {
+            companyCode = route.getCompanyCode();
             if (stopFromIntent != null &&
-                    !busRoute.getSpecial() &&
-                    busRoute.getCompanyCode().equals(stopFromIntent.companyCode) &&
-                    busRoute.getSequence().equals(stopFromIntent.direction)) {
+                    !route.isSpecial() &&
+                    route.getCompanyCode().equals(stopFromIntent.getCompanyCode()) &&
+                    route.getSequence().equals(stopFromIntent.getDirection())) {
                 // TODO: handle select which page from stopFromIntent, i.e. service type
                 fragNo = pagerAdapter.getCount();
                 isScrollToPage = true;
             }
-            pagerAdapter.addSequence(busRoute);
+            pagerAdapter.addSequence(route);
         }
         if (getSupportActionBar() != null) {
-            String routeName = BusRouteUtil.getCompanyName(this, companyCode, routeNo) + " " + routeNo;
+            String routeName = RouteUtil.getCompanyName(this, companyCode, routeNo) + " " + routeNo;
             getSupportActionBar().setTitle(routeName);
         }
-        if (busRoutes.size() > 0) {
+        if (routes.size() > 0) {
             SearchHistory history = SearchHistoryUtil.createInstance(routeNo, companyCode);
             getContentResolver().insert(SuggestionProvider.CONTENT_URI, SearchHistoryUtil.toContentValues(history));
         }

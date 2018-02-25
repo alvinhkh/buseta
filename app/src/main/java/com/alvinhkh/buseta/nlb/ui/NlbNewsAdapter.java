@@ -58,15 +58,12 @@ public class NlbNewsAdapter
             View root;
 
             switch (viewType) {
-                case Item.TYPE_SECTION:
-                    root = inflater.inflate(R.layout.item_section, parent, false);
-                    return new SectionViewHolder(root, viewType);
                 case Item.TYPE_DATA:
                     root = inflater.inflate(R.layout.item_route_announce, parent, false);
                     return new DataViewHolder(root, viewType);
                 case Item.TYPE_FOOTER:
                     root = inflater.inflate(R.layout.item_footer, parent, false);
-                    return new SectionViewHolder(root, viewType);
+                    return new FooterViewHolder(root, viewType);
                 default:
                     return null;
             }
@@ -75,18 +72,20 @@ public class NlbNewsAdapter
         abstract public void bindItem(NlbNewsAdapter adapter, Item item, int position);
     }
 
-    static class SectionViewHolder extends ViewHolder {
+    static class FooterViewHolder extends ViewHolder {
 
-        TextView mSectionLabel;
+        TextView labelTv;
 
-        public SectionViewHolder(final View itemView, final int viewType) {
+        public FooterViewHolder(final View itemView, final int viewType) {
             super(itemView, viewType);
-            mSectionLabel = itemView.findViewById(R.id.section_label);
+            labelTv = itemView.findViewById(R.id.section_label);
         }
 
         @Override
         public void bindItem(NlbNewsAdapter adapter, Item item, int position) {
-            mSectionLabel.setText(item.getText());
+            if (item.getObject() != null && !TextUtils.isEmpty(item.getObject().toString())) {
+                labelTv.setText(item.getObject().toString());
+            }
         }
     }
 

@@ -77,6 +77,10 @@
                 android:resource="@xml/searchable" />
         </activity>
         <activity
+            android:name=".ui.MainActivity"
+            android:label="@string/app_name"
+            android:launchMode="singleTop" />
+        <activity
             android:name=".ui.follow.FollowActivity"
             android:label="@string/app_name"
             android:launchMode="singleTop" />
@@ -117,6 +121,10 @@
             android:hardwareAccelerated="true" />
         <activity
             android:name=".mtr.ui.AESBusActivity"
+            android:label="@string/provider_mtr"
+            android:hardwareAccelerated="true" />
+        <activity
+            android:name=".mtr.ui.MtrActivity"
             android:label="@string/provider_mtr"
             android:hardwareAccelerated="true" />
 

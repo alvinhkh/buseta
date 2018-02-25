@@ -8,13 +8,12 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.BusRoute;
+import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter;
-import com.alvinhkh.buseta.utils.BusRouteUtil;
+import com.alvinhkh.buseta.utils.RouteUtil;
 
 public class RouteSelectAdapter extends ArrayListRecyclerViewAdapter<RouteSelectAdapter.ViewHolder> {
 
@@ -74,23 +73,23 @@ public class RouteSelectAdapter extends ArrayListRecyclerViewAdapter<RouteSelect
 
         @Override
         public void bindItem(RouteSelectAdapter adapter, Item item, int position) {
-            final BusRoute busRoute = (BusRoute) item.getObject();
-            assert busRoute != null;
-            String routeName = BusRouteUtil.getCompanyName(context, busRoute.getCompanyCode(), busRoute.getName()) +
-                    " " + busRoute.getName();
+            final Route route = (Route) item.getObject();
+            assert route != null;
+            String routeName = RouteUtil.getCompanyName(context, route.getCompanyCode(), route.getName()) +
+                    " " + route.getName();
             routeTv.setText(routeName);
-            if (!TextUtils.isEmpty(busRoute.getLocationStartName()) && !TextUtils.isEmpty(busRoute.getLocationEndName())) {
+            if (!TextUtils.isEmpty(route.getDestination()) && !TextUtils.isEmpty(route.getOrigin())) {
                 locationTv.setVisibility(View.VISIBLE);
                 locationTv.setText(context.getString(R.string.route_path,
-                        busRoute.getLocationStartName(), busRoute.getLocationEndName()));
-            } else if (!TextUtils.isEmpty(busRoute.getLocationEndName())) {
+                        route.getDestination(), route.getOrigin()));
+            } else if (!TextUtils.isEmpty(route.getOrigin())) {
                 locationTv.setVisibility(View.VISIBLE);
-                locationTv.setText(context.getString(R.string.destination, busRoute.getLocationEndName()));
+                locationTv.setText(context.getString(R.string.destination, route.getOrigin()));
             } else {
                 locationTv.setVisibility(View.GONE);
             }
-            descriptionTv.setText(busRoute.getDescription());
-            descriptionTv.setVisibility(TextUtils.isEmpty(busRoute.getDescription()) ? View.GONE: View.VISIBLE);
+            descriptionTv.setText(route.getDescription());
+            descriptionTv.setVisibility(TextUtils.isEmpty(route.getDescription()) ? View.GONE: View.VISIBLE);
             itemView.setOnClickListener(v -> {
                 if (this.listener != null) {
                     this.listener.onClickItem(item, position);

@@ -16,9 +16,9 @@ import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.datagovhk.ui.MtrBusActivity;
 import com.alvinhkh.buseta.kmb.ui.KmbActivity;
 import com.alvinhkh.buseta.lwb.ui.LwbActivity;
-import com.alvinhkh.buseta.model.BusRoute;
-import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.mtr.ui.AESBusActivity;
+import com.alvinhkh.buseta.mtr.ui.MtrActivity;
 import com.alvinhkh.buseta.nlb.ui.NlbActivity;
 import com.alvinhkh.buseta.nwst.ui.NwstActivity;
 import com.alvinhkh.buseta.service.LocationService;
@@ -64,27 +64,27 @@ public class SearchActivity extends AppCompatActivity {
         super.onStop();
     }
 
-    private Intent getIntent(@NonNull String companyCode) {
+    private Intent getBusIntent(@NonNull String companyCode) {
         Intent intent;
         if (TextUtils.isEmpty(companyCode)) {
-            companyCode = BusRoute.COMPANY_KMB;
+            companyCode = C.PROVIDER.KMB;
         }
         switch (companyCode) {
-            case BusRoute.COMPANY_AESBUS:
+            case C.PROVIDER.AESBUS:
                 intent = new Intent(getApplicationContext(), AESBusActivity.class);
                 break;
-            case BusRoute.COMPANY_CTB:
-            case BusRoute.COMPANY_NWFB:
-            case BusRoute.COMPANY_NWST:
+            case C.PROVIDER.CTB:
+            case C.PROVIDER.NWFB:
+            case C.PROVIDER.NWST:
                 intent = new Intent(getApplicationContext(), NwstActivity.class);
                 break;
-            case BusRoute.COMPANY_LRTFEEDER:
+            case C.PROVIDER.LRTFEEDER:
                 intent = new Intent(getApplicationContext(), MtrBusActivity.class);
                 break;
-            case BusRoute.COMPANY_NLB:
+            case C.PROVIDER.NLB:
                 intent = new Intent(getApplicationContext(), NlbActivity.class);
                 break;
-            case BusRoute.COMPANY_KMB:
+            case C.PROVIDER.KMB:
             default:
                 intent = new Intent(getApplicationContext(), LwbActivity.class);
                 if (PreferenceUtil.isUsingNewKmbApi(getApplicationContext())) {
@@ -108,52 +108,68 @@ public class SearchActivity extends AppCompatActivity {
             } catch (IllegalStateException ignored) {}
         }
 
+        String type = intent.getStringExtra(C.EXTRA.TYPE);
+
         if (Intent.ACTION_SEARCH.equals(action)) {
             // TODO: handle company is empty, full page search
             String query = intent.getStringExtra(SearchManager.QUERY);
-            String company = intent.getStringExtra(C.EXTRA.COMPANY_CODE);
-            Intent i = getIntent(company);
-            i.putExtra(C.EXTRA.ROUTE_NO, query);
-            startActivity(i);
+            if (!TextUtils.isEmpty(type) && type.equals(C.TYPE.RAILWAY)) {
+                String lineCode = intent.getStringExtra(C.EXTRA.LINE_CODE);
+                Intent i = new Intent(getApplicationContext(), MtrActivity.class);
+                i.putExtra(C.EXTRA.LINE_CODE, TextUtils.isEmpty(lineCode) ? query : lineCode);
+                startActivity(i);
+            } else {
+                String company = intent.getStringExtra(C.EXTRA.COMPANY_CODE);
+                Intent i = getBusIntent(company);
+                i.putExtra(C.EXTRA.ROUTE_NO, query);
+                startActivity(i);
+            }
             finish();
         }
 
         if (Intent.ACTION_VIEW.equals(action)) {
-            if (!TextUtils.isEmpty(lastQuery)) {
-                appIndexStop(lastQuery);
-            }
-            BusRouteStop routeStop = intent.getParcelableExtra(C.EXTRA.STOP_OBJECT);
-            String stopText = intent.getStringExtra(C.EXTRA.STOP_OBJECT_STRING);
-            String company = intent.getStringExtra(C.EXTRA.COMPANY_CODE);
-            String routeNo = intent.getStringExtra(C.EXTRA.ROUTE_NO);
-            if (routeStop == null && !TextUtils.isEmpty(stopText)) {
-                routeStop = new Gson().fromJson(stopText, BusRouteStop.class);
-            }
-            if (routeStop != null) {
-                Intent i = getIntent(routeStop.companyCode);
-                i.putExtra(C.EXTRA.ROUTE_NO, routeStop.route);
-                i.putExtra(C.EXTRA.STOP_OBJECT, routeStop);
+            if (!TextUtils.isEmpty(type) && type.equals(C.TYPE.RAILWAY)) {
+                String lineCode = intent.getStringExtra(C.EXTRA.LINE_CODE);
+                Intent i = new Intent(getApplicationContext(), MtrActivity.class);
+                i.putExtra(C.EXTRA.LINE_CODE, lineCode);
                 startActivity(i);
-                lastQuery = routeStop.route;
-            } else if (!TextUtils.isEmpty(routeNo) && !TextUtils.isEmpty(company)) {
-                Intent i = getIntent(company);
-                i.putExtra(C.EXTRA.ROUTE_NO, routeNo);
-                startActivity(i);
-                lastQuery = routeNo;
-            } else if (!TextUtils.isEmpty(data)) {
-                String regex = "/route/(.*)/?";
-                Pattern regexPattern = Pattern.compile(regex);
-                Matcher match = regexPattern.matcher(data);
-                if (match.find()) {
-                    lastQuery = match.group(1);
-                } else {
-                    lastQuery = data.substring(data.lastIndexOf("/") + 1);
+            } else {
+                if (!TextUtils.isEmpty(lastQuery)) {
+                    appIndexStop(lastQuery);
                 }
-                Intent i = getIntent("");
-                i.putExtra(C.EXTRA.ROUTE_NO, lastQuery);
-                startActivity(i);
+                RouteStop routeStop = intent.getParcelableExtra(C.EXTRA.STOP_OBJECT);
+                String stopText = intent.getStringExtra(C.EXTRA.STOP_OBJECT_STRING);
+                String company = intent.getStringExtra(C.EXTRA.COMPANY_CODE);
+                String routeNo = intent.getStringExtra(C.EXTRA.ROUTE_NO);
+                if (routeStop == null && !TextUtils.isEmpty(stopText)) {
+                    routeStop = new Gson().fromJson(stopText, RouteStop.class);
+                }
+                if (routeStop != null) {
+                    Intent i = getBusIntent(routeStop.getCompanyCode());
+                    i.putExtra(C.EXTRA.ROUTE_NO, routeStop.getRoute());
+                    i.putExtra(C.EXTRA.STOP_OBJECT, routeStop);
+                    startActivity(i);
+                    lastQuery = routeStop.getRoute();
+                } else if (!TextUtils.isEmpty(routeNo) && !TextUtils.isEmpty(company)) {
+                    Intent i = getBusIntent(company);
+                    i.putExtra(C.EXTRA.ROUTE_NO, routeNo);
+                    startActivity(i);
+                    lastQuery = routeNo;
+                } else if (!TextUtils.isEmpty(data)) {
+                    String regex = "/route/(.*)/?";
+                    Pattern regexPattern = Pattern.compile(regex);
+                    Matcher match = regexPattern.matcher(data);
+                    if (match.find()) {
+                        lastQuery = match.group(1);
+                    } else {
+                        lastQuery = data.substring(data.lastIndexOf("/") + 1);
+                    }
+                    Intent i = getBusIntent("");
+                    i.putExtra(C.EXTRA.ROUTE_NO, lastQuery);
+                    startActivity(i);
+                }
+                appIndexStart(lastQuery);
             }
-            appIndexStart(lastQuery);
             finish();
         }
     }

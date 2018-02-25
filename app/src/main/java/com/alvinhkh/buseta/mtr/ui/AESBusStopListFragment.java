@@ -14,14 +14,14 @@ import android.widget.Toast;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.BusRoute;
-import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.model.Route;
+import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.mtr.dao.AESBusDatabase;
 import com.alvinhkh.buseta.mtr.model.AESBusRoute;
 import com.alvinhkh.buseta.mtr.model.AESBusStop;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
 import com.alvinhkh.buseta.ui.route.RouteStopListFragmentAbstract;
-import com.alvinhkh.buseta.utils.BusRouteStopUtil;
+import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.DatabaseUtil;
 
 import java.util.ArrayList;
@@ -42,12 +42,12 @@ public class AESBusStopListFragment extends RouteStopListFragmentAbstract {
      * Returns a new instance of this fragment for the given section
      * number.
      */
-    public static AESBusStopListFragment newInstance(@NonNull BusRoute busRoute,
-                                                     @Nullable BusRouteStop busRouteStop) {
+    public static AESBusStopListFragment newInstance(@NonNull Route route,
+                                                     @Nullable RouteStop routeStop) {
         AESBusStopListFragment fragment = new AESBusStopListFragment();
         Bundle args = new Bundle();
-        args.putParcelable(C.EXTRA.ROUTE_OBJECT, busRoute);
-        args.putParcelable(C.EXTRA.STOP_OBJECT, busRouteStop);
+        args.putParcelable(C.EXTRA.ROUTE_OBJECT, route);
+        args.putParcelable(C.EXTRA.STOP_OBJECT, routeStop);
         fragment.setArguments(args);
         return fragment;
     }
@@ -56,7 +56,7 @@ public class AESBusStopListFragment extends RouteStopListFragmentAbstract {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = super.onCreateView(inflater, container, savedInstanceState);
-        if (busRoute == null || TextUtils.isEmpty(busRoute.getName())) {
+        if (route == null || TextUtils.isEmpty(route.getName())) {
             Toast.makeText(getContext(), R.string.missing_input, Toast.LENGTH_SHORT).show();
         } else {
             if (swipeRefreshLayout != null && !swipeRefreshLayout.isRefreshing()) {
@@ -69,7 +69,7 @@ public class AESBusStopListFragment extends RouteStopListFragmentAbstract {
                             LinkedList<String> stopIds = new LinkedList<>();
                             if (aesBusRoutes != null) {
                                 for (AESBusRoute aesBusRoute: aesBusRoutes) {
-                                    if (!aesBusRoute.getBusNumber().equals(busRoute.getName())) continue;
+                                    if (!aesBusRoute.getBusNumber().equals(route.getName())) continue;
                                     stopIds.addAll(Arrays.asList(aesBusRoute.getRoute().split("\\+")));
                                 }
                             }
@@ -77,23 +77,23 @@ public class AESBusStopListFragment extends RouteStopListFragmentAbstract {
                                     .subscribe(aesBusStops -> {
                                         List<Item> items = new ArrayList<>();
                                         if (aesBusStops != null && adapter != null) {
-                                            Map<String, BusRouteStop> map = new HashMap<>();
+                                            Map<String, RouteStop> map = new HashMap<>();
                                             for (AESBusStop aesBusStop: aesBusStops) {
-                                                if (TextUtils.isEmpty(aesBusStop.getBusNumber()) || !aesBusStop.getBusNumber().equals(busRoute.getName())) continue;
+                                                if (TextUtils.isEmpty(aesBusStop.getBusNumber()) || !aesBusStop.getBusNumber().equals(route.getName())) continue;
                                                 if (!stopIds.contains(aesBusStop.getStopId())) continue;
-                                                BusRouteStop stop = BusRouteStopUtil.fromAESBus(aesBusStop, busRoute);
+                                                RouteStop stop = RouteStopUtil.fromAESBus(aesBusStop, route);
                                                 if (stop == null) continue;
                                                 map.put(aesBusStop.getStopId(), stop);
                                             }
-                                            List<BusRouteStop> stops = new ArrayList<>();
+                                            List<RouteStop> stops = new ArrayList<>();
                                             for (String stopId: stopIds) {
                                                 if (map.get(stopId) == null) continue;
                                                 stops.add(map.get(stopId));
                                             }
                                             int i = 0;
-                                            for (BusRouteStop stop: stops) {
+                                            for (RouteStop stop: stops) {
                                                 if (stop == null) continue;
-                                                stop.sequence = Integer.toString(i);
+                                                stop.setSequence(Integer.toString(i));
                                                 items.add(new Item(Item.TYPE_DATA, stop));
                                                 i++;
                                             }

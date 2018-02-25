@@ -1,7 +1,6 @@
 package com.alvinhkh.buseta.ui.route;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -39,8 +38,8 @@ import android.widget.TextView;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.model.ArrivalTime;
-import com.alvinhkh.buseta.model.BusRoute;
-import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.model.Route;
+import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.model.FollowStop;
 import com.alvinhkh.buseta.service.EtaService;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
@@ -107,9 +106,9 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
 
     protected TextView emptyText;
 
-    protected BusRoute busRoute;
+    protected Route route;
 
-    protected BusRouteStop navToStop = null;
+    protected RouteStop navToStop = null;
 
     protected GoogleMap map;
 
@@ -117,7 +116,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
 
     protected Boolean hasMapCoordinates = false;
 
-    private List<BusRouteStop> busRouteStops = new ArrayList<>();
+    private List<RouteStop> routeStops = new ArrayList<>();
 
     private Boolean isShowMapFragment = true;
 
@@ -148,7 +147,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
         if (getArguments() != null) {
-            busRoute = getArguments().getParcelable(C.EXTRA.ROUTE_OBJECT);
+            route = getArguments().getParcelable(C.EXTRA.ROUTE_OBJECT);
         }
         if (getContext() != null) {
             PreferenceManager.getDefaultSharedPreferences(getContext())
@@ -176,10 +175,10 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         recyclerView.setVisibility(View.GONE);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
-        adapter = new RouteStopListAdapter(getFragmentManager(), recyclerView, busRoute);
+        adapter = new RouteStopListAdapter(getFragmentManager(), recyclerView, route);
         adapter.setOnClickItemListener(this);
-        if (!TextUtils.isEmpty(busRoute.getDescription())) {
-            adapter.add(new Item(Item.TYPE_HEADER, busRoute.getDescription()));
+        if (!TextUtils.isEmpty(route.getDescription())) {
+            adapter.add(new Item(Item.TYPE_HEADER, route.getDescription()));
         }
         if (ActivityCompat.checkSelfPermission(getContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
@@ -257,6 +256,17 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                     guideTopInfo.setLayoutParams(params);
                 }
             }
+            if (getUserVisibleHint()) {
+                refreshHandler.post(refreshRunnable);
+                if (getActivity() != null) {
+                    FloatingActionButton fab = getActivity().findViewById(R.id.fab);
+                    if (fab != null) {
+                        fab.setOnClickListener(v -> onRefresh());
+                    }
+                }
+            } else {
+                refreshHandler.removeCallbacksAndMessages(null);
+            }
         }
     }
 
@@ -304,9 +314,9 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         int id = item.getItemId();
         switch (id) {
             case R.id.action_notice:
-                if (busRoute != null) {
+                if (route != null) {
                     Intent intent = new Intent(getContext(), RouteAnnounceActivity.class);
-                    intent.putExtra(C.EXTRA.ROUTE_OBJECT, busRoute);
+                    intent.putExtra(C.EXTRA.ROUTE_OBJECT, route);
                     startActivity(intent);
                     return true;
                 }
@@ -347,16 +357,16 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
             if (swipeRefreshLayout != null && !swipeRefreshLayout.isRefreshing()) {
                 swipeRefreshLayout.setRefreshing(true);
             }
-            ArrayList<BusRouteStop> busRouteStopList = new ArrayList<>();
+            ArrayList<RouteStop> routeStopList = new ArrayList<>();
             for (int i = 0; i < adapter.getItemCount(); i++) {
                 if (adapter.getItem(i).getType() == TYPE_DATA &&
-                        adapter.getItem(i).getObject() instanceof BusRouteStop) {
-                    busRouteStopList.add((BusRouteStop) adapter.getItem(i).getObject());
+                        adapter.getItem(i).getObject() instanceof RouteStop) {
+                    routeStopList.add((RouteStop) adapter.getItem(i).getObject());
                 }
             }
             try {
                 Intent intent = new Intent(getContext(), EtaService.class);
-                intent.putParcelableArrayListExtra(C.EXTRA.STOP_LIST, busRouteStopList);
+                intent.putParcelableArrayListExtra(C.EXTRA.STOP_LIST, routeStopList);
                 getContext().startService(intent);
             } catch (IllegalStateException ignored) {}
         }
@@ -369,11 +379,11 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                 marker.remove();
             }
             markerMap.clear();
-            BusRouteStop stop = (BusRouteStop) item.getObject();
+            RouteStop stop = (RouteStop) item.getObject();
             if (map != null && stop != null && isShowMapFragment &&
-                    !TextUtils.isEmpty(stop.latitude) && !TextUtils.isEmpty(stop.longitude)) {
+                    !TextUtils.isEmpty(stop.getLatitude()) && !TextUtils.isEmpty(stop.getLongitude())) {
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                        new LatLng(Double.parseDouble(stop.latitude), Double.parseDouble(stop.longitude)), 18));
+                        new LatLng(Double.parseDouble(stop.getLatitude()), Double.parseDouble(stop.getLongitude())), 18));
             }
         }
     }
@@ -409,20 +419,20 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                         Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             googleMap.setMyLocationEnabled(true);
         }
-        if (busRouteStops.size() > 0) {
-            BusRouteStop stop = busRouteStops.get(0);
-            if (!TextUtils.isEmpty(stop.latitude) && !TextUtils.isEmpty(stop.longitude)) {
+        if (routeStops.size() > 0) {
+            RouteStop stop = routeStops.get(0);
+            if (!TextUtils.isEmpty(stop.getLatitude()) && !TextUtils.isEmpty(stop.getLongitude())) {
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                        new LatLng(Double.parseDouble(stop.latitude),
-                                Double.parseDouble(stop.longitude)), 16));
+                        new LatLng(Double.parseDouble(stop.getLatitude()),
+                                Double.parseDouble(stop.getLongitude())), 16));
             }
         }
     }
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        if (marker.getTag() instanceof BusRouteStop) {
-            BusRouteStop stop = (BusRouteStop) marker.getTag();
+        if (marker.getTag() instanceof RouteStop) {
+            RouteStop stop = (RouteStop) marker.getTag();
             if (stop != null && getContext() != null) {
                 if (recyclerView != null) {
                     RecyclerView.SmoothScroller smoothScroller = new LinearSmoothScroller(getContext()) {
@@ -432,7 +442,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                     };
                     int i = 0;
                     for (Item item: adapter.getDataItems()) {
-                        if (((BusRouteStop) item.getObject()).sequence.equals(stop.sequence)) {
+                        if (((RouteStop) item.getObject()).getSequence().equals(stop.getSequence())) {
                             smoothScroller.setTargetPosition(i);
                         }
                         i++;
@@ -441,7 +451,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                 }
                 if (map != null) {
                     map.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                            new LatLng(Double.parseDouble(stop.latitude), Double.parseDouble(stop.longitude)), 16));
+                            new LatLng(Double.parseDouble(stop.getLatitude()), Double.parseDouble(stop.getLongitude())), 16));
                 }
                 try {
                     Intent intent = new Intent(getContext(), EtaService.class);
@@ -479,10 +489,10 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
             public void onNext(Intent intent) {
                 Bundle bundle = intent.getExtras();
                 if (bundle == null) return;
-                BusRouteStop busRouteStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
-                if (busRouteStop == null) return;
-                if (!busRouteStop.route.equals(busRoute.getName())) return;
-                if (!busRouteStop.direction.equals(busRoute.getSequence())) return;
+                RouteStop routeStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
+                if (routeStop == null) return;
+                if (!routeStop.getRoute().equals(route.getName())) return;
+                if (!routeStop.getDirection().equals(route.getSequence())) return;
                 if (bundle.getBoolean(C.EXTRA.UPDATED) || bundle.getBoolean(C.EXTRA.FAIL)) {
                     if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
                         swipeRefreshLayout.setRefreshing(false);
@@ -490,9 +500,9 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                     int i = 0;
                     for (Item item : adapter.getItems()) {
                         if (item.getType() == TYPE_DATA
-                                && ((BusRouteStop) item.getObject()).sequence.equals(busRouteStop.sequence)) {
+                                && ((RouteStop) item.getObject()).getSequence().equals(routeStop.getSequence())) {
                             if (getContext() != null) {
-                                ArrivalTimeUtil.query(getContext(), busRouteStop)
+                                ArrivalTimeUtil.query(getContext(), routeStop)
                                         .subscribe(cursor -> {
                                             ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
                                             if (arrivalTime.latitude != 0.0 && arrivalTime.longitude != 0.0) {
@@ -554,7 +564,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
     protected void onStopListComplete() {
         Boolean isScrollToPosition = false;
         Integer scrollToPosition = 0;
-        busRouteStops.clear();
+        routeStops.clear();
         if (map != null && adapter != null) {
             Boolean isSnapToRoad = false;
             if (getActivity() != null) {
@@ -587,27 +597,27 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                 for (int i = 0, j = 0; i < adapter.getItemCount(); i++) {
                     Item item = adapter.getItem(i);
                     if (item.getType() != Item.TYPE_DATA) continue;
-                    BusRouteStop stop = (BusRouteStop) item.getObject();
-                    busRouteStops.add(stop);
+                    RouteStop stop = (RouteStop) item.getObject();
+                    routeStops.add(stop);
                     if (
                             navToStop != null &&
-                                    stop.companyCode.equals(navToStop.companyCode) &&
-                                    stop.route.equals(navToStop.route) &&
-                                    stop.name.equals(navToStop.name) &&
-                                    stop.direction.equals(navToStop.direction) &&
-                                    stop.sequence.equals(navToStop.sequence)
+                                    stop.getCompanyCode().equals(navToStop.getCompanyCode()) &&
+                                    stop.getRoute().equals(navToStop.getRoute()) &&
+                                    stop.getName().equals(navToStop.getName()) &&
+                                    stop.getDirection().equals(navToStop.getDirection()) &&
+                                    stop.getSequence().equals(navToStop.getSequence())
                             ) {
                         scrollToPosition = j;
                         isScrollToPosition = true;
                     }
-                    if (!TextUtils.isEmpty(stop.latitude) && !TextUtils.isEmpty(stop.longitude)) {
+                    if (!TextUtils.isEmpty(stop.getLatitude()) && !TextUtils.isEmpty(stop.getLongitude())) {
                         if (!hasMapCoordinates) {
-                            mapCoordinates.add(new Pair<>(Double.parseDouble(stop.latitude), Double.parseDouble(stop.longitude)));
+                            mapCoordinates.add(new Pair<>(Double.parseDouble(stop.getLatitude()), Double.parseDouble(stop.getLongitude())));
                         }
                         IconGenerator iconFactory = new IconGenerator(getContext());
-                        Bitmap bmp = iconFactory.makeIcon(stop.sequence + ": " + stop.name);
+                        Bitmap bmp = iconFactory.makeIcon(stop.getSequence() + ": " + stop.getName());
                         map.addMarker(new MarkerOptions()
-                                .position(new LatLng(Double.parseDouble(stop.latitude), Double.parseDouble(stop.longitude)))
+                                .position(new LatLng(Double.parseDouble(stop.getLatitude()), Double.parseDouble(stop.getLongitude())))
                                 .icon(BitmapDescriptorFactory.fromBitmap(bmp))).setTag(stop);
                     }
                     j++;
@@ -687,12 +697,12 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                 if (hasMapCoordinates || !isSnapToRoad || hasError) {
                     map.addPolyline(singleLine);
                 }
-                if (busRouteStops.size() > 0 && scrollToPosition < busRouteStops.size()) {
-                    BusRouteStop stop = busRouteStops.get(scrollToPosition);
-                    if (!TextUtils.isEmpty(stop.latitude) && !TextUtils.isEmpty(stop.longitude)) {
+                if (routeStops.size() > 0 && scrollToPosition < routeStops.size()) {
+                    RouteStop stop = routeStops.get(scrollToPosition);
+                    if (!TextUtils.isEmpty(stop.getLatitude()) && !TextUtils.isEmpty(stop.getLongitude())) {
                         map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                new LatLng(Double.parseDouble(stop.latitude),
-                                        Double.parseDouble(stop.longitude)), 16));
+                                new LatLng(Double.parseDouble(stop.getLatitude()),
+                                        Double.parseDouble(stop.getLongitude())), 16));
                     }
                 }
             }
@@ -731,7 +741,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                     int i = 0;
                     for (Item item : adapter.getItems()) {
                         if (item.getType() == TYPE_DATA &&
-                                ((BusRouteStop) item.getObject()).sequence.equals(followStop.sequence)) {
+                                ((RouteStop) item.getObject()).getSequence().equals(followStop.sequence)) {
                             adapter.notifyItemChanged(i);
                             break;
                         }

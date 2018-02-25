@@ -13,7 +13,7 @@ import android.view.ViewGroup;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.BusRoute;
+import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
 
 import java.util.ArrayList;
@@ -22,10 +22,10 @@ public class RouteSelectDialogFragment extends BottomSheetDialogFragment {
 
     private ViewPager viewPager;
 
-    public static RouteSelectDialogFragment newInstance(@NonNull ArrayList<BusRoute> busRoutes, @NonNull ViewPager viewPager) {
+    public static RouteSelectDialogFragment newInstance(@NonNull ArrayList<Route> routes, @NonNull ViewPager viewPager) {
         RouteSelectDialogFragment fragment = new RouteSelectDialogFragment();
         Bundle args = new Bundle();
-        args.putParcelableArrayList(C.EXTRA.ROUTE_LIST, busRoutes);
+        args.putParcelableArrayList(C.EXTRA.ROUTE_LIST, routes);
         fragment.setArguments(args);
         fragment.viewPager = viewPager;
         return fragment;
@@ -37,9 +37,9 @@ public class RouteSelectDialogFragment extends BottomSheetDialogFragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         Bundle bundle = getArguments();
-        ArrayList<BusRoute> busRoutes = new ArrayList<>();
+        ArrayList<Route> routes = new ArrayList<>();
         if (bundle != null) {
-            busRoutes = bundle.getParcelableArrayList(C.EXTRA.ROUTE_LIST);
+            routes = bundle.getParcelableArrayList(C.EXTRA.ROUTE_LIST);
         }
         View itemView = inflater.inflate(R.layout.bottom_sheet_route_select, container, false);
         RecyclerView recyclerView = itemView.findViewById(R.id.recycler_view);
@@ -47,9 +47,9 @@ public class RouteSelectDialogFragment extends BottomSheetDialogFragment {
         recyclerView.setHasFixedSize(true);
         RouteSelectAdapter adapter = new RouteSelectAdapter(recyclerView);
         recyclerView.setAdapter(adapter);
-        if (busRoutes != null) {
-            for (BusRoute busRoute: busRoutes) {
-                adapter.add(new Item(Item.TYPE_DATA, busRoute));
+        if (routes != null) {
+            for (Route route : routes) {
+                adapter.add(new Item(Item.TYPE_DATA, route));
             }
         }
         adapter.setOnClickItemListener((item, position) -> {

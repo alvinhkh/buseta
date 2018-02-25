@@ -4,10 +4,10 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.kmb.model.KmbEta;
 import com.alvinhkh.buseta.model.ArrivalTime;
-import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
 
 import org.jsoup.Jsoup;
@@ -105,7 +105,7 @@ public class KmbEtaUtil {
                                             @NonNull KmbEta eta,
                                             @NonNull Long generatedTime) {
         ArrivalTime object = new ArrivalTime();
-        object.companyCode = BusRoute.COMPANY_KMB;
+        object.companyCode = C.PROVIDER.KMB;
         object.capacity = parseCapacity(eta.ol);
         object.expire = eta.expire;
         object.isSchedule = !TextUtils.isEmpty(eta.schedule) && eta.schedule.equals("Y");

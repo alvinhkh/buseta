@@ -11,8 +11,8 @@ import android.view.ViewGroup;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.BusRoute;
-import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.model.Route;
+import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.nwst.NwstService;
 import com.alvinhkh.buseta.nwst.model.NwstLatLong;
 import com.alvinhkh.buseta.nwst.model.NwstStop;
@@ -20,7 +20,7 @@ import com.alvinhkh.buseta.nwst.model.NwstVariant;
 import com.alvinhkh.buseta.nwst.util.NwstRequestUtil;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
 import com.alvinhkh.buseta.ui.route.RouteStopListFragmentAbstract;
-import com.alvinhkh.buseta.utils.BusRouteStopUtil;
+import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.RetryWithDelay;
 
 import java.io.IOException;
@@ -45,12 +45,12 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
      * Returns a new instance of this fragment for the given section
      * number.
      */
-    public static NwstStopListFragment newInstance(@NonNull BusRoute busRoute,
-                                                   @Nullable BusRouteStop busRouteStop) {
+    public static NwstStopListFragment newInstance(@NonNull Route route,
+                                                   @Nullable RouteStop routeStop) {
         NwstStopListFragment fragment = new NwstStopListFragment();
         Bundle args = new Bundle();
-        args.putParcelable(C.EXTRA.ROUTE_OBJECT, busRoute);
-        args.putParcelable(C.EXTRA.STOP_OBJECT, busRouteStop);
+        args.putParcelable(C.EXTRA.ROUTE_OBJECT, route);
+        args.putParcelable(C.EXTRA.STOP_OBJECT, routeStop);
         fragment.setArguments(args);
         return fragment;
     }
@@ -59,7 +59,7 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = super.onCreateView(inflater, container, savedInstanceState);
-        String qInfo = NwstRequestUtil.paramInfo(busRoute);
+        String qInfo = NwstRequestUtil.paramInfo(route);
         if (!TextUtils.isEmpty(qInfo)) {
             if (swipeRefreshLayout != null && !swipeRefreshLayout.isRefreshing()) {
                 swipeRefreshLayout.setRefreshing(true);
@@ -88,14 +88,14 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
             public void onNext(ResponseBody body) {
                 try {
                     String[] routes = body.string().split("<br>", -1);
-                    int i = busRoute.getStopsStartSequence();
+                    int i = route.getStopsStartSequence();
                     for (String route : routes) {
                         String text = route.replace("<br>", "").trim();
                         if (TextUtils.isEmpty(text)) continue;
                         NwstStop nwstStop = NwstStop.Companion.fromString(text);
                         if (nwstStop != null) {
-                            BusRouteStop stop = BusRouteStopUtil.fromNwst(nwstStop, busRoute);
-                            stop.sequence = Integer.toString(i);
+                            RouteStop stop = RouteStopUtil.fromNwst(nwstStop, NwstStopListFragment.this.route);
+                            stop.setSequence(Integer.toString(i));
                             items.add(new Item(TYPE_DATA, stop));
                             i++;
                         }
@@ -119,7 +119,7 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
                     }
                 });
                 Map<String, String> options = new LinkedHashMap<>();
-                String routeInfo = busRoute.getChildKey();
+                String routeInfo = route.getInfoKey();
                 NwstVariant variant = NwstVariant.Companion.parseInfo(routeInfo);
                 if (variant == null) {
                     onStopListComplete();

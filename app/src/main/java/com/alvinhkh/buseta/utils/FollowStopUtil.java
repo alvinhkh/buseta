@@ -8,7 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 
-import com.alvinhkh.buseta.model.BusRoute;
+import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.model.FollowStop;
 import com.alvinhkh.buseta.provider.FollowProvider;
 import com.alvinhkh.buseta.provider.FollowTable;
@@ -107,7 +107,7 @@ public class FollowStopUtil {
         object.name = cursor.getString(cursor.getColumnIndex(FollowTable.COLUMN_STOP_NAME));
         object.updatedAt = cursor.getLong(cursor.getColumnIndex(FollowTable.COLUMN_DATE));
         object.order = cursor.getInt(cursor.getColumnIndex(FollowTable.COLUMN_DISPLAY_ORDER));
-        if (object.companyCode.equals(BusRoute.COMPANY_KMB)) {
+        if (object.companyCode.equals(C.PROVIDER.KMB)) {
             object.etaGet = String.format("/?action=geteta&lang=tc&route=%s&bound=%s&stop=%s&stop_seq=%s&serviceType=%s", object.route, object.direction, object.code, object.sequence, "01");
         }
         return object;

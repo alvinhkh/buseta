@@ -10,19 +10,19 @@ import android.text.TextUtils;
 import android.util.SparseArray;
 import android.view.ViewGroup;
 
+import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.datagovhk.ui.MtrBusStopListFragment;
 import com.alvinhkh.buseta.kmb.ui.KmbStopListFragment;
 import com.alvinhkh.buseta.lwb.ui.LwbStopListFragment;
-import com.alvinhkh.buseta.model.BusRoute;
-import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.model.Route;
+import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.mtr.ui.AESBusStopListFragment;
 import com.alvinhkh.buseta.nlb.ui.NlbStopListFragment;
 import com.alvinhkh.buseta.nwst.ui.NwstStopListFragment;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -36,16 +36,16 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
 
     private String routeNo;
 
-    private List<BusRoute> routes = new ArrayList<>();
+    private List<Route> routes = new ArrayList<>();
 
     private SparseArray<Fragment> fragments = new SparseArray<>();
 
-    private BusRouteStop busRouteStop;
+    private RouteStop routeStop;
 
-    public RoutePagerAdapter(FragmentManager fm, Context context, BusRouteStop busRouteStop) {
+    public RoutePagerAdapter(FragmentManager fm, Context context, RouteStop routeStop) {
         super(fm);
         this.context = context;
-        this.busRouteStop = busRouteStop;
+        this.routeStop = routeStop;
     }
 
     @Override
@@ -71,10 +71,10 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
         notifyDataSetChanged();
     }
 
-    public void addSequence(@NonNull BusRoute busRoute) {
-        if (!TextUtils.isEmpty(busRoute.getName()) && !busRoute.getName().equals(routeNo)) return;
-        if (routes.contains(busRoute)) return;
-        routes.add(busRoute);
+    public void addSequence(@NonNull Route route) {
+        if (!TextUtils.isEmpty(route.getName()) && !route.getName().equals(routeNo)) return;
+        if (routes.contains(route)) return;
+        routes.add(route);
         pagerAdapterPosChanged = POSITION_NONE;
         notifyDataSetChanged();
     }
@@ -86,7 +86,7 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
         notifyDataSetChanged();
     }
 
-    public List<BusRoute> getRoutes() {
+    public List<Route> getRoutes() {
         return this.routes;
     }
 
@@ -96,25 +96,27 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
             throw new IllegalArgumentException();
         }
         if (position >= MIN_PAGE) {
-            BusRoute busRoute = routes.get(position - MIN_PAGE);
-            switch (busRoute.getCompanyCode()) {
-                case BusRoute.COMPANY_AESBUS:
-                    return AESBusStopListFragment.newInstance(busRoute, busRouteStop);
-                case BusRoute.COMPANY_CTB:
-                case BusRoute.COMPANY_NWFB:
-                case BusRoute.COMPANY_NWST:
-                    return NwstStopListFragment.newInstance(busRoute, busRouteStop);
-                case BusRoute.COMPANY_LRTFEEDER:
-                    return MtrBusStopListFragment.newInstance(busRoute, busRouteStop);
-                case BusRoute.COMPANY_NLB:
-                    return NlbStopListFragment.newInstance(busRoute, busRouteStop);
-                case BusRoute.COMPANY_KMB:
-                default:
-                    if (PreferenceUtil.isUsingNewKmbApi(context)) {
-                        return KmbStopListFragment.newInstance(busRoute, busRouteStop);
-                    } else {
-                        return LwbStopListFragment.newInstance(busRoute, busRouteStop);
-                    }
+            Route route = routes.get(position - MIN_PAGE);
+            if (route != null && route.getCompanyCode() != null) {
+                switch (route.getCompanyCode()) {
+                    case C.PROVIDER.AESBUS:
+                        return AESBusStopListFragment.newInstance(route, routeStop);
+                    case C.PROVIDER.CTB:
+                    case C.PROVIDER.NWFB:
+                    case C.PROVIDER.NWST:
+                        return NwstStopListFragment.newInstance(route, routeStop);
+                    case C.PROVIDER.LRTFEEDER:
+                        return MtrBusStopListFragment.newInstance(route, routeStop);
+                    case C.PROVIDER.NLB:
+                        return NlbStopListFragment.newInstance(route, routeStop);
+                    case C.PROVIDER.KMB:
+                    default:
+                        if (PreferenceUtil.isUsingNewKmbApi(context)) {
+                            return KmbStopListFragment.newInstance(route, routeStop);
+                        } else {
+                            return LwbStopListFragment.newInstance(route, routeStop);
+                        }
+                }
             }
         }
         return null;
@@ -133,15 +135,15 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
         switch (position) {
             case MIN_PAGE:
             default:
-                BusRoute busRoute = routes.get(position - MIN_PAGE);
-                if (busRoute != null) {
-                    if (!TextUtils.isEmpty(busRoute.getLocationEndName())) {
-                        return (TextUtils.isEmpty(busRoute.getLocationStartName()) ? "" : (busRoute.getLocationStartName() + (getCount() > 1 ? "\n" : " ")))
-                                + context.getString(R.string.destination, busRoute.getLocationEndName())
-                                + (busRoute.getSpecial() ? "#" : "");
+                Route route = routes.get(position - MIN_PAGE);
+                if (route != null) {
+                    if (!TextUtils.isEmpty(route.getOrigin())) {
+                        return (TextUtils.isEmpty(route.getDestination()) ? "" : (route.getDestination() + (getCount() > 1 ? "\n" : " ")))
+                                + context.getString(R.string.destination, route.getOrigin())
+                                + (route.isSpecial() ? "#" : "");
                     }
-                    if (!TextUtils.isEmpty(busRoute.getName())) {
-                        return busRoute.getName();
+                    if (!TextUtils.isEmpty(route.getName())) {
+                        return route.getName();
                     }
                 }
                 return context.getString(R.string.route) + " " + position;

@@ -4,8 +4,8 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.model.ArrivalTime;
-import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
 
 import org.jsoup.Jsoup;
@@ -57,7 +57,7 @@ public class NlbEtaUtil {
     public static ArrivalTime toArrivalTime(@NonNull Context context,
                                             @NonNull Element div) {
         ArrivalTime object = ArrivalTimeUtil.emptyInstance(context);
-        object.companyCode = BusRoute.COMPANY_NLB;
+        object.companyCode = C.PROVIDER.NLB;
         String text = div.text();
         object.text = text(text);
         object.isSchedule = !TextUtils.isEmpty(text) && (text.contains("預定班次") || text.contains("Scheduled"));

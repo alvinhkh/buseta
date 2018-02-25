@@ -2,14 +2,15 @@ package com.alvinhkh.buseta.nwst.ui;
 
 import android.text.TextUtils;
 
+import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.BusRoute;
+import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.nwst.NwstService;
 import com.alvinhkh.buseta.nwst.model.NwstRoute;
 import com.alvinhkh.buseta.nwst.model.NwstVariant;
 import com.alvinhkh.buseta.nwst.util.NwstRequestUtil;
 import com.alvinhkh.buseta.ui.route.RouteActivityAbstract;
-import com.alvinhkh.buseta.utils.BusRouteUtil;
+import com.alvinhkh.buseta.utils.RouteUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.alvinhkh.buseta.utils.RetryWithDelay;
 
@@ -102,20 +103,20 @@ public class NwstActivity extends RouteActivityAbstract {
     DisposableObserver<ResponseBody> variantListObserver(NwstRoute nwstRoute) {
         return new DisposableObserver<ResponseBody>() {
 
-            List<BusRoute> busRoutes = new ArrayList<>();
+            List<Route> routes = new ArrayList<>();
 
             @Override
             public void onNext(ResponseBody body) {
                 try {
                     String b = body.string();
-                    String[] routes = b.split("<br>");
-                    for (String route: routes) {
-                        String text = route.trim();
+                    String[] datas = b.split("<br>");
+                    for (String data: datas) {
+                        String text = data.trim();
                         if (TextUtils.isEmpty(text)) continue;
                         NwstVariant variant = NwstVariant.Companion.fromString(text);
-                        BusRoute busRoute = BusRouteUtil.fromNwst(nwstRoute, variant);
-                        if (busRoute.getName().equals(routeNo)) {
-                            busRoutes.add(busRoute);
+                        Route route = RouteUtil.fromNwst(nwstRoute, variant);
+                        if (route.getName().equals(routeNo)) {
+                            this.routes.add(route);
                         }
                     }
                 } catch (IOException e) {
@@ -140,7 +141,7 @@ public class NwstActivity extends RouteActivityAbstract {
 
             @Override
             public void onComplete() {
-                runOnUiThread(() -> onCompleteRoute(busRoutes, BusRoute.COMPANY_NWST));
+                runOnUiThread(() -> onCompleteRoute(routes, C.PROVIDER.NWST));
             }
         };
     }

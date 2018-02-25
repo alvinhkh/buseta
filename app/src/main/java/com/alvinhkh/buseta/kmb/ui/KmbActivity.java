@@ -1,14 +1,15 @@
 package com.alvinhkh.buseta.kmb.ui;
 
+import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.kmb.KmbService;
 import com.alvinhkh.buseta.kmb.model.KmbRoute;
 import com.alvinhkh.buseta.kmb.model.KmbRouteBound;
 import com.alvinhkh.buseta.kmb.model.network.KmbRouteBoundRes;
 import com.alvinhkh.buseta.kmb.model.network.KmbSpecialRouteRes;
-import com.alvinhkh.buseta.model.BusRoute;
+import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.ui.route.RouteActivityAbstract;
-import com.alvinhkh.buseta.utils.BusRouteUtil;
+import com.alvinhkh.buseta.utils.RouteUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.alvinhkh.buseta.utils.RetryWithDelay;
 
@@ -66,14 +67,14 @@ public class KmbActivity extends RouteActivityAbstract {
     DisposableObserver<KmbSpecialRouteRes> specialRouteObserver(String routeNo) {
         return new DisposableObserver<KmbSpecialRouteRes>() {
 
-            List<BusRoute> busRoutes = new ArrayList<>();
+            List<Route> routes = new ArrayList<>();
 
             @Override
             public void onNext(KmbSpecialRouteRes res) {
                 if (res != null && res.data != null) {
                     for (KmbRoute route : res.data.routes) {
                         if (route == null || route.route == null || !route.route.equals(routeNo)) continue;
-                        busRoutes.add(BusRouteUtil.fromKmb(route));
+                        routes.add(RouteUtil.fromKmb(route));
                     }
                 }
             }
@@ -95,7 +96,7 @@ public class KmbActivity extends RouteActivityAbstract {
 
             @Override
             public void onComplete() {
-                runOnUiThread(() -> onCompleteRoute(busRoutes, BusRoute.COMPANY_KMB));
+                runOnUiThread(() -> onCompleteRoute(routes, C.PROVIDER.KMB));
             }
         };
     }

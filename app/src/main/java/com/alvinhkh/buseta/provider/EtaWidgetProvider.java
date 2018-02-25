@@ -16,13 +16,13 @@ import android.widget.RemoteViews;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.model.FollowStop;
 import com.alvinhkh.buseta.service.EtaService;
 import com.alvinhkh.buseta.service.EtaWidgetAlarm;
 import com.alvinhkh.buseta.service.EtaWidgetService;
 import com.alvinhkh.buseta.ui.search.SearchActivity;
-import com.alvinhkh.buseta.utils.BusRouteStopUtil;
+import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.alvinhkh.buseta.utils.FollowStopUtil;
 import com.alvinhkh.buseta.view.MainActivity;
@@ -81,14 +81,14 @@ public class EtaWidgetProvider extends AppWidgetProvider {
         mgr.notifyAppWidgetViewDataChanged(widgetId, R.id.list_view);
         if (ConnectivityUtil.isConnected(context)) {
             List<FollowStop> followStops = FollowStopUtil.toList(context);
-            ArrayList<BusRouteStop> busRouteStops = new ArrayList<>();
+            ArrayList<RouteStop> routeStops = new ArrayList<>();
             for (FollowStop stop: followStops) {
-                busRouteStops.add(BusRouteStopUtil.fromFollowStop(stop));
+                routeStops.add(RouteStopUtil.fromFollowStop(stop));
             }
             try {
                 Intent intent = new Intent(context, EtaService.class);
                 intent.putExtra(C.EXTRA.WIDGET_UPDATE, widgetId);
-                intent.putParcelableArrayListExtra(C.EXTRA.STOP_LIST, busRouteStops);
+                intent.putParcelableArrayListExtra(C.EXTRA.STOP_LIST, routeStops);
                 context.startService(intent);
             } catch (IllegalStateException ignored) {}
         }

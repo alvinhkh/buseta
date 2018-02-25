@@ -38,14 +38,13 @@ import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.model.AppUpdate;
-import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.provider.SuggestionProvider;
 import com.alvinhkh.buseta.provider.SuggestionTable;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
 import com.alvinhkh.buseta.ui.search.SearchActivity;
 import com.alvinhkh.buseta.ui.setting.SettingActivity;
 import com.alvinhkh.buseta.utils.AdViewUtil;
-import com.alvinhkh.buseta.utils.BusRouteUtil;
+import com.alvinhkh.buseta.utils.RouteUtil;
 import com.alvinhkh.buseta.utils.NightModeUtil;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
 import com.alvinhkh.buseta.ui.search.SuggestionSimpleCursorAdapter;
@@ -126,7 +125,7 @@ abstract public class BaseActivity extends AppCompatActivity
             }
             if (aColumnIndex == aCursor.getColumnIndexOrThrow(SuggestionTable.COLUMN_COMPANY)) {
                 TextView textView = aView.findViewById(R.id.company);
-                textView.setText(BusRouteUtil.getCompanyName(this, aCursor.getString(aColumnIndex),
+                textView.setText(RouteUtil.getCompanyName(this, aCursor.getString(aColumnIndex),
                         aCursor.getString(aCursor.getColumnIndexOrThrow(SuggestionTable.COLUMN_TEXT))));
                 return true;
             }

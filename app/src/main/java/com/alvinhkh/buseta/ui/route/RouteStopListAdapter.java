@@ -24,12 +24,12 @@ import android.widget.TextView;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.model.ArrivalTime;
-import com.alvinhkh.buseta.model.BusRoute;
-import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.model.Route;
+import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.service.EtaService;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter;
 import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
-import com.alvinhkh.buseta.utils.BusRouteStopUtil;
+import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.FollowStopUtil;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
 
@@ -40,22 +40,22 @@ import java.util.Locale;
 public class RouteStopListAdapter
         extends ArrayListRecyclerViewAdapter<RouteStopListAdapter.ViewHolder> {
 
-    private BusRoute busRoute;
+    private Route route;
 
     private FragmentManager fragmentManager;
 
     private Location currentLocation;
     
     public RouteStopListAdapter(@NonNull FragmentManager fragmentManager,
-                                @NonNull RecyclerView recyclerView, @NonNull BusRoute busRoute) {
+                                @NonNull RecyclerView recyclerView, @NonNull Route route) {
         super(recyclerView);
         this.fragmentManager = fragmentManager;
-        this.busRoute = busRoute;
+        this.route = route;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return ViewHolder.createViewHolder(parent, viewType, onClickItemListener, fragmentManager, busRoute, currentLocation);
+        return ViewHolder.createViewHolder(parent, viewType, onClickItemListener, fragmentManager, route, currentLocation);
     }
 
     @Override
@@ -75,7 +75,7 @@ public class RouteStopListAdapter
 
         static ViewHolder createViewHolder(ViewGroup parent, int viewType,
                                            OnClickItemListener listener,
-                                           FragmentManager fm, BusRoute busRoute, Location currentLocation) {
+                                           FragmentManager fm, Route route, Location currentLocation) {
             LayoutInflater inflater = LayoutInflater.from(parent.getContext());
             View root;
 
@@ -83,10 +83,10 @@ public class RouteStopListAdapter
                 case Item.TYPE_HEADER:
                 case Item.TYPE_FOOTER:
                     root = inflater.inflate(R.layout.item_note, parent, false);
-                    return new NoteViewHolder(root, viewType, listener, busRoute);
+                    return new NoteViewHolder(root, viewType, listener, route);
                 case Item.TYPE_DATA:
                     root = inflater.inflate(R.layout.item_route_stop, parent, false);
-                    return new DataViewHolder(root, viewType, listener, fm, busRoute, currentLocation);
+                    return new DataViewHolder(root, viewType, listener, fm, route, currentLocation);
                 default:
                     root = inflater.inflate(R.layout.item_note, parent, false);
                     return new EmptyViewHolder(root, viewType, listener);
@@ -111,13 +111,13 @@ public class RouteStopListAdapter
 
         View itemView;
         TextView noteText;
-        BusRoute busRoute;
+        Route route;
 
-        NoteViewHolder(View itemView, int viewType, OnClickItemListener listener, BusRoute busRoute) {
+        NoteViewHolder(View itemView, int viewType, OnClickItemListener listener, Route route) {
             super(itemView, viewType, listener);
             this.itemView = itemView;
             this.noteText = itemView.findViewById(R.id.note);
-            this.busRoute = busRoute;
+            this.route = route;
         }
 
         @Override
@@ -137,13 +137,13 @@ public class RouteStopListAdapter
         TextView fareText;
         ImageView followImage;
         ImageView nearbyImage;
-        BusRoute busRoute;
+        Route route;
         FragmentManager fragmentManager;
         Location currentLocation;
 
         DataViewHolder(View itemView, int viewType,
                        OnClickItemListener listener,
-                       FragmentManager fragmentManager, BusRoute busRoute, Location currentLocation) {
+                       FragmentManager fragmentManager, Route route, Location currentLocation) {
             super(itemView, viewType, listener);
             this.itemView = itemView;
             this.nameText = itemView.findViewById(R.id.name);
@@ -154,20 +154,20 @@ public class RouteStopListAdapter
             this.fareText = itemView.findViewById(R.id.fare);
             this.followImage = itemView.findViewById(R.id.follow);
             this.nearbyImage = itemView.findViewById(R.id.nearby);
-            this.busRoute = busRoute;
+            this.route = route;
             this.fragmentManager = fragmentManager;
             this.currentLocation = currentLocation;
         }
 
         @Override
         public void bindItem(RouteStopListAdapter adapter, Item item, int position) {
-            BusRouteStop stop = (BusRouteStop) item.getObject();
+            RouteStop stop = (RouteStop) item.getObject();
             if (stop == null) return;
-            this.nameText.setText(stop.name);
+            this.nameText.setText(stop.getName());
             this.distanceText.setText(null);
-            if (!TextUtils.isEmpty(stop.fare) && Float.valueOf(stop.fare) > 0) {
+            if (!TextUtils.isEmpty(stop.getFare()) && Float.valueOf(stop.getFare()) > 0) {
                 this.fareText.setVisibility(View.VISIBLE);
-                this.fareText.setText(String.format(Locale.ENGLISH, "$%1$,.1f", Float.valueOf(stop.fare)));
+                this.fareText.setText(String.format(Locale.ENGLISH, "$%1$,.1f", Float.valueOf(stop.getFare())));
             } else {
                 this.fareText.setVisibility(View.INVISIBLE);
             }
@@ -177,10 +177,10 @@ public class RouteStopListAdapter
             this.followImage.setVisibility(View.GONE);
             this.nearbyImage.setVisibility(View.GONE);
 
-            if (!TextUtils.isEmpty(stop.latitude) && !TextUtils.isEmpty(stop.longitude)) {
+            if (!TextUtils.isEmpty(stop.getLatitude()) && !TextUtils.isEmpty(stop.getLongitude())) {
                 Location location = new Location("");
-                location.setLatitude(Double.parseDouble(stop.latitude));
-                location.setLongitude(Double.parseDouble(stop.longitude));
+                location.setLatitude(Double.parseDouble(stop.getLatitude()));
+                location.setLongitude(Double.parseDouble(stop.getLongitude()));
                 if (currentLocation != null) {
                     Float distance = currentLocation.distanceTo(location);
                     // TODO: a better way, to show nearest stop
@@ -217,7 +217,7 @@ public class RouteStopListAdapter
             Context context = this.itemView.getContext();
             if (context != null) {
                 // Follow
-                FollowStopUtil.query(context, BusRouteStopUtil.toFollowStop(stop)).subscribe(cursor -> {
+                FollowStopUtil.query(context, RouteStopUtil.toFollowStop(stop)).subscribe(cursor -> {
                     this.followImage.setVisibility(cursor.getCount() > 0 ? View.VISIBLE : View.GONE);
                     if (cursor != null) {
                         cursor.close();

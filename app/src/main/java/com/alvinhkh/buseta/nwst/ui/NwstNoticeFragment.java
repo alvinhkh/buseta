@@ -5,7 +5,6 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -16,7 +15,7 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.BusRoute;
+import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.nwst.NwstService;
 import com.alvinhkh.buseta.nwst.model.NwstNotice;
 import com.alvinhkh.buseta.nwst.util.NwstRequestUtil;
@@ -48,7 +47,7 @@ public class NwstNoticeFragment extends Fragment implements SwipeRefreshLayout.O
 
     private FloatingActionButton fab;
 
-    private BusRoute busRoute;
+    private Route route;
 
     private RecyclerView recyclerView;
 
@@ -61,11 +60,11 @@ public class NwstNoticeFragment extends Fragment implements SwipeRefreshLayout.O
      * Returns a new instance of this fragment for the given section
      * number.
      */
-    public static NwstNoticeFragment newInstance(@NonNull BusRoute busRoute) {
-        Timber.d(busRoute.toString());
+    public static NwstNoticeFragment newInstance(@NonNull Route route) {
+        Timber.d(route.toString());
         NwstNoticeFragment fragment = new NwstNoticeFragment();
         Bundle args = new Bundle();
-        args.putParcelable(C.EXTRA.ROUTE_OBJECT, busRoute);
+        args.putParcelable(C.EXTRA.ROUTE_OBJECT, route);
         fragment.setArguments(args);
         return fragment;
     }
@@ -74,7 +73,7 @@ public class NwstNoticeFragment extends Fragment implements SwipeRefreshLayout.O
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            busRoute = getArguments().getParcelable(C.EXTRA.ROUTE_OBJECT);
+            route = getArguments().getParcelable(C.EXTRA.ROUTE_OBJECT);
         }
     }
 
@@ -120,8 +119,8 @@ public class NwstNoticeFragment extends Fragment implements SwipeRefreshLayout.O
 
     @Override
     public void onRefresh() {
-        if (busRoute != null) {
-            loadRouteNotice(busRoute);
+        if (route != null) {
+            loadRouteNotice(route);
             return;
         }
         if (swipeRefreshLayout != null) {
@@ -146,7 +145,7 @@ public class NwstNoticeFragment extends Fragment implements SwipeRefreshLayout.O
         super.onDestroyView();
     }
 
-    private void loadRouteNotice(@NonNull BusRoute route) {
+    private void loadRouteNotice(@NonNull Route route) {
         if (swipeRefreshLayout != null) {
             swipeRefreshLayout.setRefreshing(true);
         }

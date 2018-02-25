@@ -12,11 +12,11 @@ import android.view.ViewGroup;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.kmb.KmbService;
 import com.alvinhkh.buseta.kmb.model.network.KmbStopsRes;
-import com.alvinhkh.buseta.model.BusRoute;
-import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.model.Route;
+import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
 import com.alvinhkh.buseta.ui.route.RouteStopListFragmentAbstract;
-import com.alvinhkh.buseta.utils.BusRouteStopUtil;
+import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.RetryWithDelay;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
@@ -40,12 +40,12 @@ public class KmbStopListFragment extends RouteStopListFragmentAbstract {
      * Returns a new instance of this fragment for the given section
      * number.
      */
-    public static KmbStopListFragment newInstance(@NonNull BusRoute busRoute,
-                                                  @Nullable BusRouteStop busRouteStop) {
+    public static KmbStopListFragment newInstance(@NonNull Route route,
+                                                  @Nullable RouteStop routeStop) {
         KmbStopListFragment fragment = new KmbStopListFragment();
         Bundle args = new Bundle();
-        args.putParcelable(C.EXTRA.ROUTE_OBJECT, busRoute);
-        args.putParcelable(C.EXTRA.STOP_OBJECT, busRouteStop);
+        args.putParcelable(C.EXTRA.ROUTE_OBJECT, route);
+        args.putParcelable(C.EXTRA.STOP_OBJECT, routeStop);
         fragment.setArguments(args);
         return fragment;
     }
@@ -57,7 +57,7 @@ public class KmbStopListFragment extends RouteStopListFragmentAbstract {
         if (swipeRefreshLayout != null && !swipeRefreshLayout.isRefreshing()) {
             swipeRefreshLayout.setRefreshing(true);
         }
-        disposables.add(kmbService.getStops(busRoute.getName(), busRoute.getSequence(), busRoute.getServiceType())
+        disposables.add(kmbService.getStops(route.getName(), route.getSequence(), route.getServiceType())
                 .retryWhen(new RetryWithDelay(5, 3000))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -80,8 +80,8 @@ public class KmbStopListFragment extends RouteStopListFragmentAbstract {
                 if (res != null && res.data != null && adapter != null) {
                     if (res.data.routeStops != null) {
                         for (int i = 0; i < res.data.routeStops.size(); i++) {
-                            BusRouteStop stop = BusRouteStopUtil.fromKmbRouteStop(res.data.routeStops.get(i),
-                                    busRoute, i, i >= res.data.routeStops.size() - 1);
+                            RouteStop stop = RouteStopUtil.fromKmbRouteStop(res.data.routeStops.get(i),
+                                    route, i, i >= res.data.routeStops.size() - 1);
                             items.add(new Item(Item.TYPE_DATA, stop));
                         }
                     }
@@ -97,7 +97,7 @@ public class KmbStopListFragment extends RouteStopListFragmentAbstract {
                                 List<List<Double>> path = lineGeometry.paths.get(i);
                                 for (int j = 0; j < path.size(); j++) {
                                     List<Double> p = path.get(j);
-                                    mapCoordinates.add(BusRouteStopUtil.fromHK80toWGS84(new Pair<>(p.get(0), p.get(1))));
+                                    mapCoordinates.add(RouteStopUtil.fromHK80toWGS84(new Pair<>(p.get(0), p.get(1))));
                                 }
                             }
                         } catch (JsonParseException e) {

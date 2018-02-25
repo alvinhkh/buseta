@@ -45,10 +45,6 @@ public abstract class ArrayListRecyclerViewAdapter<VH extends ArrayListRecyclerV
             type = in.readInt();
         }
 
-        public String getText() {
-            return this.object.toString();
-        }
-
         public int getType() {
             return this.type;
         }
@@ -108,14 +104,6 @@ public abstract class ArrayListRecyclerViewAdapter<VH extends ArrayListRecyclerV
             if (item.getType() == Item.TYPE_DATA)
                 list.add(item);
         return list;
-    }
-
-    public Item getLastSection() {
-        for (int i = items.size() - 1; i >= 0; i--) {
-            if (items.get(i).getType() == Item.TYPE_SECTION && items.get(i).getText() != null)
-                return items.get(i);
-        }
-        return null;
     }
 
     @Override

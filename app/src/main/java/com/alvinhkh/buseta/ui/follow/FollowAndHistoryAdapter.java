@@ -28,7 +28,7 @@ import com.alvinhkh.buseta.provider.SuggestionProvider;
 import com.alvinhkh.buseta.provider.SuggestionTable;
 import com.alvinhkh.buseta.ui.search.SearchActivity;
 import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
-import com.alvinhkh.buseta.utils.BusRouteStopUtil;
+import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.FollowStopUtil;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
 import com.alvinhkh.buseta.utils.SearchHistoryUtil;
@@ -162,7 +162,7 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
                 vh.itemView.setOnClickListener(v -> {
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setClass(context, SearchActivity.class);
-                    intent.putExtra(C.EXTRA.STOP_OBJECT, BusRouteStopUtil.fromFollowStop(object));
+                    intent.putExtra(C.EXTRA.STOP_OBJECT, RouteStopUtil.fromFollowStop(object));
                     context.startActivity(intent);
                 });
                 vh.itemView.setOnLongClickListener(v -> {
@@ -190,7 +190,7 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
                 });
 
                 // ETA
-                ArrivalTimeUtil.query(context, BusRouteStopUtil.fromFollowStop(object)).subscribe(cursor -> {
+                ArrivalTimeUtil.query(context, RouteStopUtil.fromFollowStop(object)).subscribe(cursor -> {
                     // Cursor has been moved +1 position forward.
                     ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
                     if (arrivalTime == null) return;

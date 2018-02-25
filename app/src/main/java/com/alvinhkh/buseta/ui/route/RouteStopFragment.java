@@ -41,14 +41,14 @@ import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.model.ArrivalTime;
-import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.model.FollowStop;
 import com.alvinhkh.buseta.service.EtaService;
 import com.alvinhkh.buseta.service.GeofenceTransitionsIntentService;
 import com.alvinhkh.buseta.service.NotificationService;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
 import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
-import com.alvinhkh.buseta.utils.BusRouteStopUtil;
+import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.FollowStopUtil;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
@@ -101,7 +101,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
 
     private Location currentLocation;
 
-    private BusRouteStop busRouteStop;
+    private RouteStop routeStop;
 
     private ViewHolder vh;
 
@@ -111,9 +111,9 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
         @Override
         public void run() {
             try {
-                if (busRouteStop != null && getContext() != null) {
+                if (routeStop != null && getContext() != null) {
                     Intent intent = new Intent(getContext(), EtaService.class);
-                    intent.putExtra(C.EXTRA.STOP_OBJECT, busRouteStop);
+                    intent.putExtra(C.EXTRA.STOP_OBJECT, routeStop);
                     getContext().startService(intent);
                 }
             } catch (IllegalStateException ignored) {}
@@ -128,10 +128,10 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
      * Returns a new instance of this fragment for the given section
      * number.
      */
-    public static RouteStopFragment newInstance(@NonNull BusRouteStop busRouteStop) {
+    public static RouteStopFragment newInstance(@NonNull RouteStop routeStop) {
         RouteStopFragment fragment = new RouteStopFragment();
         Bundle args = new Bundle();
-        args.putParcelable(C.EXTRA.STOP_OBJECT, busRouteStop);
+        args.putParcelable(C.EXTRA.STOP_OBJECT, routeStop);
         fragment.setArguments(args);
         return fragment;
     }
@@ -179,8 +179,8 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
     public void onComplete(@NonNull Task<Void> task) {
         if (task.isSuccessful()) {
             if (mPendingGeofenceTask == PendingGeofenceTask.ADD) {
-                updateGeofencesAdded(String.format(Locale.ENGLISH, "%s-%s-%s-%s", busRouteStop.companyCode,
-                        busRouteStop.route, busRouteStop.direction, busRouteStop.code));
+                updateGeofencesAdded(String.format(Locale.ENGLISH, "%s-%s-%s-%s", routeStop.getCompanyCode(),
+                        routeStop.getRoute(), routeStop.getDirection(), routeStop.getCode()));
                 showSnackbar(getString(R.string.arrival_alert_added));
             } else if (mPendingGeofenceTask == PendingGeofenceTask.REMOVE) {
                 updateGeofencesAdded("");
@@ -255,8 +255,8 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
     private boolean isThisGeofencesAdded() {
         return PreferenceManager.getDefaultSharedPreferences(getContext())
                 .getString(C.PREF.GEOFENCES_KEY, "")
-                .equals(String.format(Locale.ENGLISH, "%s-%s-%s-%s", busRouteStop.companyCode,
-                        busRouteStop.route, busRouteStop.direction, busRouteStop.code));
+                .equals(String.format(Locale.ENGLISH, "%s-%s-%s-%s", routeStop.getCompanyCode(),
+                        routeStop.getRoute(), routeStop.getDirection(), routeStop.getCode()));
     }
 
     /**
@@ -454,8 +454,8 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
             dialog.cancel();
             return;
         }
-        busRouteStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
-        if (busRouteStop == null) {
+        routeStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
+        if (routeStop == null) {
             dialog.cancel();
             return;
         }
@@ -501,12 +501,12 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
 
             // TODO: alert in last few stops
             /*
-            if (!TextUtils.isEmpty(busRouteStop.latitude) && !TextUtils.isEmpty(busRouteStop.longitude)) {
+            if (!TextUtils.isEmpty(routeStop.latitude) && !TextUtils.isEmpty(routeStop.longitude)) {
                 mGeofenceList.add(new Geofence.Builder()
-                        .setRequestId(String.format(Locale.ENGLISH, "%s %s", busRouteStop.route, busRouteStop.name))
+                        .setRequestId(String.format(Locale.ENGLISH, "%s %s", routeStop.route, routeStop.name))
                         .setCircularRegion(
-                                Double.parseDouble(busRouteStop.latitude),
-                                Double.parseDouble(busRouteStop.longitude),
+                                Double.parseDouble(routeStop.latitude),
+                                Double.parseDouble(routeStop.longitude),
                                 C.GEOFENCE.RADIUS_IN_METERS
                         )
                         .setExpirationDuration(C.GEOFENCE.EXPIRATION_IN_MILLISECONDS)
@@ -521,10 +521,10 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
     }
 
     private void updateDistanceDisplay() {
-        if (TextUtils.isEmpty(busRouteStop.latitude) || TextUtils.isEmpty(busRouteStop.longitude)) return;
+        if (TextUtils.isEmpty(routeStop.getLatitude()) || TextUtils.isEmpty(routeStop.getLongitude())) return;
         Location location = new Location("");
-        location.setLatitude(Double.parseDouble(busRouteStop.latitude));
-        location.setLongitude(Double.parseDouble(busRouteStop.longitude));
+        location.setLatitude(Double.parseDouble(routeStop.getLatitude()));
+        location.setLongitude(Double.parseDouble(routeStop.getLongitude()));
         if (currentLocation != null) {
             Float distance = currentLocation.distanceTo(location);
             vh.distanceText.setText(new DecimalFormat("~#.##km").format(distance / 1000));
@@ -542,8 +542,8 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
         vh.streetviewButton.setVisibility(View.GONE);
         vh.arrivalAlertButton.setVisibility(View.GONE);
 
-        if (busRouteStop != null) {
-            if (!TextUtils.isEmpty(busRouteStop.latitude) && !TextUtils.isEmpty(busRouteStop.longitude)) {
+        if (routeStop != null) {
+            if (!TextUtils.isEmpty(routeStop.getLatitude()) && !TextUtils.isEmpty(routeStop.getLongitude())) {
                 vh.mapView.setVisibility(View.VISIBLE);
                 vh.mapView.setTileSource(TileSourceFactory.MAPNIK);
                 vh.mapView.setBuiltInZoomControls(false);
@@ -553,12 +553,12 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                 vh.mapView.setMinZoomLevel(14);
                 IMapController mapController = vh.mapView.getController();
                 mapController.setZoom(18);
-                GeoPoint startPoint = new GeoPoint(Double.parseDouble(busRouteStop.latitude), Double.parseDouble(busRouteStop.longitude));
+                GeoPoint startPoint = new GeoPoint(Double.parseDouble(routeStop.getLatitude()), Double.parseDouble(routeStop.getLongitude()));
                 mapController.setCenter(startPoint);
 
                 Marker startMarker1 = new Marker(vh.mapView);
                 startMarker1.setPosition(startPoint);
-                startMarker1.setTitle(busRouteStop.name);
+                startMarker1.setTitle(routeStop.getName());
                 vh.mapView.getOverlays().add(startMarker1);
 
                 CompassOverlay mCompassOverlay = new CompassOverlay(getContext(),
@@ -578,18 +578,18 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
             Drawable unfollowDrawable = ContextCompat.getDrawable(getContext(), R.drawable.ic_bookmark_black_48dp);
             vh.followButton.setCompoundDrawablesWithIntrinsicBounds(null, followDrawable, null, null);
             vh.followButton.setText(R.string.follow);
-            FollowStopUtil.query(getContext(), BusRouteStopUtil.toFollowStop(busRouteStop)).subscribe(cursor -> {
+            FollowStopUtil.query(getContext(), RouteStopUtil.toFollowStop(routeStop)).subscribe(cursor -> {
                 vh.followButton.setText(cursor.getCount() > 0 ? R.string.action_unfollow : R.string.follow);
                 vh.followButton.setCompoundDrawablesWithIntrinsicBounds(null, cursor.getCount() > 0 ? unfollowDrawable : followDrawable, null, null);
             });
 
-            if (!TextUtils.isEmpty(busRouteStop.latitude) && !TextUtils.isEmpty(busRouteStop.longitude)) {
+            if (!TextUtils.isEmpty(routeStop.getLatitude()) && !TextUtils.isEmpty(routeStop.getLongitude())) {
                 vh.mapButton.setVisibility(View.VISIBLE);
                 vh.streetviewButton.setVisibility(View.VISIBLE);
                 vh.mapButton.setOnClickListener(v -> {
                     Uri uri = new Uri.Builder().scheme("geo")
-                            .appendPath(busRouteStop.latitude + "," + busRouteStop.longitude)
-                            .appendQueryParameter("q", busRouteStop.latitude + "," + busRouteStop.longitude + "(" + busRouteStop.name + ")")
+                            .appendPath(routeStop.getLatitude() + "," + routeStop.getLongitude())
+                            .appendQueryParameter("q", routeStop.getLatitude() + "," + routeStop.getLongitude() + "(" + routeStop.getName() + ")")
                             .build();
                     Intent mapIntent = new Intent(Intent.ACTION_VIEW, uri);
                     if (mapIntent.resolveActivity(v.getContext().getPackageManager()) != null) {
@@ -599,7 +599,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                     }
                 });
                 vh.streetviewButton.setOnClickListener(v -> {
-                    Uri gmmIntentUri = Uri.parse("google.streetview:cbll=" + busRouteStop.latitude + "," + busRouteStop.longitude + "&cbp=1,0,,-90,1");
+                    Uri gmmIntentUri = Uri.parse("google.streetview:cbll=" + routeStop.getLatitude() + "," + routeStop.getLongitude() + "&cbp=1,0,,-90,1");
                     Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
                     mapIntent.setPackage("com.google.android.apps.maps");
                     if (mapIntent.resolveActivity(v.getContext().getPackageManager()) != null) {
@@ -630,7 +630,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                 });
             }
             vh.followButton.setOnClickListener(v -> {
-                FollowStop followStop = BusRouteStopUtil.toFollowStop(busRouteStop);
+                FollowStop followStop = RouteStopUtil.toFollowStop(routeStop);
                 FollowStopUtil.query(v.getContext(), followStop).count().subscribe(count -> {
                     if (count > 0) {
                         // followed, remove
@@ -660,14 +660,14 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                     return;
                 }
                 Intent intent = new Intent(v.getContext(), NotificationService.class);
-                intent.putExtra(C.EXTRA.STOP_OBJECT, busRouteStop);
+                intent.putExtra(C.EXTRA.STOP_OBJECT, routeStop);
                 ContextCompat.startForegroundService(v.getContext(), intent);
 
                 /*
                 if (dispatcher != null) {
-                    Integer notificationId = NotificationUtil.showArrivalTime(v.getContext(), busRouteStop);
+                    Integer notificationId = NotificationUtil.showArrivalTime(v.getContext(), routeStop);
                     Bundle bundle = new Bundle();
-                    bundle.putString(C.EXTRA.STOP_OBJECT_STRING, new Gson().toJson(busRouteStop));
+                    bundle.putString(C.EXTRA.STOP_OBJECT_STRING, new Gson().toJson(routeStop));
                     bundle.putInt(C.EXTRA.NOTIFICATION_ID, notificationId);
                     Job job = dispatcher.newJobBuilder()
                             .setService(EtaJobService.class)  // the JobService that will be called
@@ -687,45 +687,45 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                 showSnackbar(getString(R.string.message_shown_as_notification));
             });
 
-            vh.nameText.setText(TextUtils.isEmpty(busRouteStop.name) ? "" : busRouteStop.name.trim());
-            vh.routeNoText.setText(TextUtils.isEmpty(busRouteStop.route) ? "" : busRouteStop.route.trim());
-            if (!TextUtils.isEmpty(busRouteStop.origin) && !TextUtils.isEmpty(busRouteStop.destination)) {
-                vh.routeLocationText.setText(getString(R.string.destination, busRouteStop.destination));
+            vh.nameText.setText(TextUtils.isEmpty(routeStop.getName()) ? "" : routeStop.getName().trim());
+            vh.routeNoText.setText(TextUtils.isEmpty(routeStop.getRoute()) ? "" : routeStop.getRoute().trim());
+            if (!TextUtils.isEmpty(routeStop.getOrigin()) && !TextUtils.isEmpty(routeStop.getDestination())) {
+                vh.routeLocationText.setText(getString(R.string.destination, routeStop.getDestination()));
             }
-            vh.stopLocationText.setText(TextUtils.isEmpty(busRouteStop.location) ? "" : busRouteStop.location.trim());
+            vh.stopLocationText.setText(TextUtils.isEmpty(routeStop.getLocation()) ? "" : routeStop.getLocation().trim());
             StringBuilder fareText = new StringBuilder();
-            if (!TextUtils.isEmpty(busRouteStop.fare)) {
-                fareText.append(String.format(Locale.ENGLISH, "$%1$,.1f", Float.valueOf(busRouteStop.fare)));
+            if (!TextUtils.isEmpty(routeStop.getFare())) {
+                fareText.append(String.format(Locale.ENGLISH, "$%1$,.1f", Float.valueOf(routeStop.getFare())));
             }
-            if (!TextUtils.isEmpty(busRouteStop.fareHoliday)) {
-                fareText.append(String.format(Locale.ENGLISH, "/$%1$,.1f", Float.valueOf(busRouteStop.fareHoliday)));
+            if (!TextUtils.isEmpty(routeStop.getFareHoliday())) {
+                fareText.append(String.format(Locale.ENGLISH, "/$%1$,.1f", Float.valueOf(routeStop.getFareHoliday())));
             }
-            if (!TextUtils.isEmpty(busRouteStop.fareChild)) {
-                fareText.append(String.format(Locale.ENGLISH, "/$%1$,.1f", Float.valueOf(busRouteStop.fareChild)));
+            if (!TextUtils.isEmpty(routeStop.getFareChild())) {
+                fareText.append(String.format(Locale.ENGLISH, "/$%1$,.1f", Float.valueOf(routeStop.getFareChild())));
             }
-            if (!TextUtils.isEmpty(busRouteStop.fareSenior)) {
-                fareText.append(String.format(Locale.ENGLISH, "/$%1$,.1f", Float.valueOf(busRouteStop.fareSenior)));
+            if (!TextUtils.isEmpty(routeStop.getFareSenior())) {
+                fareText.append(String.format(Locale.ENGLISH, "/$%1$,.1f", Float.valueOf(routeStop.getFareSenior())));
             }
             vh.fareText.setText(fareText);
             updateDistanceDisplay();
             // ETA
             vh.etaView.setVisibility(View.INVISIBLE);
             Intent intent = new Intent(getContext(), EtaService.class);
-            intent.putExtra(C.EXTRA.STOP_OBJECT, busRouteStop);
+            intent.putExtra(C.EXTRA.STOP_OBJECT, routeStop);
             getContext().startService(intent);
             // Stop image
             vh.stopImage.setVisibility(View.GONE);
             vh.stopImageButton.setVisibility(View.GONE);
-            if (!TextUtils.isEmpty(busRouteStop.imageUrl)) {
+            if (!TextUtils.isEmpty(routeStop.getImageUrl())) {
                 if (preferences != null && preferences.getBoolean("load_stop_image", false)) {
-                    disposables.add(Api.raw.create(Api.class).get(busRouteStop.imageUrl)
+                    disposables.add(Api.raw.create(Api.class).get(routeStop.getImageUrl())
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribeWith(getImage()));
                 } else {
                     vh.stopImageButton.setVisibility(View.VISIBLE);
                     vh.stopImageButton.setOnClickListener(v ->
-                            disposables.add(Api.raw.create(Api.class).get(busRouteStop.imageUrl)
+                            disposables.add(Api.raw.create(Api.class).get(routeStop.getImageUrl())
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribeWith(getImage())));
@@ -768,9 +768,9 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
             public void onNext(Intent intent) {
                 Bundle bundle = intent.getExtras();
                 if (bundle == null) return;
-                BusRouteStop stop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
+                RouteStop stop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
                 if (stop == null) return;
-                if (!stop.equals(busRouteStop)) return;
+                if (!stop.equals(routeStop)) return;
                 if (bundle.getBoolean(C.EXTRA.UPDATED)) {
                     Timber.d("eta updated: %s", stop.toString());
 

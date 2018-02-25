@@ -19,7 +19,7 @@ import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.kmb.KmbService;
 import com.alvinhkh.buseta.kmb.model.KmbAnnounce;
 import com.alvinhkh.buseta.kmb.model.network.KmbAnnounceRes;
-import com.alvinhkh.buseta.model.BusRoute;
+import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -41,7 +41,7 @@ public class KmbAnnounceFragment extends Fragment implements SwipeRefreshLayout.
 
     private FloatingActionButton fab;
 
-    private BusRoute busRoute;
+    private Route route;
 
     private RecyclerView recyclerView;
 
@@ -54,10 +54,10 @@ public class KmbAnnounceFragment extends Fragment implements SwipeRefreshLayout.
      * Returns a new instance of this fragment for the given section
      * number.
      */
-    public static KmbAnnounceFragment newInstance(BusRoute busRoute) {
+    public static KmbAnnounceFragment newInstance(Route route) {
         KmbAnnounceFragment fragment = new KmbAnnounceFragment();
         Bundle args = new Bundle();
-        args.putParcelable(C.EXTRA.ROUTE_OBJECT, busRoute);
+        args.putParcelable(C.EXTRA.ROUTE_OBJECT, route);
         fragment.setArguments(args);
         return fragment;
     }
@@ -93,7 +93,7 @@ public class KmbAnnounceFragment extends Fragment implements SwipeRefreshLayout.
         fab = rootView.findViewById(R.id.fab);
 
         if (getArguments() != null) {
-            busRoute = getArguments().getParcelable(C.EXTRA.ROUTE_OBJECT);
+            route = getArguments().getParcelable(C.EXTRA.ROUTE_OBJECT);
         }
         return rootView;
     }
@@ -113,10 +113,10 @@ public class KmbAnnounceFragment extends Fragment implements SwipeRefreshLayout.
 
     @Override
     public void onRefresh() {
-        if (busRoute != null) {
-            if (!TextUtils.isEmpty(busRoute.getName()) && !TextUtils.isEmpty(busRoute.getSequence())) {
-                Timber.d("%s %s", busRoute.getName(), busRoute.getSequence());
-                loadAnnounce(busRoute.getName(), busRoute.getSequence());
+        if (route != null) {
+            if (!TextUtils.isEmpty(route.getName()) && !TextUtils.isEmpty(route.getSequence())) {
+                Timber.d("%s %s", route.getName(), route.getSequence());
+                loadAnnounce(route.getName(), route.getSequence());
                 return;
             }
         }

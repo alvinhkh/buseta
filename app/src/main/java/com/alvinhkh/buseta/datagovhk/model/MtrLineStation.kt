@@ -34,7 +34,8 @@ data class MtrLineStation(
                 if (line[0] != lineCode) continue
                 val station = MtrLineStation()
                 station.lineCode = line[0]
-                station.direction = line[1]
+                station.direction = "";
+                // station.direction = line[1]
                 station.stationCode = line[2]
                 station.stationID = line[3]
                 station.chineseName = line[4]

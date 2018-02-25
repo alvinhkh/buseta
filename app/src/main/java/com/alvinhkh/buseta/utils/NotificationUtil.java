@@ -3,22 +3,18 @@ package com.alvinhkh.buseta.utils;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
-import android.text.style.ImageSpan;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.model.ArrivalTime;
-import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.service.NotificationService;
 import com.alvinhkh.buseta.ui.search.SearchActivity;
 
@@ -29,7 +25,7 @@ public class NotificationUtil {
 
     public static final String ETA_CHANNEL_ID = "CHANNEL_ID_ETA";
 
-    public static NotificationCompat.Builder showArrivalTime(@NonNull Context context, @NonNull BusRouteStop object) {
+    public static NotificationCompat.Builder showArrivalTime(@NonNull Context context, @NonNull RouteStop object) {
         SpannableStringBuilder smallContentTitle = new SpannableStringBuilder();
         SpannableStringBuilder smallText = new SpannableStringBuilder();
         SpannableStringBuilder bigText = new SpannableStringBuilder();
@@ -38,16 +34,16 @@ public class NotificationUtil {
         SpannableStringBuilder subText = new SpannableStringBuilder();
         SpannableStringBuilder contentInfo = new SpannableStringBuilder();
 
-        bigContentTitle.append(object.route);
+        bigContentTitle.append(object.getRoute());
         bigContentTitle.append(" ");
-        bigContentTitle.append(object.name);
+        bigContentTitle.append(object.getName());
         bigContentTitle.append(" ");
-        bigContentTitle.append(context.getString(R.string.destination, object.destination));
-        subText.append(object.route);
+        bigContentTitle.append(context.getString(R.string.destination, object.getDestination()));
+        subText.append(object.getRoute());
         subText.append(" ");
-        subText.append(object.name);
+        subText.append(object.getName());
         subText.append(" ");
-        subText.append(context.getString(R.string.destination, object.destination));
+        subText.append(context.getString(R.string.destination, object.getDestination()));
 
         ArrivalTimeUtil.query(context, object).subscribe(cursor -> {
             // Cursor has been moved +1 position forward.
@@ -92,7 +88,7 @@ public class NotificationUtil {
                         etaText.append(" [").append(capacity).append("]");
                     }
                 }
-                if (arrivalTime.hasWheelchair) {
+                if (arrivalTime.hasWheelchair && PreferenceUtil.isShowWheelchairIcon(context)) {
                     etaText.append(" \u267F");
                 }
                 if (arrivalTime.hasWifi) {
@@ -198,22 +194,22 @@ public class NotificationUtil {
         return builder;
     }
 
-    public static Integer getNotificationId(BusRouteStop object) {
+    public static Integer getNotificationId(RouteStop object) {
         Integer notificationId = 1000;
-        if (!TextUtils.isEmpty(object.route)) {
-            for (int i = 0; i < object.route.length(); i++) {
-                notificationId += object.route.charAt(i);
+        if (!TextUtils.isEmpty(object.getRoute())) {
+            for (int i = 0; i < object.getRoute().length(); i++) {
+                notificationId += object.getRoute().charAt(i);
             }
         }
-        if (!TextUtils.isEmpty(object.name)) {
-            notificationId += object.name.codePointAt(0);
-            notificationId -= object.name.codePointAt(object.name.length()-1);
+        if (!TextUtils.isEmpty(object.getName())) {
+            notificationId += object.getName().codePointAt(0);
+            notificationId -= object.getName().codePointAt(object.getName().length()-1);
         }
-        if (!TextUtils.isEmpty(object.companyCode)) {
-            notificationId += object.companyCode.codePointAt(0);
+        if (!TextUtils.isEmpty(object.getCompanyCode())) {
+            notificationId += object.getCompanyCode().codePointAt(0);
         }
-        if (!TextUtils.isEmpty(object.destination)) {
-            notificationId += object.destination.codePointAt(0);
+        if (!TextUtils.isEmpty(object.getDestination())) {
+            notificationId += object.getDestination().codePointAt(0);
         }
         notificationId = Math.abs(notificationId);
         return notificationId;

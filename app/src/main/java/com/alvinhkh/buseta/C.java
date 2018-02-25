@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta;
 
-
 public class C {
 
     public interface ACTION {
@@ -34,6 +33,8 @@ public class C {
 
         String FAIL = "com.alvinhkh.buseta.FAIL";
 
+        String LINE_CODE = "com.alvinhkh.buseta.LINE_CODE";
+
         String UPDATED = "com.alvinhkh.buseta.UPDATED";
 
         String UPDATING = "com.alvinhkh.buseta.UPDATING";
@@ -51,6 +52,8 @@ public class C {
         String STOP_OBJECT = "com.alvinhkh.buseta.STOP_OBJECT";
 
         String STOP_OBJECT_STRING = "com.alvinhkh.buseta.STOP_OBJECT_STRING";
+
+        String TYPE = "com.alvinhkh.buseta.TYPE";
 
         String WIDGET_UPDATE = "com.alvinhkh.buseta.WIDGET_UPDATE";
 
@@ -77,6 +80,32 @@ public class C {
         String AD_HIDE = "com.alvinhkh.buseta.AD_HIDE";
 
         String GEOFENCES_KEY = "com.alvinhkh.buseta.GEOFENCES_KEY";
+    }
+
+    public interface PROVIDER {
+
+        String AESBUS = "AESBUS";
+
+        String CTB = "CTB";
+
+        String LRTFEEDER = "LRTFeeder";
+
+        String KMB = "KMB";
+
+        String MTR = "MTR";
+
+        String NLB = "NLB";
+
+        String NWFB = "NWFB";
+
+        String NWST = "NWST";
+
+    }
+
+    public interface TYPE {
+        String BUS = "com.alvinhkh.buseta.BUS";
+
+        String RAILWAY = "com.alvinhkh.buseta.RAILWAY";
     }
 
     public interface URI {

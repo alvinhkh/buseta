@@ -4,9 +4,9 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.model.ArrivalTime;
-import com.alvinhkh.buseta.model.BusRoute;
 import com.alvinhkh.buseta.nwst.model.NwstEta;
 import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
 
@@ -88,8 +88,8 @@ public class NwstEtaUtil {
     public static ArrivalTime toArrivalTime(@NonNull Context context,
                                             @NonNull NwstEta nwstEta) {
         ArrivalTime object = ArrivalTimeUtil.emptyInstance(context);
-        object.companyCode = BusRoute.COMPANY_NWST;
-        if (nwstEta.getCompanyCode().equals(BusRoute.COMPANY_CTB) || nwstEta.getCompanyCode().equals(BusRoute.COMPANY_CTB)) {
+        object.companyCode = C.PROVIDER.NWST;
+        if (nwstEta.getCompanyCode().equals(C.PROVIDER.CTB) || nwstEta.getCompanyCode().equals(C.PROVIDER.CTB)) {
             object.companyCode = nwstEta.getCompanyCode();
         }
         if (TextUtils.isEmpty(nwstEta.getEtaIsoTime())) {

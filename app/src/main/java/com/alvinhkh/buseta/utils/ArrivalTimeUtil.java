@@ -6,12 +6,13 @@ import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
+import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.kmb.util.KmbEtaUtil;
 import com.alvinhkh.buseta.model.ArrivalTime;
-import com.alvinhkh.buseta.model.BusRoute;
-import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.mtr.model.AESEtaBus;
+import com.alvinhkh.buseta.mtr.model.MtrSchedule;
 import com.alvinhkh.buseta.nlb.util.NlbEtaUtil;
 import com.alvinhkh.buseta.nwst.util.NwstEtaUtil;
 import com.alvinhkh.buseta.provider.EtaContract.EtaEntry;
@@ -31,22 +32,24 @@ public class ArrivalTimeUtil {
     public static ArrivalTime estimate(@NonNull Context context, @NonNull ArrivalTime object) {
         if (!TextUtils.isEmpty(object.companyCode)) {
             switch (object.companyCode) {
-                case BusRoute.COMPANY_AESBUS:
+                case C.PROVIDER.AESBUS:
                     return AESEtaBus.Companion.estimate(context, object);
-                case BusRoute.COMPANY_KMB:
+                case C.PROVIDER.KMB:
                     return KmbEtaUtil.estimate(context, object);
-                case BusRoute.COMPANY_CTB:
-                case BusRoute.COMPANY_NWFB:
-                case BusRoute.COMPANY_NWST:
+                case C.PROVIDER.CTB:
+                case C.PROVIDER.NWFB:
+                case C.PROVIDER.NWST:
                     return NwstEtaUtil.estimate(context, object);
-                case BusRoute.COMPANY_NLB:
+                case C.PROVIDER.NLB:
                     return NlbEtaUtil.estimate(context, object);
+                case C.PROVIDER.MTR:
+                    return MtrSchedule.Companion.estimate(context, object);
             }
         }
         return object;
     }
 
-    public static Observable<Cursor> query(@NonNull Context context, BusRouteStop stop) {
+    public static Observable<Cursor> query(@NonNull Context context, RouteStop stop) {
         String selection = EtaEntry.COLUMN_ROUTE_COMPANY + "=? AND "
                 + EtaEntry.COLUMN_ROUTE_NO + "=? AND "
                 + EtaEntry.COLUMN_ROUTE_SEQ + "=? AND "
@@ -56,11 +59,11 @@ public class ArrivalTimeUtil {
                 + EtaEntry.COLUMN_ETA_EXPIRE + ">?";
         Cursor query = context.getContentResolver().query(EtaEntry.CONTENT_URI,  null,
                 selection, new String[] {
-                        stop.companyCode,
-                        stop.route,
-                        stop.direction,
-                        stop.code,
-                        stop.sequence,
+                        stop.getCompanyCode(),
+                        stop.getRoute(),
+                        stop.getDirection(),
+                        stop.getCode(),
+                        stop.getSequence(),
                         String.valueOf(System.currentTimeMillis() - 600000),
                         String.valueOf(System.currentTimeMillis())
                 }, null);
@@ -71,7 +74,7 @@ public class ArrivalTimeUtil {
         });
     }
     
-    public static ContentValues toContentValues(BusRouteStop stop, ArrivalTime eta) {
+    public static ContentValues toContentValues(RouteStop stop, ArrivalTime eta) {
         if (TextUtils.isEmpty(eta.expire)) {
             eta.expire = "";
         }
@@ -82,11 +85,11 @@ public class ArrivalTimeUtil {
             eta.text = "";
         }
         ContentValues values = new ContentValues();
-        values.put(EtaEntry.COLUMN_ROUTE_COMPANY, stop.companyCode);
-        values.put(EtaEntry.COLUMN_ROUTE_NO, stop.route);
-        values.put(EtaEntry.COLUMN_ROUTE_SEQ, stop.direction);
-        values.put(EtaEntry.COLUMN_STOP_SEQ, stop.sequence);
-        values.put(EtaEntry.COLUMN_STOP_ID, stop.code);
+        values.put(EtaEntry.COLUMN_ROUTE_COMPANY, stop.getCompanyCode());
+        values.put(EtaEntry.COLUMN_ROUTE_NO, stop.getRoute());
+        values.put(EtaEntry.COLUMN_ROUTE_SEQ, stop.getDirection());
+        values.put(EtaEntry.COLUMN_STOP_SEQ, stop.getSequence());
+        values.put(EtaEntry.COLUMN_STOP_ID, stop.getCode());
         values.put(EtaEntry.COLUMN_ETA_EXPIRE, eta.expire);
         values.put(EtaEntry.COLUMN_ETA_ID, eta.id);
         values.put(EtaEntry.COLUMN_ETA_MISC,
@@ -97,11 +100,14 @@ public class ArrivalTimeUtil {
                         Float.toString(eta.distanceKM) + "," +
                         (TextUtils.isEmpty(eta.plate) ? "" : eta.plate) + "," +
                         Double.toString(eta.latitude) + "," +
-                        Double.toString(eta.longitude)
+                        Double.toString(eta.longitude) + "," +
+                        (TextUtils.isEmpty(eta.platform) ? "" : eta.platform) + "," +
+                        (TextUtils.isEmpty(eta.destination) ? "" : eta.destination) + "," +
+                        (TextUtils.isEmpty(eta.direction) ? "" : eta.direction)
         );
         values.put(EtaEntry.COLUMN_ETA_SCHEDULED, Boolean.toString(eta.isSchedule));
         values.put(EtaEntry.COLUMN_ETA_TIME, eta.text);
-        values.put(EtaEntry.COLUMN_ETA_URL, stop.etaGet);
+        values.put(EtaEntry.COLUMN_ETA_URL, stop.getEtaGet());
         values.put(EtaEntry.COLUMN_GENERATED_AT, eta.generatedAt);
         values.put(EtaEntry.COLUMN_UPDATED_AT, eta.updatedAt);
         return values;
@@ -115,7 +121,7 @@ public class ArrivalTimeUtil {
         String[] misc = cursor.getString(cursor.getColumnIndex(EtaEntry.COLUMN_ETA_MISC)).split(",");
         object.hasWheelchair = Boolean.valueOf(misc[0]);
         if (misc.length > 1) {
-            if (object.companyCode.equals(BusRoute.COMPANY_KMB)) {
+            if (object.companyCode.equals(C.PROVIDER.KMB)) {
                 object.capacity = KmbEtaUtil.parseCapacity(misc[1]);
             }
         }
@@ -136,6 +142,15 @@ public class ArrivalTimeUtil {
         }
         if (misc.length > 7 && !TextUtils.isEmpty(misc[7])) {
             object.longitude = Double.valueOf(misc[7]);
+        }
+        if (misc.length > 8 && !TextUtils.isEmpty(misc[8])) {
+            object.platform = misc[8];
+        }
+        if (misc.length > 9 && !TextUtils.isEmpty(misc[9])) {
+            object.destination = misc[9];
+        }
+        if (misc.length > 10 && !TextUtils.isEmpty(misc[10])) {
+            object.direction = misc[10];
         }
         object.isSchedule = Boolean.valueOf(cursor.getString(cursor.getColumnIndex(EtaEntry.COLUMN_ETA_SCHEDULED)));
         object.text = cursor.getString(cursor.getColumnIndex(EtaEntry.COLUMN_ETA_TIME));

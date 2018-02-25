@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tool="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:minHeight="@dimen/card_item_height_singleline"
+    android:foreground="?android:attr/selectableItemBackground">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="@dimen/card_item_icon_touch_target_dense"
+        android:layout_height="@dimen/card_item_icon_touch_target_dense"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_centerInParent="true"
+        android:layout_marginLeft="@dimen/card_horizontal_margin"
+        android:layout_marginRight="@dimen/card_horizontal_margin"
+        android:gravity="center"
+        android:textColor="@color/white"
+        android:background="@drawable/circle_48dp"
+        android:backgroundTint="@color/icons" />
+
+    <TextView
+        android:id="@+id/text"
+        style="@style/TextAppearance.AppCompat.Medium"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_centerInParent="true"
+        android:layout_marginLeft="@dimen/card_item_text_margin_start"
+        android:layout_marginStart="@dimen/card_item_text_margin_start"
+        android:gravity="center_vertical"
+        android:textColor="@color/textPrimary"
+        tool:text="ROUTE" />
+
+</RelativeLayout>

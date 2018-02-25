@@ -15,11 +15,11 @@ import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.datagovhk.DataGovHkService;
 import com.alvinhkh.buseta.datagovhk.model.MtrBusFare;
 import com.alvinhkh.buseta.datagovhk.model.MtrBusStop;
-import com.alvinhkh.buseta.model.BusRoute;
-import com.alvinhkh.buseta.model.BusRouteStop;
+import com.alvinhkh.buseta.model.Route;
+import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
 import com.alvinhkh.buseta.ui.route.RouteStopListFragmentAbstract;
-import com.alvinhkh.buseta.utils.BusRouteStopUtil;
+import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.RetryWithDelay;
 
 import java.io.IOException;
@@ -43,12 +43,12 @@ public class MtrBusStopListFragment extends RouteStopListFragmentAbstract {
      * Returns a new instance of this fragment for the given section
      * number.
      */
-    public static MtrBusStopListFragment newInstance(@NonNull BusRoute busRoute,
-                                                     @Nullable BusRouteStop busRouteStop) {
+    public static MtrBusStopListFragment newInstance(@NonNull Route route,
+                                                     @Nullable RouteStop routeStop) {
         MtrBusStopListFragment fragment = new MtrBusStopListFragment();
         Bundle args = new Bundle();
-        args.putParcelable(C.EXTRA.ROUTE_OBJECT, busRoute);
-        args.putParcelable(C.EXTRA.STOP_OBJECT, busRouteStop);
+        args.putParcelable(C.EXTRA.ROUTE_OBJECT, route);
+        args.putParcelable(C.EXTRA.STOP_OBJECT, routeStop);
         fragment.setArguments(args);
         return fragment;
     }
@@ -79,7 +79,7 @@ public class MtrBusStopListFragment extends RouteStopListFragmentAbstract {
                     try {
                         List<MtrBusFare> fares = MtrBusFare.Companion.fromCSV(body.string());
                         for (MtrBusFare fare: fares) {
-                            if (!busRoute.getName().equals(fare.getRouteId())) continue;
+                            if (!route.getName().equals(fare.getRouteId())) continue;
                             mtrBusFare = fare;
                             break;
                         }
@@ -123,14 +123,14 @@ public class MtrBusStopListFragment extends RouteStopListFragmentAbstract {
                 if (body != null && adapter != null) {
                     try {
                         List<MtrBusStop> mtrBusStops = MtrBusStop.Companion.fromCSV(body.string());
-                        List<BusRouteStop> stops = new ArrayList<>();
+                        List<RouteStop> stops = new ArrayList<>();
                         for (MtrBusStop mtrBusStop: mtrBusStops) {
-                            if (!busRoute.getName().equals(mtrBusStop.getRouteId())) continue;
-                            stops.add(BusRouteStopUtil.fromMtrBus(mtrBusStop, mtrBusFare, busRoute));
+                            if (!route.getName().equals(mtrBusStop.getRouteId())) continue;
+                            stops.add(RouteStopUtil.fromMtrBus(mtrBusStop, mtrBusFare, route));
                         }
                         int i = 0;
-                        for (BusRouteStop stop: stops) {
-                            stop.sequence = Integer.toString(i);
+                        for (RouteStop stop: stops) {
+                            stop.setSequence(Integer.toString(i));
                             items.add(new Item(Item.TYPE_DATA, stop));
                             i++;
                         }

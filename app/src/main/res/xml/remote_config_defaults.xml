@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<defaultsMap>
+    <entry>
+        <key>mtr_schedule_secret</key>
+        <value>key</value>
+    </entry>
+</defaultsMap>

@@ -2,7 +2,7 @@ package com.alvinhkh.buseta.nwst.util;
 
 import android.text.TextUtils;
 
-import com.alvinhkh.buseta.model.BusRoute;
+import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.nwst.model.NwstVariant;
 import com.alvinhkh.buseta.utils.HashUtil;
 
@@ -21,11 +21,11 @@ public class NwstRequestUtil {
         return timestamp + randomInt + HashUtil.md5(timestamp + randomInt + secret);
     }
 
-    public static String paramInfo(BusRoute busRoute) {
-        if (busRoute == null) {
+    public static String paramInfo(Route route) {
+        if (route == null) {
             return null;
         }
-        String routeInfo = busRoute.getChildKey();
+        String routeInfo = route.getInfoKey();
         if (TextUtils.isEmpty(routeInfo)) {
             return null;
         }
@@ -33,6 +33,6 @@ public class NwstRequestUtil {
         if (variant == null) {
             return null;
         }
-        return "1|*|" + busRoute.getCompanyCode() + "||" + variant.getRdv() + "||" + variant.getStartSequence() + "||" + variant.getEndSequence() + "||" + busRoute.getSequence();
+        return "1|*|" + route.getCompanyCode() + "||" + variant.getRdv() + "||" + variant.getStartSequence() + "||" + variant.getEndSequence() + "||" + route.getSequence();
     }
 }

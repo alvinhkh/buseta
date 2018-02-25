@@ -1,0 +1,68 @@
+[
+  {
+    "code": "TWL",
+    "name": "Tsuen Wan Line",
+    "name_tc": "荃灣綫",
+    "colour": "#ff0000"
+  },
+  {
+    "code": "KTL",
+    "name": "Kwun Tong Line",
+    "name_tc": "觀塘綫",
+    "colour": "#1a9431"
+  },
+  {
+    "code": "ISL",
+    "name": "Island Line",
+    "name_tc": "港島綫",
+    "colour": "#0860a8"
+  },
+  {
+    "code": "SIL",
+    "name": "South Island Line",
+    "name_tc": "南港島綫",
+    "colour": "#b5bd00"
+  },
+  {
+    "code": "TKL",
+    "name": "Tseung Kwan O Line",
+    "name_tc": "將軍澳綫",
+    "colour": "#6b208b"
+  },
+  {
+    "code": "AEL",
+    "name": "Airport Express",
+    "name_tc": "機場快綫",
+    "colour": "#1c7670"
+  },
+  {
+    "code": "TCL",
+    "name": "Tung Chung Line",
+    "name_tc": "東涌綫",
+    "colour": "#fe7f1d"
+  },
+  {
+    "code": "DRL",
+    "name": "Disneyland Resort Line",
+    "name_tc": "迪士尼綫",
+    "colour": "#f550a6"
+  },
+  {
+    "code": "EAL",
+    "name": "East Rail Line",
+    "name_tc": "東鐵綫",
+    "colour": "#5eb6e4"
+  },
+  {
+    "code": "MOL",
+    "name": "Ma On Shan Line",
+    "name_tc": "馬鞍山綫",
+    "colour": "#9a3b26"
+  },
+  {
+    "code": "WRL",
+    "name": "West Rail Line",
+    "name_tc": "西鐵綫",
+    "colour": "#a40084"
+  }
+]

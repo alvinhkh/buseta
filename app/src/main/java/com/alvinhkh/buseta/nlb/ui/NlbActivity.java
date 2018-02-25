@@ -1,7 +1,8 @@
 package com.alvinhkh.buseta.nlb.ui;
 
+import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.BusRoute;
+import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.nlb.NlbService;
 import com.alvinhkh.buseta.nlb.model.NlbDatabase;
 import com.alvinhkh.buseta.nlb.model.NlbRoute;
@@ -34,24 +35,24 @@ public class NlbActivity extends RouteActivityAbstract {
     DisposableObserver<NlbDatabase> databaseObserver() {
         return new DisposableObserver<NlbDatabase>() {
 
-            List<BusRoute> busRoutes = new ArrayList<>();
+            List<Route> routes = new ArrayList<>();
 
             @Override
             public void onNext(NlbDatabase database) {
                 if (database != null && database.routes != null) {
-                    for (NlbRoute route : database.routes) {
-                        if (route == null) continue;
-                        if (route.route_no.equals(routeNo)) {
-                            BusRoute busRoute = new BusRoute();
-                            busRoute.setCompanyCode(BusRoute.COMPANY_NLB);
-                            String[] location = route.route_name_c.split(" > ");
+                    for (NlbRoute nlbRoute : database.routes) {
+                        if (nlbRoute == null) continue;
+                        if (nlbRoute.route_no.equals(routeNo)) {
+                            Route route = new Route();
+                            route.setCompanyCode(C.PROVIDER.NLB);
+                            String[] location = nlbRoute.route_name_c.split(" > ");
                             if (location.length > 1) {
-                                busRoute.setLocationEndName(location[1]);
+                                route.setOrigin(location[1]);
                             }
-                            busRoute.setLocationStartName(location[0]);
-                            busRoute.setName(route.route_no);
-                            busRoute.setSequence(route.route_id);
-                            busRoutes.add(busRoute);
+                            route.setDestination(location[0]);
+                            route.setName(nlbRoute.route_no);
+                            route.setSequence(nlbRoute.route_id);
+                            routes.add(route);
                         }
                     }
                 }
@@ -74,7 +75,7 @@ public class NlbActivity extends RouteActivityAbstract {
 
             @Override
             public void onComplete() {
-                runOnUiThread(() -> onCompleteRoute(busRoutes, BusRoute.COMPANY_KMB));
+                runOnUiThread(() -> onCompleteRoute(routes, C.PROVIDER.KMB));
             }
         };
     }
