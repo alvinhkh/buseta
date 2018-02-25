@@ -69,6 +69,32 @@
                 android:textColor="@color/widgetTextPrimary"
                 tool:text="@string/dots" />
 
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/eta2"
+            style="@style/TextAppearance.AppCompat.Small"
+            android:textColor="@color/widgetTextPrimary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:gravity="bottom|end"
+            tool:text="@string/eta" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:layout_gravity="start"
+        android:layout_marginTop="1dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|start">
+
             <TextView
                 android:id="@+id/route_destination_label"
                 android:layout_width="wrap_content"
@@ -91,7 +117,7 @@
         </LinearLayout>
 
         <TextView
-            android:id="@+id/eta_more"
+            android:id="@+id/eta3"
             style="@style/TextAppearance.AppCompat.Small"
             android:textColor="@color/widgetTextPrimary"
             android:layout_width="match_parent"

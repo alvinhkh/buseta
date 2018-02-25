@@ -44,13 +44,11 @@ public class FollowActivity extends BaseActivity {
         fab = findViewById(R.id.fab);
         fab.setOnClickListener(v -> {
             if (searchMenuItem != null) searchMenuItem.expandActionView();
-            // startActivity(new Intent(this, SearchActivity.class));
         });
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, FollowFragment.newInstance());
-        //fragmentTransaction.replace(R.id.fragment_container, ListFragment.newInstance(ListFragment.TYPE_LINE, null));
         fragmentTransaction.addToBackStack("follow_list");
         fragmentTransaction.commit();
 

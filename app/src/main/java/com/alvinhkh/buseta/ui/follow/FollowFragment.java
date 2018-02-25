@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.os.Bundle;
@@ -11,8 +12,8 @@ import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -31,6 +32,7 @@ import com.alvinhkh.buseta.model.FollowStop;
 import com.alvinhkh.buseta.service.EtaService;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
 import com.alvinhkh.buseta.ui.search.SearchActivity;
+import com.alvinhkh.buseta.utils.ColorUtil;
 import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.google.gson.Gson;
@@ -50,7 +52,7 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
     private FollowAndHistoryAdapter followAndHistoryAdapter;
 
-    private SwipeRefreshLayout mSwipeRefreshLayout;
+    private SwipeRefreshLayout swipeRefreshLayout;
 
     private View emptyView;
 
@@ -119,10 +121,10 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
         View rootView = inflater.inflate(R.layout.fragment_follow, container, false);
         setHasOptionsMenu(true);
 
-        mSwipeRefreshLayout = rootView.findViewById(R.id.swipe_refresh_layout);
-        if (null != mSwipeRefreshLayout) {
-            mSwipeRefreshLayout.setOnRefreshListener(this);
-            mSwipeRefreshLayout.setRefreshing(false);
+        swipeRefreshLayout = rootView.findViewById(R.id.swipe_refresh_layout);
+        if (null != swipeRefreshLayout) {
+            swipeRefreshLayout.setOnRefreshListener(this);
+            swipeRefreshLayout.setRefreshing(false);
         }
         RecyclerView recyclerView = rootView.findViewById(R.id.recycler_view);
         recyclerView.setHasFixedSize(true);
@@ -148,10 +150,6 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
     @Override
     public void onResume() {
         super.onResume();
-        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setTitle(R.string.app_name);
-        }
         if (fab != null) {
             fab.show();
         }
@@ -202,8 +200,8 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
     @Override
     public void onRefresh() {
-        if (mSwipeRefreshLayout != null) {
-            mSwipeRefreshLayout.setRefreshing(true);
+        if (swipeRefreshLayout != null) {
+            swipeRefreshLayout.setRefreshing(true);
         }
         if (followAndHistoryAdapter != null && getContext() != null) {
             // Check internet connection
@@ -230,8 +228,8 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
             emptyView.setVisibility(followAndHistoryAdapter != null &&
                     followAndHistoryAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
         }
-        if (mSwipeRefreshLayout != null) {
-            mSwipeRefreshLayout.setRefreshing(false);
+        if (swipeRefreshLayout != null) {
+            swipeRefreshLayout.setRefreshing(false);
         }
     }
 

@@ -83,7 +83,7 @@
         <ListPreference
             android:key="kmb_api"
             android:title="@string/title_kmb_api"
-            android:defaultValue="lwb_web"
+            android:defaultValue="kmb_web"
             android:entries="@array/kmb_api_entries"
             android:entryValues="@array/kmb_api_values"
             android:negativeButtonText="@string/action_cancel"

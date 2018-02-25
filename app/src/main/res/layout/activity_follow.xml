@@ -49,7 +49,6 @@
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:background="@color/colorPrimary"
-            app:itemBackground="@color/colorPrimary"
             app:itemIconTint="@color/white"
             app:itemTextColor="@color/white"
             app:layout_insetEdge="bottom"

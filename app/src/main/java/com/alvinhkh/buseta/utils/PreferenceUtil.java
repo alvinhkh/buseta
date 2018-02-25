@@ -30,7 +30,7 @@ public class PreferenceUtil {
 
     public static boolean isUsingNewKmbApi(@NonNull Context context) {
         SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(context);
-        return null != mPrefs && mPrefs.getString("kmb_api", "lwb_web").equals("kmb_web");
+        return null != mPrefs && mPrefs.getString("kmb_api", "kmb_web").equals("kmb_web");
     }
 
     public static Intent shareAppIntent(@NonNull Context context) {

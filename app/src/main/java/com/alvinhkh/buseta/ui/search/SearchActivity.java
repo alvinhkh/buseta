@@ -130,8 +130,12 @@ public class SearchActivity extends AppCompatActivity {
         if (Intent.ACTION_VIEW.equals(action)) {
             if (!TextUtils.isEmpty(type) && type.equals(C.TYPE.RAILWAY)) {
                 String lineCode = intent.getStringExtra(C.EXTRA.LINE_CODE);
+                String lineColour = intent.getStringExtra(C.EXTRA.LINE_COLOUR);
+                String lineName = intent.getStringExtra(C.EXTRA.LINE_NAME);
                 Intent i = new Intent(getApplicationContext(), MtrActivity.class);
                 i.putExtra(C.EXTRA.LINE_CODE, lineCode);
+                i.putExtra(C.EXTRA.LINE_COLOUR, lineColour);
+                i.putExtra(C.EXTRA.LINE_NAME, lineName);
                 startActivity(i);
             } else {
                 if (!TextUtils.isEmpty(lastQuery)) {

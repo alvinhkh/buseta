@@ -35,6 +35,10 @@ public class C {
 
         String LINE_CODE = "com.alvinhkh.buseta.LINE_CODE";
 
+        String LINE_COLOUR = "com.alvinhkh.buseta.LINE_COLOUR";
+
+        String LINE_NAME = "com.alvinhkh.buseta.LINE_NAME";
+
         String UPDATED = "com.alvinhkh.buseta.UPDATED";
 
         String UPDATING = "com.alvinhkh.buseta.UPDATING";

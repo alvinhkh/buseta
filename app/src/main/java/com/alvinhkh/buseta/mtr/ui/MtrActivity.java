@@ -38,10 +38,12 @@ public class MtrActivity extends BaseActivity {
         Bundle bundle = getIntent().getExtras();
         if (bundle != null) {
             String lineCode = bundle.getString(C.EXTRA.LINE_CODE);
+            String lineColour = bundle.getString(C.EXTRA.LINE_COLOUR);
+            String lineName = bundle.getString(C.EXTRA.LINE_NAME);
             if (!TextUtils.isEmpty(lineCode)) {
                 FragmentManager fragmentManager = getSupportFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.fragment_container, MtrLineStationsFragment.newInstance(lineCode));
+                fragmentTransaction.replace(R.id.fragment_container, MtrLineStationsFragment.newInstance(lineCode, lineColour, lineName));
                 fragmentTransaction.commit();
                 return;
             }

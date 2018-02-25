@@ -3,9 +3,13 @@ package com.alvinhkh.buseta.datagovhk.ui;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -31,12 +35,12 @@ import com.alvinhkh.buseta.service.EtaService;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
+import com.alvinhkh.buseta.utils.ColorUtil;
 import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.RetryWithDelay;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +77,10 @@ public class MtrLineStationsFragment extends Fragment
 
     private String lineCode = "";
 
+    private String lineColour = "";
+
+    private String lineName = "";
+
     public MtrLineStationsFragment() { }
 
     protected final Handler refreshHandler = new Handler();
@@ -99,10 +107,14 @@ public class MtrLineStationsFragment extends Fragment
      * Returns a new instance of this fragment for the given section
      * number.
      */
-    public static MtrLineStationsFragment newInstance(@NonNull String lineCode) {
+    public static MtrLineStationsFragment newInstance(@NonNull String lineCode,
+                                                      @Nullable String lineColour,
+                                                      @Nullable String lineName) {
         MtrLineStationsFragment fragment = new MtrLineStationsFragment();
         Bundle bundle = new Bundle();
         bundle.putString(C.EXTRA.LINE_CODE, lineCode);
+        bundle.putString(C.EXTRA.LINE_COLOUR, lineColour);
+        bundle.putString(C.EXTRA.LINE_NAME, lineName);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -117,10 +129,6 @@ public class MtrLineStationsFragment extends Fragment
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        if (getActivity() != null && ((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
-            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.provider_mtr);
-            ((AppCompatActivity) getActivity()).getSupportActionBar().setSubtitle(null);
-        }
         setHasOptionsMenu(true);
         View rootView = inflater.inflate(R.layout.fragment_list, container, false);
         recyclerView = rootView.findViewById(R.id.recycler_view);
@@ -207,8 +215,28 @@ public class MtrLineStationsFragment extends Fragment
             adapter.clear();
         }
         lineCode = "";
+        lineColour = "";
+        lineName = "";
         if (getArguments() != null) {
             lineCode = getArguments().getString(C.EXTRA.LINE_CODE);
+            lineColour = getArguments().getString(C.EXTRA.LINE_COLOUR);
+            lineName = getArguments().getString(C.EXTRA.LINE_NAME);
+        }
+        if (getActivity() != null && ((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
+            if (!TextUtils.isEmpty(lineName)) {
+                ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(lineName);
+            } else {
+                ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.provider_mtr);
+            }
+            ((AppCompatActivity) getActivity()).getSupportActionBar().setSubtitle(null);
+            if (!TextUtils.isEmpty(lineColour)) {
+                Integer colorInt = Color.parseColor(lineColour);
+                ((AppCompatActivity) getActivity()).getSupportActionBar().setBackgroundDrawable(new ColorDrawable(colorInt));
+                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    getActivity().getWindow().setStatusBarColor(ColorUtil.Companion.darkenColor(colorInt));
+                    getActivity().getWindow().setNavigationBarColor(ColorUtil.Companion.darkenColor((colorInt)));
+                }
+            }
         }
         if (TextUtils.isEmpty(lineCode)) {
             Toast.makeText(getContext(), R.string.missing_input, Toast.LENGTH_SHORT).show();

@@ -3,7 +3,9 @@ package com.alvinhkh.buseta.mtr.ui;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.customtabs.CustomTabsIntent;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -87,12 +89,15 @@ public class MtrLineStatusAdapter
 
         TextView nameTv;
 
+        ImageView openUrlIv;
+
         ImageView circleIv;
 
         public DataViewHolder(final View itemView, final int viewType) {
             super(itemView, viewType);
             iconIv = itemView.findViewById(R.id.icon);
             nameTv = itemView.findViewById(R.id.name);
+            openUrlIv = itemView.findViewById(R.id.open_url);
             circleIv = itemView.findViewById(R.id.circle);
             context = itemView.getContext();
         }
@@ -118,11 +123,26 @@ public class MtrLineStatusAdapter
                         break;
                 }
             }
+            if (!TextUtils.isEmpty(status.getUrlTc())) {
+                openUrlIv.setVisibility(View.VISIBLE);
+                openUrlIv.setOnClickListener(l -> {
+                    try {
+                        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+                        builder.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimary));
+                        CustomTabsIntent customTabsIntent = builder.build();
+                        customTabsIntent.launchUrl(context, Uri.parse(status.getUrlTc()));
+                    } catch (Exception ignored) { }
+                });
+            } else {
+                openUrlIv.setVisibility(View.GONE);
+            }
             view.setOnClickListener(v -> {
                 Intent intent = new Intent(Intent.ACTION_VIEW);
                 intent.setClass(context, SearchActivity.class);
                 intent.putExtra(C.EXTRA.TYPE, C.TYPE.RAILWAY);
                 intent.putExtra(C.EXTRA.LINE_CODE, status.getLineCode());
+                intent.putExtra(C.EXTRA.LINE_COLOUR, status.getLineColour());
+                intent.putExtra(C.EXTRA.LINE_NAME, status.getLineName());
                 context.startActivity(intent);
             });
         }

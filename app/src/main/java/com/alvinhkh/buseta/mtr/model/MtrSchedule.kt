@@ -95,7 +95,7 @@ data class MtrSchedule(
             var arrivalTime = ArrivalTimeUtil.emptyInstance(context)
             arrivalTime.companyCode = C.PROVIDER.MTR
             arrivalTime.text = schedule.time
-            arrivalTime.destination = codeMap?.getOrDefault(schedule.destination.orEmpty(), schedule.destination.orEmpty())
+            arrivalTime.destination = codeMap?.get(schedule.destination.orEmpty())
             arrivalTime.platform = schedule.platform
             arrivalTime.estimate = schedule.ttnt
             arrivalTime.direction = direction

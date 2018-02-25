@@ -94,7 +94,8 @@ public class EtaWidgetService extends RemoteViewsService {
                 remoteViews.setTextViewText(R.id.route_no, stop.getRoute());
                 remoteViews.setTextViewText(R.id.route_destination, stop.getDestination());
                 remoteViews.setTextViewText(R.id.eta, null);
-                remoteViews.setTextViewText(R.id.eta_more, null);
+                remoteViews.setTextViewText(R.id.eta2, null);
+                remoteViews.setTextViewText(R.id.eta3, null);
                 // ETA
                 // http://stackoverflow.com/a/20645908/2411672
                 final long token = Binder.clearCallingIdentity();
@@ -152,21 +153,19 @@ public class EtaWidgetService extends RemoteViewsService {
                             switch(pos) {
                                 case 0:
                                     remoteViews.setTextViewText(R.id.eta, etaText);
-                                    remoteViews.setTextViewText(R.id.eta_more, null);
                                     break;
                                 case 1:
-                                    etaText.insert(0, etaTexts);
-                                    etaTexts.clear();
-                                    etaTexts.append(etaText);
-                                    remoteViews.setTextViewText(R.id.eta_more, etaTexts);
+                                    remoteViews.setTextViewText(R.id.eta2, etaText);
                                     break;
                                 case 2:
+                                    remoteViews.setTextViewText(R.id.eta3, etaText);
+                                    break;
                                 default:
                                     // etaText.insert(0, "  ");
                                     // etaText.insert(0, etaTexts);
                                     // etaTexts.clear();
                                     // etaTexts.append(etaText);
-                                    // remoteViews.setTextViewText(R.id.eta_more, etaTexts);
+                                    // remoteViews.setTextViewText(R.id.eta3, etaTexts);
                                     break;
                             }
                         }
@@ -183,10 +182,11 @@ public class EtaWidgetService extends RemoteViewsService {
                 remoteViews.setTextViewText(R.id.route_no, "");
                 remoteViews.setTextViewText(R.id.route_destination, "");
                 remoteViews.setTextViewText(R.id.eta, "");
-                remoteViews.setTextViewText(R.id.eta_more, "");
+                remoteViews.setTextViewText(R.id.eta2, "");
+                remoteViews.setTextViewText(R.id.eta3, "");
             }
             if (!ConnectivityUtil.isConnected(context)) {
-                remoteViews.setTextViewText(R.id.eta_more, context.getString(R.string.message_no_internet_connection));
+                remoteViews.setTextViewText(R.id.eta2, context.getString(R.string.message_no_internet_connection));
             }
             return remoteViews;
         }

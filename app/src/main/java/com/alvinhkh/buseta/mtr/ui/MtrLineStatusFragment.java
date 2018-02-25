@@ -1,9 +1,12 @@
 package com.alvinhkh.buseta.mtr.ui;
 
+import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -20,6 +23,7 @@ import com.alvinhkh.buseta.mtr.MtrService;
 import com.alvinhkh.buseta.mtr.model.MtrLineStatus;
 import com.alvinhkh.buseta.mtr.model.MtrLineStatusRes;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
+import com.alvinhkh.buseta.utils.ColorUtil;
 import com.google.gson.Gson;
 
 import java.io.IOException;
@@ -109,10 +113,6 @@ public class MtrLineStatusFragment extends Fragment
             swipeRefreshLayout.setRefreshing(false);
         }
         if (getActivity() != null) {
-            if (((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
-                ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(R.string.provider_mtr);
-                ((AppCompatActivity) getActivity()).getSupportActionBar().setSubtitle(null);
-            }
             FloatingActionButton fab = getActivity().findViewById(R.id.fab);
             if (fab != null) {
                 fab.hide();

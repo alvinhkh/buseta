@@ -1,12 +1,15 @@
 package com.alvinhkh.buseta.ui;
 
 import android.content.Intent;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,6 +22,9 @@ import com.alvinhkh.buseta.service.LocationService;
 import com.alvinhkh.buseta.ui.follow.EditFollowFragment;
 import com.alvinhkh.buseta.ui.follow.FollowFragment;
 import com.alvinhkh.buseta.utils.AdViewUtil;
+import com.alvinhkh.buseta.utils.ColorUtil;
+
+import timber.log.Timber;
 
 
 public class MainActivity extends BaseActivity {
@@ -63,12 +69,18 @@ public class MainActivity extends BaseActivity {
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         bottomNavigationView.setOnNavigationItemSelectedListener(
                 item -> {
+                    Integer colorInt = 0;
                     FragmentManager fm = getSupportFragmentManager();
                     fm.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                     switch (item.getItemId()) {
                         case R.id.action_bus:
                         {
                             if (fm.findFragmentByTag("follow_list") == null) {
+                                if (getSupportActionBar() != null) {
+                                    getSupportActionBar().setTitle(R.string.app_name);
+                                    getSupportActionBar().setSubtitle(null);
+                                }
+                                colorInt = ContextCompat.getColor(this, R.color.colorPrimary);
                                 FragmentTransaction ft = fm.beginTransaction();
                                 ft.replace(R.id.fragment_container, followFragment);
                                 ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
@@ -80,6 +92,11 @@ public class MainActivity extends BaseActivity {
                         case R.id.action_railway:
                         {
                             if (fm.findFragmentByTag("railway") == null) {
+                                if (getSupportActionBar() != null) {
+                                    getSupportActionBar().setTitle(R.string.provider_mtr);
+                                    getSupportActionBar().setSubtitle(null);
+                                }
+                                colorInt = ContextCompat.getColor(this, R.color.provider_mtr);
                                 FragmentTransaction ft = fm.beginTransaction();
                                 ft.replace(R.id.fragment_container, mtrLineStatusFragment);
                                 ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
@@ -90,6 +107,14 @@ public class MainActivity extends BaseActivity {
                         }
                         default:
                             finish();
+                    }
+                    if (colorInt != 0) {
+                        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(colorInt));
+                        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            getWindow().setStatusBarColor(ColorUtil.Companion.darkenColor(colorInt));
+                            getWindow().setNavigationBarColor(ColorUtil.Companion.darkenColor(colorInt));
+                        }
+                        bottomNavigationView.setBackgroundColor(colorInt);
                     }
                     return true;
                 });
