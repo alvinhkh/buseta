@@ -45,6 +45,7 @@ public class LwbActivity extends RouteActivityAbstract {
                         route.setDestination(bound.origin_tc);
                         route.setName(routeNo);
                         route.setSequence(String.valueOf(i++));
+                        route.setServiceType("01");
                         routes.add(route);
                     }
                 }
