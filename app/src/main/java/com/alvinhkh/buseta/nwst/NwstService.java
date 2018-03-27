@@ -9,12 +9,14 @@ import okhttp3.ResponseBody;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.http.GET;
+import retrofit2.http.HeaderMap;
+import retrofit2.http.Headers;
 import retrofit2.http.QueryMap;
 
 
 public interface NwstService {
 
-    String APP_VERSION = "3.3";
+    String APP_VERSION = "3.4";
 
     String LANGUAGE_TC = "0";
 
@@ -77,7 +79,7 @@ public interface NwstService {
     Observable<ResponseBody> notice(@QueryMap Map<String, String> options);
 
     @GET("api6/getnextbus2.php")
-    Observable<ResponseBody> eta(@QueryMap Map<String, String> options);
+    Observable<ResponseBody> eta(@HeaderMap Map<String, String> headers, @QueryMap Map<String, String> options);
 
     @GET("api6/getline_multi2.php")
     Observable<ResponseBody> latlongList(@QueryMap Map<String, String> options);

@@ -3,7 +3,6 @@ package com.alvinhkh.buseta.service;
 import android.app.IntentService;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -34,7 +33,6 @@ import com.alvinhkh.buseta.provider.EtaContract.EtaEntry;
 import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.alvinhkh.buseta.utils.HashUtil;
-import com.alvinhkh.buseta.utils.RetryWithDelay;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 
 import org.jsoup.Jsoup;
@@ -117,15 +115,11 @@ public class EtaService extends IntentService {
                 switch (routeStop.getCompanyCode()) {
                     case C.PROVIDER.KMB:
                         disposables.add(kmbEtaApi.getEta(routeStop.getEtaGet())
-                                .timeout(30, TimeUnit.SECONDS)
-                                .retryWhen(new RetryWithDelay(3, 3000))
                                 .subscribeWith(kmbEtaObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size() - 1)));
                         break;
                     case C.PROVIDER.NLB:
                         NlbEtaRequest request = new NlbEtaRequest(routeStop.getRouteId(), routeStop.getCode(), "zh");
                         disposables.add(nlbApi.eta(request)
-                                .timeout(30, TimeUnit.SECONDS)
-                                .retryWhen(new RetryWithDelay(3, 3000))
                                 .subscribeWith(nlbEtaObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size() - 1)));
                         break;
                     case C.PROVIDER.CTB:
@@ -141,12 +135,12 @@ public class EtaService extends IntentService {
                         options.put(QUERY_RDV, routeStop.getRouteId().replaceAll("-1$", "-2")); // TODO: why -1 to -2
                         options.put("showtime", "Y");
                         options.put(QUERY_LANGUAGE, LANGUAGE_TC);
-                        options.put(QUERY_PLATFORM, PLATFORM);
+                        options.put(QUERY_PLATFORM,  PLATFORM);
                         options.put(QUERY_APP_VERSION, APP_VERSION);
                         options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
-                        disposables.add(nwstApi.eta(options)
-                                .timeout(30, TimeUnit.SECONDS)
-                                .retryWhen(new RetryWithDelay(3, 3000))
+                        Map<String, String> headers = new HashMap<>();
+                        headers.put("User-Agent", System.getProperty("http.agent"));
+                        disposables.add(nwstApi.eta(headers, options)
                                 .subscribeWith(nwstEtaObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size() - 1)));
                         break;
                     case C.PROVIDER.LRTFEEDER:
@@ -163,8 +157,6 @@ public class EtaService extends IntentService {
                         // Timber.d("key: %s", key);
                         if (!TextUtils.isEmpty(key)) {
                             disposables.add(aesService.getBusStopsDetail(new AESEtaBusStopsRequest(routeStop.getRoute(), "2", "zh", key))
-                                    .timeout(30, TimeUnit.SECONDS)
-                                    .retryWhen(new RetryWithDelay(3, 3000))
                                     .subscribeWith(aesBusEtaObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size() - 1)));
                         } else {
                             notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId, row);
@@ -190,8 +182,6 @@ public class EtaService extends IntentService {
                             break;
                         }
                         disposables.add(mtrService.getSchedule(key, routeStop.getRouteId(), routeStop.getCode(), lang)
-                                .timeout(30, TimeUnit.SECONDS)
-                                .retryWhen(new RetryWithDelay(3, 3000))
                                 .subscribeWith(mtrScheduleObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size() - 1, codeMap)));
                         break;
                     }
