@@ -22,12 +22,12 @@ public class RouteUtil {
         if (route == null) return null;
         Route object = new Route();
         object.setCompanyCode(C.PROVIDER.KMB);
-        object.setOrigin(HKSCSUtil.convert(route.destinationTc));
-        object.setDestination(HKSCSUtil.convert(route.originTc));
+        object.setOrigin(route.destinationTc);
+        object.setDestination(route.originTc);
         object.setName(route.route);
         object.setSequence(route.bound);
         object.setServiceType(TextUtils.isEmpty(route.serviceType) ? route.serviceType : route.serviceType.trim());
-        String desc = HKSCSUtil.convert(route.descTc.trim());
+        String desc = route.descTc.trim();
         object.setDescription(desc);
         object.setSpecial(!TextUtils.isEmpty(desc));
         return object;

@@ -549,10 +549,10 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                 vh.mapView.setBuiltInZoomControls(false);
                 vh.mapView.setMultiTouchControls(false);
                 vh.mapView.setTilesScaledToDpi(true);
-                vh.mapView.setMaxZoomLevel(20);
-                vh.mapView.setMinZoomLevel(14);
+                vh.mapView.setMaxZoomLevel(20.0);
+                vh.mapView.setMinZoomLevel(14.0);
                 IMapController mapController = vh.mapView.getController();
-                mapController.setZoom(18);
+                mapController.setZoom(18.0);
                 GeoPoint startPoint = new GeoPoint(Double.parseDouble(routeStop.getLatitude()), Double.parseDouble(routeStop.getLongitude()));
                 mapController.setCenter(startPoint);
 

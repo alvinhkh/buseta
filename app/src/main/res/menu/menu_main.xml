@@ -9,7 +9,7 @@
         android:orderInCategory="100"
         android:iconifiedByDefault="true"
         android:icon="@drawable/ic_search_white_24dp"
-        app:showAsAction="always|collapseActionView"
+        app:showAsAction="ifRoom|collapseActionView"
         app:actionViewClass="android.support.v7.widget.SearchView" />
 
     <item

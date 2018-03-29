@@ -9,6 +9,7 @@ import com.alvinhkh.buseta.kmb.model.network.KmbRouteBoundRes;
 import com.alvinhkh.buseta.kmb.model.network.KmbSpecialRouteRes;
 import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.ui.route.RouteActivityAbstract;
+import com.alvinhkh.buseta.utils.HKSCSUtil;
 import com.alvinhkh.buseta.utils.RouteUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.alvinhkh.buseta.utils.RetryWithDelay;
@@ -16,7 +17,9 @@ import com.alvinhkh.buseta.utils.RetryWithDelay;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.observers.DisposableObserver;
+import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
 public class KmbActivity extends RouteActivityAbstract {
@@ -43,6 +46,15 @@ public class KmbActivity extends RouteActivityAbstract {
                         list.add(bound.bound);
                         disposables.add(kmbService.getSpecialRoute(bound.route, String.valueOf(bound.bound))
                                 .retryWhen(new RetryWithDelay(5, 3000))
+                                .subscribeOn(Schedulers.io())
+                                .doOnNext(r -> {
+                                    for (KmbRoute route : r.data.routes) {
+                                        route.destinationTc = HKSCSUtil.convert(route.destinationTc);
+                                        route.originTc = HKSCSUtil.convert(route.originTc);
+                                        route.descTc = HKSCSUtil.convert(route.descTc);
+                                    }
+                                })
+                                .observeOn(AndroidSchedulers.mainThread())
                                 .subscribeWith(specialRouteObserver(bound.route)));
                     }
                 }

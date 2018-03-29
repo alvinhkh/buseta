@@ -18,6 +18,7 @@ import com.alvinhkh.buseta.mtr.model.AESBusStop;
 import com.alvinhkh.buseta.nlb.model.NlbRouteStop;
 import com.alvinhkh.buseta.nlb.model.NlbStop;
 import com.alvinhkh.buseta.nwst.model.NwstStop;
+import com.alvinhkh.buseta.nwst.util.NwstRequestUtil;
 
 import org.jsoup.parser.Parser;
 import org.osgeo.proj4j.CRSFactory;
@@ -96,9 +97,9 @@ public class RouteStopUtil {
         object.setDirection(kmbRouteStop.bound);
         object.setCode(kmbRouteStop.bsiCode);
         object.setSequence(Integer.toString(position));
-        object.setName(HKSCSUtil.convert(kmbRouteStop.nameTc));
+        object.setName(kmbRouteStop.nameTc);
         object.setFare(kmbRouteStop.airFare);
-        object.setLocation(HKSCSUtil.convert(kmbRouteStop.locationTc));
+        object.setLocation(kmbRouteStop.locationTc);
         Pair<Double, Double> latlong = fromHK80toWGS84(
                 new Pair<>(Double.parseDouble(kmbRouteStop.X), Double.parseDouble(kmbRouteStop.Y)));
         if (latlong != null) {
@@ -182,7 +183,7 @@ public class RouteStopUtil {
         object.setSequence(Integer.toString(nwstStop.getSequence()));
         object.setEtaGet(Boolean.toString(nwstStop.isEta()));
         if (!TextUtils.isEmpty(nwstStop.getPoleId())) {
-            object.setImageUrl("http://mobile.nwstbus.com.hk/api6/getstopphoto.php?filename=w" + nwstStop.getPoleId() + "001.jpg");
+            object.setImageUrl("http://mobile.nwstbus.com.hk/api6/getstopphoto.php?filename=w" + nwstStop.getPoleId() + "001.jpg&syscode=" + NwstRequestUtil.syscode());
         }
         return object;
     }

@@ -4,7 +4,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'io.fabric.tools:gradle:1.24.4'
+        classpath 'io.fabric.tools:gradle:1.25.2'
     }
 }
 
@@ -16,7 +16,7 @@ apply plugin: 'io.fabric'
 def versionMajor = 1
 def versionMinor = 0
 def versionPatch = 1
-def versionBuild = 8
+def versionBuild = 9
 
 android {
     compileSdkVersion 27
@@ -73,28 +73,28 @@ dependencies {
     implementation "android.arch.persistence.room:rxjava2:1.0.0"
     annotationProcessor "android.arch.persistence.room:compiler:1.0.0"
     kapt "android.arch.persistence.room:compiler:1.0.0"
-    implementation 'com.android.support:appcompat-v7:27.0.2'
-    implementation 'com.android.support:cardview-v7:27.0.2'
-    implementation 'com.android.support.constraint:constraint-layout:1.1.0-beta4'
-    implementation 'com.android.support:customtabs:27.0.2'
-    implementation 'com.android.support:design:27.0.2'
-    implementation 'com.android.support:multidex:1.0.2'
-    implementation 'com.android.support:preference-v14:27.0.2'
-    implementation 'com.android.support:recyclerview-v7:27.0.2'
-    implementation 'com.android.support:support-annotations:27.0.2'
-    implementation 'com.google.android.gms:play-services-location:11.8.0'
-    implementation 'com.google.android.gms:play-services-maps:11.8.0'
-    implementation 'com.google.android.gms:play-services-oss-licenses:11.8.0'
+    implementation 'com.android.support:appcompat-v7:27.1.0'
+    implementation 'com.android.support:cardview-v7:27.1.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.0-beta6'
+    implementation 'com.android.support:customtabs:27.1.0'
+    implementation 'com.android.support:design:27.1.0'
+    implementation 'com.android.support:multidex:1.0.3'
+    implementation 'com.android.support:preference-v14:27.1.0'
+    implementation 'com.android.support:recyclerview-v7:27.1.0'
+    implementation 'com.android.support:support-annotations:27.1.0'
+    implementation 'com.google.android.gms:play-services-location:12.0.0'
+    implementation 'com.google.android.gms:play-services-maps:12.0.0'
+    implementation 'com.google.android.gms:play-services-oss-licenses:12.0.0'
     implementation 'com.google.code.gson:gson:2.8.2'
-    implementation 'com.google.firebase:firebase-ads:11.8.0'
-    implementation 'com.google.firebase:firebase-appindexing:11.8.0'
-    implementation 'com.google.firebase:firebase-config:11.8.0'
-    implementation 'com.google.firebase:firebase-core:11.8.0'
-    implementation 'com.google.firebase:firebase-firestore:11.8.0'
+    implementation 'com.google.firebase:firebase-ads:12.0.0'
+    implementation 'com.google.firebase:firebase-appindexing:12.0.0'
+    implementation 'com.google.firebase:firebase-config:12.0.0'
+    implementation 'com.google.firebase:firebase-core:12.0.0'
+    implementation 'com.google.firebase:firebase-firestore:12.0.0'
     implementation 'com.google.maps.android:android-maps-utils:0.5'
-    implementation 'com.google.maps:google-maps-services:0.2.5'
+    implementation 'com.google.maps:google-maps-services:0.2.6'
     implementation 'com.firebase:firebase-jobdispatcher:0.8.5'
-    implementation ('com.firebaseui:firebase-ui-firestore:3.1.2') {
+    implementation ('com.firebaseui:firebase-ui-firestore:3.2.2') {
         exclude group: 'com.google.firebase'
     }
     implementation (group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1') {
@@ -104,24 +104,23 @@ dependencies {
     implementation 'org.jsoup:jsoup:1.11.2'
     implementation 'com.opencsv:opencsv:4.1'
     implementation 'com.github.chrisbanes:PhotoView:1.3.1'
-    implementation 'com.squareup.retrofit2:retrofit:2.3.0'
-    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
-    implementation ('com.squareup.retrofit2:converter-gson:2.3.0') {
+    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
+    implementation ('com.squareup.retrofit2:converter-gson:2.4.0') {
         exclude group: 'com.google.code.gson', module: 'gson'
     }
-    implementation ('com.squareup.retrofit2:converter-simplexml:2.3.0') {
+    implementation ('com.squareup.retrofit2:converter-simplexml:2.4.0') {
         exclude group: 'org.simpleframework', module: 'simple-xml'
     }
-    implementation 'com.jakewharton.timber:timber:4.6.0'
-    implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
-    implementation 'io.reactivex.rxjava2:rxjava:2.1.8'
-    implementation 'org.osmdroid:osmdroid-android:5.6.5'
+    implementation 'com.jakewharton.timber:timber:4.7.0'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
+    implementation 'io.reactivex.rxjava2:rxjava:2.1.12'
+    implementation 'org.osmdroid:osmdroid-android:6.0.1'
     implementation 'org.osgeo:proj4j:0.1.0'
     implementation 'org.slf4j:slf4j-nop:1.7.25'
-    androidTestImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.5.4'
     releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
-    implementation('com.crashlytics.sdk.android:crashlytics:2.8.0@aar') {
+    implementation('com.crashlytics.sdk.android:crashlytics:2.9.1@aar') {
         transitive = true
     }
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"

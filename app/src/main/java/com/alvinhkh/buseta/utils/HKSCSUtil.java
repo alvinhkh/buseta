@@ -1958,11 +1958,39 @@ public class HKSCSUtil {
         map.put("\ue30d", "\u3ea8");
         map.put("\ue30e", "\u79c6");
         map.put("\ue310", "\u79d4");
-        for (String k: map.keySet()) {
-            if (text.contains(k)) {
-                text = text.replaceAll(k, map.get(k));
+        return replaceFromMap(text, map);
+    }
+
+    /**
+     * Replaces all occurrences of keys of the given map in the given string
+     * with the associated value in that map.
+     *
+     * This method is semantically the same as calling
+     * {@link String#replace(CharSequence, CharSequence)} for each of the
+     * entries in the map, but may be significantly faster for many replacements
+     * performed on a short string, since
+     * {@link String#replace(CharSequence, CharSequence)} uses regular
+     * expressions internally and results in many String object allocations when
+     * applied iteratively.
+     *
+     * The order in which replacements are applied depends on the order of the
+     * map's entry set.
+     */
+    public static String replaceFromMap(String string,
+                                        Map<String, String> replacements) {
+        StringBuilder sb = new StringBuilder(string);
+        for (Map.Entry<String, String> entry : replacements.entrySet()) {
+            String key = entry.getKey();
+            String value = entry.getValue();
+
+            int start = sb.indexOf(key, 0);
+            while (start > -1) {
+                int end = start + key.length();
+                int nextSearchStart = start + value.length();
+                sb.replace(start, end, value);
+                start = sb.indexOf(key, nextSearchStart);
             }
         }
-        return text;
+        return sb.toString();
     }
 }

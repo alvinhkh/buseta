@@ -11,11 +11,13 @@ import android.view.ViewGroup;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.kmb.KmbService;
+import com.alvinhkh.buseta.kmb.model.KmbRouteStop;
 import com.alvinhkh.buseta.kmb.model.network.KmbStopsRes;
 import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
 import com.alvinhkh.buseta.ui.route.RouteStopListFragmentAbstract;
+import com.alvinhkh.buseta.utils.HKSCSUtil;
 import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.RetryWithDelay;
 import com.google.gson.Gson;
@@ -23,6 +25,7 @@ import com.google.gson.JsonParseException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.observers.DisposableObserver;
@@ -60,6 +63,13 @@ public class KmbStopListFragment extends RouteStopListFragmentAbstract {
         disposables.add(kmbService.getStops(route.getName(), route.getSequence(), route.getServiceType())
                 .retryWhen(new RetryWithDelay(5, 3000))
                 .subscribeOn(Schedulers.io())
+                .doOnNext(res -> {
+                    for (int i = 0; i < res.data.routeStops.size(); i++) {
+                        KmbRouteStop kmbRouteStop = res.data.routeStops.get(i);
+                        kmbRouteStop.nameTc = HKSCSUtil.convert(kmbRouteStop.nameTc);
+                        kmbRouteStop.locationTc = HKSCSUtil.convert(kmbRouteStop.locationTc);
+                    }
+                })
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(routeStopsObserver()));
         return rootView;

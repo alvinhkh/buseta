@@ -92,6 +92,10 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         OnMapReadyCallback, GoogleMap.OnMarkerClickListener,
         AppBarLayout.OnOffsetChangedListener {
 
+    private final static String SHOW_MAP_STATE = "SHOW_MAP_STATE";
+
+    private final static String SCROLL_POSITION_STATE = "SCROLL_POSITION_STATE";
+
     protected final CompositeDisposable disposables = new CompositeDisposable();
 
     protected RouteStopListAdapter adapter;
@@ -110,6 +114,8 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
 
     protected RouteStop navToStop = null;
 
+    protected Integer scrollToPos = 0;
+
     protected GoogleMap map;
 
     protected List<Pair<Double, Double>> mapCoordinates = new ArrayList<>();
@@ -120,7 +126,38 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
 
     private Boolean isShowMapFragment = true;
 
+    private SupportMapFragment mapFragment = null;
+
+    private HashMap<String, Marker> markerMap = new HashMap<>();
+
     public RouteStopListFragmentAbstract() {}
+
+    private final Handler initLoadHandler = new Handler();
+
+    private final Runnable initLoadRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (getView() != null) {
+                if (getUserVisibleHint()) {
+                    refreshHandler.post(refreshRunnable);
+                    if (isShowMapFragment) {
+                        showMapFragment();
+                    }
+                    if (getActivity() != null) {
+                        FloatingActionButton fab = getActivity().findViewById(R.id.fab);
+                        if (fab != null) {
+                            fab.setOnClickListener(v -> onRefresh());
+                        }
+                    }
+                } else {
+                    refreshHandler.removeCallbacksAndMessages(null);
+                }
+                initLoadHandler.removeCallbacksAndMessages(null);
+            } else {
+                initLoadHandler.postDelayed(this, 5000);  // try every 5 sec
+            }
+        }
+    };
 
     protected final Handler refreshHandler = new Handler();
 
@@ -201,46 +238,16 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         swipeRefreshLayout.setRefreshing(true);
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        isShowMapFragment = preferences != null && preferences.getBoolean("load_map", true);
-        showMapFragment();
+        isShowMapFragment = preferences != null && preferences.getBoolean("load_map", false);
+
+        Guideline guideTopInfo = rootView.findViewById(R.id.guideline);
+        if (guideTopInfo != null) {
+            ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) guideTopInfo.getLayoutParams();
+            params.guidePercent = .0f;
+            guideTopInfo.setLayoutParams(params);
+        }
 
         return rootView;
-    }
-
-    private void showMapFragment() {
-        if (getContext() == null) return;
-        SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-        if (mapFragment != null) {
-            mapFragment.getMapAsync(this);
-            FragmentTransaction ft = getChildFragmentManager().beginTransaction();
-            if (isShowMapFragment) {
-                ft.show(mapFragment);
-            } else {
-                ft.hide(mapFragment);
-            }
-            ft.commitAllowingStateLoss();
-        }
-
-        if (getActivity() != null &&
-                getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
-            AppBarLayout appBar = getActivity().findViewById(R.id.appbar);
-            if (appBar != null) {
-                if (isShowMapFragment) {
-                    appBar.addOnOffsetChangedListener(this);
-                } else {
-                    appBar.removeOnOffsetChangedListener(this);
-                }
-            }
-        }
-
-        if (getView() != null) {
-            Guideline guideTopInfo = getView().findViewById(R.id.guideline);
-            if (guideTopInfo != null) {
-                ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) guideTopInfo.getLayoutParams();
-                params.guidePercent = isShowMapFragment ? .4f : .0f;
-                guideTopInfo.setLayoutParams(params);
-            }
-        }
     }
 
     @Override
@@ -256,16 +263,9 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                     guideTopInfo.setLayoutParams(params);
                 }
             }
-            if (getUserVisibleHint()) {
-                refreshHandler.post(refreshRunnable);
-                if (getActivity() != null) {
-                    FloatingActionButton fab = getActivity().findViewById(R.id.fab);
-                    if (fab != null) {
-                        fab.setOnClickListener(v -> onRefresh());
-                    }
-                }
-            } else {
-                refreshHandler.removeCallbacksAndMessages(null);
+            initLoadHandler.post(initLoadRunnable);
+            if (mapFragment == null && isShowMapFragment) {
+                showMapFragment();
             }
         }
     }
@@ -273,24 +273,41 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
     @Override
     public void setUserVisibleHint(boolean isUserVisible) {
         super.setUserVisibleHint(isUserVisible);
-        if (getView() != null) {
-            if (isUserVisible) {
-                refreshHandler.post(refreshRunnable);
-                if (getActivity() != null) {
-                    FloatingActionButton fab = getActivity().findViewById(R.id.fab);
-                    if (fab != null) {
-                        fab.setOnClickListener(v -> onRefresh());
-                    }
-                }
-            } else {
-                refreshHandler.removeCallbacksAndMessages(null);
+        initLoadHandler.post(initLoadRunnable);
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        if (mapFragment != null) {
+            getChildFragmentManager().beginTransaction().remove(mapFragment).commit();
+            mapFragment = null;
+        }
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(SHOW_MAP_STATE, isShowMapFragment);
+        if (recyclerView != null) {
+            Integer lastFirstVisiblePosition = ((LinearLayoutManager) recyclerView.getLayoutManager())
+                    .findFirstVisibleItemPosition();
+            outState.putInt(SCROLL_POSITION_STATE, lastFirstVisiblePosition);
+        }
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (savedInstanceState != null) {
+            if (savedInstanceState.getBoolean(SHOW_MAP_STATE, false)) {
+                isShowMapFragment = true;
+                showMapFragment();
             }
+            scrollToPos = savedInstanceState.getInt(SCROLL_POSITION_STATE, 0);
         }
     }
 
     @Override
     public void onDestroy() {
         disposables.clear();
+        initLoadHandler.removeCallbacksAndMessages(null);
+        refreshHandler.removeCallbacksAndMessages(null);
         if (getContext() != null) {
             PreferenceManager.getDefaultSharedPreferences(getContext())
                     .unregisterOnSharedPreferenceChangeListener(this);
@@ -305,7 +322,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         MenuItem showMapMenuItem = menu.findItem(R.id.action_show_map);
         if (getContext() != null) {
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-            showMapMenuItem.setVisible(preferences == null || !preferences.getBoolean("load_map", true));
+            showMapMenuItem.setVisible(preferences == null || !preferences.getBoolean("load_map", false));
         }
     }
 
@@ -337,7 +354,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                 adapter.notifyDataSetChanged();
             }
         } else if (key.equals("load_map")) {
-            isShowMapFragment = sharedPreferences != null && sharedPreferences.getBoolean("load_map", true);
+            isShowMapFragment = sharedPreferences != null && sharedPreferences.getBoolean("load_map", false);
             if (getActivity() != null) {
                 getActivity().invalidateOptionsMenu();
             }
@@ -348,7 +365,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
     @Override
     public void onLowMemory() {
         super.onLowMemory();
-        System.gc();
+        Timber.i("LowMemory");
     }
 
     @Override
@@ -398,7 +415,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
     @Override
     public void onMapReady(GoogleMap googleMap) {
         map = googleMap;
-        if (map == null || getContext() == null) return;
+        if (googleMap == null || getContext() == null) return;
         googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(getContext(), R.raw.map_style));
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(22.3964, 114.1095), 10));
         GoogleMapOptions options = new GoogleMapOptions();
@@ -419,7 +436,27 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                         Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             googleMap.setMyLocationEnabled(true);
         }
-        if (routeStops.size() > 0) {
+        loadMapData(googleMap);
+        if (getView() != null) {
+            Guideline guideTopInfo = getView().findViewById(R.id.guideline);
+            if (guideTopInfo != null) {
+                ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) guideTopInfo.getLayoutParams();
+                params.guidePercent = isShowMapFragment ? .4f : .0f;
+                guideTopInfo.setLayoutParams(params);
+            }
+        }
+        if (getActivity() != null &&
+                getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE) {
+            AppBarLayout appBar = getActivity().findViewById(R.id.appbar);
+            if (appBar != null) {
+                if (isShowMapFragment) {
+                    appBar.addOnOffsetChangedListener(this);
+                } else {
+                    appBar.removeOnOffsetChangedListener(this);
+                }
+            }
+        }
+        if (routeStops != null && routeStops.size() > 0) {
             RouteStop stop = routeStops.get(0);
             if (!TextUtils.isEmpty(stop.getLatitude()) && !TextUtils.isEmpty(stop.getLongitude())) {
                 googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
@@ -481,7 +518,47 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         guideline.setLayoutParams(params);
     }
 
-    private HashMap<String, Marker> markerMap = new HashMap<>();
+    private void showMapFragment() {
+        if (!isShowMapFragment) {
+            if (mapFragment != null && getActivity() != null) {
+                FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
+                ft.remove(mapFragment);
+                ft.commit();
+            }
+            mapFragment = null;
+            if (getView() != null) {
+                Guideline guideTopInfo = getView().findViewById(R.id.guideline);
+                if (guideTopInfo != null) {
+                    ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) guideTopInfo.getLayoutParams();
+                    params.guidePercent = .0f;
+                    guideTopInfo.setLayoutParams(params);
+                }
+            }
+            if (getActivity() != null) {
+                AppBarLayout appBar = getActivity().findViewById(R.id.appbar);
+                if (appBar != null) {
+                    appBar.removeOnOffsetChangedListener(this);
+                }
+            }
+            return;
+        }
+        if (getContext() == null) return;
+        if (mapFragment != null) return;
+        new Thread(() -> {
+            try {
+                mapFragment = SupportMapFragment.newInstance();
+                getChildFragmentManager().beginTransaction().add(R.id.map, mapFragment).runOnCommit(() -> {
+                    if (getActivity() != null) {
+                        getActivity().runOnUiThread(() -> {
+                            if (mapFragment != null) {
+                                mapFragment.getMapAsync(this);
+                            }
+                        });
+                    }
+                }).commit();
+            } catch (Exception ignored){ }
+        }).start();
+    }
 
     DisposableObserver<Intent> etaObserver() {
         return new DisposableObserver<Intent>() {
@@ -561,22 +638,12 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         }
     }
 
-    protected void onStopListComplete() {
-        Boolean isScrollToPosition = false;
-        Integer scrollToPosition = 0;
-        routeStops.clear();
+    private void loadMapData(GoogleMap map) {
         if (map != null && adapter != null) {
             Boolean isSnapToRoad = false;
             if (getActivity() != null) {
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
                 isSnapToRoad = preferences != null && preferences.getBoolean("map_direction_api", false);
-
-                FloatingActionButton fab = getActivity().findViewById(R.id.fab);
-                if (fab != null) {
-                    if (preferences == null || !preferences.getBoolean("load_etas", false)) {
-                        fab.show();
-                    }
-                }
             }
             if (hasMapCoordinates) {
                 isSnapToRoad = false;
@@ -593,23 +660,13 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
             if (!hasMapCoordinates) {
                 mapCoordinates.clear();
             }
+            routeStops.clear();
             if (adapter.getItemCount() > 0) {
                 for (int i = 0, j = 0; i < adapter.getItemCount(); i++) {
                     Item item = adapter.getItem(i);
                     if (item.getType() != Item.TYPE_DATA) continue;
                     RouteStop stop = (RouteStop) item.getObject();
                     routeStops.add(stop);
-                    if (
-                            navToStop != null &&
-                                    stop.getCompanyCode().equals(navToStop.getCompanyCode()) &&
-                                    stop.getRoute().equals(navToStop.getRoute()) &&
-                                    stop.getName().equals(navToStop.getName()) &&
-                                    stop.getDirection().equals(navToStop.getDirection()) &&
-                                    stop.getSequence().equals(navToStop.getSequence())
-                            ) {
-                        scrollToPosition = j;
-                        isScrollToPosition = true;
-                    }
                     if (!TextUtils.isEmpty(stop.getLatitude()) && !TextUtils.isEmpty(stop.getLongitude())) {
                         if (!hasMapCoordinates) {
                             mapCoordinates.add(new Pair<>(Double.parseDouble(stop.getLatitude()), Double.parseDouble(stop.getLongitude())));
@@ -697,19 +754,45 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                 if (hasMapCoordinates || !isSnapToRoad || hasError) {
                     map.addPolyline(singleLine);
                 }
-                if (routeStops.size() > 0 && scrollToPosition < routeStops.size()) {
-                    RouteStop stop = routeStops.get(scrollToPosition);
-                    if (!TextUtils.isEmpty(stop.getLatitude()) && !TextUtils.isEmpty(stop.getLongitude())) {
-                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                new LatLng(Double.parseDouble(stop.getLatitude()),
-                                        Double.parseDouble(stop.getLongitude())), 16));
-                    }
-                }
+            }
+        }
+    }
+
+    protected void onStopListComplete() {
+        Boolean isScrollToPosition = false;
+        Integer scrollToPosition = 0;
+        loadMapData(map);
+        if (getActivity() != null) {
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+            FloatingActionButton fab = getActivity().findViewById(R.id.fab);
+            if (fab != null && (preferences == null || !preferences.getBoolean("load_etas", false))) {
+                fab.show();
             }
         }
         refreshHandler.post(refreshRunnable);
         if (adapter != null) {
             if (adapter.getItemCount() > 0) {
+                if (navToStop != null) {
+                    for (int i = 0, j = 0; i < adapter.getItemCount(); i++) {
+                        Item item = adapter.getItem(i);
+                        if (item.getType() != Item.TYPE_DATA) continue;
+                        RouteStop stop = (RouteStop) item.getObject();
+                        if (stop.getCompanyCode().equals(navToStop.getCompanyCode()) &&
+                                stop.getRoute().equals(navToStop.getRoute()) &&
+                                stop.getName().equals(navToStop.getName()) &&
+                                stop.getDirection().equals(navToStop.getDirection()) &&
+                                stop.getSequence().equals(navToStop.getSequence())
+                                ) {
+                            scrollToPosition = j;
+                            isScrollToPosition = true;
+                        }
+                    }
+                }
+                if (scrollToPos > 0) {
+                    scrollToPosition = scrollToPos;
+                    isScrollToPosition = true;
+                    scrollToPos = 0;
+                }
                 if (recyclerView != null) {
                     recyclerView.setVisibility(View.VISIBLE);
                     if (isScrollToPosition) {
@@ -721,6 +804,14 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                 }
                 if (progressBar != null) {
                     progressBar.setVisibility(View.GONE);
+                }
+            }
+            if (map != null && routeStops.size() > 0 && scrollToPosition < routeStops.size()) {
+                RouteStop stop = routeStops.get(scrollToPosition);
+                if (!TextUtils.isEmpty(stop.getLatitude()) && !TextUtils.isEmpty(stop.getLongitude())) {
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                            new LatLng(Double.parseDouble(stop.getLatitude()),
+                                    Double.parseDouble(stop.getLongitude())), 16));
                 }
             }
         }

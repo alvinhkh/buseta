@@ -27,6 +27,7 @@ import com.alvinhkh.buseta.ui.BaseActivity;
 import com.alvinhkh.buseta.utils.AdViewUtil;
 import com.alvinhkh.buseta.utils.RouteUtil;
 import com.alvinhkh.buseta.utils.SearchHistoryUtil;
+import com.google.android.gms.maps.MapView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,8 +64,6 @@ public abstract class RouteActivityAbstract extends BaseActivity {
     protected RouteStop stopFromIntent;
 
     protected String routeNo;
-
-    protected Fragment currentFragment = null;
 
     private Boolean isScrollToPage = false;
 
@@ -127,17 +126,6 @@ public abstract class RouteActivityAbstract extends BaseActivity {
             }
         });
 
-        viewPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                Fragment f = pagerAdapter.getFragment(position);
-                if (currentFragment == null) {
-                    f.setUserVisibleHint(true);
-                }
-                currentFragment = f;
-            }
-        });
-
         pagerAdapter.registerDataSetObserver(new DataSetObserver() {
             @Override
             public void onChanged() {
@@ -164,6 +152,16 @@ public abstract class RouteActivityAbstract extends BaseActivity {
             Toast.makeText(this, R.string.missing_input, Toast.LENGTH_SHORT).show();
             finish();
         }
+
+        // Fixing Later Map loading Delay
+        new Thread(() -> {
+            try {
+                MapView mv = new MapView(getApplicationContext());
+                mv.onCreate(null);
+                mv.onPause();
+                mv.onDestroy();
+            }catch (Exception ignored){}
+        }).start();
     }
 
     @Override
@@ -227,8 +225,10 @@ public abstract class RouteActivityAbstract extends BaseActivity {
     }
 
     protected void onCompleteRoute(List<Route> routes, String companyCode) {
+        if (pagerAdapter == null || TextUtils.isEmpty(companyCode)) return;
         pagerAdapter.setRoute(routeNo);
         for (Route route : routes) {
+            if (route == null) continue;
             companyCode = route.getCompanyCode();
             if (stopFromIntent != null &&
                     !route.isSpecial() &&

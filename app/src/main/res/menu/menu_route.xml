@@ -5,12 +5,16 @@
 
     <item
         android:id="@+id/action_notice"
+        android:icon="@drawable/ic_event_note_white_24dp"
         android:title="@string/notice"
+        android:orderInCategory="90"
         app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/action_show_map"
+        android:icon="@drawable/ic_map_white_24dp"
         android:title="@string/map"
         android:visible="false"
-        app:showAsAction="never"/>
+        android:orderInCategory="91"
+        app:showAsAction="ifRoom"/>
 </menu>

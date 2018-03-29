@@ -234,6 +234,9 @@ abstract public class BaseActivity extends AppCompatActivity
         if (inputMethodManager != null) {
             inputMethodManager.hideSoftInputFromWindow(new View(this).getWindowToken(), 0);
         }
+        if (adView != null) {
+            adView.pause();
+        }
         super.onPause();
     }
 
