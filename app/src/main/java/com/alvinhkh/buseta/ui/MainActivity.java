@@ -1,11 +1,14 @@
 package com.alvinhkh.buseta.ui;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -18,13 +21,10 @@ import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.mtr.ui.MtrLineStatusFragment;
 import com.alvinhkh.buseta.service.CheckUpdateService;
-import com.alvinhkh.buseta.service.LocationService;
 import com.alvinhkh.buseta.ui.follow.EditFollowFragment;
 import com.alvinhkh.buseta.ui.follow.FollowFragment;
 import com.alvinhkh.buseta.utils.AdViewUtil;
 import com.alvinhkh.buseta.utils.ColorUtil;
-
-import timber.log.Timber;
 
 
 public class MainActivity extends BaseActivity {
@@ -134,8 +134,10 @@ public class MainActivity extends BaseActivity {
         });
         bottomNavigationView.setSelectedItemId(R.id.action_bus);
 
-        Intent intent = new Intent(this, CheckUpdateService.class);
-        startService(intent);
+        try {
+            Intent intent = new Intent(this, CheckUpdateService.class);
+            startService(intent);
+        } catch (IllegalStateException ignored) {}
     }
 
     @Override
@@ -179,11 +181,6 @@ public class MainActivity extends BaseActivity {
 
     @Override
     public void onDestroy() {
-        try {
-            Intent intent = new Intent(this, LocationService.class);
-            intent.setAction(C.ACTION.CANCEL);
-            startService(intent);
-        } catch (IllegalStateException ignored) {}
         super.onDestroy();
     }
 

@@ -47,6 +47,9 @@ import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
 import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
 import com.alvinhkh.buseta.utils.Utils;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -92,9 +95,9 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         OnMapReadyCallback, GoogleMap.OnMarkerClickListener,
         AppBarLayout.OnOffsetChangedListener {
 
-    private final static String SHOW_MAP_STATE = "SHOW_MAP_STATE";
+    private final static String SHOW_MAP_STATE_KEY = "SHOW_MAP_STATE_KEY";
 
-    private final static String SCROLL_POSITION_STATE = "SCROLL_POSITION_STATE";
+    private final static String SCROLL_POSITION_STATE_KEY = "SCROLL_POSITION_STATE_KEY";
 
     protected final CompositeDisposable disposables = new CompositeDisposable();
 
@@ -130,7 +133,8 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
 
     private HashMap<String, Marker> markerMap = new HashMap<>();
 
-    public RouteStopListFragmentAbstract() {}
+    public RouteStopListFragmentAbstract() {
+    }
 
     private final Handler initLoadHandler = new Handler();
 
@@ -194,8 +198,6 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                 .share().subscribeWith(etaObserver()));
         disposables.add(RxBroadcastReceiver.create(getContext(), new IntentFilter(C.ACTION.FOLLOW_UPDATE))
                 .share().subscribeWith(followObserver()));
-        disposables.add(RxBroadcastReceiver.create(getContext(), new IntentFilter(C.ACTION.LOCATION_UPDATE))
-                .share().subscribeWith(locationObserver()));
     }
 
     @Override
@@ -268,6 +270,13 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                 showMapFragment();
             }
         }
+        startLocationUpdates();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        stopLocationUpdates();
     }
 
     @Override
@@ -283,11 +292,11 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
             mapFragment = null;
         }
         super.onSaveInstanceState(outState);
-        outState.putBoolean(SHOW_MAP_STATE, isShowMapFragment);
+        outState.putBoolean(SHOW_MAP_STATE_KEY, isShowMapFragment);
         if (recyclerView != null) {
             Integer lastFirstVisiblePosition = ((LinearLayoutManager) recyclerView.getLayoutManager())
                     .findFirstVisibleItemPosition();
-            outState.putInt(SCROLL_POSITION_STATE, lastFirstVisiblePosition);
+            outState.putInt(SCROLL_POSITION_STATE_KEY, lastFirstVisiblePosition);
         }
     }
 
@@ -295,11 +304,11 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         if (savedInstanceState != null) {
-            if (savedInstanceState.getBoolean(SHOW_MAP_STATE, false)) {
+            if (savedInstanceState.getBoolean(SHOW_MAP_STATE_KEY, false)) {
                 isShowMapFragment = true;
                 showMapFragment();
             }
-            scrollToPos = savedInstanceState.getInt(SCROLL_POSITION_STATE, 0);
+            scrollToPos = savedInstanceState.getInt(SCROLL_POSITION_STATE_KEY, 0);
         }
     }
 
@@ -820,6 +829,40 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         }
     }
 
+    LocationCallback locationCallback = new LocationCallback() {
+        @Override
+        public void onLocationResult(LocationResult locationResult) {
+            if (locationResult == null) {
+                return;
+            }
+            for (Location location : locationResult.getLocations()) {
+                if (adapter != null && location != null) {
+                    adapter.setCurrentLocation(location);
+                }
+            }
+        };
+    };
+
+    private void startLocationUpdates() {
+        if (getContext() == null || locationCallback == null) return;
+        if (ActivityCompat.checkSelfPermission(getContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(getContext(),
+                        Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            LocationRequest locationRequest = LocationRequest.create();
+            locationRequest.setInterval(10000);
+            locationRequest.setFastestInterval(10000 / 2);
+            locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+            LocationServices.getFusedLocationProviderClient(getContext())
+                    .requestLocationUpdates(locationRequest, locationCallback, null /* Looper */);
+        }
+    }
+
+    private void stopLocationUpdates() {
+        if (getContext() == null || locationCallback == null) return;
+        LocationServices.getFusedLocationProviderClient(getContext()).removeLocationUpdates(locationCallback);
+    }
+
     DisposableObserver<Intent> followObserver() {
         return new DisposableObserver<Intent>() {
             @Override
@@ -848,43 +891,6 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
 
             @Override
             public void onComplete() {
-            }
-        };
-    }
-
-    DisposableObserver<Intent> locationObserver() {
-        return new DisposableObserver<Intent>() {
-            @Override
-            public void onNext(Intent intent) {
-                Bundle bundle = intent.getExtras();
-                if (bundle == null) return;
-                Location location = bundle.getParcelable(C.EXTRA.LOCATION_OBJECT);
-                if (location == null) return;
-                if (bundle.getBoolean(C.EXTRA.UPDATED)) {
-                    if (adapter != null) {
-                        adapter.setCurrentLocation(location);
-                    }
-                }
-                if (bundle.getBoolean(C.EXTRA.FAIL)) {
-                    if (adapter != null) {
-                        adapter.setCurrentLocation(null);
-                    }
-                }
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                Timber.d(e);
-                if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
-                    swipeRefreshLayout.setRefreshing(false);
-                }
-            }
-
-            @Override
-            public void onComplete() {
-                if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
-                    swipeRefreshLayout.setRefreshing(false);
-                }
             }
         };
     }

@@ -1,14 +1,11 @@
 package com.alvinhkh.buseta.ui.search;
 
 
-import android.Manifest;
 import android.app.SearchManager;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 
@@ -21,7 +18,6 @@ import com.alvinhkh.buseta.mtr.ui.AESBusActivity;
 import com.alvinhkh.buseta.mtr.ui.MtrActivity;
 import com.alvinhkh.buseta.nlb.ui.NlbActivity;
 import com.alvinhkh.buseta.nwst.ui.NwstActivity;
-import com.alvinhkh.buseta.service.LocationService;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.ContentViewEvent;
@@ -98,16 +94,6 @@ public class SearchActivity extends AppCompatActivity {
     private void handleIntent(@NonNull Intent intent) {
         String action = intent.getAction();
         String data = intent.getDataString();
-
-        if (ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
-                ActivityCompat.checkSelfPermission(this,
-                        Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            try {
-                startService(new Intent(this, LocationService.class));
-            } catch (IllegalStateException ignored) {}
-        }
-
         String type = intent.getStringExtra(C.EXTRA.TYPE);
 
         if (Intent.ACTION_SEARCH.equals(action)) {

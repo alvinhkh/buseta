@@ -50,6 +50,7 @@ import com.alvinhkh.buseta.service.RxBroadcastReceiver;
 import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
 import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.FollowStopUtil;
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
 import com.google.android.gms.location.GeofencingRequest;
@@ -147,9 +148,20 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
         disposables.add(RxBroadcastReceiver.create(getContext(), new IntentFilter(C.ACTION.ETA_UPDATE))
                 .share()
                 .subscribeWith(etaObserver()));
-        disposables.add(RxBroadcastReceiver.create(getContext(), new IntentFilter(C.ACTION.LOCATION_UPDATE))
-                .share()
-                .subscribeWith(locationObserver()));  // Note: rely on others to call location request
+
+        if (getActivity() != null &&
+                ActivityCompat.checkSelfPermission(getActivity(),
+                        Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(getActivity(),
+                        Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            FusedLocationProviderClient fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getContext());
+            fusedLocationProviderClient.getLastLocation()
+                    .addOnSuccessListener(getActivity(), location -> {
+                        if (location != null) {
+                            currentLocation = location;
+                        }
+                    });
+        }
     }
 
     @Override
@@ -897,35 +909,6 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
 
             @Override
             public void onComplete() {
-            }
-        };
-    }
-
-    DisposableObserver<Intent> locationObserver() {
-        return new DisposableObserver<Intent>() {
-            @Override
-            public void onNext(Intent intent) {
-                Bundle bundle = intent.getExtras();
-                if (bundle == null) return;
-                if (bundle.getBoolean(C.EXTRA.REQUEST)) return;
-                Location location = bundle.getParcelable(C.EXTRA.LOCATION_OBJECT);
-                if (location == null) return;
-                if (bundle.getBoolean(C.EXTRA.UPDATED)) {
-                    currentLocation = location;
-                }
-                if (bundle.getBoolean(C.EXTRA.FAIL)) {
-                    currentLocation = null;
-                }
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                Timber.d(e);
-            }
-
-            @Override
-            public void onComplete() {
-                updateDistanceDisplay();
             }
         };
     }

@@ -12,7 +12,6 @@ import android.view.MenuItem;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.service.CheckUpdateService;
-import com.alvinhkh.buseta.service.LocationService;
 import com.alvinhkh.buseta.ui.BaseActivity;
 import com.alvinhkh.buseta.utils.AdViewUtil;
 
@@ -96,11 +95,6 @@ public class FollowActivity extends BaseActivity {
 
     @Override
     public void onDestroy() {
-        try {
-            Intent intent = new Intent(this, LocationService.class);
-            intent.setAction(C.ACTION.CANCEL);
-            startService(intent);
-        } catch (IllegalStateException ignored) {}
         super.onDestroy();
     }
 
