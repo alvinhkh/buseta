@@ -158,7 +158,9 @@ public class NwstNoticeFragment extends Fragment implements SwipeRefreshLayout.O
         options.put(QUERY_PLATFORM, PLATFORM);
         options.put(QUERY_APP_VERSION, APP_VERSION);
         options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
-        disposables.add(nwstService.notice(options)
+        Map<String, String> headers = new HashMap<>();
+        headers.put("User-Agent", System.getProperty("http.agent"));
+        disposables.add(nwstService.notice(headers, options)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(noticeObserver()));

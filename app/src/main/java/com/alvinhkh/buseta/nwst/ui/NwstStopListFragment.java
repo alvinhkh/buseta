@@ -25,6 +25,7 @@ import com.alvinhkh.buseta.utils.RetryWithDelay;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,7 +71,9 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
             options.put(QUERY_PLATFORM, PLATFORM);
             options.put(QUERY_APP_VERSION, APP_VERSION);
             options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
-            disposables.add(nwstService.stopList(options)
+            Map<String, String> headers = new HashMap<>();
+            headers.put("User-Agent", System.getProperty("http.agent"));
+            disposables.add(nwstService.stopList(headers, options)
                     .retryWhen(new RetryWithDelay(5, 3000))
                     .subscribeWith(stopListObserver()));
         } else {
@@ -130,7 +133,9 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
                 options.put(QUERY_PLATFORM, PLATFORM);
                 options.put(QUERY_APP_VERSION, APP_VERSION);
                 options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
-                disposables.add(nwstService.latlongList(options)
+                Map<String, String> headers = new HashMap<>();
+                headers.put("User-Agent", System.getProperty("http.agent"));
+                disposables.add(nwstService.latlongList(headers, options)
                         .retryWhen(new RetryWithDelay(5, 3000))
                         .subscribeWith(latlongListObserver()));
             }

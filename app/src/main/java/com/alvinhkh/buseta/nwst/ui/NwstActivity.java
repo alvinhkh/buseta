@@ -45,7 +45,9 @@ public class NwstActivity extends RouteActivityAbstract {
         options.put(QUERY_PLATFORM, PLATFORM);
         options.put(QUERY_APP_VERSION, APP_VERSION);
         options.put(QUERY_SYSCODE, sysCode);
-        disposables.add(nwstService.routeList(options)
+        Map<String, String> headers = new HashMap<>();
+        headers.put("User-Agent", System.getProperty("http.agent"));
+        disposables.add(nwstService.routeList(headers, options)
                 .retryWhen(new RetryWithDelay(5, 3000))
                 .subscribeWith(routeListObserver(no, sysCode)));
     }
@@ -70,7 +72,9 @@ public class NwstActivity extends RouteActivityAbstract {
                             options.put(QUERY_PLATFORM, PLATFORM);
                             options.put(QUERY_APP_VERSION, APP_VERSION);
                             options.put(QUERY_SYSCODE, sysCode);
-                            disposables.add(nwstService.variantList(options)
+                            Map<String, String> headers = new HashMap<>();
+                            headers.put("User-Agent", System.getProperty("http.agent"));
+                            disposables.add(nwstService.variantList(headers, options)
                                     .retryWhen(new RetryWithDelay(5, 3000))
                                     .subscribeWith(variantListObserver(nwstRoute)));
                         }

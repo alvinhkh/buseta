@@ -67,21 +67,21 @@ public interface NwstService {
             .build();
 
     @GET("api6/getmmroutelist.php")
-    Observable<ResponseBody> routeList(@QueryMap Map<String, String> options);
+    Observable<ResponseBody> routeList(@HeaderMap Map<String, String> headers, @QueryMap Map<String, String> options);
 
     @GET("api6/getvariantlist.php")
-    Observable<ResponseBody> variantList(@QueryMap Map<String, String> options);
+    Observable<ResponseBody> variantList(@HeaderMap Map<String, String> headers, @QueryMap Map<String, String> options);
 
     @GET("api6/ppstoplist.php")
-    Observable<ResponseBody> stopList(@QueryMap Map<String, String> options);
+    Observable<ResponseBody> stopList(@HeaderMap Map<String, String> headers, @QueryMap Map<String, String> options);
 
     @GET("api6/get_notice_4.php")
-    Observable<ResponseBody> notice(@QueryMap Map<String, String> options);
+    Observable<ResponseBody> notice(@HeaderMap Map<String, String> headers, @QueryMap Map<String, String> options);
 
     @GET("api6/getnextbus2.php")
     Observable<ResponseBody> eta(@HeaderMap Map<String, String> headers, @QueryMap Map<String, String> options);
 
     @GET("api6/getline_multi2.php")
-    Observable<ResponseBody> latlongList(@QueryMap Map<String, String> options);
+    Observable<ResponseBody> latlongList(@HeaderMap Map<String, String> headers, @QueryMap Map<String, String> options);
 
 }
