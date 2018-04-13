@@ -106,6 +106,9 @@ public class NwstEtaUtil {
                 object.text += " " + subtitle;
             }
         }
+        if (!TextUtils.isEmpty(nwstEta.getBoundText())) {
+            object.text += " " + nwstEta.getBoundText();
+        }
         object.isoTime = nwstEta.getEtaIsoTime();
         object.isSchedule = !TextUtils.isEmpty(nwstEta.getSubtitle()) && (nwstEta.getSubtitle().contains("預定班次") || nwstEta.getSubtitle().contains("预定班次") || nwstEta.getSubtitle().contains("Scheduled"));
         SimpleDateFormat generatedAtDf = new SimpleDateFormat("HH:mm:ss", Locale.ENGLISH);

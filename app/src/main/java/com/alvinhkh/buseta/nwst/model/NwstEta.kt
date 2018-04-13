@@ -51,13 +51,13 @@ data class NwstEta(
                 obj.subtitle = tmp4[0]
             }
             if (!TextUtils.isEmpty(obj.companyCode)) {
-                obj.companyCode = "NWST"
                 if (obj.companyCode.contains("DISABLED")) {
                     obj.title = data[12]
                 }
                 if (obj.companyCode.contains("HTML")) {
                     obj.title = Jsoup.parse(data[1]).text()
                 }
+                obj.companyCode = "NWST"
             }
             return obj
         }
