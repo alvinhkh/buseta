@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
@@ -18,7 +19,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.URLUtil;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,6 +26,7 @@ import android.widget.Toast;
 import com.alvinhkh.buseta.Api;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
+import com.github.chrisbanes.photoview.PhotoView;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -33,7 +34,6 @@ import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
-import uk.co.senab.photoview.PhotoViewAttacher;
 
 
 public class ImageFragment extends Fragment {
@@ -46,17 +46,15 @@ public class ImageFragment extends Fragment {
 
     private final CompositeDisposable disposables = new CompositeDisposable();
 
-    private Context mContext = super.getActivity();
+    private Context context = super.getActivity();
 
-    private ActionBar mActionBar = null;
+    private ActionBar actionBar = null;
 
-    private ProgressBar mProgressBar;
+    private ProgressBar progressBar;
 
-    private ImageView mImageView;
+    private PhotoView photoView;
 
-    private PhotoViewAttacher mPhotoViewAttacher;
-
-    private Bitmap mBitmap = null;
+    private Bitmap bitmap = null;
 
     private String imageTitle;
 
@@ -84,36 +82,32 @@ public class ImageFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              final Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_image, container, false);
-        mContext = super.getActivity();
-        // Get arguments
-        imageTitle = getArguments().getString(ARG_TITLE);
-        imageUrl = getArguments().getString(ARG_URL);
-        // Overview task
-        setTaskDescription(getString(R.string.notice) +
-                getString(R.string.interpunct) + getString(R.string.app_name));
-        // Set Toolbar
-        mActionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        if (null != mActionBar) {
-            mActionBar.setTitle(R.string.app_name);
-            mActionBar.setSubtitle(null);
-            mActionBar.setDisplayHomeAsUpEnabled(true);
+        context = super.getActivity();
+        if (getArguments() != null) {
+            imageTitle = getArguments().getString(ARG_TITLE);
+            imageUrl = getArguments().getString(ARG_URL);
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            setTaskDescription(getString(R.string.notice) +  getString(R.string.interpunct) + getString(R.string.app_name));
+        }
+        if (getActivity() == null) return view;
+        actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        if (null != actionBar) {
+            actionBar.setTitle(R.string.app_name);
+            actionBar.setSubtitle(null);
+            actionBar.setDisplayHomeAsUpEnabled(true);
         }
         setHasOptionsMenu(true);
-        //
-        mProgressBar = (ProgressBar) view.findViewById(R.id.progressBar);
-        mProgressBar.setVisibility(View.GONE);
-        // Set PhotoView
-        mImageView = (ImageView) view.findViewById(R.id.image_view);
-        mPhotoViewAttacher = new PhotoViewAttacher(mImageView);
-        mPhotoViewAttacher.setMaximumScale(4);
-        // Text View
-        TextView mTextView = (TextView) view.findViewById(android.R.id.text1);
+        progressBar = view.findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.GONE);
+        photoView = view.findViewById(R.id.image_view);
+        photoView.setMaximumScale(4);
+        TextView mTextView = view.findViewById(android.R.id.text1);
         mTextView.setOnClickListener(v -> {
-            if (mPhotoViewAttacher != null)
-                mPhotoViewAttacher.setScale(1);
+            photoView.setScale(1);
         });
         if (!TextUtils.isEmpty(imageTitle)) {
             mTextView.setText(imageTitle);
@@ -127,7 +121,7 @@ public class ImageFragment extends Fragment {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putString(ARG_TITLE, imageTitle);
         outState.putString(ARG_URL, imageUrl);
@@ -136,20 +130,17 @@ public class ImageFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (null != mActionBar) {
-            mActionBar.setTitle(R.string.notice);
-            mActionBar.setSubtitle(null);
+        if (null != actionBar) {
+            actionBar.setTitle(R.string.notice);
+            actionBar.setSubtitle(null);
         }
     }
 
     @Override
     public void onDestroyView() {
-        if (mPhotoViewAttacher != null) {
-            mPhotoViewAttacher.cleanup();
-        }
-        if (mImageView != null) {
-            mImageView.setImageBitmap(null);
-            mImageView.destroyDrawingCache();
+        if (photoView != null) {
+            photoView.setImageBitmap(null);
+            photoView.destroyDrawingCache();
         }
         View view = getView();
         if (view != null) {
@@ -175,30 +166,32 @@ public class ImageFragment extends Fragment {
         Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
         ActivityManager.TaskDescription taskDesc =
                 new ActivityManager.TaskDescription(title, bm,
-                        ContextCompat.getColor(mContext, R.color.colorPrimary600));
-        ((AppCompatActivity) mContext).setTaskDescription(taskDesc);
+                        ContextCompat.getColor(context, R.color.colorPrimary600));
+        ((AppCompatActivity) context).setTaskDescription(taskDesc);
     }
 
     private void showNoticeImage(String url) {
         if(!URLUtil.isValidUrl(url)) {
             Toast.makeText(getContext(), R.string.missing_input, Toast.LENGTH_SHORT).show();
-            if (mProgressBar != null) {
-                mProgressBar.setVisibility(View.GONE);
+            if (progressBar != null) {
+                progressBar.setVisibility(View.GONE);
             }
             return;
         }
         // Check internet connection
-        if (!ConnectivityUtil.isConnected(mContext)) {
-            Snackbar.make(getActivity().findViewById(android.R.id.content),
-                    R.string.message_no_internet_connection, Snackbar.LENGTH_LONG).show();
-            if (mProgressBar != null) {
-                mProgressBar.setVisibility(View.GONE);
+        if (!ConnectivityUtil.isConnected(context)) {
+            if (getActivity() != null) {
+                Snackbar.make(getActivity().findViewById(android.R.id.content),
+                        R.string.message_no_internet_connection, Snackbar.LENGTH_LONG).show();
+            }
+            if (progressBar != null) {
+                progressBar.setVisibility(View.GONE);
             }
             return;
         }
 
-        if (mProgressBar != null) {
-            mProgressBar.setVisibility(View.VISIBLE);
+        if (progressBar != null) {
+            progressBar.setVisibility(View.VISIBLE);
         }
 
         disposables.add(Api.raw.create(Api.class).get(url)
@@ -211,10 +204,10 @@ public class ImageFragment extends Fragment {
         return new DisposableObserver<ResponseBody>() {
             @Override
             public void onNext(ResponseBody body) {
-                if (body == null) return;
+                if (body == null || body.contentType() == null) return;
                 String contentType = body.contentType().toString();
                 if (contentType.contains("image")) {
-                    mBitmap = BitmapFactory.decodeStream(body.byteStream());
+                    bitmap = BitmapFactory.decodeStream(body.byteStream());
                 } else {
                     Timber.d(contentType);
                 }
@@ -222,18 +215,17 @@ public class ImageFragment extends Fragment {
 
             @Override
             public void onError(Throwable e) {
-                mBitmap = null;
+                bitmap = null;
                 Timber.d(e);
             }
 
             @Override
             public void onComplete() {
-                if (mImageView != null && mBitmap != null) {
-                    mImageView.setImageBitmap(mBitmap);
-                    mPhotoViewAttacher.update();
+                if (photoView != null && bitmap != null) {
+                    photoView.setImageBitmap(bitmap);
                 }
-                if (mProgressBar != null) {
-                    mProgressBar.setVisibility(View.GONE);
+                if (progressBar != null) {
+                    progressBar.setVisibility(View.GONE);
                 }
             }
         };
