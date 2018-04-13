@@ -7,6 +7,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.util.SparseArrayCompat;
+import android.support.v7.preference.PreferenceManager;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
@@ -81,8 +83,18 @@ public class NotificationService extends Service {
         if (alarmUp) {
             Timber.d("Alarm is already active");
         } else {
+            Integer interval = 30;
             alarm = new NotificationAlarm(this);
-            alarm.startAlarm(15);  // 15 seconds
+            if (getApplicationContext() != null) {
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                if (preferences != null) {
+                    Integer i = Integer.parseInt(preferences.getString("load_eta", "0"));
+                    if (i > 0) {
+                        interval = i;
+                    }
+                }
+            }
+            alarm.startAlarm(interval);
         }
     }
 

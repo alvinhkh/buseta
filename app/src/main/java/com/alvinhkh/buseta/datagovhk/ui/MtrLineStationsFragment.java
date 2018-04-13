@@ -83,23 +83,29 @@ public class MtrLineStationsFragment extends Fragment
 
     public MtrLineStationsFragment() { }
 
+    private Integer refreshInterval = 0;
+
+    protected final Handler adapterUpdateHandler = new Handler();
+
+    protected final Runnable adapterUpdateRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (adapter != null) {
+                adapter.notifyDataSetChanged();
+            }
+            adapterUpdateHandler.postDelayed(this, 30000);  // refresh every 30 sec
+        }
+    };
+
     protected final Handler refreshHandler = new Handler();
 
     protected final Runnable refreshRunnable = new Runnable() {
         @Override
         public void run() {
-            if (adapter != null) {
-                if (getContext() != null) {
-                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-                    if (preferences != null && preferences.getBoolean("load_etas", false)) {
-                        onRefresh();
-                        refreshHandler.postDelayed(this, 60000);  // refresh every 60 sec
-                        return;
-                    }
-                }
-                adapter.notifyDataSetChanged();
+            if (refreshInterval > 0) {
+                onRefresh();
+                refreshHandler.postDelayed(this, refreshInterval * 1000);
             }
-            refreshHandler.postDelayed(this, 30000);  // refresh every 30 sec
         }
     };
 
@@ -164,8 +170,15 @@ public class MtrLineStationsFragment extends Fragment
             swipeRefreshLayout.setEnabled(false);
             swipeRefreshLayout.setRefreshing(false);
         }
+        if (getContext() != null) {
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+            if (preferences != null) {
+                refreshInterval = Integer.parseInt(preferences.getString("load_eta", "0"));
+            }
+        }
         onRefresh();
         refreshHandler.post(refreshRunnable);
+        adapterUpdateHandler.post(adapterUpdateRunnable);
     }
 
     @Override
@@ -187,6 +200,7 @@ public class MtrLineStationsFragment extends Fragment
     public void onPause() {
         super.onPause();
         refreshHandler.removeCallbacksAndMessages(null);
+        adapterUpdateHandler.removeCallbacksAndMessages(null);
     }
 
     @Override

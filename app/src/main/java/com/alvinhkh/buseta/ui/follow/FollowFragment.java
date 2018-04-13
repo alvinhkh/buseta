@@ -2,20 +2,21 @@ package com.alvinhkh.buseta.ui.follow;
 
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.PreferenceManager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -33,7 +34,6 @@ import com.alvinhkh.buseta.model.FollowStop;
 import com.alvinhkh.buseta.service.EtaService;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
 import com.alvinhkh.buseta.ui.search.SearchActivity;
-import com.alvinhkh.buseta.utils.ColorUtil;
 import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.google.gson.Gson;
@@ -57,25 +57,29 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
 
     private View emptyView;
 
-    private final Handler refreshHandler = new Handler();
+    private final Handler adapterUpdateHandler = new Handler();
 
-    private final Runnable refreshRunnable = new Runnable() {
+    private final Runnable adapterUpdateRunnable = new Runnable() {
         @Override
         public void run() {
             if (followAndHistoryAdapter != null && followAndHistoryAdapter.getFollowCount() > 0) {
                 followAndHistoryAdapter.notifyItemRangeChanged(0, followAndHistoryAdapter.getFollowCount());
             }
-            refreshHandler.postDelayed(this, 30000);  // refresh every half minute
+            adapterUpdateHandler.postDelayed(this, 15000);
         }
     };
 
-    private final Handler refreshEtaHandler = new Handler();
+    private Integer refreshInterval = 30;
 
-    private final Runnable refreshEtaRunnable = new Runnable() {
+    private final Handler refreshHandler = new Handler();
+
+    private final Runnable refreshRunnable = new Runnable() {
         @Override
         public void run() {
             onRefresh();
-            refreshEtaHandler.postDelayed(this, 60000);  // refresh eta every minute
+            if (refreshInterval > 0) {
+                refreshHandler.postDelayed(this, refreshInterval * 1000);
+            }
         }
     };
 
@@ -117,7 +121,7 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_follow, container, false);
         setHasOptionsMenu(true);
@@ -143,7 +147,9 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
             emptyView.setVisibility(followAndHistoryAdapter != null &&
                     followAndHistoryAdapter.getItemCount() > 0 ? View.GONE : View.VISIBLE);
         }
-        fab = getActivity().findViewById(R.id.fab);
+        if (getActivity() != null) {
+            fab = getActivity().findViewById(R.id.fab);
+        }
 
         return rootView;
     }
@@ -160,9 +166,18 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
         if (fab != null) {
             fab.show();
         }
+        if (getContext() != null) {
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+            if (preferences != null) {
+                Integer i = Integer.parseInt(preferences.getString("load_eta", "0"));
+                if (i > 0) {
+                    refreshInterval = i;
+                }
+            }
+        }
         resumeHandler.postDelayed(resumeRunnable, 100);
-        refreshEtaHandler.postDelayed(refreshEtaRunnable, 500);
-        refreshHandler.postDelayed(refreshRunnable, 15000);
+        refreshHandler.postDelayed(refreshRunnable, 500);
+        adapterUpdateHandler.postDelayed(adapterUpdateRunnable, 15000);
         disposables.add(RxBroadcastReceiver.create(getContext(), new IntentFilter(C.ACTION.ETA_UPDATE))
                 .share().subscribeWith(etaObserver()));
         disposables.add(RxBroadcastReceiver.create(getContext(), new IntentFilter(C.ACTION.FOLLOW_UPDATE))
@@ -175,8 +190,8 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
     public void onPause() {
         super.onPause();
         resumeHandler.removeCallbacksAndMessages(null);
+        adapterUpdateHandler.removeCallbacksAndMessages(null);
         refreshHandler.removeCallbacksAndMessages(null);
-        refreshEtaHandler.removeCallbacksAndMessages(null);
         disposables.clear();
     }
 

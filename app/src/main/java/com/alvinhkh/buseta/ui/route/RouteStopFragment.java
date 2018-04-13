@@ -15,7 +15,6 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
@@ -26,6 +25,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v7.preference.PreferenceManager;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -106,6 +106,8 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
 
     private ViewHolder vh;
 
+    private Integer refreshInterval = 30;
+
     private final Handler refreshHandler = new Handler();
 
     private final Runnable refreshRunnable = new Runnable() {
@@ -118,7 +120,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                     getContext().startService(intent);
                 }
             } catch (IllegalStateException ignored) {}
-            refreshHandler.postDelayed(this, 30000);  // refresh every 30 sec
+            refreshHandler.postDelayed(this, refreshInterval * 1000);
         }
     };
 
@@ -140,6 +142,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getContext() == null) return;
 
         mGeofenceList = new ArrayList<>();
         mGeofencePendingIntent = null;
@@ -167,6 +170,15 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
     @Override
     public void onResume() {
         super.onResume();
+        if (getContext() != null) {
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+            if (preferences != null) {
+                Integer i = Integer.parseInt(preferences.getString("load_eta", "0"));
+                if (i > 0) {
+                    refreshInterval = i;
+                }
+            }
+        }
         refreshHandler.post(refreshRunnable);
     }
 

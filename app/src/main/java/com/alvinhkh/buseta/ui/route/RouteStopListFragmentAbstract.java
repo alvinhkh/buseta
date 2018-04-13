@@ -144,6 +144,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
             if (getView() != null) {
                 if (getUserVisibleHint()) {
                     refreshHandler.post(refreshRunnable);
+                    adapterUpdateHandler.post(adapterUpdateRunnable);
                     if (isShowMapFragment) {
                         showMapFragment();
                     }
@@ -155,6 +156,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                     }
                 } else {
                     refreshHandler.removeCallbacksAndMessages(null);
+                    adapterUpdateHandler.removeCallbacksAndMessages(null);
                 }
                 initLoadHandler.removeCallbacksAndMessages(null);
             } else {
@@ -163,23 +165,29 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         }
     };
 
+    protected final Handler adapterUpdateHandler = new Handler();
+
+    protected final Runnable adapterUpdateRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (adapter != null) {
+                adapter.notifyDataSetChanged();
+            }
+            adapterUpdateHandler.postDelayed(this, 30000);  // refresh every 30 sec
+        }
+    };
+
+    private Integer refreshInterval = 0;
+
     protected final Handler refreshHandler = new Handler();
 
     protected final Runnable refreshRunnable = new Runnable() {
         @Override
         public void run() {
-            if (adapter != null) {
-                if (getContext() != null) {
-                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-                    if (preferences != null && preferences.getBoolean("load_etas", false)) {
-                        onRefresh();
-                        refreshHandler.postDelayed(this, 60000);  // refresh every 60 sec
-                        return;
-                    }
-                }
-                adapter.notifyDataSetChanged();
+            if (refreshInterval > 0) {
+                onRefresh();
+                refreshHandler.postDelayed(this, refreshInterval * 1000);
             }
-            refreshHandler.postDelayed(this, 30000);  // refresh every 30 sec
         }
     };
 
@@ -277,6 +285,12 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                 showMapFragment();
             }
         }
+        if (getContext() != null) {
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+            if (preferences != null) {
+                refreshInterval = Integer.parseInt(preferences.getString("load_eta", "0"));
+            }
+        }
         startLocationUpdates();
     }
 
@@ -324,6 +338,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         disposables.clear();
         initLoadHandler.removeCallbacksAndMessages(null);
         refreshHandler.removeCallbacksAndMessages(null);
+        adapterUpdateHandler.removeCallbacksAndMessages(null);
         if (getContext() != null) {
             PreferenceManager.getDefaultSharedPreferences(getContext())
                     .unregisterOnSharedPreferenceChangeListener(this);
@@ -790,11 +805,12 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         if (getActivity() != null) {
             SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
             FloatingActionButton fab = getActivity().findViewById(R.id.fab);
-            if (fab != null && (preferences == null || !preferences.getBoolean("load_etas", false))) {
+            if (fab != null && (preferences == null || Integer.parseInt(preferences.getString("load_eta", "0")) < 1)) {
                 fab.show();
             }
         }
         refreshHandler.post(refreshRunnable);
+        adapterUpdateHandler.post(adapterUpdateRunnable);
         if (adapter != null) {
             if (adapter.getItemCount() > 0) {
                 if (navToStop != null) {

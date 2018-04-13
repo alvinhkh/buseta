@@ -67,12 +67,14 @@
             android:summaryOff="@string/manual"
             android:defaultValue="true" />
 
-        <SwitchPreferenceCompat
-            android:key="load_etas"
+        <ListPreference
+            android:key="load_eta"
             android:title="@string/eta_short"
-            android:summaryOn="@string/auto_load"
-            android:summaryOff="@string/manual"
-            android:defaultValue="false" />
+            android:defaultValue="0"
+            android:entries="@array/load_eta_entries"
+            android:entryValues="@array/load_eta_values"
+            android:negativeButtonText="@string/action_cancel"
+            android:positiveButtonText="@string/action_confirm" />
 
     </PreferenceCategory>
 

@@ -154,7 +154,6 @@ public class EtaService extends IntentService {
                     case C.PROVIDER.AESBUS:
                     {
                         String key = HashUtil.md5("mtrMobile_" + new SimpleDateFormat("yyyyMMddHHmm", Locale.ENGLISH).format(new Date()));
-                        // Timber.d("key: %s", key);
                         if (!TextUtils.isEmpty(key)) {
                             disposables.add(aesService.getBusStopsDetail(new AESEtaBusStopsRequest(routeStop.getRoute(), "2", "zh", key))
                                     .subscribeWith(aesBusEtaObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size() - 1)));
