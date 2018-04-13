@@ -36,9 +36,9 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
 
     private String routeNo;
 
-    private List<Route> routes = new ArrayList<>();
+    private static List<Route> routes = new ArrayList<>();
 
-    private SparseArray<Fragment> fragments = new SparseArray<>();
+    private static SparseArray<Fragment> fragments = new SparseArray<>();
 
     private RouteStop routeStop;
 
@@ -87,7 +87,7 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
     }
 
     public List<Route> getRoutes() {
-        return this.routes;
+        return routes;
     }
 
     @Override
@@ -151,7 +151,7 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
     }
 
     @Override
-    public int getItemPosition(Object object) {
+    public int getItemPosition(@NonNull Object object) {
         return pagerAdapterPosChanged;
     }
 }

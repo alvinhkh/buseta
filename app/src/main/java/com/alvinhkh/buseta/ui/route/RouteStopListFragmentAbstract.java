@@ -205,21 +205,28 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_list, container, false);
         emptyView = rootView.findViewById(R.id.empty_view);
-        emptyView.setVisibility(View.VISIBLE);
+        if (emptyView != null) {
+            emptyView.setVisibility(View.VISIBLE);
+        }
         progressBar = rootView.findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.VISIBLE);
+        if (progressBar != null) {
+            progressBar.setVisibility(View.VISIBLE);
+        }
         emptyText = rootView.findViewById(R.id.empty_text);
-        emptyText.setText(R.string.message_loading);
+        if (emptyText != null) {
+            emptyText.setText(R.string.message_loading);
+        }
         recyclerView = rootView.findViewById(R.id.recycler_view);
         recyclerView.setVisibility(View.GONE);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
+        if (getFragmentManager() == null) return rootView;
         adapter = new RouteStopListAdapter(getFragmentManager(), recyclerView, route);
         adapter.setOnClickItemListener(this);
         if (!TextUtils.isEmpty(route.getDescription())) {
             adapter.add(new Item(Item.TYPE_HEADER, route.getDescription()));
         }
-        if (ActivityCompat.checkSelfPermission(getContext(),
+        if (getContext() != null && ActivityCompat.checkSelfPermission(getContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(getContext(),
                         Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -502,7 +509,9 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                 try {
                     Intent intent = new Intent(getContext(), EtaService.class);
                     intent.putExtra(C.EXTRA.STOP_OBJECT, stop);
-                    getContext().startService(intent);
+                    if (getContext() != null) {
+                        getContext().startService(intent);
+                    }
                 } catch (IllegalStateException ignored) {}
             }
         }
@@ -577,15 +586,16 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                 if (bundle == null) return;
                 RouteStop routeStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
                 if (routeStop == null) return;
-                if (!routeStop.getRoute().equals(route.getName())) return;
-                if (!routeStop.getDirection().equals(route.getSequence())) return;
+                if (routeStop.getRoute() == null || !routeStop.getRoute().equals(route.getName())) return;
+                if (routeStop.getDirection() == null || !routeStop.getDirection().equals(route.getSequence())) return;
                 if (bundle.getBoolean(C.EXTRA.UPDATED) || bundle.getBoolean(C.EXTRA.FAIL)) {
                     if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
                         swipeRefreshLayout.setRefreshing(false);
                     }
                     int i = 0;
                     for (Item item : adapter.getItems()) {
-                        if (item.getType() == TYPE_DATA
+                        if (item != null && item.getType() == TYPE_DATA && item.getObject() != null
+                                && ((RouteStop) item.getObject()).getSequence() != null
                                 && ((RouteStop) item.getObject()).getSequence().equals(routeStop.getSequence())) {
                             if (getContext() != null) {
                                 ArrivalTimeUtil.query(getContext(), routeStop)
@@ -641,8 +651,14 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         }
         if (recyclerView != null) {
             recyclerView.setVisibility(View.GONE);
+        }
+        if (emptyView != null) {
             emptyView.setVisibility(View.VISIBLE);
+        }
+        if (progressBar != null) {
             progressBar.setVisibility(View.GONE);
+        }
+        if (emptyText != null) {
             emptyText.setText(e.getMessage());
         }
     }
@@ -670,7 +686,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                 mapCoordinates.clear();
             }
             routeStops.clear();
-            if (adapter.getItemCount() > 0) {
+            if (adapter.getItemCount() > 0 && getContext() != null) {
                 for (int i = 0, j = 0; i < adapter.getItemCount(); i++) {
                     Item item = adapter.getItem(i);
                     if (item.getType() != Item.TYPE_DATA) continue;
@@ -786,7 +802,13 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                         Item item = adapter.getItem(i);
                         if (item.getType() != Item.TYPE_DATA) continue;
                         RouteStop stop = (RouteStop) item.getObject();
-                        if (stop.getCompanyCode().equals(navToStop.getCompanyCode()) &&
+                        if (stop != null &&
+                                stop.getCompanyCode() != null &&
+                                stop.getRoute() != null &&
+                                stop.getName() != null &&
+                                stop.getDirection() != null &&
+                                stop.getSequence() != null &&
+                                stop.getCompanyCode().equals(navToStop.getCompanyCode()) &&
                                 stop.getRoute().equals(navToStop.getRoute()) &&
                                 stop.getName().equals(navToStop.getName()) &&
                                 stop.getDirection().equals(navToStop.getDirection()) &&
@@ -874,7 +896,8 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                 if (bundle.getBoolean(C.EXTRA.UPDATED)) {
                     int i = 0;
                     for (Item item : adapter.getItems()) {
-                        if (item.getType() == TYPE_DATA &&
+                        if (item != null && item.getType() == TYPE_DATA && item.getObject() != null &&
+                                ((RouteStop) item.getObject()).getSequence() != null &&
                                 ((RouteStop) item.getObject()).getSequence().equals(followStop.sequence)) {
                             adapter.notifyItemChanged(i);
                             break;

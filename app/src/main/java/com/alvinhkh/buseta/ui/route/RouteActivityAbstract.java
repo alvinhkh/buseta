@@ -230,8 +230,8 @@ public abstract class RouteActivityAbstract extends BaseActivity {
         for (Route route : routes) {
             if (route == null) continue;
             companyCode = route.getCompanyCode();
-            if (stopFromIntent != null &&
-                    !route.isSpecial() &&
+            if (stopFromIntent != null && route.isSpecial() != null && !route.isSpecial() &&
+                    route.getCompanyCode() != null && route.getSequence() != null &&
                     route.getCompanyCode().equals(stopFromIntent.getCompanyCode()) &&
                     route.getSequence().equals(stopFromIntent.getDirection())) {
                 // TODO: handle select which page from stopFromIntent, i.e. service type

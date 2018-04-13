@@ -89,6 +89,7 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
 
             @Override
             public void onNext(ResponseBody body) {
+                if (route == null || route.getStopsStartSequence() == null) return;
                 try {
                     String[] routes = body.string().split("<br>", -1);
                     int i = route.getStopsStartSequence();
@@ -111,11 +112,13 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
             @Override
             public void onError(Throwable e) {
                 Timber.d(e);
+                if (getActivity() == null) return;
                 getActivity().runOnUiThread(() -> onStopListError(e));
             }
 
             @Override
             public void onComplete() {
+                if (getActivity() == null) return;
                 getActivity().runOnUiThread(() -> {
                     if (adapter != null && items != null) {
                         adapter.addAll(items);
@@ -123,6 +126,10 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
                 });
                 Map<String, String> options = new LinkedHashMap<>();
                 String routeInfo = route.getInfoKey();
+                if (TextUtils.isEmpty(routeInfo)) {
+                    onStopListComplete();
+                    return;
+                }
                 NwstVariant variant = NwstVariant.Companion.parseInfo(routeInfo);
                 if (variant == null) {
                     onStopListComplete();
@@ -168,11 +175,13 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
             @Override
             public void onError(Throwable e) {
                 Timber.d(e);
+                if (getActivity() == null) return;
                 getActivity().runOnUiThread(() -> onStopListError(e));
             }
 
             @Override
             public void onComplete() {
+                if (getActivity() == null) return;
                 getActivity().runOnUiThread(() -> onStopListComplete());
             }
         };

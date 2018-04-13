@@ -80,11 +80,13 @@ public class LwbStopListFragment extends RouteStopListFragmentAbstract {
             @Override
             public void onError(Throwable e) {
                 Timber.d(e);
+                if (getActivity() == null) return;
                 getActivity().runOnUiThread(() -> onStopListError(e));
             }
 
             @Override
             public void onComplete() {
+                if (getActivity() == null) return;
                 getActivity().runOnUiThread(() -> {
                     if (adapter != null && items != null) {
                         adapter.addAll(items);

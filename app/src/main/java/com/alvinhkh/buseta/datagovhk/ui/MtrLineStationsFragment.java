@@ -337,6 +337,7 @@ public class MtrLineStationsFragment extends Fragment
             @Override
             public void onError(Throwable e) {
                 Timber.d(e);
+                if (getActivity() == null) return;
                 getActivity().runOnUiThread(() -> {
                     if (swipeRefreshLayout != null) {
                         swipeRefreshLayout.setRefreshing(false);
@@ -346,6 +347,7 @@ public class MtrLineStationsFragment extends Fragment
 
             @Override
             public void onComplete() {
+                if (getActivity() == null) return;
                 getActivity().runOnUiThread(() -> {
                     if (swipeRefreshLayout != null) {
                         swipeRefreshLayout.setRefreshing(false);

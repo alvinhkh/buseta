@@ -98,14 +98,17 @@ public class AESBusStopListFragment extends RouteStopListFragmentAbstract {
                                                 i++;
                                             }
                                         }
-                                        getActivity().runOnUiThread(() -> {
-                                            if (adapter != null) {
-                                                adapter.addAll(items);
-                                            }
-                                            onStopListComplete();
-                                        });
+                                        if (getActivity() == null) {
+                                            getActivity().runOnUiThread(() -> {
+                                                if (adapter != null) {
+                                                    adapter.addAll(items);
+                                                }
+                                                onStopListComplete();
+                                            });
+                                        }
                                     }, e -> {
                                         Timber.d(e);
+                                        if (getActivity() == null) return;
                                         getActivity().runOnUiThread(() -> onStopListError(e));
                                     }));
                         }, e -> {
