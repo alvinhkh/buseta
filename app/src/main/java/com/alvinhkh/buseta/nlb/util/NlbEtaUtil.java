@@ -36,19 +36,20 @@ public class NlbEtaUtil {
 
     public static ArrivalTime estimate(@NonNull Context context,
                                        @NonNull ArrivalTime object) {
-        if (!TextUtils.isEmpty(object.text)) {
+        if (!TextUtils.isEmpty(object.getText())) {
             Pattern p = Pattern.compile("(\\d*)(分鐘| min\\(s\\))");
-            Matcher m = p.matcher(object.text);
+            Matcher m = p.matcher(object.getText());
             if (m.find()) {
                 int minutes = Integer.parseInt(m.group(1));
                 if (minutes > 0 && minutes < 60) {
                     Calendar calendar = Calendar.getInstance();
                     calendar.add(Calendar.MINUTE, minutes);
                     SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.ENGLISH);
-                    object.estimate = sdf.format(calendar.getTime());
+                    object.setEstimate(sdf.format(calendar.getTime()));
                 }
-                object.expired = minutes <= -3;  // time past
-                object.expired |= TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - object.updatedAt) >= 5; // maybe outdated
+                Boolean expired = minutes <= -3;  // time past
+                expired |= TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - object.getUpdatedAt()) >= 5; // maybe outdated
+                object.setExpired(expired);
             }
         }
         return object;
@@ -57,12 +58,12 @@ public class NlbEtaUtil {
     public static ArrivalTime toArrivalTime(@NonNull Context context,
                                             @NonNull Element div) {
         ArrivalTime object = ArrivalTimeUtil.emptyInstance(context);
-        object.companyCode = C.PROVIDER.NLB;
+        object.setCompanyCode(C.PROVIDER.NLB);
         String text = div.text();
-        object.text = text(text);
-        object.isSchedule = !TextUtils.isEmpty(text) && (text.contains("預定班次") || text.contains("Scheduled"));
-        object.hasWheelchair = (div.getElementsByAttributeValueContaining("alt", "Wheelchair").size() > 0 ||
-                div.getElementsByAttributeValueContaining("alt", "輪椅").size() > 0);
+        object.setText(text(text));
+        object.setSchedule(!TextUtils.isEmpty(text) && (text.contains("預定班次") || text.contains("Scheduled")));
+        object.setHasWheelchair((div.getElementsByAttributeValueContaining("alt", "Wheelchair").size() > 0 ||
+                div.getElementsByAttributeValueContaining("alt", "輪椅").size() > 0));
         object = ArrivalTimeUtil.estimate(context, object);
         return object;
     }

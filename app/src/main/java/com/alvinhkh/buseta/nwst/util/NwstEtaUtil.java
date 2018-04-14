@@ -39,12 +39,12 @@ public class NwstEtaUtil {
 
     public static ArrivalTime estimate(@NonNull Context context, @NonNull ArrivalTime object) {
         SimpleDateFormat isoDf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ENGLISH);
-        Date generatedDate = object.generatedAt == null ? new Date() : new Date(object.generatedAt);
-        if (!TextUtils.isEmpty(object.isoTime)) {
+        Date generatedDate = object.getGeneratedAt() > 0L ? new Date() : new Date(object.getGeneratedAt());
+        if (!TextUtils.isEmpty(object.getIsoTime())) {
             long differences = new Date().getTime() - generatedDate.getTime(); // get device timeText and compare to server timeText
             try {
                 String estimateMinutes = "";
-                Date etaDate = isoDf.parse(object.isoTime);
+                Date etaDate = isoDf.parse(object.getIsoTime());
                 int minutes = (int) ((etaDate.getTime() / 60000) - ((generatedDate.getTime() + differences) / 60000));
                 if (minutes >= 0 && minutes < 24 * 60) {
                     // minutes should be 0 to within a day
@@ -56,13 +56,14 @@ public class NwstEtaUtil {
                 }
                 if (!TextUtils.isEmpty(estimateMinutes)) {
                     if (estimateMinutes.equals("0")) {
-                        object.estimate = context.getString(R.string.now);
+                        object.setEstimate(context.getString(R.string.now));
                     } else {
-                        object.estimate = context.getString(R.string.minutes, estimateMinutes);
+                        object.setEstimate(context.getString(R.string.minutes, estimateMinutes));
                     }
                 }
-                object.expired = minutes <= -3;  // time past
-                object.expired |= TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - object.updatedAt) >= 2; // maybe outdated
+                Boolean expired = minutes <= -3;  // time past
+                expired |= TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - object.getUpdatedAt()) >= 2; // maybe outdated
+                object.setExpired(expired);
             } catch (ParseException |ArrayIndexOutOfBoundsException ep) {
                 Timber.d(ep);
             }
@@ -90,35 +91,32 @@ public class NwstEtaUtil {
                                             @NonNull RouteStop routeStop,
                                             @NonNull NwstEta nwstEta) {
         ArrivalTime object = ArrivalTimeUtil.emptyInstance(context);
-        object.companyCode = C.PROVIDER.NWST;
+        object.setCompanyCode(C.PROVIDER.NWST);
         if (nwstEta.getCompanyCode().equals(C.PROVIDER.CTB) || nwstEta.getCompanyCode().equals(C.PROVIDER.CTB)) {
-            object.companyCode = nwstEta.getCompanyCode();
+            object.setCompanyCode(nwstEta.getCompanyCode());
         }
         if (TextUtils.isEmpty(nwstEta.getEtaIsoTime())) {
-            object.text = text(nwstEta.getTitle());
+            object.setText(text(nwstEta.getTitle()));
         } else {
-            object.text = nwstEta.getEtaTime();
+            object.setText(nwstEta.getEtaTime());
         }
         String subtitle = text(nwstEta.getSubtitle());
         if (!TextUtils.isEmpty(subtitle)) {
             if (subtitle.contains("距離") || subtitle.contains("距离") || subtitle.contains("Distance")) {
-                object.distanceKM = parseDistance(subtitle);
+                object.setDistanceKM(parseDistance(subtitle));
             }
-            if (object.distanceKM < 0) {
-                object.text += " " + subtitle;
+            if (object.getDistanceKM() < 0) {
+                object.setText(object.getText() + " " + subtitle);
             }
         }
-        if (!TextUtils.isEmpty(nwstEta.getBoundText()) && (TextUtils.isEmpty(routeStop.getDescription())
-                || !routeStop.getDescription().equals(nwstEta.getBoundText()))) {
-            object.text += " " + nwstEta.getBoundText();
-        }
-        object.isoTime = nwstEta.getEtaIsoTime();
-        object.isSchedule = !TextUtils.isEmpty(nwstEta.getSubtitle()) && (nwstEta.getSubtitle().contains("預定班次") || nwstEta.getSubtitle().contains("预定班次") || nwstEta.getSubtitle().contains("Scheduled"));
+        object.setNote(nwstEta.getBoundText().trim());
+        object.setIsoTime(nwstEta.getEtaIsoTime());
+        object.setSchedule(!TextUtils.isEmpty(nwstEta.getSubtitle()) && (nwstEta.getSubtitle().contains("預定班次") || nwstEta.getSubtitle().contains("预定班次") || nwstEta.getSubtitle().contains("Scheduled")));
         SimpleDateFormat generatedAtDf = new SimpleDateFormat("HH:mm:ss", Locale.ENGLISH);
         try {
-            object.generatedAt = generatedAtDf.parse(nwstEta.getServerTime()).getTime();
+            object.setGeneratedAt(generatedAtDf.parse(nwstEta.getServerTime()).getTime());
         } catch (ParseException ignored) {}
-        object.updatedAt = System.currentTimeMillis();
+        object.setUpdatedAt(System.currentTimeMillis());
         object = ArrivalTimeUtil.estimate(context, object);
         return object;
     }

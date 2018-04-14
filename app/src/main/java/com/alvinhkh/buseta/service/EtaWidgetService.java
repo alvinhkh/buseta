@@ -105,45 +105,48 @@ public class EtaWidgetService extends RemoteViewsService {
                         ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
                         arrivalTime = ArrivalTimeUtil.estimate(context, arrivalTime);
 
-                        if (arrivalTime.id != null) {
-                            SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.text);
-                            Integer pos = Integer.parseInt(arrivalTime.id);
+                        if (!TextUtils.isEmpty(arrivalTime.getId())) {
+                            SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.getText());
+                            Integer pos = Integer.parseInt(arrivalTime.getId());
                             Integer colorInt = ContextCompat.getColor(context,
-                                    arrivalTime.expired ? R.color.widgetTextDiminish :
+                                    arrivalTime.getExpired() ? R.color.widgetTextDiminish :
                                             (pos > 0 ? R.color.widgetTextPrimary : R.color.widgetTextHighlighted));
-                            if (arrivalTime.isSchedule) {
+                            if (!TextUtils.isEmpty(arrivalTime.getNote())) {
+                                etaText.append("#");
+                            }
+                            if (arrivalTime.isSchedule()) {
                                 etaText.append("*");
                             }
-                            if (!TextUtils.isEmpty(arrivalTime.estimate)) {
-                                etaText.append(" (").append(arrivalTime.estimate).append(")");
+                            if (!TextUtils.isEmpty(arrivalTime.getEstimate())) {
+                                etaText.append(" (").append(arrivalTime.getEstimate()).append(")");
                             }
-                            if (arrivalTime.distanceKM >= 0) {
-                                etaText.append(" ").append(context.getString(R.string.km_short, arrivalTime.distanceKM));
+                            if (arrivalTime.getDistanceKM() >= 0) {
+                                etaText.append(" ").append(context.getString(R.string.km_short, arrivalTime.getDistanceKM()));
                             }
-                            if (!TextUtils.isEmpty(arrivalTime.plate)) {
-                                etaText.append(" ").append(arrivalTime.plate);
+                            if (!TextUtils.isEmpty(arrivalTime.getPlate())) {
+                                etaText.append(" ").append(arrivalTime.getPlate());
                             }
-                            if (arrivalTime.capacity >= 0) {
+                            if (arrivalTime.getCapacity() >= 0) {
                                 String capacity = "";
-                                if (arrivalTime.capacity == 0) {
+                                if (arrivalTime.getCapacity() == 0) {
                                     capacity = context.getString(R.string.capacity_empty);
-                                } else if (arrivalTime.capacity > 0 && arrivalTime.capacity <= 3) {
+                                } else if (arrivalTime.getCapacity() > 0 && arrivalTime.getCapacity() <= 3) {
                                     capacity = "¼";
-                                } else if (arrivalTime.capacity > 3 && arrivalTime.capacity <= 6) {
+                                } else if (arrivalTime.getCapacity() > 3 && arrivalTime.getCapacity() <= 6) {
                                     capacity = "½";
-                                } else if (arrivalTime.capacity > 6 && arrivalTime.capacity <= 9) {
+                                } else if (arrivalTime.getCapacity() > 6 && arrivalTime.getCapacity() <= 9) {
                                     capacity = "¾";
-                                } else if (arrivalTime.capacity >= 10) {
+                                } else if (arrivalTime.getCapacity() >= 10) {
                                     capacity = context.getString(R.string.capacity_full);
                                 }
                                 if (!TextUtils.isEmpty(capacity)) {
                                     etaText.append(" [").append(capacity).append("]");
                                 }
                             }
-                            if (arrivalTime.hasWheelchair && PreferenceUtil.isShowWheelchairIcon(context)) {
+                            if (arrivalTime.getHasWheelchair() && PreferenceUtil.isShowWheelchairIcon(context)) {
                                 etaText.append(" \u267F");
                             }
-                            if (arrivalTime.hasWifi && PreferenceUtil.isShowWifiIcon(context)) {
+                            if (arrivalTime.getHasWifi() && PreferenceUtil.isShowWifiIcon(context)) {
                                 etaText.append(" [W]");
                             }
                             if (etaText.length() > 0) {

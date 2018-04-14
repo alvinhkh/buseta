@@ -50,48 +50,52 @@ public class NotificationUtil {
             ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
             arrivalTime = ArrivalTimeUtil.estimate(context, arrivalTime);
 
-            if (arrivalTime.id != null) {
-                SpannableStringBuilder etaSmallText = new SpannableStringBuilder(arrivalTime.text);
-                SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.text);
-                Integer pos = Integer.parseInt(arrivalTime.id);
+            if (arrivalTime.getId() != null) {
+                SpannableStringBuilder etaSmallText = new SpannableStringBuilder(arrivalTime.getText());
+                SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.getText());
+                Integer pos = Integer.parseInt(arrivalTime.getId());
                 Integer colorInt = ContextCompat.getColor(context,
-                        arrivalTime.expired ? R.color.grey :
+                        arrivalTime.getExpired() ? R.color.grey :
                                 (pos > 0 ? R.color.black : R.color.colorPrimaryA700));
-                if (arrivalTime.isSchedule) {
+                if (!TextUtils.isEmpty(arrivalTime.getNote())) {
+                    etaSmallText.append("#");
+                    etaText.append("#");
+                }
+                if (arrivalTime.isSchedule()) {
                     etaSmallText.append("*");
                     etaText.append(" ").append(context.getString(R.string.scheduled_bus));
                 }
-                if (!TextUtils.isEmpty(arrivalTime.estimate)) {
-                    etaSmallText.append(" (").append(arrivalTime.estimate).append(")");
-                    etaText.append(" (").append(arrivalTime.estimate).append(")");
+                if (!TextUtils.isEmpty(arrivalTime.getEstimate())) {
+                    etaSmallText.append(" (").append(arrivalTime.getEstimate()).append(")");
+                    etaText.append(" (").append(arrivalTime.getEstimate()).append(")");
                 }
-                if (arrivalTime.distanceKM >= 0) {
-                    etaText.append(" ").append(context.getString(R.string.km, arrivalTime.distanceKM));
+                if (arrivalTime.getDistanceKM() >= 0) {
+                    etaText.append(" ").append(context.getString(R.string.km, arrivalTime.getDistanceKM()));
                 }
-                if (!TextUtils.isEmpty(arrivalTime.plate)) {
-                    etaText.append(" ").append(arrivalTime.plate);
+                if (!TextUtils.isEmpty(arrivalTime.getPlate())) {
+                    etaText.append(" ").append(arrivalTime.getPlate());
                 }
-                if (arrivalTime.capacity >= 0) {
+                if (arrivalTime.getCapacity() >= 0) {
                     String capacity = "";
-                    if (arrivalTime.capacity == 0) {
+                    if (arrivalTime.getCapacity() == 0) {
                         capacity = context.getString(R.string.capacity_empty);
-                    } else if (arrivalTime.capacity > 0 && arrivalTime.capacity <= 3) {
+                    } else if (arrivalTime.getCapacity() > 0 && arrivalTime.getCapacity() <= 3) {
                         capacity = "¼";
-                    } else if (arrivalTime.capacity > 3 && arrivalTime.capacity <= 6) {
+                    } else if (arrivalTime.getCapacity() > 3 && arrivalTime.getCapacity() <= 6) {
                         capacity = "½";
-                    } else if (arrivalTime.capacity > 6 && arrivalTime.capacity <= 9) {
+                    } else if (arrivalTime.getCapacity() > 6 && arrivalTime.getCapacity() <= 9) {
                         capacity = "¾";
-                    } else if (arrivalTime.capacity >= 10) {
+                    } else if (arrivalTime.getCapacity() >= 10) {
                         capacity = context.getString(R.string.capacity_full);
                     }
                     if (!TextUtils.isEmpty(capacity)) {
                         etaText.append(" [").append(capacity).append("]");
                     }
                 }
-                if (arrivalTime.hasWheelchair && PreferenceUtil.isShowWheelchairIcon(context)) {
+                if (arrivalTime.getHasWheelchair() && PreferenceUtil.isShowWheelchairIcon(context)) {
                     etaText.append(" \u267F");
                 }
-                if (arrivalTime.hasWifi) {
+                if (arrivalTime.getHasWifi()) {
                     etaText.append(" [WIFI]");
                 }
                 ForegroundColorSpan textColour = new ForegroundColorSpan(colorInt);
@@ -116,13 +120,13 @@ public class NotificationUtil {
                 }
             }
 
-            if (arrivalTime.generatedAt != null && arrivalTime.generatedAt > 0) {
+            if (arrivalTime.getGeneratedAt() > 0) {
                 // Request server time
-                Date date = new Date(arrivalTime.generatedAt);
+                Date date = new Date(arrivalTime.getGeneratedAt());
                 bigSummaryText.append(ArrivalTimeUtil.displayDateFormat.format(date));
-            } else if (arrivalTime.updatedAt != null && arrivalTime.updatedAt > 0) {
+            } else if (arrivalTime.getUpdatedAt() > 0) {
                 // last updated time
-                Date date = new Date(arrivalTime.updatedAt);
+                Date date = new Date(arrivalTime.getUpdatedAt());
                 bigSummaryText.append(ArrivalTimeUtil.displayDateFormat.format(date));
             }
         });

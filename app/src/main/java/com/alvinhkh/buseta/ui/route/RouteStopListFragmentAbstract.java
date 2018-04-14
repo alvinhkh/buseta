@@ -616,20 +616,20 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                                 ArrivalTimeUtil.query(getContext(), routeStop)
                                         .subscribe(cursor -> {
                                             ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
-                                            if (arrivalTime.latitude != 0.0 && arrivalTime.longitude != 0.0) {
+                                            if (arrivalTime.getLatitude() != 0.0 && arrivalTime.getLongitude() != 0.0) {
                                                 // TODO: show bus location on map for all arrivalTime
-                                                if (!TextUtils.isEmpty(arrivalTime.plate)) {
+                                                if (!TextUtils.isEmpty(arrivalTime.getPlate())) {
                                                     IconGenerator iconFactory = new IconGenerator(getContext());
-                                                    Bitmap bmp = iconFactory.makeIcon(arrivalTime.plate);
-                                                    if (markerMap.containsKey(arrivalTime.plate)) {
-                                                        markerMap.get(arrivalTime.plate).remove();
-                                                        markerMap.remove(arrivalTime.plate);
+                                                    Bitmap bmp = iconFactory.makeIcon(arrivalTime.getPlate());
+                                                    if (markerMap.containsKey(arrivalTime.getPlate())) {
+                                                        markerMap.get(arrivalTime.getPlate()).remove();
+                                                        markerMap.remove(arrivalTime.getPlate());
                                                     }
                                                     Marker marker = map.addMarker(new MarkerOptions()
-                                                            .position(new LatLng(arrivalTime.latitude, arrivalTime.longitude))
+                                                            .position(new LatLng(arrivalTime.getLatitude(), arrivalTime.getLongitude()))
                                                             .icon(BitmapDescriptorFactory.fromBitmap(bmp)));
                                                     marker.setTag(arrivalTime);
-                                                    markerMap.put(arrivalTime.plate, marker);
+                                                    markerMap.put(arrivalTime.getPlate(), marker);
                                                 }
                                             }
                                         });

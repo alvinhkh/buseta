@@ -96,11 +96,11 @@ public class MtrLineStationsAdapter
                         ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
                         if (arrivalTime == null) return;
                         arrivalTime = ArrivalTimeUtil.estimate(itemView.getContext(), arrivalTime);
-                        if (!TextUtils.isEmpty(direction) && items.size() > 1 && !direction.equals(arrivalTime.direction)) {
+                        if (!TextUtils.isEmpty(direction) && items.size() > 1 && !direction.equals(arrivalTime.getDirection())) {
                             items.add(new Item(Item.TYPE_SECTION, ""));
                         }
                         items.add(new Item(Item.TYPE_DATA, arrivalTime));
-                        direction = arrivalTime.direction;
+                        direction = arrivalTime.getDirection();
                     });
                     MtrScheduleItemAdapter scheduleItemAdapter = new MtrScheduleItemAdapter(scheduleList, null);
                     scheduleItemAdapter.addAll(items);

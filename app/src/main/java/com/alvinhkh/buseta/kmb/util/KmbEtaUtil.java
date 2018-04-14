@@ -46,9 +46,9 @@ public class KmbEtaUtil {
     public static ArrivalTime estimate(@NonNull Context context, @NonNull ArrivalTime object) {
         SimpleDateFormat etaDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.ENGLISH);
         SimpleDateFormat etaExpireDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
-        Date generatedDate = object.generatedAt == null ? new Date() : new Date(object.generatedAt);
+        Date generatedDate = object.getGeneratedAt() > 0L ? new Date() : new Date(object.getGeneratedAt());
         // given timeText
-        if (!TextUtils.isEmpty(object.text) && object.text.matches(".*\\d.*") && !object.text.contains("unexpected")) {
+        if (!TextUtils.isEmpty(object.getText()) && object.getText().matches(".*\\d.*") && !object.getText().contains("unexpected")) {
             // if text has digit
             String estimateMinutes = "";
             long differences = new Date().getTime() - generatedDate.getTime(); // get device timeText and compare to server timeText
@@ -58,7 +58,7 @@ public class KmbEtaUtil {
                 Date etaDate = etaDateFormat.parse(
                         new SimpleDateFormat("yyyy", Locale.ENGLISH).format(etaCompareDate) + "/" +
                                 new SimpleDateFormat("MM", Locale.ENGLISH).format(etaCompareDate) + "/" +
-                                new SimpleDateFormat("dd", Locale.ENGLISH).format(etaCompareDate) + " " + object.text);
+                                new SimpleDateFormat("dd", Locale.ENGLISH).format(etaCompareDate) + " " + object.getText());
                 // if not minutes will get negative integer
                 int minutes = (int) ((etaDate.getTime() / 60000) - ((generatedDate.getTime() + differences) / 60000));
                 if (minutes < -12 * 60) {
@@ -67,7 +67,7 @@ public class KmbEtaUtil {
                     etaDate = etaDateFormat.parse(
                             new SimpleDateFormat("yyyy", Locale.ENGLISH).format(etaCompareDate) + "/" +
                                     new SimpleDateFormat("MM", Locale.ENGLISH).format(etaCompareDate) + "/" +
-                                    new SimpleDateFormat("dd", Locale.ENGLISH).format(etaCompareDate) + " " + object.text);
+                                    new SimpleDateFormat("dd", Locale.ENGLISH).format(etaCompareDate) + " " + object.getText());
                     minutes = (int) ((etaDate.getTime() / 60000) - ((generatedDate.getTime() + differences) / 60000));
                 }
                 if (minutes >= 0 && minutes < 24 * 60) {
@@ -79,22 +79,22 @@ public class KmbEtaUtil {
                     // they only provide eta within 60 minutes
                     estimateMinutes = "";
                 }
-                object.expired = minutes <= -3;  // time past
-                object.expired |= TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - object.updatedAt) >= 5; // maybe outdated
-                object.expired |= TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - generatedDate.getTime()) >= 5;  // maybe outdated
-                if (!TextUtils.isEmpty(object.expire)) {
-                    Date etaExpireDate = etaExpireDateFormat.parse(object.expire);
+                object.setExpired(minutes <= -3);  // time past
+                object.setExpired(object.getExpired() | TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - object.getUpdatedAt()) >= 5); // maybe outdated
+                object.setExpired(object.getExpired() | TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - generatedDate.getTime()) >= 5);  // maybe outdated
+                if (!TextUtils.isEmpty(object.getExpire())) {
+                    Date etaExpireDate = etaExpireDateFormat.parse(object.getExpire());
                     if (etaExpireDate != null)
-                        object.expired |= TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - etaExpireDate.getTime()) >= 0;  // expired
+                        object.setExpired(object.getExpired() | TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - etaExpireDate.getTime()) >= 0);  // expired
                 }
             } catch (ParseException |ArrayIndexOutOfBoundsException ep) {
                 Timber.d(ep);
             }
             if (!TextUtils.isEmpty(estimateMinutes)) {
                 if (estimateMinutes.equals("0")) {
-                    object.estimate = context.getString(R.string.now);
+                    object.setEstimate(context.getString(R.string.now));
                 } else {
-                    object.estimate = context.getString(R.string.minutes, estimateMinutes);
+                    object.setEstimate(context.getString(R.string.minutes, estimateMinutes));
                 }
             }
         }
@@ -105,15 +105,15 @@ public class KmbEtaUtil {
                                             @NonNull KmbEta eta,
                                             @NonNull Long generatedTime) {
         ArrivalTime object = new ArrivalTime();
-        object.companyCode = C.PROVIDER.KMB;
-        object.capacity = parseCapacity(eta.ol);
-        object.expire = eta.expire;
-        object.isSchedule = !TextUtils.isEmpty(eta.schedule) && eta.schedule.equals("Y");
-        object.hasWheelchair = !TextUtils.isEmpty(eta.wheelchair) && eta.wheelchair.equals("Y");
-        object.hasWifi = !TextUtils.isEmpty(eta.wifi) && eta.wifi.equals("Y");
-        object.text = text(eta.time);
-        object.generatedAt = generatedTime;
-        object.updatedAt = System.currentTimeMillis();
+        object.setCompanyCode(C.PROVIDER.KMB);
+        object.setCapacity(parseCapacity(eta.ol));
+        object.setExpire(eta.expire);
+        object.setSchedule(!TextUtils.isEmpty(eta.schedule) && eta.schedule.equals("Y"));
+        object.setHasWheelchair(!TextUtils.isEmpty(eta.wheelchair) && eta.wheelchair.equals("Y"));
+        object.setHasWifi(!TextUtils.isEmpty(eta.wifi) && eta.wifi.equals("Y"));
+        object.setText(text(eta.time));
+        object.setGeneratedAt(generatedTime);
+        object.setUpdatedAt(System.currentTimeMillis());
         object = ArrivalTimeUtil.estimate(context, object);
         return object;
     }

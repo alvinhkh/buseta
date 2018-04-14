@@ -31,12 +31,12 @@ public class MtrScheduleItemAdapter extends ArrayListRecyclerViewAdapter<MtrSche
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
         return ViewHolder.createViewHolder(viewGroup, viewType, onClickItemListener);
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder viewHolder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder viewHolder, int position) {
         viewHolder.bindItem(this, items.get(position), position);
     }
 
@@ -116,21 +116,21 @@ public class MtrScheduleItemAdapter extends ArrayListRecyclerViewAdapter<MtrSche
         public void bindItem(MtrScheduleItemAdapter adapter, Item item, int position) {
             ArrivalTime arrivalTime = (ArrivalTime) item.getObject();
             if (arrivalTime != null) {
-                titleTv.setText(arrivalTime.platform);
+                titleTv.setText(arrivalTime.getPlatform());
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                     titleTv.setBackgroundTintList(ContextCompat.getColorStateList(titleTv.getContext(),
-                            arrivalTime.expired ? R.color.textDiminish : R.color.textPrimary));
+                            arrivalTime.getExpired() ? R.color.textDiminish : R.color.textPrimary));
                 }
 
                 Integer colorInt = ContextCompat.getColor(textTv.getContext(),
-                        arrivalTime.expired ? R.color.textDiminish : R.color.textPrimary);
-                String timeText = arrivalTime.text;
+                        arrivalTime.getExpired() ? R.color.textDiminish : R.color.textPrimary);
+                String timeText = arrivalTime.getText();
                 try {
-                    timeText = timeFormat.format(dateFormat.parse(arrivalTime.text));
+                    timeText = timeFormat.format(dateFormat.parse(arrivalTime.getText()));
                 } catch (ParseException ignored) {}
-                SpannableStringBuilder etaText = new SpannableStringBuilder(String.format("%s %s", arrivalTime.destination, timeText));
-                if (!TextUtils.isEmpty(arrivalTime.estimate)) {
-                    etaText.append(" (").append(arrivalTime.estimate).append(")");
+                SpannableStringBuilder etaText = new SpannableStringBuilder(String.format("%s %s", arrivalTime.getDestination(), timeText));
+                if (!TextUtils.isEmpty(arrivalTime.getEstimate())) {
+                    etaText.append(" (").append(arrivalTime.getEstimate()).append(")");
                 }
                 if (etaText.length() > 0) {
                     etaText.setSpan(new ForegroundColorSpan(colorInt), 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);

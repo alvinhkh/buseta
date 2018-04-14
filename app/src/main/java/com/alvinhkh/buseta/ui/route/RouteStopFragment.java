@@ -799,10 +799,10 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                 RouteStop stop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
                 if (stop == null) return;
                 if (!stop.equals(routeStop)) return;
-                if (bundle.getBoolean(C.EXTRA.UPDATED)) {
+                Context context = getContext();
+                if (bundle.getBoolean(C.EXTRA.UPDATED) && context != null) {
                     Timber.d("eta updated: %s", stop.toString());
 
-                    Context context = getContext();
                     vh.etaText.setText(null);
                     vh.etaServerTimeText.setText(null);
                     vh.etaLastUpdateText.setText(null);
@@ -812,40 +812,40 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
 
                         ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
                         arrivalTime = ArrivalTimeUtil.estimate(context, arrivalTime);
-                        if (arrivalTime.id != null) {
-                            SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.text);
-                            Integer pos = Integer.parseInt(arrivalTime.id);
+                        if (!TextUtils.isEmpty(arrivalTime.getId())) {
+                            SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.getText());
+                            Integer pos = Integer.parseInt(arrivalTime.getId());
                             Integer colorInt = ContextCompat.getColor(context,
-                                    arrivalTime.expired ? R.color.textDiminish :
+                                    arrivalTime.getExpired() ? R.color.textDiminish :
                                             (pos > 0 ? R.color.textPrimary : R.color.textHighlighted));
-                            if (arrivalTime.isSchedule) {
+                            if (arrivalTime.isSchedule()) {
                                 etaText.append(" ").append(getString(R.string.scheduled_bus));
                             }
-                            if (!TextUtils.isEmpty(arrivalTime.estimate)) {
-                                etaText.append(" (").append(arrivalTime.estimate).append(")");
+                            if (!TextUtils.isEmpty(arrivalTime.getEstimate())) {
+                                etaText.append(" (").append(arrivalTime.getEstimate()).append(")");
                             }
-                            if (arrivalTime.distanceKM >= 0) {
-                                etaText.append(" ").append(context.getString(R.string.km, arrivalTime.distanceKM));
+                            if (arrivalTime.getDistanceKM() >= 0) {
+                                etaText.append(" ").append(context.getString(R.string.km, arrivalTime.getDistanceKM()));
                             }
-                            if (!TextUtils.isEmpty(arrivalTime.plate)) {
-                                etaText.append(" ").append(arrivalTime.plate);
+                            if (!TextUtils.isEmpty(arrivalTime.getPlate())) {
+                                etaText.append(" ").append(arrivalTime.getPlate());
                             }
-                            if (arrivalTime.capacity >= 0) {
+                            if (arrivalTime.getCapacity() >= 0) {
                                 Drawable drawable = null;
                                 String capacity = "";
-                                if (arrivalTime.capacity == 0) {
+                                if (arrivalTime.getCapacity() == 0) {
                                     drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_0_black);
                                     capacity = getString(R.string.capacity_empty);
-                                } else if (arrivalTime.capacity > 0 && arrivalTime.capacity <= 3) {
+                                } else if (arrivalTime.getCapacity() > 0 && arrivalTime.getCapacity() <= 3) {
                                     drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_20_black);
                                     capacity = "¼";
-                                } else if (arrivalTime.capacity > 3 && arrivalTime.capacity <= 6) {
+                                } else if (arrivalTime.getCapacity() > 3 && arrivalTime.getCapacity() <= 6) {
                                     drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_50_black);
                                     capacity = "½";
-                                } else if (arrivalTime.capacity > 6 && arrivalTime.capacity <= 9) {
+                                } else if (arrivalTime.getCapacity() > 6 && arrivalTime.getCapacity() <= 9) {
                                     drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_80_black);
                                     capacity = "¾";
-                                } else if (arrivalTime.capacity >= 10) {
+                                } else if (arrivalTime.getCapacity() >= 10) {
                                     drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_100_black);
                                     capacity = getString(R.string.capacity_full);
                                 }
@@ -863,7 +863,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                                     etaText.append(capacity);
                                 }
                             }
-                            if (arrivalTime.hasWheelchair) {
+                            if (arrivalTime.getHasWheelchair()) {
                                 Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_accessible_black_18dp);
                                 drawable = DrawableCompat.wrap(drawable);
                                 drawable.setBounds(0, 0, vh.etaText.getLineHeight(), vh.etaText.getLineHeight());
@@ -874,16 +874,21 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                                     etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
                                 }
                             }
-                            if (arrivalTime.hasWifi) {
+                            if (arrivalTime.getHasWifi()) {
                                 Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_network_wifi_black_18dp);
-                                drawable = DrawableCompat.wrap(drawable);
-                                drawable.setBounds(0, 0, vh.etaText.getLineHeight(), vh.etaText.getLineHeight());
-                                DrawableCompat.setTint(drawable.mutate(), colorInt);
-                                ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
-                                etaText.append(" ");
-                                if (etaText.length() > 0) {
-                                    etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                                if (drawable != null) {
+                                    drawable = DrawableCompat.wrap(drawable);
+                                    drawable.setBounds(0, 0, vh.etaText.getLineHeight(), vh.etaText.getLineHeight());
+                                    DrawableCompat.setTint(drawable.mutate(), colorInt);
+                                    ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
+                                    etaText.append(" ");
+                                    if (etaText.length() > 0) {
+                                        etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                                    }
                                 }
+                            }
+                            if (!TextUtils.isEmpty(arrivalTime.getNote())) {
+                                etaText.append(" ").append(arrivalTime.getNote());
                             }
                             if (etaText.length() > 0) {
                                 etaText.setSpan(new ForegroundColorSpan(colorInt), 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -896,12 +901,12 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                                 vh.etaText.setText(etaText);
                             }
 
-                            if (arrivalTime.generatedAt != null && arrivalTime.generatedAt > 0) {
-                                Date date = new Date(arrivalTime.generatedAt);
+                            if (arrivalTime.getGeneratedAt() > 0) {
+                                Date date = new Date(arrivalTime.getGeneratedAt());
                                 vh.etaServerTimeText.setText(ArrivalTimeUtil.displayDateFormat.format(date));
                             }
-                            if (arrivalTime.updatedAt != null && arrivalTime.updatedAt > 0) {
-                                Date date = new Date(arrivalTime.updatedAt);
+                            if (arrivalTime.getUpdatedAt() > 0) {
+                                Date date = new Date(arrivalTime.getUpdatedAt());
                                 vh.etaLastUpdateText.setText(ArrivalTimeUtil.displayDateFormat.format(date));
                             }
                             if (vh.etaServerTimeText.getText().equals(vh.etaLastUpdateText.getText())) {
@@ -912,7 +917,6 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                         }
                     });
                 }
-                // if (bundle.getBoolean(C.EXTRA.UPDATING)) { }
                 if (bundle.getBoolean(C.EXTRA.FAIL)) {
                     vh.etaView.setVisibility(View.INVISIBLE);
                 }
@@ -936,7 +940,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                 if (body == null) return;
                 if (body.contentType() != null) {
                     String contentType = body.contentType().toString();
-                    if (contentType.contains("image")) {
+                    if (!TextUtils.isEmpty(contentType) && contentType.contains("image")) {
                         vh.stopBitmap = BitmapFactory.decodeStream(body.byteStream());
                     } else {
                         Timber.d(contentType);

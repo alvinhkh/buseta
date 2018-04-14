@@ -94,10 +94,10 @@ data class MtrSchedule(
                           codeMap: Map<String, String>?): ArrivalTime {
             var arrivalTime = ArrivalTimeUtil.emptyInstance(context)
             arrivalTime.companyCode = C.PROVIDER.MTR
-            arrivalTime.text = schedule.time
-            arrivalTime.destination = codeMap?.get(schedule.destination.orEmpty())
-            arrivalTime.platform = schedule.platform
-            arrivalTime.estimate = schedule.ttnt
+            arrivalTime.text = schedule.time!!
+            arrivalTime.destination = codeMap?.get(schedule.destination.orEmpty())!!
+            arrivalTime.platform = schedule.platform!!
+            arrivalTime.estimate = schedule.ttnt!!
             arrivalTime.direction = direction
             if (!serverTime.isNullOrEmpty()) {
                 val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH)
