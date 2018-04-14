@@ -119,7 +119,7 @@ public class ArrivalTimeUtil {
         String[] misc = cursor.getString(cursor.getColumnIndex(EtaEntry.COLUMN_ETA_MISC)).split(",");
         object.setHasWheelchair(Boolean.valueOf(misc[0]));
         if (misc.length > 1) {
-            if (object.getCompanyCode().equals(C.PROVIDER.KMB)) {
+            if (!TextUtils.isEmpty(object.getCompanyCode()) && object.getCompanyCode().equals(C.PROVIDER.KMB)) {
                 object.setCapacity(KmbEtaUtil.parseCapacity(misc[1]));
             }
         }
@@ -136,10 +136,10 @@ public class ArrivalTimeUtil {
             object.setPlate(misc[5]);
         }
         if (misc.length > 6 && !TextUtils.isEmpty(misc[6])) {
-            object.setLatitude(Double.valueOf(misc[6]));
+            object.setLatitude(Double.parseDouble(misc[6]));
         }
         if (misc.length > 7 && !TextUtils.isEmpty(misc[7])) {
-            object.setLongitude(Double.valueOf(misc[7]));
+            object.setLongitude(Double.parseDouble(misc[7]));
         }
         if (misc.length > 8 && !TextUtils.isEmpty(misc[8])) {
             object.setPlatform(misc[8]);

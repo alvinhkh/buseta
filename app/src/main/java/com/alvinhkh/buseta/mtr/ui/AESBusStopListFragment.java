@@ -98,7 +98,7 @@ public class AESBusStopListFragment extends RouteStopListFragmentAbstract {
                                                 i++;
                                             }
                                         }
-                                        if (getActivity() == null) {
+                                        if (getActivity() != null) {
                                             getActivity().runOnUiThread(() -> {
                                                 if (adapter != null) {
                                                     adapter.addAll(items);
@@ -113,6 +113,7 @@ public class AESBusStopListFragment extends RouteStopListFragmentAbstract {
                                     }));
                         }, e -> {
                             Timber.d(e);
+                            if (getActivity() == null) return;
                             getActivity().runOnUiThread(() -> onStopListError(e));
                         }));
             }

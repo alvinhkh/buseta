@@ -615,8 +615,10 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                             if (getContext() != null) {
                                 ArrivalTimeUtil.query(getContext(), routeStop)
                                         .subscribe(cursor -> {
+                                            if (cursor == null) return;
                                             ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
-                                            if (arrivalTime.getLatitude() != 0.0 && arrivalTime.getLongitude() != 0.0) {
+                                            if (arrivalTime != null
+                                                    && arrivalTime.getLatitude() != 0.0 && arrivalTime.getLongitude() != 0.0) {
                                                 // TODO: show bus location on map for all arrivalTime
                                                 if (!TextUtils.isEmpty(arrivalTime.getPlate())) {
                                                     IconGenerator iconFactory = new IconGenerator(getContext());
@@ -625,11 +627,13 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                                                         markerMap.get(arrivalTime.getPlate()).remove();
                                                         markerMap.remove(arrivalTime.getPlate());
                                                     }
-                                                    Marker marker = map.addMarker(new MarkerOptions()
-                                                            .position(new LatLng(arrivalTime.getLatitude(), arrivalTime.getLongitude()))
-                                                            .icon(BitmapDescriptorFactory.fromBitmap(bmp)));
-                                                    marker.setTag(arrivalTime);
-                                                    markerMap.put(arrivalTime.getPlate(), marker);
+                                                    if (map != null) {
+                                                        Marker marker = map.addMarker(new MarkerOptions()
+                                                                .position(new LatLng(arrivalTime.getLatitude(), arrivalTime.getLongitude()))
+                                                                .icon(BitmapDescriptorFactory.fromBitmap(bmp)));
+                                                        marker.setTag(arrivalTime);
+                                                        markerMap.put(arrivalTime.getPlate(), marker);
+                                                    }
                                                 }
                                             }
                                         });

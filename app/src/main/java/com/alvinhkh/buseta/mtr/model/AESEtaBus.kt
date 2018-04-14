@@ -36,7 +36,7 @@ data class AESEtaBus(
         fun estimate(context: Context,
                      arrivalTime: ArrivalTime) : ArrivalTime {
             val etaDateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.ENGLISH)
-            val generatedDate = Date(arrivalTime.generatedAt!!)
+            val generatedDate = Date(arrivalTime.generatedAt)
             // given timeText
             if (!TextUtils.isEmpty(arrivalTime.text) && arrivalTime.text.matches(".*\\d.*".toRegex()) && !arrivalTime.text.contains("unexpected")) {
                 // if text has digit
@@ -100,7 +100,7 @@ data class AESEtaBus(
             val sdf = SimpleDateFormat("HH:mm", Locale.ENGLISH)
             var arrivalTime = ArrivalTimeUtil.emptyInstance(context)
             arrivalTime.companyCode = C.PROVIDER.AESBUS;
-            arrivalTime.estimate = aesEtaBus.arrivalTimeText!!
+            arrivalTime.estimate = aesEtaBus.arrivalTimeText.orEmpty()
             val calendar = Calendar.getInstance()
             calendar.time = statusTime
             calendar.add(Calendar.SECOND, aesEtaBus.arrivalTimeInSecond.orEmpty().toInt())
@@ -108,21 +108,23 @@ data class AESEtaBus(
             if (!aesEtaBus.busRemark.isNullOrEmpty()) {
                 arrivalTime.text += " " + aesEtaBus.busRemark
             }
-            arrivalTime.plate = aesEtaBus.busId!!
+            arrivalTime.plate = aesEtaBus.busId.orEmpty()
             arrivalTime.isSchedule = aesEtaBus.isScheduled == "1"
             arrivalTime.latitude = 0.0
             arrivalTime.longitude = 0.0
             arrivalTime.distanceKM = -1.0f
             if (!arrivalTime.isSchedule) {
-                arrivalTime.latitude = aesEtaBus.busLocation?.latitude!!
-                arrivalTime.longitude = aesEtaBus.busLocation?.longitude!!
+                aesEtaBus.busLocation?.let {
+                    arrivalTime.latitude = it.latitude
+                    arrivalTime.longitude = it.longitude
+                }
                 if (!routeStop?.latitude.isNullOrEmpty() &&
                         !routeStop?.longitude.isNullOrEmpty() &&
-                        arrivalTime.latitude.isFinite() &&
-                        arrivalTime.longitude.isFinite()) {
+                        arrivalTime.latitude != 0.0 &&
+                        arrivalTime.longitude != 0.0) {
                     val stopLocation = Location("")
                     stopLocation.latitude = routeStop?.latitude!!.toDouble()
-                    stopLocation.longitude = routeStop.longitude!!.toDouble()
+                    stopLocation.longitude = routeStop?.longitude!!.toDouble()
                     val busLocation = Location("")
                     busLocation.latitude = arrivalTime.latitude
                     busLocation.longitude = arrivalTime.longitude
