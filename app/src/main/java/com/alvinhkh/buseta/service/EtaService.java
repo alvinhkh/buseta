@@ -137,10 +137,8 @@ public class EtaService extends IntentService {
                         options.put(QUERY_LANGUAGE, LANGUAGE_TC);
                         options.put(QUERY_PLATFORM,  PLATFORM);
                         options.put(QUERY_APP_VERSION, APP_VERSION);
-                        options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
-                        Map<String, String> headers = new HashMap<>();
-                        headers.put("User-Agent", System.getProperty("http.agent"));
-                        disposables.add(nwstApi.eta(headers, options)
+                        options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());;
+                        disposables.add(nwstApi.eta(options)
                                 .subscribeWith(nwstEtaObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size() - 1)));
                         break;
                     case C.PROVIDER.LRTFEEDER:
@@ -323,7 +321,7 @@ public class EtaService extends IntentService {
                         NwstEta nwstEta = NwstEta.Companion.fromString(data[i]);
                         if (nwstEta == null) continue;
                         nwstEta.setServerTime(serverTime);
-                        ArrivalTime arrivalTime = NwstEtaUtil.toArrivalTime(getApplicationContext(), nwstEta);
+                        ArrivalTime arrivalTime = NwstEtaUtil.toArrivalTime(getApplicationContext(), routeStop, nwstEta);
                         arrivalTime.id = Integer.toString(i);
                         getContentResolver().insert(EtaEntry.CONTENT_URI,
                                 ArrivalTimeUtil.toContentValues(routeStop, arrivalTime));

@@ -38,6 +38,7 @@ public class FollowTable {
                 + COLUMN_DISPLAY_ORDER + " INTEGER DEFAULT 0, "
                 + "UNIQUE (" + COLUMN_COMPANY + ", " + COLUMN_ROUTE + ", "
                 + COLUMN_BOUND + ", " + COLUMN_STOP_CODE
+                // TODO: bug, unable to follow stops with same stop code in a route bound
                 + ") ON CONFLICT REPLACE"
                 + ");";
     };

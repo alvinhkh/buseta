@@ -182,6 +182,7 @@ public class RouteStopUtil {
         object.setRouteId(nwstStop.getRdv());
         object.setSequence(Integer.toString(nwstStop.getSequence()));
         object.setEtaGet(Boolean.toString(nwstStop.isEta()));
+        object.setDescription(route.getDescription());
         if (!TextUtils.isEmpty(nwstStop.getPoleId())) {
             object.setImageUrl("http://mobile.nwstbus.com.hk/api6/getstopphoto.php?filename=w" + nwstStop.getPoleId() + "001.jpg&syscode=" + NwstRequestUtil.syscode());
         }

@@ -270,6 +270,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
      * Returns true if geofences were added, otherwise false.
      */
     private boolean isGeofencesAdded() {
+        if (getContext() == null) return false;
         return !TextUtils.isEmpty(PreferenceManager.getDefaultSharedPreferences(getContext()).getString(C.PREF.GEOFENCES_KEY, ""));
     }
 
@@ -277,6 +278,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
      * Returns true if this geofences were added, otherwise false.
      */
     private boolean isThisGeofencesAdded() {
+        if (getContext() == null) return false;
         return PreferenceManager.getDefaultSharedPreferences(getContext())
                 .getString(C.PREF.GEOFENCES_KEY, "")
                 .equals(String.format(Locale.ENGLISH, "%s-%s-%s-%s", routeStop.getCompanyCode(),
@@ -287,6 +289,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
      * Stores whether geofences were added or removed in {@link SharedPreferences};
      */
     private void updateGeofencesAdded(String key) {
+        if (getContext() == null) return;
         PreferenceManager.getDefaultSharedPreferences(getContext())
                 .edit()
                 .putString(C.PREF.GEOFENCES_KEY, key)
@@ -308,6 +311,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
      * Return the current state of the permissions needed.
      */
     private boolean checkPermissions() {
+        if (getContext() == null) return false;
         int permissionState = ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION);
         return permissionState == PackageManager.PERMISSION_GRANTED;
     }
@@ -513,7 +517,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
 
         vh.mapView = contentView.findViewById(R.id.map);
 
-        if (ActivityCompat.checkSelfPermission(getContext(),
+        if (getContext() != null && ActivityCompat.checkSelfPermission(getContext(),
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
                 ActivityCompat.checkSelfPermission(getContext(),
                         Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {

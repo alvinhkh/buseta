@@ -39,6 +39,7 @@ public class App extends Application {
         LeakCanary.install(this);
 
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        builder.addNetworkInterceptor(new UserAgentInterceptor());
         httpClient = builder.build();
 
         Crashlytics crashlytics = new Crashlytics.Builder()

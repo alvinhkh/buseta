@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.model.ArrivalTime;
+import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.nwst.model.NwstEta;
 import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
 
@@ -86,6 +87,7 @@ public class NwstEtaUtil {
     }
 
     public static ArrivalTime toArrivalTime(@NonNull Context context,
+                                            @NonNull RouteStop routeStop,
                                             @NonNull NwstEta nwstEta) {
         ArrivalTime object = ArrivalTimeUtil.emptyInstance(context);
         object.companyCode = C.PROVIDER.NWST;
@@ -106,7 +108,8 @@ public class NwstEtaUtil {
                 object.text += " " + subtitle;
             }
         }
-        if (!TextUtils.isEmpty(nwstEta.getBoundText())) {
+        if (!TextUtils.isEmpty(nwstEta.getBoundText()) && (TextUtils.isEmpty(routeStop.getDescription())
+                || !routeStop.getDescription().equals(nwstEta.getBoundText()))) {
             object.text += " " + nwstEta.getBoundText();
         }
         object.isoTime = nwstEta.getEtaIsoTime();

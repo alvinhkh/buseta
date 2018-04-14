@@ -113,9 +113,7 @@ public class CheckUpdateService extends IntentService {
         options.put(QUERY_PLATFORM, PLATFORM);
         options.put(QUERY_APP_VERSION, APP_VERSION);
         options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
-        Map<String, String> headers = new HashMap<>();
-        headers.put("User-Agent", System.getProperty("http.agent"));
-        disposables.add(nwstService.routeList(headers, options)
+        disposables.add(nwstService.routeList(options)
                 .retryWhen(new RetryWithDelay(3, 3000))
                 .subscribeOn(Schedulers.io())
                 .subscribeWith(nwstRouteListObserver(manualUpdate)));

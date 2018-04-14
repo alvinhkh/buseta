@@ -71,9 +71,7 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
             options.put(QUERY_PLATFORM, PLATFORM);
             options.put(QUERY_APP_VERSION, APP_VERSION);
             options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
-            Map<String, String> headers = new HashMap<>();
-            headers.put("User-Agent", System.getProperty("http.agent"));
-            disposables.add(nwstService.stopList(headers, options)
+            disposables.add(nwstService.stopList(options)
                     .retryWhen(new RetryWithDelay(5, 3000))
                     .subscribeWith(stopListObserver()));
         } else {
@@ -140,9 +138,7 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
                 options.put(QUERY_PLATFORM, PLATFORM);
                 options.put(QUERY_APP_VERSION, APP_VERSION);
                 options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
-                Map<String, String> headers = new HashMap<>();
-                headers.put("User-Agent", System.getProperty("http.agent"));
-                disposables.add(nwstService.latlongList(headers, options)
+                disposables.add(nwstService.latlongList(options)
                         .retryWhen(new RetryWithDelay(5, 3000))
                         .subscribeWith(latlongListObserver()));
             }

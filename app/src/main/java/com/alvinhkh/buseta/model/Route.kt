@@ -29,8 +29,7 @@ data class Route(
             parcel.readValue(Boolean::class.java.classLoader) as? Boolean,
             parcel.readValue(Int::class.java.classLoader) as? Int,
             parcel.readString(),
-            parcel.readString()) {
-    }
+            parcel.readString())
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(code)

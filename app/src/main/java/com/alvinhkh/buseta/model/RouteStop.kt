@@ -21,7 +21,8 @@ data class RouteStop(
         var origin: String? = null,
         var sequence: String? = null,
         var route: String? = null,
-        var routeId: String? = null
+        var routeId: String? = null,
+        var description: String? = null
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
             parcel.readString(),
@@ -41,8 +42,8 @@ data class RouteStop(
             parcel.readString(),
             parcel.readString(),
             parcel.readString(),
-            parcel.readString()) {
-    }
+            parcel.readString(),
+            parcel.readString())
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeString(code)
@@ -63,6 +64,7 @@ data class RouteStop(
         parcel.writeString(sequence)
         parcel.writeString(route)
         parcel.writeString(routeId)
+        parcel.writeString(description)
     }
 
     override fun describeContents(): Int {
