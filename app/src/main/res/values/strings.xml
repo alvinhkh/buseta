@@ -63,6 +63,7 @@
     <string name="summary_on_hide_ad">除設定頁面，不顯示其他廣告</string>
     <string name="summary_off_hide_ad">@null</string>
     <string name="title_kmb_api">九巴API</string>
+    <string name="widget_item_lines">Widget行數</string>
 
     <string name="message_app_update">新版本：%s</string>
     <string name="message_confirm_clear_follow">你確定要清除追蹤名單？</string>

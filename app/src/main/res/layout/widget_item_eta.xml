@@ -90,31 +90,15 @@
         android:layout_gravity="start"
         android:layout_marginTop="1dp">
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/route_destination"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|start">
-
-            <TextView
-                android:id="@+id/route_destination_label"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:labelFor="@+id/route_destination"
-                android:maxLines="1"
-                style="@style/TextAppearance.AppCompat.Small"
-                android:textColor="@color/widgetTextSecondary"
-                android:text="@string/dest" />
-
-            <TextView
-                android:id="@+id/route_destination"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:maxLines="1"
-                style="@style/TextAppearance.AppCompat.Small"
-                android:textColor="@color/widgetTextSecondary"
-                tool:text="@string/dots" />
-
-        </LinearLayout>
+            android:layout_gravity="bottom|start"
+            android:maxLines="1"
+            style="@style/TextAppearance.AppCompat.Small"
+            android:textColor="@color/widgetTextSecondary"
+            tool:text="@string/dots" />
 
         <TextView
             android:id="@+id/eta3"

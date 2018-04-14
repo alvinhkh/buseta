@@ -4,15 +4,18 @@ import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Binder;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.preference.PreferenceManager;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
+import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 
@@ -55,6 +58,8 @@ public class EtaWidgetService extends RemoteViewsService {
 
         private int appWidgetId;
 
+        private Integer itemNoOfLines = 3;
+
         StackRemoteViewsFactory(@NonNull Context context, Intent intent) {
             this.context = context;
             appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
@@ -62,9 +67,15 @@ public class EtaWidgetService extends RemoteViewsService {
         }
 
         public void onCreate() {
-            disposables.add(RxBroadcastReceiver.create(context, new IntentFilter(C.ACTION.ETA_UPDATE))
-                    .share()
-                    .subscribeWith(etaObserver()));
+            if (getApplicationContext() != null) {
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                if (preferences != null) {
+                    Integer i = Integer.parseInt(preferences.getString("widget_item_lines", "3"));
+                    if (i > 0) {
+                        itemNoOfLines = i;
+                    }
+                }
+            }
         }
 
         public void onDestroy() {
@@ -90,16 +101,45 @@ public class EtaWidgetService extends RemoteViewsService {
             if (followStop == null) return remoteViews;
             RouteStop stop = RouteStopUtil.fromFollowStop(followStop);
             if (stop != null) {
-                remoteViews.setTextViewText(R.id.stop_name, stop.getName());
-                remoteViews.setTextViewText(R.id.route_no, stop.getRoute());
-                remoteViews.setTextViewText(R.id.route_destination, stop.getDestination());
+                remoteViews.setTextViewText(R.id.stop_name, null);
+                remoteViews.setTextViewText(R.id.route_no, null);
+                remoteViews.setTextViewText(R.id.route_destination, null);
                 remoteViews.setTextViewText(R.id.eta, null);
                 remoteViews.setTextViewText(R.id.eta2, null);
                 remoteViews.setTextViewText(R.id.eta3, null);
+                if (itemNoOfLines == 1) {
+                    remoteViews.setViewVisibility(R.id.stop_name, View.VISIBLE);
+                    remoteViews.setViewVisibility(R.id.route_no, View.GONE);
+                    remoteViews.setViewVisibility(R.id.route_destination, View.GONE);
+                    remoteViews.setViewVisibility(R.id.eta, View.VISIBLE);
+                    remoteViews.setViewVisibility(R.id.eta2, View.GONE);
+                    remoteViews.setViewVisibility(R.id.eta3, View.GONE);
+                    remoteViews.setTextViewText(R.id.stop_name, stop.getRoute() + " " + stop.getName());
+                } else if (itemNoOfLines == 2) {
+                    remoteViews.setViewVisibility(R.id.stop_name, View.VISIBLE);
+                    remoteViews.setViewVisibility(R.id.route_no, View.VISIBLE);
+                    remoteViews.setViewVisibility(R.id.route_destination, View.GONE);
+                    remoteViews.setViewVisibility(R.id.eta, View.VISIBLE);
+                    remoteViews.setViewVisibility(R.id.eta2, View.VISIBLE);
+                    remoteViews.setViewVisibility(R.id.eta3, View.GONE);
+                    remoteViews.setTextViewText(R.id.stop_name, stop.getRoute() + " " + stop.getName());
+                    remoteViews.setTextViewText(R.id.route_no, getString(R.string.destination, stop.getDestination()));
+                } else {
+                    remoteViews.setViewVisibility(R.id.stop_name, View.VISIBLE);
+                    remoteViews.setViewVisibility(R.id.route_no, View.VISIBLE);
+                    remoteViews.setViewVisibility(R.id.route_destination, View.VISIBLE);
+                    remoteViews.setViewVisibility(R.id.eta, View.VISIBLE);
+                    remoteViews.setViewVisibility(R.id.eta2, View.VISIBLE);
+                    remoteViews.setViewVisibility(R.id.eta3, View.VISIBLE);
+                    remoteViews.setTextViewText(R.id.stop_name, stop.getName());
+                    remoteViews.setTextViewText(R.id.route_no, stop.getRoute());
+                    remoteViews.setTextViewText(R.id.route_destination, getString(R.string.destination, stop.getDestination()));
+                }
                 // ETA
                 // http://stackoverflow.com/a/20645908/2411672
                 final long token = Binder.clearCallingIdentity();
-                try {SpannableStringBuilder etaTexts = new SpannableStringBuilder();
+                try {
+                    SpannableStringBuilder etaTexts = new SpannableStringBuilder();
                     ArrivalTimeUtil.query(context, stop).subscribe(cursor -> {
                         // Cursor has been moved +1 position forward.
                         ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
@@ -117,8 +157,10 @@ public class EtaWidgetService extends RemoteViewsService {
                             if (arrivalTime.isSchedule()) {
                                 etaText.append("*");
                             }
-                            if (!TextUtils.isEmpty(arrivalTime.getEstimate())) {
-                                etaText.append(" (").append(arrivalTime.getEstimate()).append(")");
+                            if (itemNoOfLines > 1 || pos == 0) {
+                                if (!TextUtils.isEmpty(arrivalTime.getEstimate())) {
+                                    etaText.append(" (").append(arrivalTime.getEstimate()).append(")");
+                                }
                             }
                             if (arrivalTime.getDistanceKM() >= 0) {
                                 etaText.append(" ").append(context.getString(R.string.km_short, arrivalTime.getDistanceKM()));
@@ -149,27 +191,53 @@ public class EtaWidgetService extends RemoteViewsService {
                             if (arrivalTime.getHasWifi() && PreferenceUtil.isShowWifiIcon(context)) {
                                 etaText.append(" [W]");
                             }
+
                             if (etaText.length() > 0) {
                                 etaText.setSpan(new ForegroundColorSpan(colorInt), 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                             }
-
-                            switch(pos) {
-                                case 0:
-                                    remoteViews.setTextViewText(R.id.eta, etaText);
-                                    break;
-                                case 1:
-                                    remoteViews.setTextViewText(R.id.eta2, etaText);
-                                    break;
-                                case 2:
-                                    remoteViews.setTextViewText(R.id.eta3, etaText);
-                                    break;
-                                default:
-                                    // etaText.insert(0, "  ");
-                                    // etaText.insert(0, etaTexts);
-                                    // etaTexts.clear();
-                                    // etaTexts.append(etaText);
-                                    // remoteViews.setTextViewText(R.id.eta3, etaTexts);
-                                    break;
+                            if (itemNoOfLines == 1) {
+                                switch (pos) {
+                                    case 0:
+                                        etaTexts.append(etaText);
+                                        break;
+                                    default:
+                                        etaText.insert(0, "  ");
+                                        etaTexts.append(etaText);
+                                        break;
+                                }
+                                remoteViews.setTextViewText(R.id.eta, etaTexts);
+                            } else if (itemNoOfLines == 2) {
+                                switch (pos) {
+                                    case 0:
+                                        remoteViews.setTextViewText(R.id.eta, etaText);
+                                        break;
+                                    case 1:
+                                        remoteViews.setTextViewText(R.id.eta2, etaText);
+                                        etaTexts.append(etaText);
+                                    case 2:
+                                        etaText.insert(0, "  ");
+                                        remoteViews.setTextViewText(R.id.eta2, etaTexts);
+                                        break;
+                                }
+                            } else {
+                                switch (pos) {
+                                    case 0:
+                                        remoteViews.setTextViewText(R.id.eta, etaText);
+                                        break;
+                                    case 1:
+                                        remoteViews.setTextViewText(R.id.eta2, etaText);
+                                        break;
+                                    case 2:
+                                        remoteViews.setTextViewText(R.id.eta3, etaText);
+                                        break;
+                                    default:
+                                        // etaText.insert(0, "  ");
+                                        // etaText.insert(0, etaTexts);
+                                        // etaTexts.clear();
+                                        // etaTexts.append(etaText);
+                                        // remoteViews.setTextViewText(R.id.eta3, etaTexts);
+                                        break;
+                                }
                             }
                         }
                     });
@@ -216,7 +284,19 @@ public class EtaWidgetService extends RemoteViewsService {
 
         @Override
         public void onDataSetChanged() {
-            Timber.d("onDataSetChanged");
+            disposables.clear();
+            disposables.add(RxBroadcastReceiver.create(context, new IntentFilter(C.ACTION.ETA_UPDATE))
+                    .share()
+                    .subscribeWith(etaObserver()));
+            if (getApplicationContext() != null) {
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                if (preferences != null) {
+                    Integer i = Integer.parseInt(preferences.getString("widget_item_lines", "3"));
+                    if (i > 0) {
+                        itemNoOfLines = i;
+                    }
+                }
+            }
             // http://stackoverflow.com/a/20645908/2411672
             final long token = Binder.clearCallingIdentity();
             try {

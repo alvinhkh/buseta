@@ -76,6 +76,15 @@
             android:negativeButtonText="@string/action_cancel"
             android:positiveButtonText="@string/action_confirm" />
 
+        <ListPreference
+            android:key="widget_item_lines"
+            android:title="@string/widget_item_lines"
+            android:defaultValue="3"
+            android:entries="@array/widget_item_lines_entries"
+            android:entryValues="@array/widget_item_lines_values"
+            android:negativeButtonText="@string/action_cancel"
+            android:positiveButtonText="@string/action_confirm" />
+
     </PreferenceCategory>
 
     <PreferenceCategory

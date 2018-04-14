@@ -26,7 +26,7 @@
     <string-array name="load_eta_entries">
         <item>@string/manual</item>
         <item>30秒</item>
-        <item>1分鐘</item>
+        <item>1分鐘（預設）</item>
         <item>3分鐘</item>
     </string-array>
 
@@ -35,6 +35,18 @@
         <item>30</item>
         <item>60</item>
         <item>180</item>
+    </string-array>
+
+    <string-array name="widget_item_lines_entries">
+        <item>1</item>
+        <item>2</item>
+        <item>3（預設）</item>
+    </string-array>
+
+    <string-array name="widget_item_lines_values">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
     </string-array>
 
 </resources>
