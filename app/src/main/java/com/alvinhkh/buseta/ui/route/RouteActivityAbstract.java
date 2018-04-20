@@ -131,14 +131,18 @@ public abstract class RouteActivityAbstract extends BaseActivity {
             public void onChanged() {
                 super.onChanged();
                 if (isScrollToPage) {
-                    viewPager.setCurrentItem(fragNo, false);
+                    if (viewPager != null) {
+                        viewPager.setCurrentItem(fragNo, false);
+                    }
                     isScrollToPage = false;
                 }
                 if (pagerAdapter.getCount() > 0) {
                     if (emptyView != null) {
                         emptyView.setVisibility(View.GONE);
                     }
-                    viewPager.setOffscreenPageLimit(Math.min(pagerAdapter.getCount(), 10));
+                    if (viewPager != null) {
+                        viewPager.setOffscreenPageLimit(Math.min(pagerAdapter.getCount(), 10));
+                    }
                 } else {
                     showEmptyView();
                 }
@@ -160,7 +164,7 @@ public abstract class RouteActivityAbstract extends BaseActivity {
                 mv.onCreate(null);
                 mv.onPause();
                 mv.onDestroy();
-            }catch (Exception ignored){}
+            } catch (Exception | NoSuchMethodError ignored){}
         }).start();
     }
 
@@ -226,10 +230,11 @@ public abstract class RouteActivityAbstract extends BaseActivity {
 
     protected void onCompleteRoute(List<Route> routes, String companyCode) {
         if (pagerAdapter == null || TextUtils.isEmpty(companyCode)) return;
-        pagerAdapter.setRoute(routeNo);
         for (Route route : routes) {
             if (route == null) continue;
+            if (TextUtils.isEmpty(route.getName()) || !route.getName().equals(routeNo)) continue;
             companyCode = route.getCompanyCode();
+            pagerAdapter.addSequence(route);
             if (stopFromIntent != null && route.isSpecial() != null && !route.isSpecial() &&
                     route.getCompanyCode() != null && route.getSequence() != null &&
                     route.getCompanyCode().equals(stopFromIntent.getCompanyCode()) &&
@@ -238,13 +243,12 @@ public abstract class RouteActivityAbstract extends BaseActivity {
                 fragNo = pagerAdapter.getCount();
                 isScrollToPage = true;
             }
-            pagerAdapter.addSequence(route);
         }
         if (getSupportActionBar() != null) {
             String routeName = RouteUtil.getCompanyName(this, companyCode, routeNo) + " " + routeNo;
             getSupportActionBar().setTitle(routeName);
         }
-        if (routes.size() > 0) {
+        if (routes.size() > 0 && !TextUtils.isEmpty(companyCode)) {
             SearchHistory history = SearchHistoryUtil.createInstance(routeNo, companyCode);
             getContentResolver().insert(SuggestionProvider.CONTENT_URI, SearchHistoryUtil.toContentValues(history));
         }

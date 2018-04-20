@@ -75,6 +75,9 @@ public class ArrivalTimeUtil {
     }
     
     public static ContentValues toContentValues(RouteStop stop, ArrivalTime eta) {
+        if (stop == null || TextUtils.isEmpty(stop.getCompanyCode())) {
+            return null;
+        }
         if (TextUtils.isEmpty(eta.getExpire())) {
             eta.setExpire("");
         }

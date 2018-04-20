@@ -7,7 +7,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.text.TextUtils;
-import android.util.SparseArray;
 import android.view.ViewGroup;
 
 import com.alvinhkh.buseta.C;
@@ -28,17 +27,9 @@ import java.util.List;
 
 public class RoutePagerAdapter extends FragmentStatePagerAdapter {
 
-    private int pagerAdapterPosChanged = POSITION_UNCHANGED;
-
-    public static final int MIN_PAGE = 0;
-
     private Context context;
 
-    private String routeNo;
-
     private static List<Route> routes = new ArrayList<>();
-
-    private static SparseArray<Fragment> fragments = new SparseArray<>();
 
     private RouteStop routeStop;
 
@@ -49,40 +40,19 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
     }
 
     @Override
-    public Object instantiateItem(ViewGroup container, int position) {
-        Fragment fragment = (Fragment) super.instantiateItem(container, position);
-        fragments.put(position, fragment);
-        return fragment;
-    }
-
-    @Override
     public void destroyItem(ViewGroup container, int position, Object object) {
-        fragments.remove(position);
+        routes.remove(position);
         super.destroyItem(container, position, object);
     }
 
-    public Fragment getFragment(int position) {
-        return fragments.get(position);
-    }
-
-    public void setRoute(@NonNull String routeNo) {
-        this.routeNo = routeNo;
-        pagerAdapterPosChanged = POSITION_NONE;
-        notifyDataSetChanged();
-    }
-
     public void addSequence(@NonNull Route route) {
-        if (!TextUtils.isEmpty(route.getName()) && !route.getName().equals(routeNo)) return;
         if (routes.contains(route)) return;
         routes.add(route);
-        pagerAdapterPosChanged = POSITION_NONE;
         notifyDataSetChanged();
     }
 
     public void clearSequence() {
         routes.clear();
-        fragments.clear();
-        pagerAdapterPosChanged = POSITION_NONE;
         notifyDataSetChanged();
     }
 
@@ -92,31 +62,26 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-        if (position > getCount()) {
-            throw new IllegalArgumentException();
-        }
-        if (position >= MIN_PAGE) {
-            Route route = routes.get(position - MIN_PAGE);
-            if (route != null && route.getCompanyCode() != null) {
-                switch (route.getCompanyCode()) {
-                    case C.PROVIDER.AESBUS:
-                        return AESBusStopListFragment.newInstance(route, routeStop);
-                    case C.PROVIDER.CTB:
-                    case C.PROVIDER.NWFB:
-                    case C.PROVIDER.NWST:
-                        return NwstStopListFragment.newInstance(route, routeStop);
-                    case C.PROVIDER.LRTFEEDER:
-                        return MtrBusStopListFragment.newInstance(route, routeStop);
-                    case C.PROVIDER.NLB:
-                        return NlbStopListFragment.newInstance(route, routeStop);
-                    case C.PROVIDER.KMB:
-                    default:
-                        if (PreferenceUtil.isUsingNewKmbApi(context)) {
-                            return KmbStopListFragment.newInstance(route, routeStop);
-                        } else {
-                            return LwbStopListFragment.newInstance(route, routeStop);
-                        }
-                }
+        Route route = routes.get(position);
+        if (route != null && route.getCompanyCode() != null) {
+            switch (route.getCompanyCode()) {
+                case C.PROVIDER.AESBUS:
+                    return AESBusStopListFragment.newInstance(route, routeStop);
+                case C.PROVIDER.CTB:
+                case C.PROVIDER.NWFB:
+                case C.PROVIDER.NWST:
+                    return NwstStopListFragment.newInstance(route, routeStop);
+                case C.PROVIDER.LRTFEEDER:
+                    return MtrBusStopListFragment.newInstance(route, routeStop);
+                case C.PROVIDER.NLB:
+                    return NlbStopListFragment.newInstance(route, routeStop);
+                case C.PROVIDER.KMB:
+                default:
+                    if (PreferenceUtil.isUsingNewKmbApi(context)) {
+                        return KmbStopListFragment.newInstance(route, routeStop);
+                    } else {
+                        return LwbStopListFragment.newInstance(route, routeStop);
+                    }
             }
         }
         return null;
@@ -124,7 +89,7 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public int getCount() {
-        return MIN_PAGE + routes.size();
+        return routes.size();
     }
 
     @Override
@@ -132,26 +97,17 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
         if (position > getCount()) {
             throw new IllegalArgumentException();
         }
-        switch (position) {
-            case MIN_PAGE:
-            default:
-                Route route = routes.get(position - MIN_PAGE);
-                if (route != null) {
-                    if (!TextUtils.isEmpty(route.getOrigin())) {
-                        return (TextUtils.isEmpty(route.getDestination()) ? "" : (route.getDestination() + (getCount() > 1 ? "\n" : " ")))
-                                + context.getString(R.string.destination, route.getOrigin())
-                                + (route.isSpecial() ? "#" : "");
-                    }
-                    if (!TextUtils.isEmpty(route.getName())) {
-                        return route.getName();
-                    }
-                }
-                return context.getString(R.string.route) + " " + position;
+        Route route = routes.get(position);
+        if (route != null) {
+            if (!TextUtils.isEmpty(route.getOrigin())) {
+                return (TextUtils.isEmpty(route.getDestination()) ? "" : (route.getDestination() + (getCount() > 1 ? "\n" : " ")))
+                        + context.getString(R.string.destination, route.getOrigin())
+                        + (route.isSpecial() ? "#" : "");
+            }
+            if (!TextUtils.isEmpty(route.getName())) {
+                return route.getName();
+            }
         }
-    }
-
-    @Override
-    public int getItemPosition(@NonNull Object object) {
-        return pagerAdapterPosChanged;
+        return context.getString(R.string.route) + " " + position;
     }
 }

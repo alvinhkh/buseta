@@ -36,6 +36,8 @@ import com.alvinhkh.buseta.utils.PreferenceUtil;
 import java.text.DecimalFormat;
 import java.util.Locale;
 
+import io.reactivex.disposables.CompositeDisposable;
+
 
 public class RouteStopListAdapter
         extends ArrayListRecyclerViewAdapter<RouteStopListAdapter.ViewHolder> {
@@ -141,6 +143,8 @@ public class RouteStopListAdapter
         FragmentManager fragmentManager;
         Location currentLocation;
 
+        CompositeDisposable disposable = new CompositeDisposable();
+
         DataViewHolder(View itemView, int viewType,
                        OnClickItemListener listener,
                        FragmentManager fragmentManager, Route route, Location currentLocation) {
@@ -209,22 +213,24 @@ public class RouteStopListAdapter
             });
 
             this.itemView.setOnLongClickListener(v -> {
-                BottomSheetDialogFragment bottomSheetDialogFragment = RouteStopFragment.newInstance(stop);
-                bottomSheetDialogFragment.show(fragmentManager, bottomSheetDialogFragment.getTag());
+                try {
+                    BottomSheetDialogFragment bottomSheetDialogFragment = RouteStopFragment.newInstance(stop);
+                    bottomSheetDialogFragment.show(fragmentManager, bottomSheetDialogFragment.getTag());
+                } catch (IllegalStateException ignored) {}
                 return true;
             });
 
             Context context = this.itemView.getContext();
-            if (context != null) {
+            if (context != null && disposable != null) {
                 // Follow
-                FollowStopUtil.query(context, RouteStopUtil.toFollowStop(stop)).subscribe(cursor -> {
+                disposable.add(FollowStopUtil.query(context, RouteStopUtil.toFollowStop(stop)).subscribe(cursor -> {
                     this.followImage.setVisibility(cursor.getCount() > 0 ? View.VISIBLE : View.GONE);
                     if (cursor != null) {
                         cursor.close();
                     }
-                });
+                }));
                 // ETA
-                ArrivalTimeUtil.query(context, stop).subscribe(cursor -> {
+                disposable.add(ArrivalTimeUtil.query(context, stop).subscribe(cursor -> {
                     // Cursor has been moved +1 position forward.
                     ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
                     arrivalTime = ArrivalTimeUtil.estimate(context, arrivalTime);
@@ -282,36 +288,40 @@ public class RouteStopListAdapter
                         }
                         if (arrivalTime.getHasWheelchair() && PreferenceUtil.isShowWheelchairIcon(context)) {
                             Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_accessible_black_18dp);
-                            drawable = DrawableCompat.wrap(drawable);
-                            if (pos == 0) {
-                                drawable.setBounds(0, 0, this.etaText.getLineHeight(), this.etaText.getLineHeight());
-                            } else if (pos == 1) {
-                                drawable.setBounds(0, 0, this.eta2Text.getLineHeight(), this.eta2Text.getLineHeight());
-                            } else {
-                                drawable.setBounds(0, 0, this.eta3Text.getLineHeight(), this.eta3Text.getLineHeight());
-                            }
-                            DrawableCompat.setTint(drawable.mutate(), colorInt);
-                            ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
-                            etaText.append(" ");
-                            if (etaText.length() > 0) {
-                                etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                            if (drawable != null) {
+                                drawable = DrawableCompat.wrap(drawable);
+                                if (pos == 0) {
+                                    drawable.setBounds(0, 0, this.etaText.getLineHeight(), this.etaText.getLineHeight());
+                                } else if (pos == 1) {
+                                    drawable.setBounds(0, 0, this.eta2Text.getLineHeight(), this.eta2Text.getLineHeight());
+                                } else {
+                                    drawable.setBounds(0, 0, this.eta3Text.getLineHeight(), this.eta3Text.getLineHeight());
+                                }
+                                DrawableCompat.setTint(drawable.mutate(), colorInt);
+                                ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
+                                etaText.append(" ");
+                                if (etaText.length() > 0) {
+                                    etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                                }
                             }
                         }
                         if (arrivalTime.getHasWifi() && PreferenceUtil.isShowWifiIcon(context)) {
                             Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_network_wifi_black_18dp);
-                            drawable = DrawableCompat.wrap(drawable);
-                            if (pos == 0) {
-                                drawable.setBounds(0, 0, this.etaText.getLineHeight(), this.etaText.getLineHeight());
-                            } else if (pos == 1) {
-                                drawable.setBounds(0, 0, this.eta2Text.getLineHeight(), this.eta2Text.getLineHeight());
-                            } else {
-                                drawable.setBounds(0, 0, this.eta3Text.getLineHeight(), this.eta3Text.getLineHeight());
-                            }
-                            DrawableCompat.setTint(drawable.mutate(), colorInt);
-                            ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
-                            etaText.append(" ");
-                            if (etaText.length() > 0) {
-                                etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                            if (drawable != null) {
+                                drawable = DrawableCompat.wrap(drawable);
+                                if (pos == 0) {
+                                    drawable.setBounds(0, 0, this.etaText.getLineHeight(), this.etaText.getLineHeight());
+                                } else if (pos == 1) {
+                                    drawable.setBounds(0, 0, this.eta2Text.getLineHeight(), this.eta2Text.getLineHeight());
+                                } else {
+                                    drawable.setBounds(0, 0, this.eta3Text.getLineHeight(), this.eta3Text.getLineHeight());
+                                }
+                                DrawableCompat.setTint(drawable.mutate(), colorInt);
+                                ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
+                                etaText.append(" ");
+                                if (etaText.length() > 0) {
+                                    etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                                }
                             }
                         }
                         if (etaText.length() > 0) {
@@ -334,7 +344,7 @@ public class RouteStopListAdapter
                                 break;
                         }
                     }
-                });
+                }));
             }
         }
     }

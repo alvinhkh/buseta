@@ -71,6 +71,7 @@ public class MainActivity extends BaseActivity {
                 item -> {
                     Integer colorInt = 0;
                     FragmentManager fm = getSupportFragmentManager();
+                    if (fm == null) return false;
                     fm.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                     switch (item.getItemId()) {
                         case R.id.action_bus:
@@ -108,19 +109,22 @@ public class MainActivity extends BaseActivity {
                         default:
                             finish();
                     }
-                    if (colorInt != 0) {
+                    if (colorInt != 0 && getSupportActionBar() != null) {
                         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(colorInt));
-                        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+                                && getWindow() != null) {
                             getWindow().setStatusBarColor(ColorUtil.Companion.darkenColor(colorInt));
                             getWindow().setNavigationBarColor(ColorUtil.Companion.darkenColor(colorInt));
                         }
-                        bottomNavigationView.setBackgroundColor(colorInt);
+                        if (bottomNavigationView != null) {
+                            bottomNavigationView.setBackgroundColor(colorInt);
+                        }
                     }
                     return true;
                 });
         getSupportFragmentManager().addOnBackStackChangedListener(() -> {
             Fragment f = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-            if (f != null){
+            if (f != null && bottomNavigationView != null){
                 switch (f.getClass().getName()) {
                     case "FollowFragment":
                         bottomNavigationView.setSelectedItemId(R.id.action_bus);
@@ -132,7 +136,9 @@ public class MainActivity extends BaseActivity {
             }
 
         });
-        bottomNavigationView.setSelectedItemId(R.id.action_bus);
+        if (bottomNavigationView != null) {
+            bottomNavigationView.setSelectedItemId(R.id.action_bus);
+        }
 
         try {
             Intent intent = new Intent(this, CheckUpdateService.class);

@@ -309,7 +309,9 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         if (mapFragment != null) {
-            getChildFragmentManager().beginTransaction().remove(mapFragment).commit();
+            if (getChildFragmentManager() != null) {
+                getChildFragmentManager().beginTransaction().remove(mapFragment).commitAllowingStateLoss();
+            }
             mapFragment = null;
         }
         super.onSaveInstanceState(outState);
@@ -556,7 +558,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
             if (mapFragment != null && getActivity() != null) {
                 FragmentTransaction ft = getActivity().getSupportFragmentManager().beginTransaction();
                 ft.remove(mapFragment);
-                ft.commit();
+                ft.commitAllowingStateLoss();
             }
             mapFragment = null;
             if (getView() != null) {
@@ -580,15 +582,17 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         new Thread(() -> {
             try {
                 mapFragment = SupportMapFragment.newInstance();
-                getChildFragmentManager().beginTransaction().add(R.id.map, mapFragment).runOnCommit(() -> {
-                    if (getActivity() != null) {
-                        getActivity().runOnUiThread(() -> {
-                            if (mapFragment != null) {
-                                mapFragment.getMapAsync(this);
-                            }
-                        });
-                    }
-                }).commit();
+                if (!mapFragment.isAdded()) {
+                    getChildFragmentManager().beginTransaction().add(R.id.map, mapFragment).runOnCommit(() -> {
+                        if (getActivity() != null) {
+                            getActivity().runOnUiThread(() -> {
+                                if (mapFragment != null) {
+                                    mapFragment.getMapAsync(this);
+                                }
+                            });
+                        }
+                    }).commitAllowingStateLoss();
+                }
             } catch (Exception ignored){ }
         }).start();
     }
@@ -613,7 +617,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                                 && ((RouteStop) item.getObject()).getSequence() != null
                                 && ((RouteStop) item.getObject()).getSequence().equals(routeStop.getSequence())) {
                             if (getContext() != null) {
-                                ArrivalTimeUtil.query(getContext(), routeStop)
+                                disposables.add(ArrivalTimeUtil.query(getContext(), routeStop)
                                         .subscribe(cursor -> {
                                             if (cursor == null) return;
                                             ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
@@ -636,7 +640,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                                                     }
                                                 }
                                             }
-                                        });
+                                        }));
                             }
                             adapter.notifyItemChanged(i);
                             break;
