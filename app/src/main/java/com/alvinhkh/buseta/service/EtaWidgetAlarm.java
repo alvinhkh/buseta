@@ -15,8 +15,9 @@ public class EtaWidgetAlarm {
 
     private static final Integer ALARM_ID = 0;
 
-    public static void start(@NonNull Context context, int minutes) {
-        Integer intervalMillis = minutes * 60 * 1000;
+    public static void start(@NonNull Context context, int seconds) {
+        if (seconds <= 0) return;
+        Integer intervalMillis = seconds * 1000;
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.MILLISECOND, intervalMillis);
 

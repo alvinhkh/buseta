@@ -76,9 +76,24 @@
             android:negativeButtonText="@string/action_cancel"
             android:positiveButtonText="@string/action_confirm" />
 
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="category_widgets"
+        android:title="@string/widgets">
+
+        <ListPreference
+            android:key="widget_load_eta"
+            android:title="@string/eta_short"
+            android:defaultValue="60"
+            android:entries="@array/load_eta_entries"
+            android:entryValues="@array/load_eta_values"
+            android:negativeButtonText="@string/action_cancel"
+            android:positiveButtonText="@string/action_confirm" />
+
         <ListPreference
             android:key="widget_item_lines"
-            android:title="@string/widget_item_lines"
+            android:title="@string/no_of_rows"
             android:defaultValue="3"
             android:entries="@array/widget_item_lines_entries"
             android:entryValues="@array/widget_item_lines_values"

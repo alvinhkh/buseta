@@ -140,7 +140,7 @@ public class EtaWidgetService extends RemoteViewsService {
                 final long token = Binder.clearCallingIdentity();
                 try {
                     SpannableStringBuilder etaTexts = new SpannableStringBuilder();
-                    ArrivalTimeUtil.query(context, stop).subscribe(cursor -> {
+                    disposables.add(ArrivalTimeUtil.query(context, stop).subscribe(cursor -> {
                         // Cursor has been moved +1 position forward.
                         ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
                         arrivalTime = ArrivalTimeUtil.estimate(context, arrivalTime);
@@ -240,7 +240,7 @@ public class EtaWidgetService extends RemoteViewsService {
                                 }
                             }
                         }
-                    });
+                    }));
                 } finally {
                     Binder.restoreCallingIdentity(token);
                 }

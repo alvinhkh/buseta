@@ -6,11 +6,13 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
+import android.support.v7.preference.PreferenceManager;
 import android.view.View;
 import android.widget.RemoteViews;
 
@@ -41,7 +43,15 @@ public class EtaWidgetProvider extends AppWidgetProvider {
 
     @Override
     public void onEnabled(Context context) {
-        EtaWidgetAlarm.start(context, 1);
+        int refreshInterval = 60;
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        if (preferences != null) {
+            Integer i = Integer.parseInt(preferences.getString("widget_load_eta", "0"));
+            if (i >= 0) {
+                refreshInterval = i;
+            }
+        }
+        EtaWidgetAlarm.start(context, refreshInterval);
         AppWidgetManager mgr = AppWidgetManager.getInstance(context);
         ComponentName cn = new ComponentName(context, EtaWidgetProvider.class);
         for (int appWidgetId : mgr.getAppWidgetIds(cn)) {
@@ -130,6 +140,16 @@ public class EtaWidgetProvider extends AppWidgetProvider {
             remoteViews.setViewVisibility(R.id.header, View.GONE);
         }
         return remoteViews;
+    }
+
+    @Override
+    public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+        super.onUpdate(context, appWidgetManager, appWidgetIds);
+        for (int appWidgetId : appWidgetIds) {
+            RemoteViews layout = buildLayout(context, appWidgetId, isLargeLayout);
+            appWidgetManager.updateAppWidget(appWidgetId, layout);
+        }
+
     }
 
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
