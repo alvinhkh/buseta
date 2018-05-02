@@ -28,12 +28,12 @@ import android.view.ViewGroup;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.SearchHistory;
+import com.alvinhkh.buseta.search.model.Suggestion;
 import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.model.FollowStop;
 import com.alvinhkh.buseta.service.EtaService;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
-import com.alvinhkh.buseta.ui.search.SearchActivity;
+import com.alvinhkh.buseta.search.ui.SearchActivity;
 import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.google.gson.Gson;
@@ -276,15 +276,15 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
                             .setIcon(Icon.createWithResource(getContext(), R.drawable.ic_shortcut_directions_bus))
                             .setIntent(intent)
                             .build());
-                } else if (object instanceof SearchHistory) {
-                    SearchHistory searchHistory = (SearchHistory) object;
+                } else if (object instanceof Suggestion) {
+                    Suggestion suggestion = (Suggestion) object;
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setClass(getContext(), SearchActivity.class);
-                    intent.putExtra(C.EXTRA.ROUTE_NO, searchHistory.getRoute());
-                    intent.putExtra(C.EXTRA.COMPANY_CODE, searchHistory.getCompanyCode());
-                    shortcuts.add(new ShortcutInfo.Builder(getContext(), "buseta-q-" + searchHistory.getCompanyCode() + searchHistory.getRoute())
-                            .setShortLabel(searchHistory.getRoute())
-                            .setLongLabel(searchHistory.getRoute())
+                    intent.putExtra(C.EXTRA.ROUTE_NO, suggestion.getRoute());
+                    intent.putExtra(C.EXTRA.COMPANY_CODE, suggestion.getCompanyCode());
+                    shortcuts.add(new ShortcutInfo.Builder(getContext(), "buseta-q-" + suggestion.getCompanyCode() + suggestion.getRoute())
+                            .setShortLabel(suggestion.getRoute())
+                            .setLongLabel(suggestion.getRoute())
                             .setIcon(Icon.createWithResource(getContext(), R.drawable.ic_shortcut_search))
                             .setIntent(intent)
                             .build());

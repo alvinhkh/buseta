@@ -38,17 +38,16 @@ import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.model.AppUpdate;
-import com.alvinhkh.buseta.provider.SuggestionProvider;
-import com.alvinhkh.buseta.provider.SuggestionTable;
+import com.alvinhkh.buseta.search.dao.SuggestionDatabase;
+import com.alvinhkh.buseta.search.model.Suggestion;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
-import com.alvinhkh.buseta.ui.search.SearchActivity;
+import com.alvinhkh.buseta.search.ui.SearchActivity;
 import com.alvinhkh.buseta.ui.setting.SettingActivity;
 import com.alvinhkh.buseta.utils.AdViewUtil;
 import com.alvinhkh.buseta.utils.RouteUtil;
 import com.alvinhkh.buseta.utils.NightModeUtil;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
-import com.alvinhkh.buseta.ui.search.SuggestionSimpleCursorAdapter;
-import com.alvinhkh.buseta.utils.SearchHistoryUtil;
+import com.alvinhkh.buseta.search.dao.SuggestionSimpleCursorAdapter;
 import com.google.android.gms.ads.AdView;
 
 import io.reactivex.disposables.CompositeDisposable;
@@ -61,6 +60,8 @@ abstract public class BaseActivity extends AppCompatActivity
         SearchView.OnQueryTextListener, SearchView.OnSuggestionListener, FilterQueryProvider {
 
     private final CompositeDisposable disposables = new CompositeDisposable();
+
+    private static SuggestionDatabase suggestionDatabase = null;
 
     protected AdView adView;
 
@@ -82,6 +83,9 @@ abstract public class BaseActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
 
         context = this;
+
+        suggestionDatabase = SuggestionDatabase.Companion.getInstance(this);
+
         setTaskDescription(getString(R.string.app_name));
 
         PreferenceManager.getDefaultSharedPreferences(this)
@@ -93,9 +97,9 @@ abstract public class BaseActivity extends AppCompatActivity
 
         // Set Suggestion Adapter
         String[] columns = new String[]{
-                SuggestionTable.COLUMN_TEXT,
-                SuggestionTable.COLUMN_COMPANY,
-                SuggestionTable.COLUMN_TYPE,
+                Suggestion.COLUMN_TEXT,
+                Suggestion.COLUMN_COMPANY,
+                Suggestion.COLUMN_TYPE,
         };
         int[] columnTextId = new int[]{
                 android.R.id.text1,
@@ -105,15 +109,15 @@ abstract public class BaseActivity extends AppCompatActivity
         adapter = new SuggestionSimpleCursorAdapter(getApplicationContext(),
                 R.layout.row_route, cursor, columns, columnTextId, 0);
         adapter.setViewBinder((aView, aCursor, aColumnIndex) -> {
-            if (aColumnIndex == aCursor.getColumnIndexOrThrow(SuggestionTable.COLUMN_TYPE)) {
+            if (aColumnIndex == aCursor.getColumnIndexOrThrow(Suggestion.COLUMN_TYPE)) {
                 String iconText = aCursor.getString(aColumnIndex);
                 Drawable drawable;
                 ImageView imageView = aView.findViewById(R.id.icon);
                 switch (iconText) {
-                    case SuggestionTable.TYPE_HISTORY:
+                    case Suggestion.TYPE_HISTORY:
                         drawable = ContextCompat.getDrawable(this, R.drawable.ic_history_black_24dp);
                         break;
-                    case SuggestionTable.TYPE_DEFAULT:
+                    case Suggestion.TYPE_DEFAULT:
                     default:
                         drawable = ContextCompat.getDrawable(this, R.drawable.ic_directions_bus_black_24dp);
                         break;
@@ -123,10 +127,10 @@ abstract public class BaseActivity extends AppCompatActivity
                 }
                 return true;
             }
-            if (aColumnIndex == aCursor.getColumnIndexOrThrow(SuggestionTable.COLUMN_COMPANY)) {
+            if (aColumnIndex == aCursor.getColumnIndexOrThrow(Suggestion.COLUMN_COMPANY)) {
                 TextView textView = aView.findViewById(R.id.company);
                 textView.setText(RouteUtil.getCompanyName(this, aCursor.getString(aColumnIndex),
-                        aCursor.getString(aCursor.getColumnIndexOrThrow(SuggestionTable.COLUMN_TEXT))));
+                        aCursor.getString(aCursor.getColumnIndexOrThrow(Suggestion.COLUMN_TEXT))));
                 return true;
             }
             return false;
@@ -286,8 +290,8 @@ abstract public class BaseActivity extends AppCompatActivity
     public boolean onSuggestionClick(int position) {
         collapseSearchView();
         Cursor cursor = (Cursor) searchView.getSuggestionsAdapter().getItem(position);
-        String routeNo = cursor.getString(cursor.getColumnIndex(SuggestionTable.COLUMN_TEXT));
-        String company = cursor.getString(cursor.getColumnIndex(SuggestionTable.COLUMN_COMPANY));
+        String routeNo = cursor.getString(cursor.getColumnIndex(Suggestion.COLUMN_TEXT));
+        String company = cursor.getString(cursor.getColumnIndex(Suggestion.COLUMN_COMPANY));
         cursor.close();
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setClass(this, SearchActivity.class);
@@ -337,15 +341,16 @@ abstract public class BaseActivity extends AppCompatActivity
     }
 
     @Override
-    public Cursor runQuery(CharSequence constraint) {
-        if (!TextUtils.isEmpty(constraint)) {
-            constraint = constraint.toString().replaceAll("[^a-zA-Z0-9]", "");
+    public Cursor runQuery(CharSequence c) {
+        if (!TextUtils.isEmpty(c)) {
+            c = c.toString().replaceAll("[^a-zA-Z0-9]", "");
         }
-        if (TextUtils.isEmpty(constraint)) {
-            cursor = SearchHistoryUtil.query(this, 5);
-        } else {
-            Uri suggestionUri = Uri.parse(SuggestionProvider.CONTENT_URI_SUGGESTIONS + "/" + constraint);
-            cursor = getContentResolver().query(suggestionUri, null, null, null, null);
+        if (suggestionDatabase != null) {
+            if (TextUtils.isEmpty(c)) {
+                cursor = suggestionDatabase.suggestionDao().historyCursor(5);
+            } else {
+                cursor = suggestionDatabase.suggestionDao().defaultCursor(c + "%");
+            }
         }
         return cursor;
     }

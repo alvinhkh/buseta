@@ -13,7 +13,9 @@ import com.alvinhkh.buseta.utils.RetryWithDelay;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.observers.DisposableObserver;
+import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
 
 public class LwbActivity extends RouteActivityAbstract {
@@ -24,7 +26,8 @@ public class LwbActivity extends RouteActivityAbstract {
     protected void loadRouteNo(String no) {
         super.loadRouteNo(no);
         disposables.add(lwbService.getRouteBound(no, Math.random())
-                .retryWhen(new RetryWithDelay(5, 3000))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(routeBoundObserver()));
     }
 

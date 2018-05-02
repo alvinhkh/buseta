@@ -26,11 +26,14 @@ public class KmbActivity extends RouteActivityAbstract {
 
     private final KmbService kmbService = KmbService.webSearch.create(KmbService.class);
 
+    private List<Route> routeList = new ArrayList<>();
+
     @Override
     protected void loadRouteNo(String no) {
         super.loadRouteNo(no);
         disposables.add(kmbService.getRouteBound(no)
-                .retryWhen(new RetryWithDelay(5, 3000))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(routeBoundObserver())
         );
     }
@@ -39,6 +42,7 @@ public class KmbActivity extends RouteActivityAbstract {
         return new DisposableObserver<KmbRouteBoundRes>() {
             @Override
             public void onNext(KmbRouteBoundRes res) {
+                routeList.clear();
                 if (res != null && res.data != null) {
                     List<Integer> list = new ArrayList<>();
                     for (KmbRouteBound bound : res.data) {
@@ -79,14 +83,12 @@ public class KmbActivity extends RouteActivityAbstract {
     DisposableObserver<KmbSpecialRouteRes> specialRouteObserver(String routeNo) {
         return new DisposableObserver<KmbSpecialRouteRes>() {
 
-            List<Route> routes = new ArrayList<>();
-
             @Override
             public void onNext(KmbSpecialRouteRes res) {
                 if (res != null && res.data != null) {
                     for (KmbRoute route : res.data.routes) {
                         if (route == null || route.route == null || !route.route.equals(routeNo)) continue;
-                        routes.add(RouteUtil.fromKmb(route));
+                        routeList.add(RouteUtil.fromKmb(route));
                     }
                 }
             }
@@ -108,7 +110,7 @@ public class KmbActivity extends RouteActivityAbstract {
 
             @Override
             public void onComplete() {
-                runOnUiThread(() -> onCompleteRoute(routes, C.PROVIDER.KMB));
+                runOnUiThread(() -> onCompleteRoute(routeList, C.PROVIDER.KMB));
             }
         };
     }

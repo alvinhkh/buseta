@@ -12,7 +12,6 @@ import com.alvinhkh.buseta.nwst.util.NwstRequestUtil;
 import com.alvinhkh.buseta.ui.route.RouteActivityAbstract;
 import com.alvinhkh.buseta.utils.RouteUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
-import com.alvinhkh.buseta.utils.RetryWithDelay;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,7 +19,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.observers.DisposableObserver;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
 
@@ -29,6 +30,8 @@ import static com.alvinhkh.buseta.nwst.NwstService.*;
 public class NwstActivity extends RouteActivityAbstract {
 
     private final NwstService nwstService = NwstService.api.create(NwstService.class);
+
+    private final List<Route> routeList = new ArrayList<>();
 
     @Override
     protected void loadRouteNo(String no) {
@@ -46,7 +49,8 @@ public class NwstActivity extends RouteActivityAbstract {
         options.put(QUERY_APP_VERSION, APP_VERSION);
         options.put(QUERY_SYSCODE, sysCode);
         disposables.add(nwstService.routeList(options)
-                .retryWhen(new RetryWithDelay(5, 3000))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(routeListObserver(no, sysCode)));
     }
 
@@ -55,9 +59,10 @@ public class NwstActivity extends RouteActivityAbstract {
             @Override
             public void onNext(ResponseBody body) {
                 try {
-                    String[] routes = body.string().split("\\|\\*\\|", -1);
+                    routeList.clear();
+                    String[] routeArray = body.string().split("\\|\\*\\|", -1);
                     Map<String, String> options;
-                    for (String route : routes) {
+                    for (String route : routeArray) {
                         String text = route.replace("<br>", "").trim();
                         if (TextUtils.isEmpty(text)) continue;
                         NwstRoute nwstRoute = NwstRoute.Companion.fromString(text);
@@ -71,7 +76,8 @@ public class NwstActivity extends RouteActivityAbstract {
                             options.put(QUERY_APP_VERSION, APP_VERSION);
                             options.put(QUERY_SYSCODE, sysCode);
                             disposables.add(nwstService.variantList(options)
-                                    .retryWhen(new RetryWithDelay(5, 3000))
+                                    .subscribeOn(Schedulers.io())
+                                    .observeOn(AndroidSchedulers.mainThread())
                                     .subscribeWith(variantListObserver(nwstRoute)));
                         }
                     }
@@ -103,8 +109,6 @@ public class NwstActivity extends RouteActivityAbstract {
     DisposableObserver<ResponseBody> variantListObserver(NwstRoute nwstRoute) {
         return new DisposableObserver<ResponseBody>() {
 
-            List<Route> routes = new ArrayList<>();
-
             @Override
             public void onNext(ResponseBody body) {
                 try {
@@ -116,7 +120,7 @@ public class NwstActivity extends RouteActivityAbstract {
                         NwstVariant variant = NwstVariant.Companion.fromString(text);
                         Route route = RouteUtil.fromNwst(nwstRoute, variant);
                         if (route.getName().equals(routeNo)) {
-                            this.routes.add(route);
+                            routeList.add(route);
                         }
                     }
                 } catch (IOException e) {
@@ -141,7 +145,7 @@ public class NwstActivity extends RouteActivityAbstract {
 
             @Override
             public void onComplete() {
-                runOnUiThread(() -> onCompleteRoute(routes, C.PROVIDER.NWST));
+                runOnUiThread(() -> onCompleteRoute(routeList, C.PROVIDER.NWST));
             }
         };
     }

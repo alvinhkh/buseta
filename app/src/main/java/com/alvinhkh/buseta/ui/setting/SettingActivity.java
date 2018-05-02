@@ -8,7 +8,6 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
@@ -31,8 +30,7 @@ import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.model.AppUpdate;
-import com.alvinhkh.buseta.provider.SuggestionProvider;
-import com.alvinhkh.buseta.provider.SuggestionTable;
+import com.alvinhkh.buseta.search.dao.SuggestionDatabase;
 import com.alvinhkh.buseta.service.CheckUpdateService;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
 import com.alvinhkh.buseta.utils.FollowStopUtil;
@@ -48,12 +46,15 @@ public class SettingActivity extends BasePreferenceActivity {
 
     private final CompositeDisposable disposables = new CompositeDisposable();
 
+    private static SuggestionDatabase suggestionDatabase = null;
+
     private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.context = this;
+        suggestionDatabase = SuggestionDatabase.Companion.getInstance(this);
         // Display the fragment as the main content.
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, new SettingsFragment())
@@ -82,7 +83,6 @@ public class SettingActivity extends BasePreferenceActivity {
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-
             mActivity = super.getActivity();
             // Load the preferences from an XML resource
             addPreferencesFromResource(R.xml.preferences);
@@ -195,9 +195,10 @@ public class SettingActivity extends BasePreferenceActivity {
                             .setNegativeButton(R.string.action_cancel, (dialoginterface, i) -> dialoginterface.cancel())
                             .setPositiveButton(R.string.action_confirm, (dialoginterface, i) -> {
                                 if (mActivity != null) {
-                                    int rowDeleted = mActivity.getContentResolver().delete(SuggestionProvider.CONTENT_URI,
-                                            SuggestionTable.COLUMN_TYPE + "=?",
-                                            new String[]{SuggestionTable.TYPE_HISTORY});
+                                    int rowDeleted = 0;
+                                    if (suggestionDatabase != null) {
+                                        rowDeleted = suggestionDatabase.suggestionDao().clearHistory();
+                                    }
                                     Snackbar snackbar = Snackbar.make(mActivity.findViewById(android.R.id.content),
                                             rowDeleted > 0
                                                     ? R.string.message_clear_success_search_history
@@ -300,15 +301,9 @@ public class SettingActivity extends BasePreferenceActivity {
                         if (messageId == R.string.message_database_updating) {
                             snackbar.setDuration(Snackbar.LENGTH_INDEFINITE);
                         } else if (messageId == R.string.message_database_updated) {
-                            Cursor cursor = getContentResolver().query(SuggestionProvider.CONTENT_URI,
-                                    null, SuggestionTable.COLUMN_TEXT + " LIKE '%%'" + " AND " +
-                                            SuggestionTable.COLUMN_TYPE + " = '" +
-                                            SuggestionTable.TYPE_DEFAULT + "'",
-                                    null, null);
                             int count = 0;
-                            if (cursor != null) {
-                                count = cursor.getCount();
-                                cursor.close();
+                            if (suggestionDatabase != null) {
+                                count = suggestionDatabase.suggestionDao().countDefault();
                             }
                             snackbar.setText(getString(messageId) + " " +
                                     getString(R.string.message_total_routes, String.valueOf(count)));

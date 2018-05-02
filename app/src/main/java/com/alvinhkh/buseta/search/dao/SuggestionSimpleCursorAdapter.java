@@ -1,12 +1,10 @@
-package com.alvinhkh.buseta.ui.search;
+package com.alvinhkh.buseta.search.dao;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.support.v4.widget.SimpleCursorAdapter;
 
-import com.alvinhkh.buseta.provider.SuggestionTable;
-
-import timber.log.Timber;
+import com.alvinhkh.buseta.search.model.Suggestion;
 
 public class SuggestionSimpleCursorAdapter extends SimpleCursorAdapter {
 
@@ -17,6 +15,6 @@ public class SuggestionSimpleCursorAdapter extends SimpleCursorAdapter {
 
     @Override
     public CharSequence convertToString(Cursor cursor) {
-        return cursor.getString(cursor.getColumnIndex(SuggestionTable.COLUMN_TEXT));
+        return cursor.getString(cursor.getColumnIndex(Suggestion.COLUMN_TEXT));
     }
 }

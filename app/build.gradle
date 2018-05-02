@@ -12,12 +12,14 @@ apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.oss.licenses.plugin'
 apply plugin: 'io.fabric'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
+
 
 def versionMajor = 1
 def versionMinor = 0
-def versionPatch = 1
-def versionBuild = 15
+def versionPatch = 2
+def versionBuild = 0
 
 android {
     compileSdkVersion 27
@@ -59,6 +61,11 @@ android {
         exclude 'META-INF/NOTICE'
         exclude 'META-INF/rxjava.properties'
     }
+    kapt {
+        arguments {
+            arg("room.schemaLocation", "$projectDir/schemas".toString())
+        }
+    }
 }
 
 repositories {
@@ -80,7 +87,7 @@ dependencies {
     kapt "android.arch.persistence.room:compiler:1.0.0"
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support:cardview-v7:27.1.1'
-    implementation 'com.android.support.constraint:constraint-layout:1.1.0-beta6'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.0'
     implementation 'com.android.support:customtabs:27.1.1'
     implementation 'com.android.support:design:27.1.1'
     implementation 'com.android.support:multidex:1.0.3'
@@ -129,6 +136,7 @@ dependencies {
         transitive = true
     }
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation 'androidx.core:core-ktx:0.3'
 }
 
 apply plugin: 'com.google.gms.google-services'

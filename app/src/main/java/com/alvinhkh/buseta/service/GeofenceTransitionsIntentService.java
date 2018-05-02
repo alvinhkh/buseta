@@ -17,7 +17,7 @@ import android.support.v4.app.NotificationCompat;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.ui.search.SearchActivity;
+import com.alvinhkh.buseta.search.ui.SearchActivity;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
 

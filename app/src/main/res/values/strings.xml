@@ -164,6 +164,7 @@
     <string name="search_shortcut_short_label">@string/search_route</string>
     <string name="search_shortcut_long_label">@string/search_route</string>
     <string name="search_disabled_message">@string/disabled</string>
+    <string name="no_search_result">沒有搜尋結果</string>
 
     <string name="insufficient_permissions">Insufficient permissions.</string>
     <string name="permission_rationale">Location permission is needed for core functionality</string>

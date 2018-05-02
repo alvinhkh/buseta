@@ -1,7 +1,6 @@
 package com.alvinhkh.buseta.service;
 
 import android.app.IntentService;
-import android.content.ContentValues;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
@@ -22,11 +21,11 @@ import com.alvinhkh.buseta.nlb.model.NlbDatabase;
 import com.alvinhkh.buseta.nwst.NwstService;
 import com.alvinhkh.buseta.nwst.model.NwstRoute;
 import com.alvinhkh.buseta.nwst.util.NwstRequestUtil;
+import com.alvinhkh.buseta.search.dao.SuggestionDatabase;
+import com.alvinhkh.buseta.search.model.Suggestion;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.model.AppUpdate;
-import com.alvinhkh.buseta.provider.SuggestionProvider;
-import com.alvinhkh.buseta.provider.SuggestionTable;
 import com.alvinhkh.buseta.utils.DatabaseUtil;
 import com.alvinhkh.buseta.utils.RetryWithDelay;
 import com.alvinhkh.buseta.utils.ZipUtil;
@@ -52,9 +51,11 @@ import static com.alvinhkh.buseta.nwst.NwstService.*;
 
 public class CheckUpdateService extends IntentService {
 
-    MtrService mtrMobService = MtrService.Companion.getMob().create(MtrService.class);
+    private final MtrService mtrMobService = MtrService.Companion.getMob().create(MtrService.class);
 
     private final CompositeDisposable disposables = new CompositeDisposable();
+
+    private SuggestionDatabase suggestionDatabase;
 
     public CheckUpdateService() {
         super(CheckUpdateService.class.getSimpleName());
@@ -63,6 +64,7 @@ public class CheckUpdateService extends IntentService {
     @Override
     public void onCreate() {
         super.onCreate();
+        suggestionDatabase = SuggestionDatabase.Companion.getInstance(this);
     }
 
     @Override
@@ -87,13 +89,13 @@ public class CheckUpdateService extends IntentService {
         }
         // app update check
         Api apiService = Api.retrofit.create(Api.class);
-        apiService.appUpdate()
+        disposables.add(apiService.appUpdate()
                 .subscribeOn(Schedulers.io())
-                .subscribeWith(appUpdateObserver(manualUpdate));
+                .subscribeWith(appUpdateObserver(manualUpdate)));
         // clear existing suggested routes
-        getContentResolver().delete(SuggestionProvider.CONTENT_URI,
-                SuggestionTable.COLUMN_TYPE + "=?",
-                new String[]{SuggestionTable.TYPE_DEFAULT});
+        if (suggestionDatabase != null) {
+            suggestionDatabase.suggestionDao().clearDefault();
+        }
         // start fetch available kmb route with eta
         KmbService kmbService = KmbService.etadatafeed.create(KmbService.class);
         disposables.add(kmbService.getEtaRoutes()
@@ -159,22 +161,15 @@ public class CheckUpdateService extends IntentService {
                 if (res.size() < 1 || TextUtils.isEmpty(res.get(0).r_no)) return;
                 String routes = res.get(0).r_no;
                 String[] routeArray = routes.split(",");
-                List<ContentValues> contentValues = new ArrayList<>();
+                List<Suggestion> suggestions = new ArrayList<>();
                 for (int i = 0; i < routeArray.length; i++) {
-                    ContentValues values = new ContentValues();
-                    values.put(SuggestionTable.COLUMN_TEXT, routeArray[i]);
-                    values.put(SuggestionTable.COLUMN_COMPANY, C.PROVIDER.KMB);
-                    values.put(SuggestionTable.COLUMN_TYPE, SuggestionTable.TYPE_DEFAULT);
-                    values.put(SuggestionTable.COLUMN_DATE, "0");
-                    contentValues.add(values);
+                    suggestions.add(new Suggestion(0, C.PROVIDER.KMB, routeArray[i],
+                            0, Suggestion.TYPE_DEFAULT));
                 }
-                int insertedRows = getContentResolver().bulkInsert(SuggestionProvider.CONTENT_URI,
-                        contentValues.toArray(new ContentValues[contentValues.size()]));
-                if (insertedRows > 0) {
-                    Timber.d("updated %s: %s", C.PROVIDER.KMB, insertedRows);
-                } else {
-                    Timber.d("error when inserting: %s", C.PROVIDER.KMB);
+                if (suggestionDatabase != null) {
+                    suggestionDatabase.suggestionDao().insert(suggestions);
                 }
+                Timber.d("kmb: %s", suggestions.size());
                 Intent i = new Intent(C.ACTION.SUGGESTION_ROUTE_UPDATE);
                 i.putExtra(C.EXTRA.UPDATED, true);
                 i.putExtra(C.EXTRA.MANUAL, manualUpdate);
@@ -202,23 +197,16 @@ public class CheckUpdateService extends IntentService {
             @Override
             public void onNext(NlbDatabase database) {
                 if (database == null) return;
-                List<ContentValues> contentValues = new ArrayList<>();
+                List<Suggestion> suggestions = new ArrayList<>();
                 for (int i = 0; i < database.routes.size(); i++) {
                     if (TextUtils.isEmpty(database.routes.get(i).route_no)) continue;
-                    ContentValues values = new ContentValues();
-                    values.put(SuggestionTable.COLUMN_TEXT, database.routes.get(i).route_no);
-                    values.put(SuggestionTable.COLUMN_COMPANY, C.PROVIDER.NLB);
-                    values.put(SuggestionTable.COLUMN_TYPE, SuggestionTable.TYPE_DEFAULT);
-                    values.put(SuggestionTable.COLUMN_DATE, "0");
-                    contentValues.add(values);
+                    suggestions.add(new Suggestion(0, C.PROVIDER.NLB, database.routes.get(i).route_no,
+                            0, Suggestion.TYPE_DEFAULT));
                 }
-                int insertedRows = getContentResolver().bulkInsert(SuggestionProvider.CONTENT_URI,
-                        contentValues.toArray(new ContentValues[contentValues.size()]));
-                if (insertedRows > 0) {
-                    Timber.d("updated %s: %s", C.PROVIDER.NLB, insertedRows);
-                } else {
-                    Timber.d("error when inserting: %s", C.PROVIDER.NLB);
+                if (suggestionDatabase != null) {
+                    suggestionDatabase.suggestionDao().insert(suggestions);
                 }
+                Timber.d("nlb: %s", suggestions.size());
                 Intent i = new Intent(C.ACTION.SUGGESTION_ROUTE_UPDATE);
                 i.putExtra(C.EXTRA.UPDATED, true);
                 i.putExtra(C.EXTRA.MANUAL, manualUpdate);
@@ -248,26 +236,19 @@ public class CheckUpdateService extends IntentService {
                 if (body == null) return;
                 try {
                     String[] routes = body.string().split("\\|\\*\\|", -1);
-                    List<ContentValues> contentValues = new ArrayList<>();
+                    List<Suggestion> suggestions = new ArrayList<>();
                     for (String route: routes) {
                         String text = route.replace("<br>", "").trim();
                         if (TextUtils.isEmpty(text)) continue;
                         NwstRoute nwstRoute = NwstRoute.Companion.fromString(text);
                         if (nwstRoute == null || TextUtils.isEmpty(nwstRoute.getRouteNo())) continue;
-                        ContentValues values = new ContentValues();
-                        values.put(SuggestionTable.COLUMN_TEXT, nwstRoute.getRouteNo());
-                        values.put(SuggestionTable.COLUMN_COMPANY, nwstRoute.getCompanyCode());
-                        values.put(SuggestionTable.COLUMN_TYPE, SuggestionTable.TYPE_DEFAULT);
-                        values.put(SuggestionTable.COLUMN_DATE, "0");
-                        contentValues.add(values);
+                        suggestions.add(new Suggestion(0, nwstRoute.getCompanyCode(), nwstRoute.getRouteNo(),
+                                0, Suggestion.TYPE_DEFAULT));
                     }
-                    int insertedRows = getContentResolver().bulkInsert(SuggestionProvider.CONTENT_URI,
-                            contentValues.toArray(new ContentValues[contentValues.size()]));
-                    if (insertedRows > 0) {
-                        Timber.d("updated %s: %s", C.PROVIDER.NWST, insertedRows);
-                    } else {
-                        Timber.d("error when inserting: %s", C.PROVIDER.NWST);
+                    if (suggestionDatabase != null) {
+                        suggestionDatabase.suggestionDao().insert(suggestions);
                     }
+                    Timber.d("nwst: %s", suggestions.size());
                     Intent i = new Intent(C.ACTION.SUGGESTION_ROUTE_UPDATE);
                     i.putExtra(C.EXTRA.UPDATED, true);
                     i.putExtra(C.EXTRA.MANUAL, manualUpdate);
@@ -304,24 +285,17 @@ public class CheckUpdateService extends IntentService {
             public void onNext(ResponseBody body) {
                 if (body == null) return;
                 try {
-                    List<ContentValues> contentValues = new ArrayList<>();
+                    List<Suggestion> suggestions = new ArrayList<>();
                     List<MtrBusRoute> routes = MtrBusRoute.Companion.fromCSV(body.string());
                     for (MtrBusRoute route: routes) {
                         if (TextUtils.isEmpty(route.getRouteId())) continue;
-                        ContentValues values = new ContentValues();
-                        values.put(SuggestionTable.COLUMN_TEXT, route.getRouteId());
-                        values.put(SuggestionTable.COLUMN_COMPANY, C.PROVIDER.LRTFEEDER);
-                        values.put(SuggestionTable.COLUMN_TYPE, SuggestionTable.TYPE_DEFAULT);
-                        values.put(SuggestionTable.COLUMN_DATE, "0");
-                        contentValues.add(values);
+                        suggestions.add(new Suggestion(0, C.PROVIDER.LRTFEEDER, route.getRouteId(),
+                                0, Suggestion.TYPE_DEFAULT));
                     }
-                    int insertedRows = getContentResolver().bulkInsert(SuggestionProvider.CONTENT_URI,
-                            contentValues.toArray(new ContentValues[contentValues.size()]));
-                    if (insertedRows > 0) {
-                        Timber.d("updated %s: %s", C.PROVIDER.LRTFEEDER, insertedRows);
-                    } else {
-                        Timber.d("error when inserting: %s", C.PROVIDER.LRTFEEDER);
+                    if (suggestionDatabase != null) {
+                        suggestionDatabase.suggestionDao().insert(suggestions);
                     }
+                    Timber.d("mtrbus: %s", suggestions.size());
                     Intent i = new Intent(C.ACTION.SUGGESTION_ROUTE_UPDATE);
                     i.putExtra(C.EXTRA.UPDATED, true);
                     i.putExtra(C.EXTRA.MANUAL, manualUpdate);
@@ -412,22 +386,15 @@ public class CheckUpdateService extends IntentService {
                 disposables.add(database.aesBusDao().getAllRoutes()
                         .subscribe(aesBusRoutes -> {
                             if (aesBusRoutes != null) {
-                                List<ContentValues> contentValues = new ArrayList<>();
+                                List<Suggestion> suggestions = new ArrayList<>();
                                 for (AESBusRoute aesBusRoute : aesBusRoutes) {
-                                    ContentValues values = new ContentValues();
-                                    values.put(SuggestionTable.COLUMN_TEXT, aesBusRoute.getBusNumber());
-                                    values.put(SuggestionTable.COLUMN_COMPANY, C.PROVIDER.AESBUS);
-                                    values.put(SuggestionTable.COLUMN_TYPE, SuggestionTable.TYPE_DEFAULT);
-                                    values.put(SuggestionTable.COLUMN_DATE, "0");
-                                    contentValues.add(values);
+                                    suggestions.add(new Suggestion(0, C.PROVIDER.AESBUS,
+                                            aesBusRoute.getBusNumber(), 0, Suggestion.TYPE_DEFAULT));
                                 }
-                                int insertedRows = getContentResolver().bulkInsert(SuggestionProvider.CONTENT_URI,
-                                        contentValues.toArray(new ContentValues[contentValues.size()]));
-                                if (insertedRows > 0) {
-                                    Timber.d("updated %s: %s", C.PROVIDER.AESBUS, insertedRows);
-                                } else {
-                                    Timber.d("error when inserting: %s", C.PROVIDER.AESBUS);
+                                if (suggestionDatabase != null) {
+                                    suggestionDatabase.suggestionDao().insert(suggestions);
                                 }
+                                Timber.d("aesbus: %s", suggestions.size());
                                 Intent i = new Intent(C.ACTION.SUGGESTION_ROUTE_UPDATE);
                                 i.putExtra(C.EXTRA.UPDATED, true);
                                 i.putExtra(C.EXTRA.MANUAL, manualUpdate);

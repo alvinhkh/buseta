@@ -20,6 +20,7 @@ import android.view.MenuItem;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.mtr.ui.MtrLineStatusFragment;
+import com.alvinhkh.buseta.search.ui.SearchActivity;
 import com.alvinhkh.buseta.service.CheckUpdateService;
 import com.alvinhkh.buseta.ui.follow.EditFollowFragment;
 import com.alvinhkh.buseta.ui.follow.FollowFragment;
@@ -62,8 +63,8 @@ public class MainActivity extends BaseActivity {
 
         fab = findViewById(R.id.fab);
         fab.setOnClickListener(v -> {
-            if (searchMenuItem != null) searchMenuItem.expandActionView();
-            // startActivity(new Intent(this, SearchActivity.class));
+            // if (searchMenuItem != null) searchMenuItem.expandActionView();
+            startActivity(new Intent(this, SearchActivity.class));
         });
 
         bottomNavigationView = findViewById(R.id.bottom_navigation);

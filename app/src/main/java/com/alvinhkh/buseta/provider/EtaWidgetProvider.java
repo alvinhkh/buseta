@@ -23,7 +23,7 @@ import com.alvinhkh.buseta.model.FollowStop;
 import com.alvinhkh.buseta.service.EtaService;
 import com.alvinhkh.buseta.service.EtaWidgetAlarm;
 import com.alvinhkh.buseta.service.EtaWidgetService;
-import com.alvinhkh.buseta.ui.search.SearchActivity;
+import com.alvinhkh.buseta.search.ui.SearchActivity;
 import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.alvinhkh.buseta.utils.FollowStopUtil;

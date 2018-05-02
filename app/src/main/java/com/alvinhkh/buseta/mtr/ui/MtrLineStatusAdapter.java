@@ -19,7 +19,7 @@ import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.mtr.model.MtrLineStatus;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter;
-import com.alvinhkh.buseta.ui.search.SearchActivity;
+import com.alvinhkh.buseta.search.ui.SearchActivity;
 
 
 public class MtrLineStatusAdapter

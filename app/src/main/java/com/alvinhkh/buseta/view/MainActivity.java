@@ -4,9 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
-import com.alvinhkh.buseta.C;
-import com.alvinhkh.buseta.ui.search.SearchActivity;
-
 public class MainActivity extends AppCompatActivity {
 
     // legacy placeholder activity

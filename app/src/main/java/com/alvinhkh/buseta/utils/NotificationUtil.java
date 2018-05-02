@@ -16,7 +16,7 @@ import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.model.ArrivalTime;
 import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.service.NotificationService;
-import com.alvinhkh.buseta.ui.search.SearchActivity;
+import com.alvinhkh.buseta.search.ui.SearchActivity;
 
 import java.util.Calendar;
 import java.util.Date;

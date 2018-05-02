@@ -1,10 +1,11 @@
 package com.alvinhkh.buseta.ui.route;
 
 import android.database.DataSetObserver;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
@@ -21,22 +22,28 @@ import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.model.RouteStop;
-import com.alvinhkh.buseta.model.SearchHistory;
-import com.alvinhkh.buseta.provider.SuggestionProvider;
+import com.alvinhkh.buseta.search.dao.SuggestionDatabase;
+import com.alvinhkh.buseta.search.model.Suggestion;
 import com.alvinhkh.buseta.ui.BaseActivity;
 import com.alvinhkh.buseta.utils.AdViewUtil;
 import com.alvinhkh.buseta.utils.RouteUtil;
-import com.alvinhkh.buseta.utils.SearchHistoryUtil;
+import com.crashlytics.android.answers.Answers;
+import com.crashlytics.android.answers.ContentViewEvent;
 import com.google.android.gms.maps.MapView;
+import com.google.firebase.appindexing.Action;
+import com.google.firebase.appindexing.FirebaseUserActions;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.disposables.CompositeDisposable;
+import timber.log.Timber;
 
 public abstract class RouteActivityAbstract extends BaseActivity {
 
     protected final CompositeDisposable disposables = new CompositeDisposable();
+
+    protected static SuggestionDatabase suggestionDatabase = null;
 
     /**
      * The {@link PagerAdapter} that will provide
@@ -65,6 +72,8 @@ public abstract class RouteActivityAbstract extends BaseActivity {
 
     protected String routeNo;
 
+    private Suggestion suggestion = null;
+
     private Boolean isScrollToPage = false;
 
     private Integer fragNo = 0;
@@ -83,6 +92,8 @@ public abstract class RouteActivityAbstract extends BaseActivity {
                 routeNo = stopFromIntent.getRoute();
             }
         }
+
+        suggestionDatabase = SuggestionDatabase.Companion.getInstance(this);
 
         setContentView(R.layout.activity_route);
 
@@ -184,6 +195,9 @@ public abstract class RouteActivityAbstract extends BaseActivity {
     @Override
     public void onDestroy() {
         disposables.clear();
+        if (suggestion != null) {
+            appIndexStop(suggestion);
+        }
         super.onDestroy();
     }
 
@@ -230,6 +244,7 @@ public abstract class RouteActivityAbstract extends BaseActivity {
 
     protected void onCompleteRoute(List<Route> routes, String companyCode) {
         if (pagerAdapter == null || TextUtils.isEmpty(companyCode)) return;
+        pagerAdapter.clearSequence();
         for (Route route : routes) {
             if (route == null) continue;
             if (TextUtils.isEmpty(route.getName()) || !route.getName().equals(routeNo)) continue;
@@ -249,8 +264,54 @@ public abstract class RouteActivityAbstract extends BaseActivity {
             getSupportActionBar().setTitle(routeName);
         }
         if (routes.size() > 0 && !TextUtils.isEmpty(companyCode)) {
-            SearchHistory history = SearchHistoryUtil.createInstance(routeNo, companyCode);
-            getContentResolver().insert(SuggestionProvider.CONTENT_URI, SearchHistoryUtil.toContentValues(history));
+            suggestion = Suggestion.Companion.createInstance();
+            suggestion.setCompanyCode(companyCode);
+            suggestion.setRoute(routeNo);
+            suggestion.setType(Suggestion.TYPE_HISTORY);
+            if (suggestionDatabase != null) {
+                suggestionDatabase.suggestionDao().insert(suggestion);
+            }
+            appIndexStart(suggestion);
         }
     }
+
+    public Action getIndexApiAction(@NonNull Suggestion suggestion) {
+        return new Action.Builder(Action.Builder.VIEW_ACTION)
+                .setObject(suggestion.getRoute(), Uri.parse(C.URI.ROUTE).buildUpon()
+                        .appendPath(suggestion.getRoute()).build().toString())
+                // Keep action data for personal content on the device
+                //.setMetadata(new Action.Metadata.Builder().setUpload(false))
+                .build();
+    }
+
+    private void appIndexStart(@NonNull Suggestion suggestion) {
+        if (TextUtils.isEmpty(suggestion.getRoute())) return;
+        FirebaseUserActions.getInstance().start(getIndexApiAction(suggestion))
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        Timber.d("App Indexing: Recorded start successfully");
+                    } else {
+                        Timber.d("App Indexing: fail");
+                    }
+                });
+        Answers.getInstance().logContentView(new ContentViewEvent()
+                .putContentName("search")
+                .putContentType("route")
+                .putCustomAttribute("route no", suggestion.getRoute())
+                .putCustomAttribute("company", suggestion.getCompanyCode())
+        );
+    }
+
+    private void appIndexStop(@NonNull Suggestion suggestion) {
+        if (TextUtils.isEmpty(routeNo)) return;
+        FirebaseUserActions.getInstance().end(getIndexApiAction(suggestion))
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        Timber.d("App Indexing: Recorded end successfully");
+                    } else {
+                        Timber.d("App Indexing: fail");
+                    }
+                });
+    }
+
 }

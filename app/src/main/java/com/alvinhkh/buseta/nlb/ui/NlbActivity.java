@@ -26,7 +26,6 @@ public class NlbActivity extends RouteActivityAbstract {
     protected void loadRouteNo(String no) {
         super.loadRouteNo(no);
         disposables.add(nlbService.getDatabase()
-                .retryWhen(new RetryWithDelay(5, 3000))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(databaseObserver()));

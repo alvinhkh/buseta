@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.app.AlertDialog;
@@ -21,20 +22,20 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.SearchHistory;
+import com.alvinhkh.buseta.search.dao.SuggestionDatabase;
+import com.alvinhkh.buseta.search.model.Suggestion;
 import com.alvinhkh.buseta.model.ArrivalTime;
 import com.alvinhkh.buseta.model.FollowStop;
-import com.alvinhkh.buseta.provider.SuggestionProvider;
-import com.alvinhkh.buseta.provider.SuggestionTable;
-import com.alvinhkh.buseta.ui.search.SearchActivity;
+import com.alvinhkh.buseta.search.ui.SearchActivity;
 import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
 import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.FollowStopUtil;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
-import com.alvinhkh.buseta.utils.SearchHistoryUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import io.reactivex.disposables.CompositeDisposable;
 
 /*
  * An adapter that handle both follow stop and search history
@@ -46,6 +47,10 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
 
     public static final int ITEM_VIEW_TYPE_HISTORY = 1;
 
+    private final CompositeDisposable disposable = new CompositeDisposable();
+
+    private static SuggestionDatabase suggestionDatabase = null;
+
     private Context context;
 
     private Cursor historyCursor;
@@ -56,6 +61,7 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
         this.context = context;
         this.historyCursor = null;
         this.followCursor = null;
+        suggestionDatabase = SuggestionDatabase.Companion.getInstance(context);
     }
 
     public void close() {
@@ -64,6 +70,9 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
         if (historyCursor != null) {
             historyCursor.close();
+        }
+        if (disposable != null) {
+            disposable.clear();
         }
     }
 
@@ -97,22 +106,18 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
         return list;
     }
 
-    public List<SearchHistory> getHistoryItems() {
-        List<SearchHistory> list = new ArrayList<>();
+    public List<Suggestion> getHistoryItems() {
+        List<Suggestion> list = new ArrayList<>();
         for (int i = getFollowCount(); i < getHistoryCount(); i++) {
-            list.add((SearchHistory) getItem(i));
+            list.add((Suggestion) getItem(i));
         }
         return list;
     }
 
     void updateHistory() {
         if (context == null) return;
-        Cursor newCursor = context.getContentResolver().query(SuggestionProvider.CONTENT_URI, null,
-                SuggestionTable.COLUMN_TEXT + " LIKE ?" + " AND " + SuggestionTable.COLUMN_TYPE + " = ?",
-                new String[] {
-                        "%%",
-                        SuggestionTable.TYPE_HISTORY
-                }, SuggestionTable.COLUMN_DATE + " DESC");
+        if (suggestionDatabase == null) return;
+        Cursor newCursor = suggestionDatabase.suggestionDao().historyCursor(100);
         if (historyCursor == newCursor) return;
         Cursor oldCursor = historyCursor;
         this.historyCursor = newCursor;
@@ -132,20 +137,25 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
     }
 
-    FollowStop followItem(int position) {
+    protected FollowStop followItem(int position) {
         if (followCursor == null || followCursor.isClosed()) return null;
         followCursor.moveToPosition(position);
         return FollowStopUtil.fromCursor(followCursor);
     }
 
-    SearchHistory historyItem(int position) {
+    private Suggestion historyItem(int position) {
         if (historyCursor == null || historyCursor.isClosed()) return null;
         historyCursor.moveToPosition(position);
-        return SearchHistoryUtil.fromCursor(historyCursor);
+        Suggestion object = new Suggestion(0, "", "", 0, "");
+        object.setCompanyCode(historyCursor.getString(historyCursor.getColumnIndex(Suggestion.COLUMN_COMPANY)));
+        object.setRoute(historyCursor.getString(historyCursor.getColumnIndex(Suggestion.COLUMN_TEXT)));
+        object.setTimestamp(Long.parseLong(historyCursor.getString(historyCursor.getColumnIndex(Suggestion.COLUMN_TIMESTAMP))));
+        object.setType(historyCursor.getString(historyCursor.getColumnIndex(Suggestion.COLUMN_TYPE)));
+        return object;
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, int position) {
         if (viewHolder instanceof FollowViewHolder) {
             FollowStop object = followItem(position);
             if (object != null) {
@@ -190,7 +200,7 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
                 });
 
                 // ETA
-                ArrivalTimeUtil.query(context, RouteStopUtil.fromFollowStop(object)).subscribe(cursor -> {
+                disposable.add(ArrivalTimeUtil.query(context, RouteStopUtil.fromFollowStop(object)).subscribe(cursor -> {
                     // Cursor has been moved +1 position forward.
                     ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
                     if (arrivalTime == null) return;
@@ -296,21 +306,21 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
                                 break;
                         }
                     }
-                });
+                }));
             }
         }
 
         if (viewHolder instanceof HistoryViewHolder) {
-            SearchHistory object = historyItem(position - getFollowCount());
+            Suggestion object = historyItem(position - getFollowCount());
             if (object != null) {
                 HistoryViewHolder vh = (HistoryViewHolder) viewHolder;
                 vh.routeText.setText(object.getRoute());
                 Drawable drawable;
                 switch (object.getType()) {
-                    case SuggestionTable.TYPE_HISTORY:
+                    case Suggestion.TYPE_HISTORY:
                         drawable = ContextCompat.getDrawable(context, R.drawable.ic_history_black_24dp);
                         break;
-                    case SuggestionTable.TYPE_DEFAULT:
+                    case Suggestion.TYPE_DEFAULT:
                     default:
                         drawable = ContextCompat.getDrawable(context, R.drawable.ic_directions_bus_black_24dp);
                         break;
@@ -337,16 +347,21 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
                             .setPositiveButton(R.string.action_confirm, (dialoginterface, i) -> {
                                 int pos = position;
                                 int j = 0;
-                                for (SearchHistory history: getHistoryItems()) {
+                                for (Suggestion history: getHistoryItems()) {
                                     if (history.equals(object)) {
                                         pos = j + getFollowCount();
                                         break;
                                     }
                                     j++;
                                 }
-                                if (SearchHistoryUtil.delete(context, object) > 0) {
-                                    updateHistory();
-                                    notifyItemRemoved(pos);
+                                SuggestionDatabase suggestionDatabase = SuggestionDatabase.Companion.getInstance(context);
+                                if (suggestionDatabase != null) {
+                                    int deletedRows = suggestionDatabase.suggestionDao().delete(object.getType(),
+                                            object.getCompanyCode(), object.getRoute());
+                                    if (deletedRows > 0) {
+                                        updateHistory();
+                                        notifyItemRemoved(pos);
+                                    }
                                 }
                             })
                             .show();
@@ -357,7 +372,7 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
     }
 
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
         if (viewType == ITEM_VIEW_TYPE_FOLLOW) {
             return new FollowViewHolder(inflater.inflate(R.layout.item_route_follow, viewGroup, false));
