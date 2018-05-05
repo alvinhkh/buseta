@@ -23,17 +23,18 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.ArrivalTime;
+import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
+import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
 import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.service.EtaService;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter;
-import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
 import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.FollowStopUtil;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
 
 import java.text.DecimalFormat;
+import java.util.List;
 import java.util.Locale;
 
 import io.reactivex.disposables.CompositeDisposable;
@@ -41,6 +42,8 @@ import io.reactivex.disposables.CompositeDisposable;
 
 public class RouteStopListAdapter
         extends ArrayListRecyclerViewAdapter<RouteStopListAdapter.ViewHolder> {
+
+    private static ArrivalTimeDatabase arrivalTimeDatabase;
 
     private Route route;
 
@@ -53,11 +56,12 @@ public class RouteStopListAdapter
         super(recyclerView);
         this.fragmentManager = fragmentManager;
         this.route = route;
+        arrivalTimeDatabase = ArrivalTimeDatabase.Companion.getInstance(recyclerView.getContext());
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return ViewHolder.createViewHolder(parent, viewType, onClickItemListener, fragmentManager, route, currentLocation);
+        return ViewHolder.createViewHolder(parent, viewType, onClickItemListener, fragmentManager, route, currentLocation, arrivalTimeDatabase);
     }
 
     @Override
@@ -77,7 +81,10 @@ public class RouteStopListAdapter
 
         static ViewHolder createViewHolder(ViewGroup parent, int viewType,
                                            OnClickItemListener listener,
-                                           FragmentManager fm, Route route, Location currentLocation) {
+                                           FragmentManager fm,
+                                           Route route,
+                                           Location currentLocation,
+                                           ArrivalTimeDatabase arrivalTimeDatabase) {
             LayoutInflater inflater = LayoutInflater.from(parent.getContext());
             View root;
 
@@ -88,7 +95,7 @@ public class RouteStopListAdapter
                     return new NoteViewHolder(root, viewType, listener, route);
                 case Item.TYPE_DATA:
                     root = inflater.inflate(R.layout.item_route_stop, parent, false);
-                    return new DataViewHolder(root, viewType, listener, fm, route, currentLocation);
+                    return new DataViewHolder(root, viewType, listener, fm, route, currentLocation, arrivalTimeDatabase);
                 default:
                     root = inflater.inflate(R.layout.item_note, parent, false);
                     return new EmptyViewHolder(root, viewType, listener);
@@ -145,9 +152,14 @@ public class RouteStopListAdapter
 
         CompositeDisposable disposable = new CompositeDisposable();
 
+        static ArrivalTimeDatabase database = null;
+
         DataViewHolder(View itemView, int viewType,
                        OnClickItemListener listener,
-                       FragmentManager fragmentManager, Route route, Location currentLocation) {
+                       FragmentManager fragmentManager,
+                       Route route,
+                       Location currentLocation,
+                       ArrivalTimeDatabase arrivalTimeDatabase) {
             super(itemView, viewType, listener);
             this.itemView = itemView;
             this.nameText = itemView.findViewById(R.id.name);
@@ -161,6 +173,7 @@ public class RouteStopListAdapter
             this.route = route;
             this.fragmentManager = fragmentManager;
             this.currentLocation = currentLocation;
+            database = arrivalTimeDatabase;
         }
 
         @Override
@@ -230,121 +243,122 @@ public class RouteStopListAdapter
                     }
                 }));
                 // ETA
-                disposable.add(ArrivalTimeUtil.query(context, stop).subscribe(cursor -> {
-                    // Cursor has been moved +1 position forward.
-                    ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
-                    arrivalTime = ArrivalTimeUtil.estimate(context, arrivalTime);
 
-                    if (!TextUtils.isEmpty(arrivalTime.getId())) {
-                        SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.getText());
-                        Integer pos = Integer.parseInt(arrivalTime.getId());
-                        Integer colorInt = ContextCompat.getColor(context,
-                                arrivalTime.getExpired() ? R.color.textDiminish :
-                                        (pos > 0 ? R.color.textPrimary : R.color.textHighlighted));
-                        if (!TextUtils.isEmpty(arrivalTime.getNote())) {
-                            etaText.append("#");
-                        }
-                        if (arrivalTime.isSchedule()) {
-                            etaText.append("*");
-                        }
-                        if (!TextUtils.isEmpty(arrivalTime.getEstimate())) {
-                            etaText.append(" (").append(arrivalTime.getEstimate()).append(")");
-                        }
-                        if (arrivalTime.getDistanceKM() >= 0) {
-                            etaText.append(" ").append(context.getString(R.string.km_short, arrivalTime.getDistanceKM()));
-                        }
-                        if (!TextUtils.isEmpty(arrivalTime.getPlate())) {
-                            etaText.append(" ").append(arrivalTime.getPlate());
-                        }
-                        if (arrivalTime.getCapacity() >= 0) {
-                            Drawable drawable = null;
-                            if (arrivalTime.getCapacity() == 0) {
-                                drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_0_black);
-                            } else if (arrivalTime.getCapacity() > 0 && arrivalTime.getCapacity() <= 3) {
-                                drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_20_black);
-                            } else if (arrivalTime.getCapacity() > 3 && arrivalTime.getCapacity() <= 6) {
-                                drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_50_black);
-                            } else if (arrivalTime.getCapacity() > 6 && arrivalTime.getCapacity() <= 9) {
-                                drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_80_black);
-                            } else if (arrivalTime.getCapacity() >= 10) {
-                                drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_100_black);
+                if (database != null) {
+                    List<ArrivalTime> arrivalTimeList = ArrivalTime.Companion.getList(database, stop);
+                    for (ArrivalTime arrivalTime : arrivalTimeList) {
+                        arrivalTime = ArrivalTime.Companion.estimate(context, arrivalTime);
+                        if (!TextUtils.isEmpty(arrivalTime.getOrder())) {
+                            SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.getText());
+                            Integer pos = Integer.parseInt(arrivalTime.getOrder());
+                            Integer colorInt = ContextCompat.getColor(context,
+                                    arrivalTime.getExpired() ? R.color.textDiminish :
+                                            (pos > 0 ? R.color.textPrimary : R.color.textHighlighted));
+                            if (!TextUtils.isEmpty(arrivalTime.getNote())) {
+                                etaText.append("#");
                             }
-                            if (drawable != null) {
-                                drawable = DrawableCompat.wrap(drawable);
-                                if (pos == 0) {
-                                    drawable.setBounds(0, 0, this.etaText.getLineHeight(), this.etaText.getLineHeight());
-                                } else if (pos == 1) {
-                                    drawable.setBounds(0, 0, this.eta2Text.getLineHeight(), this.eta2Text.getLineHeight());
-                                } else {
-                                    drawable.setBounds(0, 0, this.eta3Text.getLineHeight(), this.eta3Text.getLineHeight());
-                                }
-                                DrawableCompat.setTint(drawable.mutate(), colorInt);
-                                ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
-                                etaText.append(" ");
-                                if (etaText.length() > 0) {
-                                    etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-                                }
+                            if (arrivalTime.isSchedule()) {
+                                etaText.append("*");
                             }
-                        }
-                        if (arrivalTime.getHasWheelchair() && PreferenceUtil.isShowWheelchairIcon(context)) {
-                            Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_accessible_black_18dp);
-                            if (drawable != null) {
-                                drawable = DrawableCompat.wrap(drawable);
-                                if (pos == 0) {
-                                    drawable.setBounds(0, 0, this.etaText.getLineHeight(), this.etaText.getLineHeight());
-                                } else if (pos == 1) {
-                                    drawable.setBounds(0, 0, this.eta2Text.getLineHeight(), this.eta2Text.getLineHeight());
-                                } else {
-                                    drawable.setBounds(0, 0, this.eta3Text.getLineHeight(), this.eta3Text.getLineHeight());
+                            if (!TextUtils.isEmpty(arrivalTime.getEstimate())) {
+                                etaText.append(" (").append(arrivalTime.getEstimate()).append(")");
+                            }
+                            if (arrivalTime.getDistanceKM() >= 0) {
+                                etaText.append(" ").append(context.getString(R.string.km_short, arrivalTime.getDistanceKM()));
+                            }
+                            if (!TextUtils.isEmpty(arrivalTime.getPlate())) {
+                                etaText.append(" ").append(arrivalTime.getPlate());
+                            }
+                            if (arrivalTime.getCapacity() >= 0) {
+                                Drawable drawable = null;
+                                if (arrivalTime.getCapacity() == 0) {
+                                    drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_0_black);
+                                } else if (arrivalTime.getCapacity() > 0 && arrivalTime.getCapacity() <= 3) {
+                                    drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_20_black);
+                                } else if (arrivalTime.getCapacity() > 3 && arrivalTime.getCapacity() <= 6) {
+                                    drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_50_black);
+                                } else if (arrivalTime.getCapacity() > 6 && arrivalTime.getCapacity() <= 9) {
+                                    drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_80_black);
+                                } else if (arrivalTime.getCapacity() >= 10) {
+                                    drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_100_black);
                                 }
-                                DrawableCompat.setTint(drawable.mutate(), colorInt);
-                                ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
-                                etaText.append(" ");
-                                if (etaText.length() > 0) {
-                                    etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                                if (drawable != null) {
+                                    drawable = DrawableCompat.wrap(drawable);
+                                    if (pos == 0) {
+                                        drawable.setBounds(0, 0, this.etaText.getLineHeight(), this.etaText.getLineHeight());
+                                    } else if (pos == 1) {
+                                        drawable.setBounds(0, 0, this.eta2Text.getLineHeight(), this.eta2Text.getLineHeight());
+                                    } else {
+                                        drawable.setBounds(0, 0, this.eta3Text.getLineHeight(), this.eta3Text.getLineHeight());
+                                    }
+                                    DrawableCompat.setTint(drawable.mutate(), colorInt);
+                                    ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
+                                    etaText.append(" ");
+                                    if (etaText.length() > 0) {
+                                        etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                                    }
                                 }
                             }
-                        }
-                        if (arrivalTime.getHasWifi() && PreferenceUtil.isShowWifiIcon(context)) {
-                            Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_network_wifi_black_18dp);
-                            if (drawable != null) {
-                                drawable = DrawableCompat.wrap(drawable);
-                                if (pos == 0) {
-                                    drawable.setBounds(0, 0, this.etaText.getLineHeight(), this.etaText.getLineHeight());
-                                } else if (pos == 1) {
-                                    drawable.setBounds(0, 0, this.eta2Text.getLineHeight(), this.eta2Text.getLineHeight());
-                                } else {
-                                    drawable.setBounds(0, 0, this.eta3Text.getLineHeight(), this.eta3Text.getLineHeight());
-                                }
-                                DrawableCompat.setTint(drawable.mutate(), colorInt);
-                                ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
-                                etaText.append(" ");
-                                if (etaText.length() > 0) {
-                                    etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                            if (arrivalTime.getHasWheelchair() && PreferenceUtil.isShowWheelchairIcon(context)) {
+                                Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_accessible_black_18dp);
+                                if (drawable != null) {
+                                    drawable = DrawableCompat.wrap(drawable);
+                                    if (pos == 0) {
+                                        drawable.setBounds(0, 0, this.etaText.getLineHeight(), this.etaText.getLineHeight());
+                                    } else if (pos == 1) {
+                                        drawable.setBounds(0, 0, this.eta2Text.getLineHeight(), this.eta2Text.getLineHeight());
+                                    } else {
+                                        drawable.setBounds(0, 0, this.eta3Text.getLineHeight(), this.eta3Text.getLineHeight());
+                                    }
+                                    DrawableCompat.setTint(drawable.mutate(), colorInt);
+                                    ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
+                                    etaText.append(" ");
+                                    if (etaText.length() > 0) {
+                                        etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                                    }
                                 }
                             }
-                        }
-                        if (etaText.length() > 0) {
-                            etaText.setSpan(new ForegroundColorSpan(colorInt), 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        }
+                            if (arrivalTime.getHasWifi() && PreferenceUtil.isShowWifiIcon(context)) {
+                                Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_network_wifi_black_18dp);
+                                if (drawable != null) {
+                                    drawable = DrawableCompat.wrap(drawable);
+                                    if (pos == 0) {
+                                        drawable.setBounds(0, 0, this.etaText.getLineHeight(), this.etaText.getLineHeight());
+                                    } else if (pos == 1) {
+                                        drawable.setBounds(0, 0, this.eta2Text.getLineHeight(), this.eta2Text.getLineHeight());
+                                    } else {
+                                        drawable.setBounds(0, 0, this.eta3Text.getLineHeight(), this.eta3Text.getLineHeight());
+                                    }
+                                    DrawableCompat.setTint(drawable.mutate(), colorInt);
+                                    ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
+                                    etaText.append(" ");
+                                    if (etaText.length() > 0) {
+                                        etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                                    }
+                                }
+                            }
+                            if (etaText.length() > 0) {
+                                etaText.setSpan(new ForegroundColorSpan(colorInt), 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                            }
 
-                        switch(pos) {
-                            case 0:
-                                this.etaText.setText(etaText);
-                                this.eta2Text.setText(null);
-                                this.eta3Text.setText(null);
-                                break;
-                            case 1:
-                                etaText.insert(0, this.eta2Text.getText());
-                                this.eta2Text.setText(etaText);
-                                break;
-                            case 2:
-                                etaText.insert(0, this.eta3Text.getText());
-                                this.eta3Text.setText(etaText);
-                                break;
+                            switch(pos) {
+                                case 0:
+                                    this.etaText.setText(etaText);
+                                    this.eta2Text.setText(null);
+                                    this.eta3Text.setText(null);
+                                    break;
+                                case 1:
+                                    etaText.insert(0, this.eta2Text.getText());
+                                    this.eta2Text.setText(etaText);
+                                    break;
+                                case 2:
+                                    etaText.insert(0, this.eta3Text.getText());
+                                    this.eta3Text.setText(etaText);
+                                    break;
+                            }
                         }
                     }
-                }));
+                }
             }
         }
     }

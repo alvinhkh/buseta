@@ -13,19 +13,25 @@ import android.text.style.ForegroundColorSpan;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.ArrivalTime;
+import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
+import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
 import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.service.NotificationService;
 import com.alvinhkh.buseta.search.ui.SearchActivity;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 public class NotificationUtil {
 
     public static final String ETA_CHANNEL_ID = "CHANNEL_ID_ETA";
 
-    public static NotificationCompat.Builder showArrivalTime(@NonNull Context context, @NonNull RouteStop object) {
+    public static SimpleDateFormat displayDateFormat = new SimpleDateFormat("HH:mm:ss dd/MM", Locale.ENGLISH);
+
+    public static NotificationCompat.Builder showArrivalTime(@NonNull Context context, @NonNull RouteStop object, @NonNull List<ArrivalTime> arrivalTimes) {
         SpannableStringBuilder smallContentTitle = new SpannableStringBuilder();
         SpannableStringBuilder smallText = new SpannableStringBuilder();
         SpannableStringBuilder bigText = new SpannableStringBuilder();
@@ -45,15 +51,12 @@ public class NotificationUtil {
         subText.append(" ");
         subText.append(context.getString(R.string.destination, object.getDestination()));
 
-        ArrivalTimeUtil.query(context, object).subscribe(cursor -> {
-            // Cursor has been moved +1 position forward.
-            ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
-            arrivalTime = ArrivalTimeUtil.estimate(context, arrivalTime);
-
-            if (arrivalTime.getId() != null) {
+        for (ArrivalTime arrivalTime : arrivalTimes) {
+            arrivalTime = ArrivalTime.Companion.estimate(context, arrivalTime);
+            if (arrivalTime.getOrder() != null) {
                 SpannableStringBuilder etaSmallText = new SpannableStringBuilder(arrivalTime.getText());
                 SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.getText());
-                Integer pos = Integer.parseInt(arrivalTime.getId());
+                Integer pos = Integer.parseInt(arrivalTime.getOrder());
                 Integer colorInt = ContextCompat.getColor(context,
                         arrivalTime.getExpired() ? R.color.grey :
                                 (pos > 0 ? R.color.black : R.color.colorPrimaryA700));
@@ -123,13 +126,13 @@ public class NotificationUtil {
             if (arrivalTime.getGeneratedAt() > 0) {
                 // Request server time
                 Date date = new Date(arrivalTime.getGeneratedAt());
-                bigSummaryText.append(ArrivalTimeUtil.displayDateFormat.format(date));
+                bigSummaryText.append(displayDateFormat.format(date));
             } else if (arrivalTime.getUpdatedAt() > 0) {
                 // last updated time
                 Date date = new Date(arrivalTime.getUpdatedAt());
-                bigSummaryText.append(ArrivalTimeUtil.displayDateFormat.format(date));
+                bigSummaryText.append(displayDateFormat.format(date));
             }
-        });
+        }
         contentInfo.append(context.getString(R.string.app_name));
 
         // Foreground Notification

@@ -6,10 +6,9 @@ import android.text.TextUtils;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.ArrivalTime;
+import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
 import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.nwst.model.NwstEta;
-import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
 
 import org.jsoup.Jsoup;
 
@@ -90,7 +89,7 @@ public class NwstEtaUtil {
     public static ArrivalTime toArrivalTime(@NonNull Context context,
                                             @NonNull RouteStop routeStop,
                                             @NonNull NwstEta nwstEta) {
-        ArrivalTime object = ArrivalTimeUtil.emptyInstance(context);
+        ArrivalTime object = ArrivalTime.Companion.emptyInstance(context, routeStop);
         object.setCompanyCode(C.PROVIDER.NWST);
         if (nwstEta.getCompanyCode().equals(C.PROVIDER.CTB) || nwstEta.getCompanyCode().equals(C.PROVIDER.CTB)) {
             object.setCompanyCode(nwstEta.getCompanyCode());
@@ -117,7 +116,7 @@ public class NwstEtaUtil {
             object.setGeneratedAt(generatedAtDf.parse(nwstEta.getServerTime()).getTime());
         } catch (ParseException ignored) {}
         object.setUpdatedAt(System.currentTimeMillis());
-        object = ArrivalTimeUtil.estimate(context, object);
+        object = ArrivalTime.Companion.estimate(context, object);
         return object;
     }
 }

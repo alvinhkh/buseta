@@ -13,6 +13,8 @@ import android.support.v4.app.NotificationManagerCompat;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
+import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
 import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.model.FollowStop;
 import com.alvinhkh.buseta.utils.RouteStopUtil;
@@ -34,9 +36,12 @@ public class EtaJobService extends JobService {
 
     private final CompositeDisposable disposables = new CompositeDisposable();
 
+    private static ArrivalTimeDatabase arrivalTimeDatabase = null;
+
     @Override
     public void onCreate() {
         super.onCreate();
+        arrivalTimeDatabase = ArrivalTimeDatabase.Companion.getInstance(this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager notificationManager =
                     (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -112,7 +117,11 @@ public class EtaJobService extends JobService {
                     RouteStop routeStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
                     if (routeStop == null) return;
                     Timber.d("notificationId: %s UPDATE", notificationId);
-                    NotificationCompat.Builder builder = NotificationUtil.showArrivalTime(getApplicationContext(), routeStop);
+                    List<ArrivalTime> arrivalTimeList = new ArrayList<>();
+                    if (arrivalTimeDatabase != null) {
+                        arrivalTimeList = ArrivalTime.Companion.getList(arrivalTimeDatabase, routeStop);
+                    }
+                    NotificationCompat.Builder builder = NotificationUtil.showArrivalTime(getApplicationContext(), routeStop, arrivalTimeList);
                     NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
                     notificationManager.notify(notificationId, builder.build());
                 }

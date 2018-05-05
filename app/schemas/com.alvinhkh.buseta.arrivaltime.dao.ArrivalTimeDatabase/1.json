@@ -1,0 +1,185 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "fdfcd52be7a6cf940dcce8126717bb7f",
+    "entities": [
+      {
+        "tableName": "eta",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `company` TEXT NOT NULL, `route_no` TEXT NOT NULL, `route_seq` TEXT NOT NULL, `stop_id` TEXT NOT NULL, `stop_seq` TEXT NOT NULL, `eta_id` TEXT NOT NULL, `generated_at` INTEGER NOT NULL, `updated_at` INTEGER NOT NULL, `text` TEXT NOT NULL, `eta_expire` TEXT NOT NULL, `destination` TEXT NOT NULL, `direction` TEXT NOT NULL, `is_scheduled` INTEGER NOT NULL, `has_wheelchair` INTEGER NOT NULL, `has_wifi` INTEGER NOT NULL, `iso_time` TEXT NOT NULL, `capacity` INTEGER NOT NULL, `distance` REAL NOT NULL, `plate` TEXT NOT NULL, `latitude` REAL NOT NULL, `longitude` REAL NOT NULL, `platform` TEXT NOT NULL, `note` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "_id",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "companyCode",
+            "columnName": "company",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "routeNo",
+            "columnName": "route_no",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "routeSeq",
+            "columnName": "route_seq",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stopId",
+            "columnName": "stop_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stopSeq",
+            "columnName": "stop_seq",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "order",
+            "columnName": "eta_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "generatedAt",
+            "columnName": "generated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "text",
+            "columnName": "text",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "expire",
+            "columnName": "eta_expire",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "destination",
+            "columnName": "destination",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "direction",
+            "columnName": "direction",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isSchedule",
+            "columnName": "is_scheduled",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hasWheelchair",
+            "columnName": "has_wheelchair",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hasWifi",
+            "columnName": "has_wifi",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isoTime",
+            "columnName": "iso_time",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "capacity",
+            "columnName": "capacity",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "distanceKM",
+            "columnName": "distance",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "plate",
+            "columnName": "plate",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "latitude",
+            "columnName": "latitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "longitude",
+            "columnName": "longitude",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "platform",
+            "columnName": "platform",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "note",
+            "columnName": "note",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "_id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [
+          {
+            "name": "index_eta_company_route_no_route_seq_stop_id_stop_seq_eta_id",
+            "unique": true,
+            "columnNames": [
+              "company",
+              "route_no",
+              "route_seq",
+              "stop_id",
+              "stop_seq",
+              "eta_id"
+            ],
+            "createSql": "CREATE UNIQUE INDEX `index_eta_company_route_no_route_seq_stop_id_stop_seq_eta_id` ON `${TABLE_NAME}` (`company`, `route_no`, `route_seq`, `stop_id`, `stop_seq`, `eta_id`)"
+          }
+        ],
+        "foreignKeys": []
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"fdfcd52be7a6cf940dcce8126717bb7f\")"
+    ]
+  }
+}

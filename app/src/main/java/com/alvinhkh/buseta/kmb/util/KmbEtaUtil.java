@@ -7,8 +7,7 @@ import android.text.TextUtils;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.kmb.model.KmbEta;
-import com.alvinhkh.buseta.model.ArrivalTime;
-import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
+import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
 
 import org.jsoup.Jsoup;
 
@@ -29,18 +28,18 @@ public class KmbEtaUtil {
                 .replaceAll(" ?Scheduled", "");
     }
 
-    public static Integer parseCapacity(String ol) {
+    public static Long parseCapacity(String ol) {
         if (!TextUtils.isEmpty(ol)) {
             if (ol.equalsIgnoreCase("f")) {
-                return 10;
+                return 10L;
             } else if (ol.equalsIgnoreCase("e")) {
-                return 0;
+                return 0L;
             } else if (ol.equalsIgnoreCase("n")) {
-                return -1;
+                return -1L;
             }
-            return Integer.parseInt(ol);
+            return Long.parseLong(ol);
         }
-        return -1;
+        return -1L;
     }
 
     public static ArrivalTime estimate(@NonNull Context context, @NonNull ArrivalTime object) {
@@ -114,7 +113,7 @@ public class KmbEtaUtil {
         object.setText(text(eta.time));
         object.setGeneratedAt(generatedTime);
         object.setUpdatedAt(System.currentTimeMillis());
-        object = ArrivalTimeUtil.estimate(context, object);
+        object = ArrivalTime.Companion.estimate(context, object);
         return object;
     }
 }

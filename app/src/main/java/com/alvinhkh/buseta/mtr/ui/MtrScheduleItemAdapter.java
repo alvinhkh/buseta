@@ -14,7 +14,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.ArrivalTime;
+import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter;
 
 import java.text.ParseException;

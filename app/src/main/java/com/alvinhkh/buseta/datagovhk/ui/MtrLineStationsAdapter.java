@@ -10,11 +10,11 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.ArrivalTime;
+import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
+import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
 import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.mtr.ui.MtrScheduleItemAdapter;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter;
-import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,14 +25,17 @@ public class MtrLineStationsAdapter
 
     private OnClickItemListener listener;
 
+    private static ArrivalTimeDatabase arrivalTimeDatabase = null;
+
     public MtrLineStationsAdapter(@NonNull RecyclerView recyclerView, OnClickItemListener listener) {
         super(recyclerView);
         this.listener = listener;
+        arrivalTimeDatabase = ArrivalTimeDatabase.Companion.getInstance(recyclerView.getContext());
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return ViewHolder.createViewHolder(parent, viewType, listener);
+        return ViewHolder.createViewHolder(parent, viewType, listener, arrivalTimeDatabase);
     }
 
     @Override
@@ -46,14 +49,14 @@ public class MtrLineStationsAdapter
             super(itemView, viewType, listener);
         }
 
-        public static ViewHolder createViewHolder(final ViewGroup parent, final int viewType, OnClickItemListener listener) {
+        public static ViewHolder createViewHolder(final ViewGroup parent, final int viewType, OnClickItemListener listener, ArrivalTimeDatabase arrivalTimeDatabase) {
             final LayoutInflater inflater = LayoutInflater.from(parent.getContext());
             View root;
 
             switch (viewType) {
                 case Item.TYPE_DATA:
                     root = inflater.inflate(R.layout.item_railway_station, parent, false);
-                    return new StationHolder(root, viewType, listener);
+                    return new StationHolder(root, viewType, listener, arrivalTimeDatabase);
                 default:
                     return null;
             }
@@ -70,13 +73,16 @@ public class MtrLineStationsAdapter
 
         RecyclerView scheduleList;
 
+        ArrivalTimeDatabase database;
+
         private String direction = "";
 
-        StationHolder(View itemView, int viewType, OnClickItemListener listener) {
+        StationHolder(View itemView, int viewType, OnClickItemListener listener, ArrivalTimeDatabase arrivalTimeDatabase) {
             super(itemView, viewType, listener);
             this.itemView = itemView;
             nameTv = itemView.findViewById(R.id.name);
             scheduleList = itemView.findViewById(R.id.schedule_list);
+            database = arrivalTimeDatabase;
         }
 
         @Override
@@ -91,17 +97,18 @@ public class MtrLineStationsAdapter
                 if (itemView.getContext() != null) {
                     List<Item> items = new ArrayList<>();
                     // ETA
-                    ArrivalTimeUtil.query(itemView.getContext(), object).subscribe(cursor -> {
-                        // Cursor has been moved +1 position forward.
-                        ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
-                        if (arrivalTime == null) return;
-                        arrivalTime = ArrivalTimeUtil.estimate(itemView.getContext(), arrivalTime);
-                        if (!TextUtils.isEmpty(direction) && items.size() > 1 && !direction.equals(arrivalTime.getDirection())) {
-                            items.add(new Item(Item.TYPE_SECTION, ""));
+                    if (database != null) {
+                        List<ArrivalTime> arrivalTimeList = ArrivalTime.Companion.getList(database, object);
+                        for (ArrivalTime arrivalTime : arrivalTimeList) {
+                            if (arrivalTime == null) continue;
+                            arrivalTime = ArrivalTime.Companion.estimate(itemView.getContext(), arrivalTime);
+                            if (!TextUtils.isEmpty(direction) && items.size() > 1 && !direction.equals(arrivalTime.getDirection())) {
+                                items.add(new Item(Item.TYPE_SECTION, ""));
+                            }
+                            items.add(new Item(Item.TYPE_DATA, arrivalTime));
+                            direction = arrivalTime.getDirection();
                         }
-                        items.add(new Item(Item.TYPE_DATA, arrivalTime));
-                        direction = arrivalTime.getDirection();
-                    });
+                    }
                     MtrScheduleItemAdapter scheduleItemAdapter = new MtrScheduleItemAdapter(scheduleList, null);
                     scheduleItemAdapter.addAll(items);
                     scheduleList.setAdapter(scheduleItemAdapter);

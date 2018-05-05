@@ -5,8 +5,7 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.alvinhkh.buseta.C;
-import com.alvinhkh.buseta.model.ArrivalTime;
-import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
+import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
@@ -57,14 +56,14 @@ public class NlbEtaUtil {
 
     public static ArrivalTime toArrivalTime(@NonNull Context context,
                                             @NonNull Element div) {
-        ArrivalTime object = ArrivalTimeUtil.emptyInstance(context);
+        ArrivalTime object = ArrivalTime.Companion.emptyInstance(context, null);
         object.setCompanyCode(C.PROVIDER.NLB);
         String text = div.text();
         object.setText(text(text));
         object.setSchedule(!TextUtils.isEmpty(text) && (text.contains("預定班次") || text.contains("Scheduled")));
         object.setHasWheelchair((div.getElementsByAttributeValueContaining("alt", "Wheelchair").size() > 0 ||
                 div.getElementsByAttributeValueContaining("alt", "輪椅").size() > 0));
-        object = ArrivalTimeUtil.estimate(context, object);
+        object = ArrivalTime.Companion.estimate(context, object);
         return object;
     }
 }

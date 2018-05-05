@@ -21,11 +21,15 @@ import android.support.v7.preference.PreferenceManager;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
+import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
 import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.utils.NotificationUtil;
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
 import com.firebase.jobdispatcher.GooglePlayDriver;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import io.reactivex.disposables.CompositeDisposable;
@@ -36,6 +40,8 @@ import timber.log.Timber;
 public class NotificationService extends Service {
 
     private final CompositeDisposable disposables = new CompositeDisposable();
+
+    private static ArrivalTimeDatabase arrivalTimeDatabase = null;
 
     private SparseArrayCompat<RouteStop> routeStops = new SparseArrayCompat<>();
 
@@ -48,6 +54,7 @@ public class NotificationService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        arrivalTimeDatabase = ArrivalTimeDatabase.Companion.getInstance(this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager notificationManager =
                     (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -129,7 +136,11 @@ public class NotificationService extends Service {
         RouteStop routeStop = extras.getParcelable(C.EXTRA.STOP_OBJECT);
         if (routeStop != null) {
             notificationId = NotificationUtil.getNotificationId(routeStop);
-            NotificationCompat.Builder builder = NotificationUtil.showArrivalTime(this, routeStop);
+            List<ArrivalTime> arrivalTimeList = new ArrayList<>();
+            if (arrivalTimeDatabase != null) {
+                arrivalTimeList = ArrivalTime.Companion.getList(arrivalTimeDatabase, routeStop);
+            }
+            NotificationCompat.Builder builder = NotificationUtil.showArrivalTime(this, routeStop, arrivalTimeList);
             notificationManager.notify(notificationId, builder.build());
             routeStops.put(notificationId, routeStop);
             Intent startIntent = new Intent(getApplicationContext(), EtaService.class);
@@ -193,7 +204,11 @@ public class NotificationService extends Service {
                 if (routeStop == null) return;
                 if (notificationId > 0 && routeStops.get(notificationId) != null) {
                     Timber.d("notification: %s UPDATE", notificationId);
-                    NotificationCompat.Builder builder = NotificationUtil.showArrivalTime(getApplicationContext(), routeStop);
+                    List<ArrivalTime> arrivalTimeList = new ArrayList<>();
+                    if (arrivalTimeDatabase != null) {
+                        arrivalTimeList = ArrivalTime.Companion.getList(arrivalTimeDatabase, routeStop);
+                    }
+                    NotificationCompat.Builder builder = NotificationUtil.showArrivalTime(getApplicationContext(), routeStop, arrivalTimeList);
                     NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());
                     notificationManager.notify(notificationId, builder.build());
                 }

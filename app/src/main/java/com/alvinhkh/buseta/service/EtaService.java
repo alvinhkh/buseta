@@ -1,7 +1,6 @@
 package com.alvinhkh.buseta.service;
 
 import android.app.IntentService;
-import android.content.ContentValues;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -9,10 +8,11 @@ import android.text.TextUtils;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
 import com.alvinhkh.buseta.kmb.KmbService;
 import com.alvinhkh.buseta.kmb.model.network.KmbEtaRes;
 import com.alvinhkh.buseta.kmb.util.KmbEtaUtil;
-import com.alvinhkh.buseta.model.ArrivalTime;
+import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
 import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.mtr.MtrService;
@@ -30,8 +30,6 @@ import com.alvinhkh.buseta.nwst.NwstService;
 import com.alvinhkh.buseta.nwst.model.NwstEta;
 import com.alvinhkh.buseta.nwst.util.NwstEtaUtil;
 import com.alvinhkh.buseta.nwst.util.NwstRequestUtil;
-import com.alvinhkh.buseta.provider.EtaContract.EtaEntry;
-import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.alvinhkh.buseta.utils.HashUtil;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
@@ -49,7 +47,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableObserver;
@@ -58,9 +55,12 @@ import timber.log.Timber;
 
 import static com.alvinhkh.buseta.nwst.NwstService.*;
 
+// TODO: remove previous eta records
 public class EtaService extends IntentService {
 
     private final CompositeDisposable disposables = new CompositeDisposable();
+
+    private ArrivalTimeDatabase arrivalTimeDatabase;
 
     private final MtrService aesService = MtrService.Companion.getAes().create(MtrService.class);
 
@@ -81,6 +81,7 @@ public class EtaService extends IntentService {
     @Override
     public void onCreate() {
         super.onCreate();
+        arrivalTimeDatabase = ArrivalTimeDatabase.Companion.getInstance(this);
     }
 
     @Override
@@ -143,12 +144,10 @@ public class EtaService extends IntentService {
                                 .subscribeWith(nwstEtaObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size() - 1)));
                         break;
                     case C.PROVIDER.LRTFEEDER:
-                        ArrivalTime arrivalTime = ArrivalTimeUtil.emptyInstance(getApplicationContext());
-                        arrivalTime.setCompanyCode(C.PROVIDER.LRTFEEDER);
+                        ArrivalTime arrivalTime = ArrivalTime.Companion.emptyInstance(getApplicationContext(), routeStop);
                         arrivalTime.setText(getString(R.string.provider_no_eta));
-                        ContentValues contentValues = ArrivalTimeUtil.toContentValues(routeStop, arrivalTime);
-                        if (contentValues != null) {
-                            getContentResolver().insert(EtaEntry.CONTENT_URI, contentValues);
+                        if (arrivalTimeDatabase != null) {
+                            arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime);
                         }
                         notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId, row);
                         break;
@@ -224,20 +223,21 @@ public class EtaService extends IntentService {
                 if (res != null && res.etas != null && res.etas.size() > 0) {
                     for (int i = 0; i < res.etas.size(); i++) {
                         ArrivalTime arrivalTime = KmbEtaUtil.toArrivalTime(getApplicationContext(), res.etas.get(i), res.generated);
-                        arrivalTime.setId(Integer.toString(i));
-                        ContentValues contentValues = ArrivalTimeUtil.toContentValues(routeStop, arrivalTime);
-                        if (contentValues != null) {
-                            getContentResolver().insert(EtaEntry.CONTENT_URI, contentValues);
+                        arrivalTime.setRouteNo(routeStop.getRoute());
+                        arrivalTime.setRouteSeq(routeStop.getDirection());
+                        arrivalTime.setStopId(routeStop.getCode());
+                        arrivalTime.setStopSeq(routeStop.getSequence());
+                        arrivalTime.setOrder(Integer.toString(i));
+                        if (arrivalTimeDatabase != null) {
+                            arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime);
                         }
                     }
                     notifyUpdate(routeStop, C.EXTRA.UPDATED, widgetId, notificationId, rowNo);
                     return;
                 }
-                ArrivalTime arrivalTime = ArrivalTimeUtil.emptyInstance(getApplicationContext());
-                arrivalTime.setCompanyCode(C.PROVIDER.KMB);
-                ContentValues contentValues = ArrivalTimeUtil.toContentValues(routeStop, arrivalTime);
-                if (contentValues != null) {
-                    getContentResolver().insert(EtaEntry.CONTENT_URI, contentValues);
+                ArrivalTime arrivalTime = ArrivalTime.Companion.emptyInstance(getApplicationContext(), routeStop);
+                if (arrivalTimeDatabase != null) {
+                    arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime);
                 }
                 notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId, rowNo);
             }
@@ -245,12 +245,10 @@ public class EtaService extends IntentService {
             @Override
             public void onError(Throwable e) {
                 Timber.d(e);
-                ArrivalTime arrivalTime = ArrivalTimeUtil.emptyInstance(getApplicationContext());
-                arrivalTime.setCompanyCode(C.PROVIDER.KMB);
+                ArrivalTime arrivalTime = ArrivalTime.Companion.emptyInstance(getApplicationContext(), routeStop);
                 arrivalTime.setText(getString(R.string.message_fail_to_request));
-                ContentValues contentValues = ArrivalTimeUtil.toContentValues(routeStop, arrivalTime);
-                if (contentValues != null) {
-                    getContentResolver().insert(EtaEntry.CONTENT_URI, contentValues);
+                if (arrivalTimeDatabase != null) {
+                    arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime);
                 }
                 notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId, rowNo);
             }
@@ -280,22 +278,23 @@ public class EtaService extends IntentService {
                         }
                         for (int i = 0; i < s; i++) {
                             ArrivalTime arrivalTime = NlbEtaUtil.toArrivalTime(getApplicationContext(), divs.get(i));
-                            arrivalTime.setId(Integer.toString(i));
-                            ContentValues contentValues = ArrivalTimeUtil.toContentValues(routeStop, arrivalTime);
-                            if (contentValues != null) {
-                                getContentResolver().insert(EtaEntry.CONTENT_URI, contentValues);
+                            arrivalTime.setOrder(Integer.toString(i));
+                            arrivalTime.setRouteNo(routeStop.getRoute());
+                            arrivalTime.setRouteSeq(routeStop.getDirection());
+                            arrivalTime.setStopId(routeStop.getCode());
+                            arrivalTime.setStopSeq(routeStop.getSequence());
+                            if (arrivalTimeDatabase != null) {
+                                arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime);
                             }
                         }
                         notifyUpdate(routeStop, C.EXTRA.UPDATED, widgetId, notificationId, rowNo);
                         return;
                     }
                 }
-                ArrivalTime arrivalTime = ArrivalTimeUtil.emptyInstance(getApplicationContext());
-                arrivalTime.setCompanyCode(C.PROVIDER.NLB);
+                ArrivalTime arrivalTime = ArrivalTime.Companion.emptyInstance(getApplicationContext(), routeStop);
                 arrivalTime.setGeneratedAt(System.currentTimeMillis());
-                ContentValues contentValues = ArrivalTimeUtil.toContentValues(routeStop, arrivalTime);
-                if (contentValues != null) {
-                    getContentResolver().insert(EtaEntry.CONTENT_URI, contentValues);
+                if (arrivalTimeDatabase != null) {
+                    arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime);
                 }
                 notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId, rowNo);
             }
@@ -303,12 +302,10 @@ public class EtaService extends IntentService {
             @Override
             public void onError(Throwable e) {
                 Timber.d(e);
-                ArrivalTime arrivalTime = ArrivalTimeUtil.emptyInstance(getApplicationContext());
-                arrivalTime.setCompanyCode(C.PROVIDER.NLB);
+                ArrivalTime arrivalTime = ArrivalTime.Companion.emptyInstance(getApplicationContext(), routeStop);
                 arrivalTime.setText(getString(R.string.message_fail_to_request));
-                ContentValues contentValues = ArrivalTimeUtil.toContentValues(routeStop, arrivalTime);
-                if (contentValues != null) {
-                    getContentResolver().insert(EtaEntry.CONTENT_URI, contentValues);
+                if (arrivalTimeDatabase != null) {
+                    arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime);
                 }
                 notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId, rowNo);
             }
@@ -337,10 +334,14 @@ public class EtaService extends IntentService {
                         if (nwstEta == null) continue;
                         nwstEta.setServerTime(serverTime);
                         ArrivalTime arrivalTime = NwstEtaUtil.toArrivalTime(getApplicationContext(), routeStop, nwstEta);
-                        arrivalTime.setId(Integer.toString(i));
-                        ContentValues contentValues = ArrivalTimeUtil.toContentValues(routeStop, arrivalTime);
-                        if (contentValues != null) {
-                            getContentResolver().insert(EtaEntry.CONTENT_URI, contentValues);
+                        arrivalTime.setCompanyCode(routeStop.getCompanyCode());
+                        arrivalTime.setRouteNo(routeStop.getRoute());
+                        arrivalTime.setRouteSeq(routeStop.getDirection());
+                        arrivalTime.setStopId(routeStop.getCode());
+                        arrivalTime.setStopSeq(routeStop.getSequence());
+                        arrivalTime.setOrder(Integer.toString(i));
+                        if (arrivalTimeDatabase != null) {
+                            arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime);
                         }
                     }
                     notifyUpdate(routeStop, C.EXTRA.UPDATED, widgetId, notificationId, rowNo);
@@ -348,12 +349,10 @@ public class EtaService extends IntentService {
                 } catch (IOException e) {
                     Timber.d(e);
                 }
-                ArrivalTime arrivalTime = ArrivalTimeUtil.emptyInstance(getApplicationContext());
-                arrivalTime.setCompanyCode(C.PROVIDER.NWST);
+                ArrivalTime arrivalTime = ArrivalTime.Companion.emptyInstance(getApplicationContext(), routeStop);
                 arrivalTime.setGeneratedAt(System.currentTimeMillis());
-                ContentValues contentValues = ArrivalTimeUtil.toContentValues(routeStop, arrivalTime);
-                if (contentValues != null) {
-                    getContentResolver().insert(EtaEntry.CONTENT_URI, contentValues);
+                if (arrivalTimeDatabase != null) {
+                    arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime);
                 }
                 notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId, rowNo);
             }
@@ -361,12 +360,10 @@ public class EtaService extends IntentService {
             @Override
             public void onError(Throwable e) {
                 Timber.d(e);
-                ArrivalTime arrivalTime = ArrivalTimeUtil.emptyInstance(getApplicationContext());
-                arrivalTime.setCompanyCode(C.PROVIDER.NWST);
+                ArrivalTime arrivalTime = ArrivalTime.Companion.emptyInstance(getApplicationContext(), routeStop);
                 arrivalTime.setText(getString(R.string.message_fail_to_request));
-                ContentValues contentValues = ArrivalTimeUtil.toContentValues(routeStop, arrivalTime);
-                if (contentValues != null) {
-                    getContentResolver().insert(EtaEntry.CONTENT_URI, contentValues);
+                if (arrivalTimeDatabase != null) {
+                    arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime);
                 }
                 notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId, rowNo);
             }
@@ -411,12 +408,15 @@ public class EtaService extends IntentService {
                                     isAvailable = true;
                                     AESEtaBus bus = eta.getBuses().get(j);
                                     ArrivalTime arrivalTime = AESEtaBus.Companion.toArrivalTime(getApplicationContext(), bus, statusTime, routeStop);
-                                    arrivalTime.setId(Integer.toString(j));
+                                    arrivalTime.setRouteNo(routeStop.getRoute());
+                                    arrivalTime.setRouteSeq(routeStop.getDirection());
+                                    arrivalTime.setStopId(routeStop.getCode());
+                                    arrivalTime.setStopSeq(routeStop.getSequence());
+                                    arrivalTime.setOrder(Integer.toString(j));
                                     arrivalTime.setGeneratedAt(statusTime.getTime());
                                     arrivalTime.setUpdatedAt(System.currentTimeMillis());
-                                    ContentValues contentValues = ArrivalTimeUtil.toContentValues(routeStop, arrivalTime);
-                                    if (contentValues != null) {
-                                        getContentResolver().insert(EtaEntry.CONTENT_URI, contentValues);
+                                    if (arrivalTimeDatabase != null) {
+                                        arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime);
                                     }
                                 }
                             }
@@ -426,15 +426,13 @@ public class EtaService extends IntentService {
                         }
                     }
                     if (!isAvailable) {
-                        ArrivalTime arrivalTime = ArrivalTimeUtil.emptyInstance(getApplicationContext());
-                        arrivalTime.setCompanyCode(C.PROVIDER.AESBUS);
+                        ArrivalTime arrivalTime = ArrivalTime.Companion.emptyInstance(getApplicationContext(), routeStop);
                         if (!TextUtils.isEmpty(res.getRouteStatusRemarkTitle())) {
                             arrivalTime.setText(res.getRouteStatusRemarkTitle());
                         }
                         arrivalTime.setGeneratedAt(System.currentTimeMillis());
-                        ContentValues contentValues = ArrivalTimeUtil.toContentValues(routeStop, arrivalTime);
-                        if (contentValues != null) {
-                            getContentResolver().insert(EtaEntry.CONTENT_URI, contentValues);
+                        if (arrivalTimeDatabase != null) {
+                            arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime);
                         }
                         notifyUpdate(routeStop, C.EXTRA.UPDATED, widgetId, notificationId, rowNo);
                     }
@@ -447,12 +445,10 @@ public class EtaService extends IntentService {
             public void onError(Throwable e) {
                 isError = true;
                 Timber.d(e);
-                ArrivalTime arrivalTime = ArrivalTimeUtil.emptyInstance(getApplicationContext());
-                arrivalTime.setCompanyCode(C.PROVIDER.AESBUS);
+                ArrivalTime arrivalTime = ArrivalTime.Companion.emptyInstance(getApplicationContext(), routeStop);
                 arrivalTime.setText(getString(R.string.message_fail_to_request));
-                ContentValues contentValues = ArrivalTimeUtil.toContentValues(routeStop, arrivalTime);
-                if (contentValues != null) {
-                    getContentResolver().insert(EtaEntry.CONTENT_URI, contentValues);
+                if (arrivalTimeDatabase != null) {
+                    arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime);
                 }
                 notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId, rowNo);
             }
@@ -479,12 +475,10 @@ public class EtaService extends IntentService {
             public void onNext(MtrScheduleRes res) {
                 if (res == null) return;
                 if (res.getStatus() == 0) {
-                    ArrivalTime arrivalTime = ArrivalTimeUtil.emptyInstance(getApplicationContext());
-                    arrivalTime.setCompanyCode(C.PROVIDER.MTR);
+                    ArrivalTime arrivalTime = ArrivalTime.Companion.emptyInstance(getApplicationContext(), routeStop);
                     arrivalTime.setText(getString(R.string.provider_no_eta));
-                    ContentValues contentValues = ArrivalTimeUtil.toContentValues(routeStop, arrivalTime);
-                    if (contentValues != null) {
-                        getContentResolver().insert(EtaEntry.CONTENT_URI, contentValues);
+                    if (arrivalTimeDatabase != null) {
+                        arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime);
                     }
                     notifyUpdate(routeStop, C.EXTRA.UPDATED, widgetId, notificationId, rowNo);
                     return;
@@ -497,10 +491,13 @@ public class EtaService extends IntentService {
                         if (data.getUp() != null) {
                             for (MtrSchedule schedule: data.getUp()) {
                                 ArrivalTime arrivalTime = MtrSchedule.Companion.toArrivalTime(getApplicationContext(), "UT", schedule, data.getCurrentTime(), codeMap);
-                                arrivalTime.setId(String.valueOf(i));
-                                ContentValues contentValues = ArrivalTimeUtil.toContentValues(routeStop, arrivalTime);
-                                if (contentValues != null) {
-                                    getContentResolver().insert(EtaEntry.CONTENT_URI, contentValues);
+                                arrivalTime.setRouteNo(routeStop.getRoute());
+                                arrivalTime.setRouteSeq(routeStop.getDirection());
+                                arrivalTime.setStopId(routeStop.getCode());
+                                arrivalTime.setStopSeq(routeStop.getSequence());
+                                arrivalTime.setOrder(String.valueOf(i));
+                                if (arrivalTimeDatabase != null) {
+                                    arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime);
                                 }
                                 i++;
                             }
@@ -508,10 +505,13 @@ public class EtaService extends IntentService {
                         if (data.getDown() != null) {
                             for (MtrSchedule schedule: data.getDown()) {
                                 ArrivalTime arrivalTime = MtrSchedule.Companion.toArrivalTime(getApplicationContext(), "DT", schedule, data.getCurrentTime(), codeMap);
-                                arrivalTime.setId(String.valueOf(i));
-                                ContentValues contentValues = ArrivalTimeUtil.toContentValues(routeStop, arrivalTime);
-                                if (contentValues != null) {
-                                    getContentResolver().insert(EtaEntry.CONTENT_URI, contentValues);
+                                arrivalTime.setRouteNo(routeStop.getRoute());
+                                arrivalTime.setRouteSeq(routeStop.getDirection());
+                                arrivalTime.setStopId(routeStop.getCode());
+                                arrivalTime.setStopSeq(routeStop.getSequence());
+                                arrivalTime.setOrder(String.valueOf(i));
+                                if (arrivalTimeDatabase != null) {
+                                    arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime);
                                 }
                                 i++;
                             }
@@ -525,12 +525,10 @@ public class EtaService extends IntentService {
             public void onError(Throwable e) {
                 isError = true;
                 Timber.d(e);
-                ArrivalTime arrivalTime = ArrivalTimeUtil.emptyInstance(getApplicationContext());
-                arrivalTime.setCompanyCode(C.PROVIDER.MTR);
+                ArrivalTime arrivalTime = ArrivalTime.Companion.emptyInstance(getApplicationContext(), routeStop);
                 arrivalTime.setText(getString(R.string.message_fail_to_request));
-                ContentValues contentValues = ArrivalTimeUtil.toContentValues(routeStop, arrivalTime);
-                if (contentValues != null) {
-                    getContentResolver().insert(EtaEntry.CONTENT_URI, contentValues);
+                if (arrivalTimeDatabase != null) {
+                    arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime);
                 }
                 notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId, rowNo);
             }

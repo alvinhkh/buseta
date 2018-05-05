@@ -22,12 +22,12 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase;
 import com.alvinhkh.buseta.search.model.Suggestion;
-import com.alvinhkh.buseta.model.ArrivalTime;
+import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
 import com.alvinhkh.buseta.model.FollowStop;
 import com.alvinhkh.buseta.search.ui.SearchActivity;
-import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
 import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.FollowStopUtil;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
@@ -51,6 +51,8 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
 
     private static SuggestionDatabase suggestionDatabase = null;
 
+    private static ArrivalTimeDatabase arrivalTimeDatabase = null;
+
     private Context context;
 
     private Cursor historyCursor;
@@ -62,6 +64,7 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
         this.historyCursor = null;
         this.followCursor = null;
         suggestionDatabase = SuggestionDatabase.Companion.getInstance(context);
+        arrivalTimeDatabase = ArrivalTimeDatabase.Companion.getInstance(context);
     }
 
     public void close() {
@@ -200,47 +203,63 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
                 });
 
                 // ETA
-                disposable.add(ArrivalTimeUtil.query(context, RouteStopUtil.fromFollowStop(object)).subscribe(cursor -> {
-                    // Cursor has been moved +1 position forward.
-                    ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
-                    if (arrivalTime == null) return;
-                    arrivalTime = ArrivalTimeUtil.estimate(context, arrivalTime);
-                    if (arrivalTime == null) return;
-                    if (arrivalTime.getId() != null) {
-                        SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.getText());
-                        Integer pos = Integer.parseInt(arrivalTime.getId());
-                        Integer colorInt = ContextCompat.getColor(context,
-                                arrivalTime.getExpired() ? R.color.textDiminish :
-                                        (pos > 0 ? R.color.textPrimary : R.color.textHighlighted));
-                        if (!TextUtils.isEmpty(arrivalTime.getNote())) {
-                            etaText.append("#");
-                        }
-                        if (arrivalTime.isSchedule()) {
-                            etaText.append("*");
-                        }
-                        if (!TextUtils.isEmpty(arrivalTime.getEstimate())) {
-                            etaText.append(" (").append(arrivalTime.getEstimate()).append(")");
-                        }
-                        if (arrivalTime.getDistanceKM() >= 0) {
-                            etaText.append(" ").append(context.getString(R.string.km_short, arrivalTime.getDistanceKM()));
-                        }
-                        if (!TextUtils.isEmpty(arrivalTime.getPlate())) {
-                            etaText.append(" ").append(arrivalTime.getPlate());
-                        }
-                        if (arrivalTime.getCapacity() >= 0) {
-                            Drawable drawable = null;
-                            if (arrivalTime.getCapacity() == 0) {
-                                drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_0_black);
-                            } else if (arrivalTime.getCapacity() > 0 && arrivalTime.getCapacity() <= 3) {
-                                drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_20_black);
-                            } else if (arrivalTime.getCapacity() > 3 && arrivalTime.getCapacity() <= 6) {
-                                drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_50_black);
-                            } else if (arrivalTime.getCapacity() > 6 && arrivalTime.getCapacity() <= 9) {
-                                drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_80_black);
-                            } else if (arrivalTime.getCapacity() >= 10) {
-                                drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_100_black);
+                if (arrivalTimeDatabase != null) {
+                    List<ArrivalTime> arrivalTimeList = ArrivalTime.Companion.getList(arrivalTimeDatabase, RouteStopUtil.fromFollowStop(object));
+                    for (ArrivalTime arrivalTime : arrivalTimeList) {
+                        if (arrivalTime == null) continue;
+                        arrivalTime = ArrivalTime.Companion.estimate(context, arrivalTime);
+                        if (arrivalTime == null) continue;
+                        if (arrivalTime.getOrder() != null) {
+                            SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.getText());
+                            Integer pos = Integer.parseInt(arrivalTime.getOrder());
+                            Integer colorInt = ContextCompat.getColor(context,
+                                    arrivalTime.getExpired() ? R.color.textDiminish :
+                                            (pos > 0 ? R.color.textPrimary : R.color.textHighlighted));
+                            if (!TextUtils.isEmpty(arrivalTime.getNote())) {
+                                etaText.append("#");
                             }
-                            if (drawable != null) {
+                            if (arrivalTime.isSchedule()) {
+                                etaText.append("*");
+                            }
+                            if (!TextUtils.isEmpty(arrivalTime.getEstimate())) {
+                                etaText.append(" (").append(arrivalTime.getEstimate()).append(")");
+                            }
+                            if (arrivalTime.getDistanceKM() >= 0) {
+                                etaText.append(" ").append(context.getString(R.string.km_short, arrivalTime.getDistanceKM()));
+                            }
+                            if (!TextUtils.isEmpty(arrivalTime.getPlate())) {
+                                etaText.append(" ").append(arrivalTime.getPlate());
+                            }
+                            if (arrivalTime.getCapacity() >= 0) {
+                                Drawable drawable = null;
+                                if (arrivalTime.getCapacity() == 0) {
+                                    drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_0_black);
+                                } else if (arrivalTime.getCapacity() > 0 && arrivalTime.getCapacity() <= 3) {
+                                    drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_20_black);
+                                } else if (arrivalTime.getCapacity() > 3 && arrivalTime.getCapacity() <= 6) {
+                                    drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_50_black);
+                                } else if (arrivalTime.getCapacity() > 6 && arrivalTime.getCapacity() <= 9) {
+                                    drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_80_black);
+                                } else if (arrivalTime.getCapacity() >= 10) {
+                                    drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_100_black);
+                                }
+                                if (drawable != null) {
+                                    drawable = DrawableCompat.wrap(drawable);
+                                    if (pos == 0) {
+                                        drawable.setBounds(0, 0, vh.etaText.getLineHeight(), vh.etaText.getLineHeight());
+                                    } else {
+                                        drawable.setBounds(0, 0, vh.etaNextText.getLineHeight(), vh.etaNextText.getLineHeight());
+                                    }
+                                    DrawableCompat.setTint(drawable.mutate(), colorInt);
+                                    ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
+                                    etaText.append(" ");
+                                    if (etaText.length() > 0) {
+                                        etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                                    }
+                                }
+                            }
+                            if (arrivalTime.getHasWheelchair() && PreferenceUtil.isShowWheelchairIcon(context)) {
+                                Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_accessible_black_18dp);
                                 drawable = DrawableCompat.wrap(drawable);
                                 if (pos == 0) {
                                     drawable.setBounds(0, 0, vh.etaText.getLineHeight(), vh.etaText.getLineHeight());
@@ -254,59 +273,44 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
                                     etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
                                 }
                             }
-                        }
-                        if (arrivalTime.getHasWheelchair() && PreferenceUtil.isShowWheelchairIcon(context)) {
-                            Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_accessible_black_18dp);
-                            drawable = DrawableCompat.wrap(drawable);
-                            if (pos == 0) {
-                                drawable.setBounds(0, 0, vh.etaText.getLineHeight(), vh.etaText.getLineHeight());
-                            } else {
-                                drawable.setBounds(0, 0, vh.etaNextText.getLineHeight(), vh.etaNextText.getLineHeight());
+                            if (arrivalTime.getHasWifi() && PreferenceUtil.isShowWifiIcon(context)) {
+                                Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_network_wifi_black_18dp);
+                                drawable = DrawableCompat.wrap(drawable);
+                                if (pos == 0) {
+                                    drawable.setBounds(0, 0, vh.etaText.getLineHeight(), vh.etaText.getLineHeight());
+                                } else {
+                                    drawable.setBounds(0, 0, vh.etaNextText.getLineHeight(), vh.etaNextText.getLineHeight());
+                                }
+                                DrawableCompat.setTint(drawable.mutate(), colorInt);
+                                ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
+                                etaText.append(" ");
+                                if (etaText.length() > 0) {
+                                    etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                                }
                             }
-                            DrawableCompat.setTint(drawable.mutate(), colorInt);
-                            ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
-                            etaText.append(" ");
                             if (etaText.length() > 0) {
-                                etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                                etaText.setSpan(new ForegroundColorSpan(colorInt), 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                             }
-                        }
-                        if (arrivalTime.getHasWifi() && PreferenceUtil.isShowWifiIcon(context)) {
-                            Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_network_wifi_black_18dp);
-                            drawable = DrawableCompat.wrap(drawable);
-                            if (pos == 0) {
-                                drawable.setBounds(0, 0, vh.etaText.getLineHeight(), vh.etaText.getLineHeight());
-                            } else {
-                                drawable.setBounds(0, 0, vh.etaNextText.getLineHeight(), vh.etaNextText.getLineHeight());
-                            }
-                            DrawableCompat.setTint(drawable.mutate(), colorInt);
-                            ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
-                            etaText.append(" ");
-                            if (etaText.length() > 0) {
-                                etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-                            }
-                        }
-                        if (etaText.length() > 0) {
-                            etaText.setSpan(new ForegroundColorSpan(colorInt), 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                        }
 
-                        switch(pos) {
-                            case 0:
-                                vh.etaText.setText(etaText);
-                                vh.etaNextText.setText(null);
-                                break;
-                            case 1:
-                                etaText.insert(0, vh.etaNextText.getText());
-                                vh.etaNextText.setText(etaText);
-                                break;
-                            case 2:
-                            default:
-                                etaText.insert(0, "  ");
-                                etaText.insert(0, vh.etaNextText.getText());
-                                vh.etaNextText.setText(etaText);
-                                break;
+                            switch (pos) {
+                                case 0:
+                                    vh.etaText.setText(etaText);
+                                    vh.etaNextText.setText(null);
+                                    break;
+                                case 1:
+                                    etaText.insert(0, vh.etaNextText.getText());
+                                    vh.etaNextText.setText(etaText);
+                                    break;
+                                case 2:
+                                default:
+                                    etaText.insert(0, "  ");
+                                    etaText.insert(0, vh.etaNextText.getText());
+                                    vh.etaNextText.setText(etaText);
+                                    break;
+                            }
                         }
                     }
-                }));
+                }
             }
         }
 

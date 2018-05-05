@@ -170,10 +170,6 @@
             android:name=".provider.FollowProvider"
             android:authorities="${applicationId}.FollowProvider"
             android:exported="true" />
-        <provider
-            android:name=".provider.EtaProvider"
-            android:authorities="${applicationId}.EtaProvider"
-            android:exported="false" />
 
         <!-- Broadcast Receiver -->
         <receiver android:name=".provider.EtaWidgetProvider">

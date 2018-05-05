@@ -4,9 +4,7 @@ import android.content.Context
 import android.text.TextUtils
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
-import com.alvinhkh.buseta.model.ArrivalTime
-import com.alvinhkh.buseta.model.RouteStop
-import com.alvinhkh.buseta.utils.ArrivalTimeUtil
+import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
 import com.google.gson.annotations.SerializedName
 import timber.log.Timber
 import java.text.ParseException
@@ -92,7 +90,7 @@ data class MtrSchedule(
                           direction: String,
                           schedule: MtrSchedule, serverTime: String?,
                           codeMap: Map<String, String>?): ArrivalTime {
-            var arrivalTime = ArrivalTimeUtil.emptyInstance(context)
+            var arrivalTime = ArrivalTime.emptyInstance(context, routeStop = null)
             arrivalTime.companyCode = C.PROVIDER.MTR
             arrivalTime.text = schedule.time!!
             arrivalTime.destination = codeMap?.get(schedule.destination.orEmpty())!!
@@ -106,7 +104,7 @@ data class MtrSchedule(
                 } catch (ignored: ParseException) { }
             }
             arrivalTime.updatedAt = System.currentTimeMillis()
-            arrivalTime = ArrivalTimeUtil.estimate(context, arrivalTime)
+            arrivalTime = ArrivalTime.estimate(context, arrivalTime)
             return arrivalTime
         }
 

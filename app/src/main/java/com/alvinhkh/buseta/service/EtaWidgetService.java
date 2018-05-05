@@ -21,15 +21,17 @@ import android.widget.RemoteViewsService;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.ArrivalTime;
+import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
+import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
 import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.model.FollowStop;
 import com.alvinhkh.buseta.search.ui.SearchActivity;
-import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
 import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.alvinhkh.buseta.utils.FollowStopUtil;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
+
+import java.util.List;
 
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableObserver;
@@ -52,6 +54,8 @@ public class EtaWidgetService extends RemoteViewsService {
 
         private final CompositeDisposable disposables = new CompositeDisposable();
 
+        private ArrivalTimeDatabase arrivalTimeDatabase;
+
         private Context context;
 
         private Cursor cursor;
@@ -64,6 +68,7 @@ public class EtaWidgetService extends RemoteViewsService {
             this.context = context;
             appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
                     AppWidgetManager.INVALID_APPWIDGET_ID);
+            arrivalTimeDatabase = ArrivalTimeDatabase.Companion.getInstance(context);
         }
 
         public void onCreate() {
@@ -140,107 +145,107 @@ public class EtaWidgetService extends RemoteViewsService {
                 final long token = Binder.clearCallingIdentity();
                 try {
                     SpannableStringBuilder etaTexts = new SpannableStringBuilder();
-                    disposables.add(ArrivalTimeUtil.query(context, stop).subscribe(cursor -> {
-                        // Cursor has been moved +1 position forward.
-                        ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
-                        arrivalTime = ArrivalTimeUtil.estimate(context, arrivalTime);
+                    if (arrivalTimeDatabase != null) {
+                        List<ArrivalTime> arrivalTimeList = ArrivalTime.Companion.getList(arrivalTimeDatabase, stop);
+                        for (ArrivalTime arrivalTime: arrivalTimeList) {
+                            arrivalTime = ArrivalTime.Companion.estimate(context, arrivalTime);
+                            if (!TextUtils.isEmpty(arrivalTime.getOrder())) {
+                                SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.getText());
+                                Integer pos = Integer.parseInt(arrivalTime.getOrder());
+                                Integer colorInt = ContextCompat.getColor(context,
+                                        arrivalTime.getExpired() ? R.color.widgetTextDiminish :
+                                                (pos > 0 ? R.color.widgetTextPrimary : R.color.widgetTextHighlighted));
+                                if (!TextUtils.isEmpty(arrivalTime.getNote())) {
+                                    etaText.append("#");
+                                }
+                                if (arrivalTime.isSchedule()) {
+                                    etaText.append("*");
+                                }
+                                if (itemNoOfLines > 1 || pos == 0) {
+                                    if (!TextUtils.isEmpty(arrivalTime.getEstimate())) {
+                                        etaText.append(" (").append(arrivalTime.getEstimate()).append(")");
+                                    }
+                                }
+                                if (arrivalTime.getDistanceKM() >= 0) {
+                                    etaText.append(" ").append(context.getString(R.string.km_short, arrivalTime.getDistanceKM()));
+                                }
+                                if (!TextUtils.isEmpty(arrivalTime.getPlate())) {
+                                    etaText.append(" ").append(arrivalTime.getPlate());
+                                }
+                                if (arrivalTime.getCapacity() >= 0) {
+                                    String capacity = "";
+                                    if (arrivalTime.getCapacity() == 0) {
+                                        capacity = context.getString(R.string.capacity_empty);
+                                    } else if (arrivalTime.getCapacity() > 0 && arrivalTime.getCapacity() <= 3) {
+                                        capacity = "¼";
+                                    } else if (arrivalTime.getCapacity() > 3 && arrivalTime.getCapacity() <= 6) {
+                                        capacity = "½";
+                                    } else if (arrivalTime.getCapacity() > 6 && arrivalTime.getCapacity() <= 9) {
+                                        capacity = "¾";
+                                    } else if (arrivalTime.getCapacity() >= 10) {
+                                        capacity = context.getString(R.string.capacity_full);
+                                    }
+                                    if (!TextUtils.isEmpty(capacity)) {
+                                        etaText.append(" [").append(capacity).append("]");
+                                    }
+                                }
+                                if (arrivalTime.getHasWheelchair() && PreferenceUtil.isShowWheelchairIcon(context)) {
+                                    etaText.append(" \u267F");
+                                }
+                                if (arrivalTime.getHasWifi() && PreferenceUtil.isShowWifiIcon(context)) {
+                                    etaText.append(" [W]");
+                                }
 
-                        if (!TextUtils.isEmpty(arrivalTime.getId())) {
-                            SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.getText());
-                            Integer pos = Integer.parseInt(arrivalTime.getId());
-                            Integer colorInt = ContextCompat.getColor(context,
-                                    arrivalTime.getExpired() ? R.color.widgetTextDiminish :
-                                            (pos > 0 ? R.color.widgetTextPrimary : R.color.widgetTextHighlighted));
-                            if (!TextUtils.isEmpty(arrivalTime.getNote())) {
-                                etaText.append("#");
-                            }
-                            if (arrivalTime.isSchedule()) {
-                                etaText.append("*");
-                            }
-                            if (itemNoOfLines > 1 || pos == 0) {
-                                if (!TextUtils.isEmpty(arrivalTime.getEstimate())) {
-                                    etaText.append(" (").append(arrivalTime.getEstimate()).append(")");
+                                if (etaText.length() > 0) {
+                                    etaText.setSpan(new ForegroundColorSpan(colorInt), 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                                 }
-                            }
-                            if (arrivalTime.getDistanceKM() >= 0) {
-                                etaText.append(" ").append(context.getString(R.string.km_short, arrivalTime.getDistanceKM()));
-                            }
-                            if (!TextUtils.isEmpty(arrivalTime.getPlate())) {
-                                etaText.append(" ").append(arrivalTime.getPlate());
-                            }
-                            if (arrivalTime.getCapacity() >= 0) {
-                                String capacity = "";
-                                if (arrivalTime.getCapacity() == 0) {
-                                    capacity = context.getString(R.string.capacity_empty);
-                                } else if (arrivalTime.getCapacity() > 0 && arrivalTime.getCapacity() <= 3) {
-                                    capacity = "¼";
-                                } else if (arrivalTime.getCapacity() > 3 && arrivalTime.getCapacity() <= 6) {
-                                    capacity = "½";
-                                } else if (arrivalTime.getCapacity() > 6 && arrivalTime.getCapacity() <= 9) {
-                                    capacity = "¾";
-                                } else if (arrivalTime.getCapacity() >= 10) {
-                                    capacity = context.getString(R.string.capacity_full);
-                                }
-                                if (!TextUtils.isEmpty(capacity)) {
-                                    etaText.append(" [").append(capacity).append("]");
-                                }
-                            }
-                            if (arrivalTime.getHasWheelchair() && PreferenceUtil.isShowWheelchairIcon(context)) {
-                                etaText.append(" \u267F");
-                            }
-                            if (arrivalTime.getHasWifi() && PreferenceUtil.isShowWifiIcon(context)) {
-                                etaText.append(" [W]");
-                            }
-
-                            if (etaText.length() > 0) {
-                                etaText.setSpan(new ForegroundColorSpan(colorInt), 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                            }
-                            if (itemNoOfLines == 1) {
-                                switch (pos) {
-                                    case 0:
-                                        etaTexts.append(etaText);
-                                        break;
-                                    default:
-                                        etaText.insert(0, "  ");
-                                        etaTexts.append(etaText);
-                                        break;
-                                }
-                                remoteViews.setTextViewText(R.id.eta, etaTexts);
-                            } else if (itemNoOfLines == 2) {
-                                switch (pos) {
-                                    case 0:
-                                        remoteViews.setTextViewText(R.id.eta, etaText);
-                                        break;
-                                    case 1:
-                                        remoteViews.setTextViewText(R.id.eta2, etaText);
-                                        etaTexts.append(etaText);
-                                    case 2:
-                                        etaText.insert(0, "  ");
-                                        remoteViews.setTextViewText(R.id.eta2, etaTexts);
-                                        break;
-                                }
-                            } else {
-                                switch (pos) {
-                                    case 0:
-                                        remoteViews.setTextViewText(R.id.eta, etaText);
-                                        break;
-                                    case 1:
-                                        remoteViews.setTextViewText(R.id.eta2, etaText);
-                                        break;
-                                    case 2:
-                                        remoteViews.setTextViewText(R.id.eta3, etaText);
-                                        break;
-                                    default:
-                                        // etaText.insert(0, "  ");
-                                        // etaText.insert(0, etaTexts);
-                                        // etaTexts.clear();
-                                        // etaTexts.append(etaText);
-                                        // remoteViews.setTextViewText(R.id.eta3, etaTexts);
-                                        break;
+                                if (itemNoOfLines == 1) {
+                                    switch (pos) {
+                                        case 0:
+                                            etaTexts.append(etaText);
+                                            break;
+                                        default:
+                                            etaText.insert(0, "  ");
+                                            etaTexts.append(etaText);
+                                            break;
+                                    }
+                                    remoteViews.setTextViewText(R.id.eta, etaTexts);
+                                } else if (itemNoOfLines == 2) {
+                                    switch (pos) {
+                                        case 0:
+                                            remoteViews.setTextViewText(R.id.eta, etaText);
+                                            break;
+                                        case 1:
+                                            remoteViews.setTextViewText(R.id.eta2, etaText);
+                                            etaTexts.append(etaText);
+                                        case 2:
+                                            etaText.insert(0, "  ");
+                                            remoteViews.setTextViewText(R.id.eta2, etaTexts);
+                                            break;
+                                    }
+                                } else {
+                                    switch (pos) {
+                                        case 0:
+                                            remoteViews.setTextViewText(R.id.eta, etaText);
+                                            break;
+                                        case 1:
+                                            remoteViews.setTextViewText(R.id.eta2, etaText);
+                                            break;
+                                        case 2:
+                                            remoteViews.setTextViewText(R.id.eta3, etaText);
+                                            break;
+                                        default:
+                                            // etaText.insert(0, "  ");
+                                            // etaText.insert(0, etaTexts);
+                                            // etaTexts.clear();
+                                            // etaTexts.append(etaText);
+                                            // remoteViews.setTextViewText(R.id.eta3, etaTexts);
+                                            break;
+                                    }
                                 }
                             }
                         }
-                    }));
+                    }
                 } finally {
                     Binder.restoreCallingIdentity(token);
                 }

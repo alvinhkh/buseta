@@ -37,7 +37,8 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.ArrivalTime;
+import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
+import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
 import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.model.FollowStop;
@@ -45,7 +46,6 @@ import com.alvinhkh.buseta.service.EtaService;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
-import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
 import com.alvinhkh.buseta.utils.Utils;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -100,6 +100,8 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
     private final static String SCROLL_POSITION_STATE_KEY = "SCROLL_POSITION_STATE_KEY";
 
     protected final CompositeDisposable disposables = new CompositeDisposable();
+
+    private static ArrivalTimeDatabase arrivalTimeDatabase = null;
 
     protected RouteStopListAdapter adapter;
 
@@ -202,6 +204,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
             PreferenceManager.getDefaultSharedPreferences(getContext())
                     .registerOnSharedPreferenceChangeListener(this);
         }
+        arrivalTimeDatabase = ArrivalTimeDatabase.Companion.getInstance(getContext());
         disposables.add(RxBroadcastReceiver.create(getContext(), new IntentFilter(C.ACTION.ETA_UPDATE))
                 .share().subscribeWith(etaObserver()));
         disposables.add(RxBroadcastReceiver.create(getContext(), new IntentFilter(C.ACTION.FOLLOW_UPDATE))
@@ -617,30 +620,30 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                                 && ((RouteStop) item.getObject()).getSequence() != null
                                 && ((RouteStop) item.getObject()).getSequence().equals(routeStop.getSequence())) {
                             if (getContext() != null) {
-                                disposables.add(ArrivalTimeUtil.query(getContext(), routeStop)
-                                        .subscribe(cursor -> {
-                                            if (cursor == null) return;
-                                            ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
-                                            if (arrivalTime != null
-                                                    && arrivalTime.getLatitude() != 0.0 && arrivalTime.getLongitude() != 0.0) {
-                                                // TODO: show bus location on map for all arrivalTime
-                                                if (!TextUtils.isEmpty(arrivalTime.getPlate())) {
-                                                    IconGenerator iconFactory = new IconGenerator(getContext());
-                                                    Bitmap bmp = iconFactory.makeIcon(arrivalTime.getPlate());
-                                                    if (markerMap.containsKey(arrivalTime.getPlate())) {
-                                                        markerMap.get(arrivalTime.getPlate()).remove();
-                                                        markerMap.remove(arrivalTime.getPlate());
-                                                    }
-                                                    if (map != null) {
-                                                        Marker marker = map.addMarker(new MarkerOptions()
-                                                                .position(new LatLng(arrivalTime.getLatitude(), arrivalTime.getLongitude()))
-                                                                .icon(BitmapDescriptorFactory.fromBitmap(bmp)));
-                                                        marker.setTag(arrivalTime);
-                                                        markerMap.put(arrivalTime.getPlate(), marker);
-                                                    }
+                                if (arrivalTimeDatabase != null) {
+                                    List<ArrivalTime> arrivalTimeList = ArrivalTime.Companion.getList(arrivalTimeDatabase, routeStop);
+                                    for (ArrivalTime arrivalTime : arrivalTimeList) {
+                                        if (arrivalTime == null) continue;
+                                        if (arrivalTime.getLatitude() != 0.0 && arrivalTime.getLongitude() != 0.0) {
+                                            // TODO: show bus location on map for all arrivalTime
+                                            if (!TextUtils.isEmpty(arrivalTime.getPlate())) {
+                                                IconGenerator iconFactory = new IconGenerator(getContext());
+                                                Bitmap bmp = iconFactory.makeIcon(arrivalTime.getPlate());
+                                                if (markerMap.containsKey(arrivalTime.getPlate())) {
+                                                    markerMap.get(arrivalTime.getPlate()).remove();
+                                                    markerMap.remove(arrivalTime.getPlate());
+                                                }
+                                                if (map != null) {
+                                                    Marker marker = map.addMarker(new MarkerOptions()
+                                                            .position(new LatLng(arrivalTime.getLatitude(), arrivalTime.getLongitude()))
+                                                            .icon(BitmapDescriptorFactory.fromBitmap(bmp)));
+                                                    marker.setTag(arrivalTime);
+                                                    markerMap.put(arrivalTime.getPlate(), marker);
                                                 }
                                             }
-                                        }));
+                                        }
+                                    }
+                                }
                             }
                             adapter.notifyItemChanged(i);
                             break;

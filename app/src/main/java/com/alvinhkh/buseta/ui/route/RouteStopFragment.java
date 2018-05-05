@@ -40,14 +40,16 @@ import com.alvinhkh.buseta.Api;
 import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.ArrivalTime;
+import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
+import com.alvinhkh.buseta.kmb.KmbService;
+import com.alvinhkh.buseta.kmb.model.KmbRoutesInStop;
+import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
 import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.model.FollowStop;
 import com.alvinhkh.buseta.service.EtaService;
 import com.alvinhkh.buseta.service.GeofenceTransitionsIntentService;
 import com.alvinhkh.buseta.service.NotificationService;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
-import com.alvinhkh.buseta.utils.ArrivalTimeUtil;
 import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.FollowStopUtil;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -67,8 +69,10 @@ import org.osmdroid.views.overlay.compass.CompassOverlay;
 import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
 
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -81,9 +85,15 @@ import timber.log.Timber;
 
 public class RouteStopFragment extends BottomSheetDialogFragment implements OnCompleteListener<Void> {
 
+    private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
+
     private final CompositeDisposable disposables = new CompositeDisposable();
 
-    private static final int REQUEST_PERMISSIONS_REQUEST_CODE = 34;
+    private final KmbService kmbService = KmbService.webSearch.create(KmbService.class);
+
+    private static ArrivalTimeDatabase arrivalTimeDatabase = null;
+
+    public static SimpleDateFormat displayDateFormat = new SimpleDateFormat("HH:mm:ss dd/MM", Locale.ENGLISH);
 
     /**
      * Tracks whether the user requested to add or remove geofences, or to do neither.
@@ -143,6 +153,8 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getContext() == null) return;
+
+        arrivalTimeDatabase = ArrivalTimeDatabase.Companion.getInstance(getContext());
 
         mGeofenceList = new ArrayList<>();
         mGeofencePendingIntent = null;
@@ -487,6 +499,16 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
             dialog.cancel();
             return;
         }
+        /*
+        if (!TextUtils.isEmpty(routeStop.getCompanyCode())
+                && routeStop.getCompanyCode().equals(C.PROVIDER.KMB)
+                && !TextUtils.isEmpty(routeStop.getCode())) {
+            disposables.add(kmbService.getRoutesInStop(routeStop.getCode())
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribeWith(kmbRoutesInStopObserver()));
+        }
+        */
 
         vh = new ViewHolder();
         vh.contentView = contentView;
@@ -807,49 +829,63 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                     vh.etaServerTimeText.setText(null);
                     vh.etaLastUpdateText.setText(null);
 
-                    ArrivalTimeUtil.query(context, stop).subscribe(cursor -> {
-                        // Cursor has been moved +1 position forward.
-
-                        ArrivalTime arrivalTime = ArrivalTimeUtil.fromCursor(cursor);
-                        arrivalTime = ArrivalTimeUtil.estimate(context, arrivalTime);
-                        if (!TextUtils.isEmpty(arrivalTime.getId())) {
-                            SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.getText());
-                            Integer pos = Integer.parseInt(arrivalTime.getId());
-                            Integer colorInt = ContextCompat.getColor(context,
-                                    arrivalTime.getExpired() ? R.color.textDiminish :
-                                            (pos > 0 ? R.color.textPrimary : R.color.textHighlighted));
-                            if (arrivalTime.isSchedule()) {
-                                etaText.append(" ").append(getString(R.string.scheduled_bus));
-                            }
-                            if (!TextUtils.isEmpty(arrivalTime.getEstimate())) {
-                                etaText.append(" (").append(arrivalTime.getEstimate()).append(")");
-                            }
-                            if (arrivalTime.getDistanceKM() >= 0) {
-                                etaText.append(" ").append(context.getString(R.string.km, arrivalTime.getDistanceKM()));
-                            }
-                            if (!TextUtils.isEmpty(arrivalTime.getPlate())) {
-                                etaText.append(" ").append(arrivalTime.getPlate());
-                            }
-                            if (arrivalTime.getCapacity() >= 0) {
-                                Drawable drawable = null;
-                                String capacity = "";
-                                if (arrivalTime.getCapacity() == 0) {
-                                    drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_0_black);
-                                    capacity = getString(R.string.capacity_empty);
-                                } else if (arrivalTime.getCapacity() > 0 && arrivalTime.getCapacity() <= 3) {
-                                    drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_20_black);
-                                    capacity = "¼";
-                                } else if (arrivalTime.getCapacity() > 3 && arrivalTime.getCapacity() <= 6) {
-                                    drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_50_black);
-                                    capacity = "½";
-                                } else if (arrivalTime.getCapacity() > 6 && arrivalTime.getCapacity() <= 9) {
-                                    drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_80_black);
-                                    capacity = "¾";
-                                } else if (arrivalTime.getCapacity() >= 10) {
-                                    drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_100_black);
-                                    capacity = getString(R.string.capacity_full);
+                    if (arrivalTimeDatabase != null) {
+                        List<ArrivalTime> arrivalTimeList = ArrivalTime.Companion.getList(arrivalTimeDatabase, stop);
+                        for (ArrivalTime arrivalTime : arrivalTimeList) {
+                            arrivalTime = ArrivalTime.Companion.estimate(context, arrivalTime);
+                            if (!TextUtils.isEmpty(arrivalTime.getOrder())) {
+                                SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.getText());
+                                Integer pos = Integer.parseInt(arrivalTime.getOrder());
+                                Integer colorInt = ContextCompat.getColor(context,
+                                        arrivalTime.getExpired() ? R.color.textDiminish :
+                                                (pos > 0 ? R.color.textPrimary : R.color.textHighlighted));
+                                if (arrivalTime.isSchedule()) {
+                                    etaText.append(" ").append(getString(R.string.scheduled_bus));
                                 }
-                                if (drawable != null) {
+                                if (!TextUtils.isEmpty(arrivalTime.getEstimate())) {
+                                    etaText.append(" (").append(arrivalTime.getEstimate()).append(")");
+                                }
+                                if (arrivalTime.getDistanceKM() >= 0) {
+                                    etaText.append(" ").append(context.getString(R.string.km, arrivalTime.getDistanceKM()));
+                                }
+                                if (!TextUtils.isEmpty(arrivalTime.getPlate())) {
+                                    etaText.append(" ").append(arrivalTime.getPlate());
+                                }
+                                if (arrivalTime.getCapacity() >= 0) {
+                                    Drawable drawable = null;
+                                    String capacity = "";
+                                    if (arrivalTime.getCapacity() == 0) {
+                                        drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_0_black);
+                                        capacity = getString(R.string.capacity_empty);
+                                    } else if (arrivalTime.getCapacity() > 0 && arrivalTime.getCapacity() <= 3) {
+                                        drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_20_black);
+                                        capacity = "¼";
+                                    } else if (arrivalTime.getCapacity() > 3 && arrivalTime.getCapacity() <= 6) {
+                                        drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_50_black);
+                                        capacity = "½";
+                                    } else if (arrivalTime.getCapacity() > 6 && arrivalTime.getCapacity() <= 9) {
+                                        drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_80_black);
+                                        capacity = "¾";
+                                    } else if (arrivalTime.getCapacity() >= 10) {
+                                        drawable = ContextCompat.getDrawable(context, R.drawable.ic_capacity_100_black);
+                                        capacity = getString(R.string.capacity_full);
+                                    }
+                                    if (drawable != null) {
+                                        drawable = DrawableCompat.wrap(drawable);
+                                        drawable.setBounds(0, 0, vh.etaText.getLineHeight(), vh.etaText.getLineHeight());
+                                        DrawableCompat.setTint(drawable.mutate(), colorInt);
+                                        ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
+                                        etaText.append(" ");
+                                        if (etaText.length() > 0) {
+                                            etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                                        }
+                                    }
+                                    if (!TextUtils.isEmpty(capacity)) {
+                                        etaText.append(capacity);
+                                    }
+                                }
+                                if (arrivalTime.getHasWheelchair()) {
+                                    Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_accessible_black_18dp);
                                     drawable = DrawableCompat.wrap(drawable);
                                     drawable.setBounds(0, 0, vh.etaText.getLineHeight(), vh.etaText.getLineHeight());
                                     DrawableCompat.setTint(drawable.mutate(), colorInt);
@@ -859,63 +895,49 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                                         etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
                                     }
                                 }
-                                if (!TextUtils.isEmpty(capacity)) {
-                                    etaText.append(capacity);
+                                if (arrivalTime.getHasWifi()) {
+                                    Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_network_wifi_black_18dp);
+                                    if (drawable != null) {
+                                        drawable = DrawableCompat.wrap(drawable);
+                                        drawable.setBounds(0, 0, vh.etaText.getLineHeight(), vh.etaText.getLineHeight());
+                                        DrawableCompat.setTint(drawable.mutate(), colorInt);
+                                        ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
+                                        etaText.append(" ");
+                                        if (etaText.length() > 0) {
+                                            etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                                        }
+                                    }
                                 }
-                            }
-                            if (arrivalTime.getHasWheelchair()) {
-                                Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_accessible_black_18dp);
-                                drawable = DrawableCompat.wrap(drawable);
-                                drawable.setBounds(0, 0, vh.etaText.getLineHeight(), vh.etaText.getLineHeight());
-                                DrawableCompat.setTint(drawable.mutate(), colorInt);
-                                ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
-                                etaText.append(" ");
+                                if (!TextUtils.isEmpty(arrivalTime.getNote())) {
+                                    etaText.append(" ").append(arrivalTime.getNote());
+                                }
                                 if (etaText.length() > 0) {
-                                    etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
+                                    etaText.setSpan(new ForegroundColorSpan(colorInt), 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                                 }
-                            }
-                            if (arrivalTime.getHasWifi()) {
-                                Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_network_wifi_black_18dp);
-                                if (drawable != null) {
-                                    drawable = DrawableCompat.wrap(drawable);
-                                    drawable.setBounds(0, 0, vh.etaText.getLineHeight(), vh.etaText.getLineHeight());
-                                    DrawableCompat.setTint(drawable.mutate(), colorInt);
-                                    ImageSpan imageSpan = new ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM);
-                                    etaText.append(" ");
-                                    if (etaText.length() > 0) {
-                                        etaText.setSpan(imageSpan, etaText.length() - 1, etaText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
-                                    }
+                                if (TextUtils.isEmpty(vh.etaText.getText())) {
+                                    vh.etaText.setText(etaText);
+                                } else {
+                                    etaText.insert(0, "\n");
+                                    etaText.insert(0, vh.etaText.getText());
+                                    vh.etaText.setText(etaText);
                                 }
-                            }
-                            if (!TextUtils.isEmpty(arrivalTime.getNote())) {
-                                etaText.append(" ").append(arrivalTime.getNote());
-                            }
-                            if (etaText.length() > 0) {
-                                etaText.setSpan(new ForegroundColorSpan(colorInt), 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                            }
-                            if (TextUtils.isEmpty(vh.etaText.getText())) {
-                                vh.etaText.setText(etaText);
-                            } else {
-                                etaText.insert(0, "\n");
-                                etaText.insert(0, vh.etaText.getText());
-                                vh.etaText.setText(etaText);
-                            }
 
-                            if (arrivalTime.getGeneratedAt() > 0) {
-                                Date date = new Date(arrivalTime.getGeneratedAt());
-                                vh.etaServerTimeText.setText(ArrivalTimeUtil.displayDateFormat.format(date));
-                            }
-                            if (arrivalTime.getUpdatedAt() > 0) {
-                                Date date = new Date(arrivalTime.getUpdatedAt());
-                                vh.etaLastUpdateText.setText(ArrivalTimeUtil.displayDateFormat.format(date));
-                            }
-                            if (vh.etaServerTimeText.getText().equals(vh.etaLastUpdateText.getText())) {
-                                vh.etaServerTimeText.setText(null);
-                            }
+                                if (arrivalTime.getGeneratedAt() > 0) {
+                                    Date date = new Date(arrivalTime.getGeneratedAt());
+                                    vh.etaServerTimeText.setText(displayDateFormat.format(date));
+                                }
+                                if (arrivalTime.getUpdatedAt() > 0) {
+                                    Date date = new Date(arrivalTime.getUpdatedAt());
+                                    vh.etaLastUpdateText.setText(displayDateFormat.format(date));
+                                }
+                                if (vh.etaServerTimeText.getText().equals(vh.etaLastUpdateText.getText())) {
+                                    vh.etaServerTimeText.setText(null);
+                                }
 
-                            vh.etaView.setVisibility(View.VISIBLE);
+                                vh.etaView.setVisibility(View.VISIBLE);
+                            }
                         }
-                    });
+                    }
                 }
                 if (bundle.getBoolean(C.EXTRA.FAIL)) {
                     vh.etaView.setVisibility(View.INVISIBLE);
@@ -961,6 +983,39 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                     vh.stopImage.setVisibility(View.VISIBLE);
                     vh.stopImageButton.setVisibility(View.GONE);
                 }
+            }
+        };
+    }
+
+    // TODO: better organised way to retrieve routes in stop from different providers
+    DisposableObserver<KmbRoutesInStop> kmbRoutesInStopObserver() {
+
+        List<String> routes = new ArrayList<>();
+
+        return new DisposableObserver<KmbRoutesInStop>() {
+            @Override
+            public void onNext(KmbRoutesInStop res) {
+                if (res != null && res.getData() != null && res.getResult() != null && res.getResult()) {
+                    for (String data: res.getData()) {
+                        routes.add(data.trim());
+                    }
+                    Timber.d("KmbRoutesInStop: %s", routes);
+                }
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Timber.d(e);
+                if (getActivity() == null) return;
+                getActivity().runOnUiThread(() -> {
+                });
+            }
+
+            @Override
+            public void onComplete() {
+                if (getActivity() == null) return;
+                getActivity().runOnUiThread(() -> {
+                });
             }
         };
     }
