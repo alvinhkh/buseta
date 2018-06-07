@@ -113,6 +113,11 @@ public class EtaService extends IntentService {
         for (int i = 0; i < routeStopList.size(); i++) {
             RouteStop routeStop = routeStopList.get(i);
             if (!TextUtils.isEmpty(routeStop.getCompanyCode())) {
+                if (!TextUtils.isEmpty(routeStop.getRoute()) && !TextUtils.isEmpty(routeStop.getDirection())
+                        && !TextUtils.isEmpty(routeStop.getCode()) && !TextUtils.isEmpty(routeStop.getSequence())) {
+                    arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.getCompanyCode(),
+                            routeStop.getRoute(), routeStop.getDirection(), routeStop.getCode(), routeStop.getSequence());
+                }
                 notifyUpdate(routeStop, C.EXTRA.UPDATING, widgetId, notificationId, row);
                 switch (routeStop.getCompanyCode()) {
                     case C.PROVIDER.KMB:
@@ -139,7 +144,7 @@ public class EtaService extends IntentService {
                         options.put(QUERY_LANGUAGE, LANGUAGE_TC);
                         options.put(QUERY_PLATFORM,  PLATFORM);
                         options.put(QUERY_APP_VERSION, APP_VERSION);
-                        options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());;
+                        options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
                         disposables.add(nwstApi.eta(options)
                                 .subscribeWith(nwstEtaObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size() - 1)));
                         break;
