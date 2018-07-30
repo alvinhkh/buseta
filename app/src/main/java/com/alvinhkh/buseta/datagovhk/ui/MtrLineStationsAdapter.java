@@ -1,6 +1,8 @@
 package com.alvinhkh.buseta.datagovhk.ui;
 
 import android.support.annotation.NonNull;
+import android.support.design.widget.BottomSheetDialogFragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -12,12 +14,16 @@ import android.widget.TextView;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
+import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.mtr.ui.MtrScheduleItemAdapter;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter;
+import com.alvinhkh.buseta.ui.route.RouteStopFragment;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import timber.log.Timber;
 
 
 public class MtrLineStationsAdapter
@@ -27,15 +33,19 @@ public class MtrLineStationsAdapter
 
     private static ArrivalTimeDatabase arrivalTimeDatabase = null;
 
-    public MtrLineStationsAdapter(@NonNull RecyclerView recyclerView, OnClickItemListener listener) {
+    private FragmentManager fragmentManager;
+
+    public MtrLineStationsAdapter(@NonNull FragmentManager fragmentManager,
+                                  @NonNull RecyclerView recyclerView, OnClickItemListener listener) {
         super(recyclerView);
+        this.fragmentManager = fragmentManager;
         this.listener = listener;
         arrivalTimeDatabase = ArrivalTimeDatabase.Companion.getInstance(recyclerView.getContext());
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return ViewHolder.createViewHolder(parent, viewType, listener, arrivalTimeDatabase);
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return ViewHolder.createViewHolder(parent, viewType, listener, fragmentManager, arrivalTimeDatabase);
     }
 
     @Override
@@ -49,14 +59,17 @@ public class MtrLineStationsAdapter
             super(itemView, viewType, listener);
         }
 
-        public static ViewHolder createViewHolder(final ViewGroup parent, final int viewType, OnClickItemListener listener, ArrivalTimeDatabase arrivalTimeDatabase) {
+        public static ViewHolder createViewHolder(ViewGroup parent, int viewType,
+                                                  OnClickItemListener listener,
+                                                  FragmentManager fragmentManager,
+                                                  ArrivalTimeDatabase arrivalTimeDatabase) {
             final LayoutInflater inflater = LayoutInflater.from(parent.getContext());
             View root;
 
             switch (viewType) {
                 case Item.TYPE_DATA:
                     root = inflater.inflate(R.layout.item_railway_station, parent, false);
-                    return new StationHolder(root, viewType, listener, arrivalTimeDatabase);
+                    return new StationHolder(root, viewType, listener, fragmentManager, arrivalTimeDatabase);
                 default:
                     return null;
             }
@@ -73,13 +86,17 @@ public class MtrLineStationsAdapter
 
         RecyclerView scheduleList;
 
+        FragmentManager fragmentManager;
+
         ArrivalTimeDatabase database;
 
         private String direction = "";
 
-        StationHolder(View itemView, int viewType, OnClickItemListener listener, ArrivalTimeDatabase arrivalTimeDatabase) {
+        StationHolder(View itemView, int viewType, OnClickItemListener listener,
+                      FragmentManager fragmentManager, ArrivalTimeDatabase arrivalTimeDatabase) {
             super(itemView, viewType, listener);
             this.itemView = itemView;
+            this.fragmentManager = fragmentManager;
             nameTv = itemView.findViewById(R.id.name);
             scheduleList = itemView.findViewById(R.id.schedule_list);
             database = arrivalTimeDatabase;
@@ -114,8 +131,21 @@ public class MtrLineStationsAdapter
                     scheduleList.setAdapter(scheduleItemAdapter);
                     scheduleList.setVisibility(View.VISIBLE);
                 }
-                itemView.setOnClickListener(l -> {
-                    listener.onClickItem(item, position);
+                itemView.setOnClickListener(l -> listener.onClickItem(item, position));
+                itemView.setOnLongClickListener(l -> {
+                    Route route = new Route();
+                    route.setCompanyCode(object.getCompanyCode());
+                    route.setName(object.getRoute());
+                    route.setCode(object.getRouteId());
+                    route.setDestination(object.getDestination());
+                    route.setOrigin(object.getOrigin());
+                    route.setServiceType(object.getRouteServiceType());
+                    route.setSequence(object.getDirection());
+                    try {
+                        BottomSheetDialogFragment bottomSheetDialogFragment = RouteStopFragment.newInstance(route, object);
+                        bottomSheetDialogFragment.show(fragmentManager, bottomSheetDialogFragment.getTag());
+                    } catch (IllegalStateException ignored) {}
+                    return true;
                 });
             }
         }

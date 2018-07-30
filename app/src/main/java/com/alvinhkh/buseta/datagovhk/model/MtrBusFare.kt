@@ -31,16 +31,17 @@ data class MtrBusFare(
             val lines = reader.readAll()
             for (i in 1 until lines.size) {
                 val line = lines[i]
-                if (line.size <= 7 || line[0].isBlank()) continue
+                if (line.size <= 8 || line[0].isBlank()) continue
                 val fare = MtrBusFare()
                 fare.routeId = line[0]
                 fare.fareOctopusAdult = line[1].toFloat()
                 fare.fareOctopusChild = line[2].toFloat()
-                fare.fareOctopusPersonWithDisabilities = line[3].toFloat()
-                fare.fareOctopusStudent = line[4].toFloat()
-                fare.fareSingleAdult = line[5].toFloat()
-                fare.fareSingleChild = line[6].toFloat()
-                fare.fareSingleElderly = line[7].toFloat()
+                fare.fareOctopusElderly = line[3].toFloat()
+                fare.fareOctopusPersonWithDisabilities = line[4].toFloat()
+                fare.fareOctopusStudent = line[5].toFloat()
+                fare.fareSingleAdult = line[6].toFloat()
+                fare.fareSingleChild = line[7].toFloat()
+                fare.fareSingleElderly = line[8].toFloat()
                 l.add(fare)
             }
             return l

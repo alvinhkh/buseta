@@ -18,15 +18,15 @@ import android.widget.RemoteViews;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.follow.dao.FollowDatabase;
+import com.alvinhkh.buseta.follow.model.Follow;
 import com.alvinhkh.buseta.model.RouteStop;
-import com.alvinhkh.buseta.model.FollowStop;
 import com.alvinhkh.buseta.service.EtaService;
 import com.alvinhkh.buseta.service.EtaWidgetAlarm;
 import com.alvinhkh.buseta.service.EtaWidgetService;
 import com.alvinhkh.buseta.search.ui.SearchActivity;
 import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
-import com.alvinhkh.buseta.utils.FollowStopUtil;
 import com.alvinhkh.buseta.view.MainActivity;
 
 import java.util.ArrayList;
@@ -90,10 +90,11 @@ public class EtaWidgetProvider extends AppWidgetProvider {
         AppWidgetManager mgr = AppWidgetManager.getInstance(context);
         mgr.notifyAppWidgetViewDataChanged(widgetId, R.id.list_view);
         if (ConnectivityUtil.isConnected(context)) {
-            List<FollowStop> followStops = FollowStopUtil.toList(context);
+            FollowDatabase followDatabase = FollowDatabase.Companion.getInstance(context);
+            List<Follow> followList = followDatabase.followDao().getList();
             ArrayList<RouteStop> routeStops = new ArrayList<>();
-            for (FollowStop stop: followStops) {
-                routeStops.add(RouteStopUtil.fromFollowStop(stop));
+            for (Follow follow: followList) {
+                routeStops.add(RouteStopUtil.fromFollow(follow));
             }
             try {
                 Intent intent = new Intent(context, EtaService.class);

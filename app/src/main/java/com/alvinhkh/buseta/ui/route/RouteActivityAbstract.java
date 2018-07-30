@@ -250,11 +250,13 @@ public abstract class RouteActivityAbstract extends BaseActivity {
             if (TextUtils.isEmpty(route.getName()) || !route.getName().equals(routeNo)) continue;
             companyCode = route.getCompanyCode();
             pagerAdapter.addSequence(route);
-            if (stopFromIntent != null && route.isSpecial() != null && !route.isSpecial() &&
-                    route.getCompanyCode() != null && route.getSequence() != null &&
-                    route.getCompanyCode().equals(stopFromIntent.getCompanyCode()) &&
-                    route.getSequence().equals(stopFromIntent.getDirection())) {
-                // TODO: handle select which page from stopFromIntent, i.e. service type
+            if (
+                    stopFromIntent != null && route.isSpecial() != null && !route.isSpecial()
+                    && route.getCompanyCode() != null && route.getSequence() != null && route.getServiceType() != null
+                    && route.getCompanyCode().equals(stopFromIntent.getCompanyCode())
+                    && route.getSequence().equals(stopFromIntent.getDirection())
+                    && route.getServiceType().equals(stopFromIntent.getRouteServiceType())
+            ) {
                 fragNo = pagerAdapter.getCount();
                 isScrollToPage = true;
             }

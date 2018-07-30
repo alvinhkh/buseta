@@ -30,11 +30,47 @@ data class MtrSchedule(
 ) {
     companion object {
 
+        val isoDf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ENGLISH)
+
         fun estimate(context: Context,
                      arrivalTime: ArrivalTime) : ArrivalTime {
             val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH)
 
             val generatedDate = Date(arrivalTime.generatedAt)
+
+            // given iso time
+            if (arrivalTime.isoTime.isNotBlank()) {
+                val differences = Date().time - generatedDate.time // get device timeText and compare to server timeText
+                try {
+                    var estimateMinutes = ""
+                    val etaDate = isoDf.parse(arrivalTime.isoTime)
+                    val minutes = (etaDate.time / 60000 - (generatedDate.time + differences) / 60000).toInt()
+                    if (minutes in 0..1439) {
+                        // minutes should be 0 to within a day
+                        estimateMinutes = minutes.toString()
+                    }
+                    if (minutes > 120) {
+                        // likely calculation error
+                        estimateMinutes = ""
+                    }
+                    if (!TextUtils.isEmpty(estimateMinutes)) {
+                        if (estimateMinutes == "0") {
+                            arrivalTime.estimate = context.getString(R.string.now)
+                        } else {
+                            arrivalTime.estimate = context.getString(R.string.minutes, estimateMinutes)
+                        }
+                    }
+                    var expired = minutes <= -3  // time past
+                    expired = expired or (TimeUnit.MILLISECONDS.toMinutes(Date().time - arrivalTime.updatedAt) >= 2) // maybe outdated
+                    arrivalTime.expired = expired
+                    return arrivalTime
+                } catch (ep: ParseException) {
+                    Timber.d(ep)
+                } catch (ep: ArrayIndexOutOfBoundsException) {
+                    Timber.d(ep)
+                }
+            }
+
             // given timeText
             if (!TextUtils.isEmpty(arrivalTime.text) &&
                     arrivalTime.text.matches(".*\\d.*".toRegex()) &&
@@ -92,8 +128,12 @@ data class MtrSchedule(
                           codeMap: Map<String, String>?): ArrivalTime {
             var arrivalTime = ArrivalTime.emptyInstance(context, routeStop = null)
             arrivalTime.companyCode = C.PROVIDER.MTR
-            arrivalTime.text = schedule.time!!
-            arrivalTime.destination = codeMap?.get(schedule.destination.orEmpty())!!
+            arrivalTime.text = ""
+            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH)
+            sdf.timeZone = TimeZone.getTimeZone("Asia/Hong_Kong")
+            arrivalTime.isoTime = isoDf.format(sdf.parse(schedule.time!!))
+            val destination = schedule.destination.orEmpty()
+            arrivalTime.destination = codeMap?.get(destination)?:destination
             arrivalTime.platform = schedule.platform!!
             arrivalTime.estimate = schedule.ttnt!!
             arrivalTime.direction = direction
@@ -105,6 +145,11 @@ data class MtrSchedule(
             }
             arrivalTime.updatedAt = System.currentTimeMillis()
             arrivalTime = ArrivalTime.estimate(context, arrivalTime)
+            if (arrivalTime.text.isEmpty()) {
+                val etaDate = isoDf.parse(arrivalTime.isoTime)
+                arrivalTime.text = SimpleDateFormat("HH:mm", Locale.ENGLISH).format(etaDate)
+                arrivalTime.text += " " + arrivalTime.destination
+            }
             return arrivalTime
         }
 

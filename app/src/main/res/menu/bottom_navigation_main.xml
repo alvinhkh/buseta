@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/action_bus"
+        android:id="@+id/action_follow"
         android:enabled="true"
-        android:icon="@drawable/ic_directions_bus_white_24dp"
-        android:title="@string/bus"
-        app:showAsAction="ifRoom" />
+        android:icon="@drawable/ic_bookmark_black_24dp"
+        android:title="@string/follow" />
     <item
         android:id="@+id/action_railway"
         android:enabled="true"

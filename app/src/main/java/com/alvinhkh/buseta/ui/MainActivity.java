@@ -1,14 +1,11 @@
 package com.alvinhkh.buseta.ui;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.BottomNavigationView;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -17,12 +14,11 @@ import android.support.v7.app.ActionBar;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.mtr.ui.MtrLineStatusFragment;
 import com.alvinhkh.buseta.search.ui.SearchActivity;
 import com.alvinhkh.buseta.service.CheckUpdateService;
-import com.alvinhkh.buseta.ui.follow.EditFollowFragment;
+import com.alvinhkh.buseta.follow.ui.EditFollowFragment;
 import com.alvinhkh.buseta.ui.follow.FollowFragment;
 import com.alvinhkh.buseta.utils.AdViewUtil;
 import com.alvinhkh.buseta.utils.ColorUtil;
@@ -75,7 +71,7 @@ public class MainActivity extends BaseActivity {
                     if (fm == null) return false;
                     fm.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                     switch (item.getItemId()) {
-                        case R.id.action_bus:
+                        case R.id.action_follow:
                         {
                             if (fm.findFragmentByTag("follow_list") == null) {
                                 if (getSupportActionBar() != null) {
@@ -128,7 +124,7 @@ public class MainActivity extends BaseActivity {
             if (f != null && bottomNavigationView != null){
                 switch (f.getClass().getName()) {
                     case "FollowFragment":
-                        bottomNavigationView.setSelectedItemId(R.id.action_bus);
+                        bottomNavigationView.setSelectedItemId(R.id.action_follow);
                         break;
                     case "MtrLineStatusFragment":
                         bottomNavigationView.setSelectedItemId(R.id.action_railway);
@@ -138,7 +134,7 @@ public class MainActivity extends BaseActivity {
 
         });
         if (bottomNavigationView != null) {
-            bottomNavigationView.setSelectedItemId(R.id.action_bus);
+            bottomNavigationView.setSelectedItemId(R.id.action_follow);
         }
 
         try {
@@ -162,7 +158,7 @@ public class MainActivity extends BaseActivity {
                 bottomNavigationView.setSelectedItemId(0);
                 FragmentManager fragmentManager = getSupportFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.fragment_container, EditFollowFragment.newInstance());
+                fragmentTransaction.replace(R.id.fragment_container, new EditFollowFragment());
                 fragmentTransaction.addToBackStack("follow_list");
                 fragmentTransaction.commit();
                 break;

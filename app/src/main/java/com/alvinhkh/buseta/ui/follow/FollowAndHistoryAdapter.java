@@ -23,13 +23,13 @@ import android.widget.TextView;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
+import com.alvinhkh.buseta.follow.dao.FollowDatabase;
+import com.alvinhkh.buseta.follow.model.Follow;
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase;
 import com.alvinhkh.buseta.search.model.Suggestion;
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
-import com.alvinhkh.buseta.model.FollowStop;
 import com.alvinhkh.buseta.search.ui.SearchActivity;
 import com.alvinhkh.buseta.utils.RouteStopUtil;
-import com.alvinhkh.buseta.utils.FollowStopUtil;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
 
 import java.util.ArrayList;
@@ -53,6 +53,8 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
 
     private static ArrivalTimeDatabase arrivalTimeDatabase = null;
 
+    private static FollowDatabase followDatabase = null;
+
     private Context context;
 
     private Cursor historyCursor;
@@ -65,6 +67,7 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
         this.followCursor = null;
         suggestionDatabase = SuggestionDatabase.Companion.getInstance(context);
         arrivalTimeDatabase = ArrivalTimeDatabase.Companion.getInstance(context);
+        followDatabase = FollowDatabase.Companion.getInstance(context);
     }
 
     public void close() {
@@ -86,7 +89,7 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
 
     public Object getItem(int position) {
         if (getItemViewType(position) == ITEM_VIEW_TYPE_FOLLOW) {
-            return followItem(position);
+            return followObject(position);
         } else if (getItemViewType(position) == ITEM_VIEW_TYPE_HISTORY) {
             return historyItem(position - getFollowCount());
         }
@@ -98,15 +101,7 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
     }
 
     int getFollowCount() {
-        return (followCursor == null) ? 0 : followCursor.getCount();
-    }
-
-    public List<FollowStop> getFollowItems() {
-        List<FollowStop> list = new ArrayList<>();
-        for (int i = 0; i < getFollowCount(); i++) {
-            list.add((FollowStop) getItem(i));
-        }
-        return list;
+        return followDatabase.followDao().getList().size();
     }
 
     public List<Suggestion> getHistoryItems() {
@@ -129,21 +124,8 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
         }
     }
 
-    void updateFollow() {
-        if (context == null) return;
-        Cursor newCursor = FollowStopUtil.queryAll(context);
-        if (followCursor == newCursor) return;
-        Cursor oldCursor = followCursor;
-        this.followCursor = newCursor;
-        if (oldCursor != null) {
-            oldCursor.close();
-        }
-    }
-
-    protected FollowStop followItem(int position) {
-        if (followCursor == null || followCursor.isClosed()) return null;
-        followCursor.moveToPosition(position);
-        return FollowStopUtil.fromCursor(followCursor);
+    protected Follow followObject(int position) {
+        return followDatabase.followDao().getList().get(position);
     }
 
     private Suggestion historyItem(int position) {
@@ -160,13 +142,17 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder viewHolder, int position) {
         if (viewHolder instanceof FollowViewHolder) {
-            FollowStop object = followItem(position);
-            if (object != null) {
+            Follow follow = followObject(position);
+            if (follow != null) {
                 FollowViewHolder vh = (FollowViewHolder) viewHolder;
                 Context context = vh.itemView.getContext();
-                vh.nameText.setText(object.name);
-                vh.routeNo.setText(object.route);
-                vh.routeLocationEnd.setText(context.getString(R.string.destination, object.locationEnd));
+                vh.nameText.setText(follow.getStopName());
+                vh.routeNo.setText(follow.getRouteNo());
+                if (!TextUtils.isEmpty(follow.getRouteDestination())) {
+                    vh.routeLocationEnd.setText(context.getString(R.string.destination, follow.getRouteDestination()));
+                } else {
+                    vh.routeLocationEnd.setText(null);
+                }
                 vh.etaText.setText(null);
                 vh.etaNextText.setText(null);
                 vh.itemView.setOnClickListener(null);
@@ -175,26 +161,29 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
                 vh.itemView.setOnClickListener(v -> {
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setClass(context, SearchActivity.class);
-                    intent.putExtra(C.EXTRA.STOP_OBJECT, RouteStopUtil.fromFollowStop(object));
+                    intent.putExtra(C.EXTRA.STOP_OBJECT, RouteStopUtil.fromFollow(follow));
                     context.startActivity(intent);
                 });
                 vh.itemView.setOnLongClickListener(v -> {
                     new AlertDialog.Builder(context)
-                            .setTitle(object.route + "?")
+                            .setTitle(follow.getRouteNo() + "?")
                             .setMessage(context.getString(R.string.message_remove_from_follow_list))
                             .setNegativeButton(R.string.action_cancel, (dialoginterface, i) -> dialoginterface.cancel())
                             .setPositiveButton(R.string.action_confirm, (dialoginterface, i) -> {
                                 int pos = position;
                                 int j = 0;
-                                for (FollowStop stop: getFollowItems()) {
-                                    if (stop._id.equals(object._id)) {
+                                for (Follow f: followDatabase.followDao().getList()) {
+                                    if (f.get_id() == follow.get_id()) {
                                         pos = j;
                                         break;
                                     }
                                     j++;
                                 }
-                                if (FollowStopUtil.delete(context, object) > 0) {
-                                    updateFollow();
+                                int rowDeleted = 0;
+                                if (followDatabase != null) {
+                                    rowDeleted = followDatabase.followDao().delete(follow.getType(), follow.getCompanyCode(), follow.getRouteNo(), follow.getRouteSeq(), follow.getRouteServiceType(), follow.getStopId(), follow.getStopSeq());
+                                }
+                                if (rowDeleted > 0) {
                                     notifyItemRemoved(pos);
                                 }
                             })
@@ -204,17 +193,25 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
 
                 // ETA
                 if (arrivalTimeDatabase != null) {
-                    List<ArrivalTime> arrivalTimeList = ArrivalTime.Companion.getList(arrivalTimeDatabase, RouteStopUtil.fromFollowStop(object));
+                    List<ArrivalTime> arrivalTimeList = ArrivalTime.Companion.getList(arrivalTimeDatabase, RouteStopUtil.fromFollow(follow));
+                    String direction = "";
                     for (ArrivalTime arrivalTime : arrivalTimeList) {
                         if (arrivalTime == null) continue;
                         arrivalTime = ArrivalTime.Companion.estimate(context, arrivalTime);
                         if (arrivalTime == null) continue;
-                        if (arrivalTime.getOrder() != null) {
+                        if (!TextUtils.isEmpty(arrivalTime.getOrder())) {
                             SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.getText());
                             Integer pos = Integer.parseInt(arrivalTime.getOrder());
                             Integer colorInt = ContextCompat.getColor(context,
                                     arrivalTime.getExpired() ? R.color.textDiminish :
                                             (pos > 0 ? R.color.textPrimary : R.color.textHighlighted));
+                            if (arrivalTime.getCompanyCode().equals(C.PROVIDER.MTR)) {
+                                colorInt = ContextCompat.getColor(context, arrivalTime.getExpired() ?
+                                        R.color.textDiminish : R.color.textPrimary);
+                            }
+                            if (!TextUtils.isEmpty(arrivalTime.getPlatform())) {
+                                etaText.insert(0, "[" + arrivalTime.getPlatform() + "] ");
+                            }
                             if (!TextUtils.isEmpty(arrivalTime.getNote())) {
                                 etaText.append("#");
                             }
@@ -291,24 +288,34 @@ public class FollowAndHistoryAdapter extends RecyclerView.Adapter<RecyclerView.V
                             if (etaText.length() > 0) {
                                 etaText.setSpan(new ForegroundColorSpan(colorInt), 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                             }
-
-                            switch (pos) {
-                                case 0:
-                                    vh.etaText.setText(etaText);
-                                    vh.etaNextText.setText(null);
-                                    break;
-                                case 1:
-                                    etaText.insert(0, vh.etaNextText.getText());
-                                    vh.etaNextText.setText(etaText);
-                                    break;
-                                case 2:
-                                default:
-                                    etaText.insert(0, "  ");
-                                    etaText.insert(0, vh.etaNextText.getText());
-                                    vh.etaNextText.setText(etaText);
-                                    break;
+                            if (arrivalTime.getCompanyCode().equals(C.PROVIDER.MTR)) {
+                                if (!direction.equals(arrivalTime.getDirection())) {
+                                    if (pos == 0) {
+                                        vh.etaText.setText(etaText);
+                                    } else {
+                                        vh.etaNextText.setText(etaText);
+                                    }
+                                }
+                            } else {
+                                switch (pos) {
+                                    case 0:
+                                        vh.etaText.setText(etaText);
+                                        vh.etaNextText.setText(null);
+                                        break;
+                                    case 1:
+                                        etaText.insert(0, vh.etaNextText.getText());
+                                        vh.etaNextText.setText(etaText);
+                                        break;
+                                    case 2:
+                                    default:
+                                        etaText.insert(0, "  ");
+                                        etaText.insert(0, vh.etaNextText.getText());
+                                        vh.etaNextText.setText(etaText);
+                                        break;
+                                }
                             }
                         }
+                        direction = arrivalTime.getDirection();
                     }
                 }
             }

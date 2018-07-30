@@ -39,9 +39,9 @@ import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
+import com.alvinhkh.buseta.follow.model.Follow;
 import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.model.RouteStop;
-import com.alvinhkh.buseta.model.FollowStop;
 import com.alvinhkh.buseta.service.EtaService;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter;
@@ -918,14 +918,14 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
             public void onNext(Intent intent) {
                 Bundle bundle = intent.getExtras();
                 if (bundle == null) return;
-                FollowStop followStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
-                if (followStop == null) return;
+                Follow follow = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
+                if (follow == null) return;
                 if (bundle.getBoolean(C.EXTRA.UPDATED)) {
                     int i = 0;
                     for (Item item : adapter.getItems()) {
                         if (item != null && item.getType() == TYPE_DATA && item.getObject() != null &&
                                 ((RouteStop) item.getObject()).getSequence() != null &&
-                                ((RouteStop) item.getObject()).getSequence().equals(followStop.sequence)) {
+                                ((RouteStop) item.getObject()).getSequence().equals(follow.getStopSeq())) {
                             adapter.notifyItemChanged(i);
                             break;
                         }

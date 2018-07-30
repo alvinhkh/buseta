@@ -1,9 +1,10 @@
-package com.alvinhkh.buseta.search.model
+package com.alvinhkh.buseta.search.ui
 
 import android.app.Application
 import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.LiveData
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase
+import com.alvinhkh.buseta.search.model.Suggestion
 
 class SuggestionViewModel(application: Application) : AndroidViewModel(application) {
 

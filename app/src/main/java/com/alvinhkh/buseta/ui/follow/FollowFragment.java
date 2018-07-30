@@ -28,9 +28,9 @@ import android.view.ViewGroup;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.follow.model.Follow;
 import com.alvinhkh.buseta.search.model.Suggestion;
 import com.alvinhkh.buseta.model.RouteStop;
-import com.alvinhkh.buseta.model.FollowStop;
 import com.alvinhkh.buseta.service.EtaService;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
 import com.alvinhkh.buseta.search.ui.SearchActivity;
@@ -90,7 +90,6 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
         public void run() {
             if (followAndHistoryAdapter != null) {
                 followAndHistoryAdapter.updateHistory();
-                followAndHistoryAdapter.updateFollow();
                 followAndHistoryAdapter.notifyDataSetChanged();
                 if (emptyView != null) {
                     emptyView.setVisibility(followAndHistoryAdapter != null &&
@@ -230,7 +229,7 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
             if (ConnectivityUtil.isConnected(getContext())) {
                 if (followAndHistoryAdapter.getFollowCount() > 0) {
                     for (int i = 0; i < followAndHistoryAdapter.getFollowCount(); i++) {
-                        RouteStop object = RouteStopUtil.fromFollowStop(followAndHistoryAdapter.followItem(i));
+                        RouteStop object = RouteStopUtil.fromFollow(followAndHistoryAdapter.followObject(i));
                         Intent intent = new Intent(getContext(), EtaService.class);
                         intent.putExtra(C.EXTRA.ROW, i);
                         intent.putExtra(C.EXTRA.STOP_OBJECT, object);
@@ -265,8 +264,8 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
             ArrayList<ShortcutInfo> shortcuts = new ArrayList<>();
             for (int i = 0; i < shortcutManager.getMaxShortcutCountPerActivity()-1 && i < followAndHistoryAdapter.getItemCount(); i++) {
                 Object object = followAndHistoryAdapter.getItem(i);
-                if (object instanceof FollowStop) {
-                    RouteStop routeStop = RouteStopUtil.fromFollowStop((FollowStop) object);
+                if (object instanceof Follow) {
+                    RouteStop routeStop = RouteStopUtil.fromFollow((Follow) object);
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setClass(getContext(), SearchActivity.class);
                     intent.putExtra(C.EXTRA.STOP_OBJECT_STRING, new Gson().toJson(routeStop));
@@ -305,10 +304,6 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
                 RouteStop routeStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
                 if (routeStop == null) return;
                 if (followAndHistoryAdapter == null) return;
-                //FollowStopUtil.query(getContext(), RouteStopUtil.toFollowStop(routeStop)).subscribe(cursor -> {
-                //  FollowStop followStop = FollowStopUtil.fromCursor(cursor);
-                //  followAndHistoryAdapter.notifyItemChanged(followStop.order);
-                //});
                 if (bundle.getBoolean(C.EXTRA.UPDATED)) {
                     Timber.d("eta updated: [%d] %s", row, routeStop.toString());
                     if (row >= 0 && row < followAndHistoryAdapter.getFollowCount()) {
@@ -338,7 +333,6 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
                 if (bundle == null) return;
                 if (bundle.getBoolean(C.EXTRA.UPDATED)) {
                     if (followAndHistoryAdapter != null) {
-                        followAndHistoryAdapter.updateFollow();
                         followAndHistoryAdapter.notifyDataSetChanged();
                     }
                 }

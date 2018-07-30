@@ -9,8 +9,8 @@ import android.support.v7.app.ActionBar;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.follow.ui.EditFollowFragment;
 import com.alvinhkh.buseta.service.CheckUpdateService;
 import com.alvinhkh.buseta.ui.BaseActivity;
 import com.alvinhkh.buseta.utils.AdViewUtil;
@@ -69,7 +69,7 @@ public class FollowActivity extends BaseActivity {
             case R.id.action_edit_follow:
                 FragmentManager fragmentManager = getSupportFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.fragment_container, EditFollowFragment.newInstance());
+                fragmentTransaction.replace(R.id.fragment_container, new EditFollowFragment());
                 fragmentTransaction.addToBackStack("follow_list");
                 fragmentTransaction.commit();
                 break;

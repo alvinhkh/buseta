@@ -43,19 +43,27 @@ data class NwstEta(
             if (data.size >= 19) {
                 obj.etaIsoTime = data[12]
                 obj.etaSecond = data[13].toInt()
+                if (obj.etaIsoTime == "0000-00-00 00:00:00") {
+                    obj.etaIsoTime = ""
+                }
                 val tmp2 = data[16].split("|")
                 obj.etaTime = tmp2[0]
                 val tmp3 = data[17].split("|")
                 val tmp4 = data[18].split("|")
-                obj.title = tmp3[0]
+                obj.title = tmp3[0].replace(Regex.fromLiteral("往: " + obj.placeTo), "")
+                        .replace(", ", "").replace(obj.boundText, "")
+                if (obj.title.isEmpty()) {
+                    obj.title = obj.etaTime
+                }
                 obj.subtitle = tmp4[0]
             }
             if (!TextUtils.isEmpty(obj.companyCode)) {
                 if (obj.companyCode.contains("DISABLED")) {
                     obj.title = data[12]
-                }
-                if (obj.companyCode.contains("HTML")) {
+                } else if (obj.companyCode.contains("HTML")) {
                     obj.title = Jsoup.parse(data[1]).text()
+                } else if (obj.companyCode.contains("TEXT")) {
+                    obj.title = data[1]
                 }
                 obj.companyCode = "NWST"
             }

@@ -140,7 +140,7 @@ public class MtrLineStationsFragment extends Fragment
         recyclerView = rootView.findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setHasFixedSize(true);
-        adapter = new MtrLineStationsAdapter(recyclerView, this);
+        adapter = new MtrLineStationsAdapter(getFragmentManager(), recyclerView, this);
         recyclerView.setAdapter(adapter);
         recyclerView.setNestedScrollingEnabled(false);
         emptyView = rootView.findViewById(R.id.empty_view);
@@ -272,15 +272,7 @@ public class MtrLineStationsFragment extends Fragment
         if (item.getType() == Item.TYPE_DATA) {
             RouteStop station = (RouteStop) item.getObject();
             if (station != null && getContext() != null) {
-                ArrayList<Route> routes = new ArrayList<>();
-                for (String key: codeMap.keySet()) {
-                    Route route = new Route();
-                    route.setCode(key);
-                    route.setName(codeMap.get(key));
-                    routes.add(route);
-                }
                 Intent intent = new Intent(getContext(), EtaService.class);
-                intent.putExtra(C.EXTRA.ROUTE_LIST, routes);
                 intent.putExtra(C.EXTRA.STOP_OBJECT, station);
                 getContext().startService(intent);
             }
@@ -339,6 +331,7 @@ public class MtrLineStationsFragment extends Fragment
                     for (MtrLineStation station: stations) {
                         RouteStop routeStop = RouteStopUtil.fromMtrLineStation(station);
                         if (!codeMap.containsKey(station.getStationCode())) {
+                            routeStop.setRoute(lineName);
                             adapter.add(new Item(Item.TYPE_DATA, routeStop));
                             codeMap.put(station.getStationCode(), station.getChineseName());
                         }

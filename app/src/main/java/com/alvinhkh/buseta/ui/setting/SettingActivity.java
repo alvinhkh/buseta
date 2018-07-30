@@ -29,11 +29,11 @@ import android.view.View;
 import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.follow.dao.FollowDatabase;
 import com.alvinhkh.buseta.model.AppUpdate;
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase;
 import com.alvinhkh.buseta.service.CheckUpdateService;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
-import com.alvinhkh.buseta.utils.FollowStopUtil;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
 
 import io.reactivex.disposables.CompositeDisposable;
@@ -48,6 +48,8 @@ public class SettingActivity extends BasePreferenceActivity {
 
     private static SuggestionDatabase suggestionDatabase = null;
 
+    private static FollowDatabase followDatabase = null;
+
     private Context context;
 
     @Override
@@ -55,6 +57,7 @@ public class SettingActivity extends BasePreferenceActivity {
         super.onCreate(savedInstanceState);
         this.context = this;
         suggestionDatabase = SuggestionDatabase.Companion.getInstance(this);
+        followDatabase = FollowDatabase.Companion.getInstance(this);
         // Display the fragment as the main content.
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, new SettingsFragment())
@@ -174,7 +177,10 @@ public class SettingActivity extends BasePreferenceActivity {
                             .setNegativeButton(R.string.action_cancel, (dialoginterface, i) -> dialoginterface.cancel())
                             .setPositiveButton(R.string.action_confirm, (dialoginterface, i) -> {
                                 if (mActivity != null) {
-                                    int rowDeleted = FollowStopUtil.deleteAll(mActivity);
+                                    int rowDeleted = 0;
+                                    if (followDatabase != null) {
+                                        rowDeleted = followDatabase.followDao().clear();
+                                    }
                                     Snackbar snackbar = Snackbar.make(mActivity.findViewById(android.R.id.content),
                                             rowDeleted > 0
                                                     ? R.string.message_clear_success_search_history

@@ -25,12 +25,13 @@ import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
+import com.alvinhkh.buseta.follow.dao.FollowDatabase;
+import com.alvinhkh.buseta.follow.model.Follow;
 import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.service.EtaService;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter;
 import com.alvinhkh.buseta.utils.RouteStopUtil;
-import com.alvinhkh.buseta.utils.FollowStopUtil;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
 
 import java.text.DecimalFormat;
@@ -45,6 +46,8 @@ public class RouteStopListAdapter
 
     private static ArrivalTimeDatabase arrivalTimeDatabase;
 
+    private static FollowDatabase followDatabase;
+
     private Route route;
 
     private FragmentManager fragmentManager;
@@ -57,6 +60,7 @@ public class RouteStopListAdapter
         this.fragmentManager = fragmentManager;
         this.route = route;
         arrivalTimeDatabase = ArrivalTimeDatabase.Companion.getInstance(recyclerView.getContext());
+        followDatabase = FollowDatabase.Companion.getInstance(recyclerView.getContext());
     }
 
     @Override
@@ -227,7 +231,7 @@ public class RouteStopListAdapter
 
             this.itemView.setOnLongClickListener(v -> {
                 try {
-                    BottomSheetDialogFragment bottomSheetDialogFragment = RouteStopFragment.newInstance(stop);
+                    BottomSheetDialogFragment bottomSheetDialogFragment = RouteStopFragment.newInstance(route, stop);
                     bottomSheetDialogFragment.show(fragmentManager, bottomSheetDialogFragment.getTag());
                 } catch (IllegalStateException ignored) {}
                 return true;
@@ -236,12 +240,9 @@ public class RouteStopListAdapter
             Context context = this.itemView.getContext();
             if (context != null && disposable != null) {
                 // Follow
-                disposable.add(FollowStopUtil.query(context, RouteStopUtil.toFollowStop(stop)).subscribe(cursor -> {
-                    this.followImage.setVisibility(cursor.getCount() > 0 ? View.VISIBLE : View.GONE);
-                    if (cursor != null) {
-                        cursor.close();
-                    }
-                }));
+                Follow object = RouteStop.CREATOR.toFollow(stop);
+                Integer count = followDatabase.followDao().count(object.getType(), object.getCompanyCode(), object.getRouteNo(), object.getRouteSeq(), object.getRouteServiceType(), object.getStopId(), object.getStopSeq());
+                this.followImage.setVisibility(count > 0 ? View.VISIBLE : View.GONE);
                 // ETA
 
                 if (database != null) {

@@ -9,11 +9,12 @@ import android.text.TextUtils;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
+import com.alvinhkh.buseta.datagovhk.DataGovHkService;
+import com.alvinhkh.buseta.datagovhk.model.MtrLineStation;
 import com.alvinhkh.buseta.kmb.KmbService;
 import com.alvinhkh.buseta.kmb.model.network.KmbEtaRes;
 import com.alvinhkh.buseta.kmb.util.KmbEtaUtil;
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
-import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.mtr.MtrService;
 import com.alvinhkh.buseta.mtr.model.AESEtaBus;
@@ -55,7 +56,7 @@ import timber.log.Timber;
 
 import static com.alvinhkh.buseta.nwst.NwstService.*;
 
-// TODO: remove previous eta records
+
 public class EtaService extends IntentService {
 
     private final CompositeDisposable disposables = new CompositeDisposable();
@@ -63,6 +64,8 @@ public class EtaService extends IntentService {
     private ArrivalTimeDatabase arrivalTimeDatabase;
 
     private final MtrService aesService = MtrService.Companion.getAes().create(MtrService.class);
+
+    private final DataGovHkService dataGovHkService = DataGovHkService.resource.create(DataGovHkService.class);
 
     private final KmbService kmbEtaApi = KmbService.etav3.create(KmbService.class);
 
@@ -113,15 +116,15 @@ public class EtaService extends IntentService {
         for (int i = 0; i < routeStopList.size(); i++) {
             RouteStop routeStop = routeStopList.get(i);
             if (!TextUtils.isEmpty(routeStop.getCompanyCode())) {
-                if (!TextUtils.isEmpty(routeStop.getRoute()) && !TextUtils.isEmpty(routeStop.getDirection())
-                        && !TextUtils.isEmpty(routeStop.getCode()) && !TextUtils.isEmpty(routeStop.getSequence())) {
+                if (!TextUtils.isEmpty(routeStop.getRoute()) && !TextUtils.isEmpty(routeStop.getCode())
+                        && !TextUtils.isEmpty(routeStop.getSequence())) {
                     arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.getCompanyCode(),
                             routeStop.getRoute(), routeStop.getDirection(), routeStop.getCode(), routeStop.getSequence());
                 }
                 notifyUpdate(routeStop, C.EXTRA.UPDATING, widgetId, notificationId, row);
                 switch (routeStop.getCompanyCode()) {
                     case C.PROVIDER.KMB:
-                        disposables.add(kmbEtaApi.getEta(routeStop.getEtaGet())
+                        disposables.add(kmbEtaApi.getEta(routeStop.getRoute(), routeStop.getDirection(), routeStop.getCode(), routeStop.getSequence(), routeStop.getRouteServiceType(), "tc", "")
                                 .subscribeWith(kmbEtaObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size() - 1)));
                         break;
                     case C.PROVIDER.NLB:
@@ -169,24 +172,12 @@ public class EtaService extends IntentService {
                     }
                     case C.PROVIDER.MTR:
                     {
-                        List<Route> routes = extras.getParcelableArrayList(C.EXTRA.ROUTE_LIST);
-                        HashMap<String, String> codeMap = new HashMap<>();
-                        if (routes != null) {
-                            for (Route route: routes) {
-                                if (TextUtils.isEmpty(route.getCode()) || TextUtils.isEmpty(route.getName())) continue;
-                                codeMap.put(route.getCode(), route.getName());
-                            }
-                        }
-                        String lang = "en";
-                        String today = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH).format(new Date());
-                        String secret = firebaseRemoteConfig.getString("mtr_schedule_secret");
-                        String key = HashUtil.sha1(routeStop.getRouteId() + "|" + routeStop.getCode() + "|" + lang + "|" + today + "|" + secret);
-                        if (TextUtils.isEmpty(key) || routeStop == null || TextUtils.isEmpty(routeStop.getRouteId()) || TextUtils.isEmpty(routeStop.getCode())) {
+                        if (TextUtils.isEmpty(routeStop.getRouteId()) || TextUtils.isEmpty(routeStop.getCode())) {
                             notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId, row);
-                            break;
+                            return;
                         }
-                        disposables.add(mtrService.getSchedule(key, routeStop.getRouteId(), routeStop.getCode(), lang)
-                                .subscribeWith(mtrScheduleObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size() - 1, codeMap)));
+                        disposables.add(dataGovHkService.mtrLinesAndStations()
+                                .subscribeWith(mtrLinesAndStationsObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size() - 1)));
                         break;
                     }
                     default:
@@ -337,7 +328,7 @@ public class EtaService extends IntentService {
                     for (int i = 0; i < data.length; i++) {
                         NwstEta nwstEta = NwstEta.Companion.fromString(data[i]);
                         if (nwstEta == null) continue;
-                        nwstEta.setServerTime(serverTime);
+                        nwstEta.setServerTime(serverTime.replaceAll("[^0-9:]", ""));
                         ArrivalTime arrivalTime = NwstEtaUtil.toArrivalTime(getApplicationContext(), routeStop, nwstEta);
                         arrivalTime.setCompanyCode(routeStop.getCompanyCode());
                         arrivalTime.setRouteNo(routeStop.getRoute());
@@ -463,6 +454,52 @@ public class EtaService extends IntentService {
                 if (!isError) {
                     notifyUpdate(routeStop, C.EXTRA.COMPLETE, widgetId, notificationId, rowNo);
                 }
+            }
+        };
+    }
+
+
+    DisposableObserver<ResponseBody> mtrLinesAndStationsObserver(@NonNull RouteStop routeStop,
+                                                                 Integer widgetId,
+                                                                 Integer notificationId,
+                                                                 Integer rowNo,
+                                                                 Boolean isLast) {
+        return new DisposableObserver<ResponseBody>() {
+
+            HashMap<String, String> codeMap = new HashMap<>();
+
+            @Override
+            public void onNext(ResponseBody body) {
+                if (body == null) return;
+                try {
+                    List<MtrLineStation> stations = MtrLineStation.Companion.fromCSV(body.string(), routeStop.getRouteId());
+                    for (MtrLineStation station: stations) {
+                        if (!codeMap.containsKey(station.getStationCode())) {
+                            codeMap.put(station.getStationCode(), station.getChineseName());
+                        }
+                    }
+                } catch (IOException e) {
+                    Timber.d(e);
+                }
+                String lang = "en";
+                String today = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH).format(new Date());
+                String secret = firebaseRemoteConfig.getString("mtr_schedule_secret");
+                String key = HashUtil.sha1(routeStop.getRouteId() + "|" + routeStop.getCode() + "|" + lang + "|" + today + "|" + secret);
+                if (TextUtils.isEmpty(key) || TextUtils.isEmpty(routeStop.getRouteId()) || TextUtils.isEmpty(routeStop.getCode())) {
+                    notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId, rowNo);
+                    return;
+                }
+                disposables.add(mtrService.getSchedule(key, routeStop.getRouteId(), routeStop.getCode(), lang)
+                        .subscribeWith(mtrScheduleObserver(routeStop, widgetId, notificationId, rowNo, isLast, codeMap)));
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Timber.d(e);
+            }
+
+            @Override
+            public void onComplete() {
             }
         };
     }

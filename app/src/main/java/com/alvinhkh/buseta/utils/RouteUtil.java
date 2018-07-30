@@ -22,8 +22,8 @@ public class RouteUtil {
         if (route == null) return null;
         Route object = new Route();
         object.setCompanyCode(C.PROVIDER.KMB);
-        object.setOrigin(route.destinationTc);
-        object.setDestination(route.originTc);
+        object.setOrigin(route.originTc);
+        object.setDestination(route.destinationTc);
         object.setName(route.route);
         object.setSequence(route.bound);
         object.setServiceType(TextUtils.isEmpty(route.serviceType) ? route.serviceType : route.serviceType.trim());
@@ -38,8 +38,8 @@ public class RouteUtil {
         Route object = new Route();
         object.setCompanyCode(route.getCompanyCode());
         object.setDescription(route.getRemark());
-        object.setOrigin(route.getPlaceTo());
-        object.setDestination(route.getPlaceFrom());
+        object.setOrigin(route.getPlaceFrom());
+        object.setDestination(route.getPlaceTo());
         object.setName(route.getRouteNo());
         object.setServiceType(route.getRouteType());
         object.setRdv(route.getRdv());

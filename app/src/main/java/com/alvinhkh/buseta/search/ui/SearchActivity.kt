@@ -27,13 +27,11 @@ import com.alvinhkh.buseta.nlb.ui.NlbActivity
 import com.alvinhkh.buseta.nwst.ui.NwstActivity
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.model.Suggestion
-import com.alvinhkh.buseta.search.model.SuggestionViewModel
 import com.alvinhkh.buseta.ui.PinnedHeaderItemDecoration
 import com.alvinhkh.buseta.utils.PreferenceUtil
 import com.alvinhkh.buseta.utils.RouteUtil
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_suggestion.*
-import timber.log.Timber
 
 import java.util.regex.Pattern
 
@@ -214,6 +212,12 @@ class SearchActivity : AppCompatActivity() {
                     routeStop = Gson().fromJson(stopText, RouteStop::class.java)
                 }
                 if (routeStop != null) {
+                    if (routeStop.companyCode!! == C.PROVIDER.MTR) {
+                        val i = Intent(applicationContext, MtrActivity::class.java)
+                        i.putExtra(C.EXTRA.LINE_CODE, routeStop.routeId)
+                        i.putExtra(C.EXTRA.LINE_NAME, routeStop.route)
+                        return i
+                    }
                     val i = getBusIntent(routeStop.companyCode!!)
                     i.putExtra(C.EXTRA.ROUTE_NO, routeStop.route)
                     i.putExtra(C.EXTRA.STOP_OBJECT, routeStop)

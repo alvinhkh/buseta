@@ -41,17 +41,17 @@ import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
+import com.alvinhkh.buseta.follow.dao.FollowDatabase;
+import com.alvinhkh.buseta.follow.model.Follow;
 import com.alvinhkh.buseta.kmb.KmbService;
 import com.alvinhkh.buseta.kmb.model.KmbRoutesInStop;
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
+import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.model.RouteStop;
-import com.alvinhkh.buseta.model.FollowStop;
 import com.alvinhkh.buseta.service.EtaService;
 import com.alvinhkh.buseta.service.GeofenceTransitionsIntentService;
 import com.alvinhkh.buseta.service.NotificationService;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
-import com.alvinhkh.buseta.utils.RouteStopUtil;
-import com.alvinhkh.buseta.utils.FollowStopUtil;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingClient;
@@ -93,6 +93,8 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
 
     private static ArrivalTimeDatabase arrivalTimeDatabase = null;
 
+    private static FollowDatabase followDatabase = null;
+
     public static SimpleDateFormat displayDateFormat = new SimpleDateFormat("HH:mm:ss dd/MM", Locale.ENGLISH);
 
     /**
@@ -111,6 +113,8 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
     private PendingGeofenceTask mPendingGeofenceTask = PendingGeofenceTask.NONE;
 
     private Location currentLocation;
+
+    private Route route;
 
     private RouteStop routeStop;
 
@@ -141,9 +145,10 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
      * Returns a new instance of this fragment for the given section
      * number.
      */
-    public static RouteStopFragment newInstance(@NonNull RouteStop routeStop) {
+    public static RouteStopFragment newInstance(@NonNull Route route, @NonNull RouteStop routeStop) {
         RouteStopFragment fragment = new RouteStopFragment();
         Bundle args = new Bundle();
+        args.putParcelable(C.EXTRA.ROUTE_OBJECT, route);
         args.putParcelable(C.EXTRA.STOP_OBJECT, routeStop);
         fragment.setArguments(args);
         return fragment;
@@ -155,6 +160,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
         if (getContext() == null) return;
 
         arrivalTimeDatabase = ArrivalTimeDatabase.Companion.getInstance(getContext());
+        followDatabase = FollowDatabase.Companion.getInstance(getContext());
 
         mGeofenceList = new ArrayList<>();
         mGeofencePendingIntent = null;
@@ -494,8 +500,9 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
             dialog.cancel();
             return;
         }
+        route = bundle.getParcelable(C.EXTRA.ROUTE_OBJECT);
         routeStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
-        if (routeStop == null) {
+        if (route == null || routeStop == null) {
             dialog.cancel();
             return;
         }
@@ -628,10 +635,11 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
             Drawable unfollowDrawable = ContextCompat.getDrawable(getContext(), R.drawable.ic_bookmark_black_48dp);
             vh.followButton.setCompoundDrawablesWithIntrinsicBounds(null, followDrawable, null, null);
             vh.followButton.setText(R.string.follow);
-            FollowStopUtil.query(getContext(), RouteStopUtil.toFollowStop(routeStop)).subscribe(cursor -> {
-                vh.followButton.setText(cursor.getCount() > 0 ? R.string.action_unfollow : R.string.follow);
-                vh.followButton.setCompoundDrawablesWithIntrinsicBounds(null, cursor.getCount() > 0 ? unfollowDrawable : followDrawable, null, null);
-            });
+
+            Follow object = RouteStop.CREATOR.toFollow(routeStop);
+            Integer count = followDatabase.followDao().count(object.getType(), object.getCompanyCode(), object.getRouteNo(), object.getRouteSeq(), object.getRouteServiceType(), object.getStopId(), object.getStopSeq());
+            vh.followButton.setText(count > 0 ? R.string.action_unfollow : R.string.follow);
+            vh.followButton.setCompoundDrawablesWithIntrinsicBounds(null, count > 0 ? unfollowDrawable : followDrawable, null, null);
 
             if (!TextUtils.isEmpty(routeStop.getLatitude()) && !TextUtils.isEmpty(routeStop.getLongitude())) {
                 vh.mapButton.setVisibility(View.VISIBLE);
@@ -680,28 +688,38 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                 });
             }
             vh.followButton.setOnClickListener(v -> {
-                FollowStop followStop = RouteStopUtil.toFollowStop(routeStop);
-                FollowStopUtil.query(v.getContext(), followStop).count().subscribe(count -> {
-                    if (count > 0) {
-                        // followed, remove
-                        int rowDeleted = FollowStopUtil.delete(v.getContext(), followStop);
-                        if (rowDeleted > 0) {
-                            vh.followButton.setCompoundDrawablesWithIntrinsicBounds(null, followDrawable, null, null);
-                            vh.followButton.setText(R.string.follow);
-                        }
-                    } else {
-                        // follow
-                        Uri uriInserted = FollowStopUtil.insert(v.getContext(), followStop);
-                        if (uriInserted != null) {
-                            vh.followButton.setCompoundDrawablesWithIntrinsicBounds(null, unfollowDrawable, null, null);
-                            vh.followButton.setText(R.string.action_unfollow);
-                        }
+                Follow f = RouteStop.CREATOR.toFollow(routeStop);
+                Integer c = followDatabase.followDao().count(f.getType(), f.getCompanyCode(), f.getRouteNo(), f.getRouteSeq(), f.getRouteServiceType(), f.getStopId(), f.getStopSeq());
+                if (c > 0) {
+                    // followed, remove
+                    int rowDeleted = 0;
+                    Follow follow = Follow.CREATOR.createInstance(route, routeStop);
+                    if (followDatabase != null) {
+                        rowDeleted = followDatabase.followDao().delete(follow.getType(), follow.getCompanyCode(), follow.getRouteNo(), follow.getRouteSeq(), follow.getRouteServiceType(), follow.getStopId(), follow.getStopSeq());
                     }
-                    Intent intent = new Intent(C.ACTION.FOLLOW_UPDATE);
-                    intent.putExtra(C.EXTRA.STOP_OBJECT, followStop);
-                    intent.putExtra(C.EXTRA.UPDATED, true);
-                    v.getContext().sendBroadcast(intent);
-                });
+                    if (rowDeleted > 0) {
+                        vh.followButton.setCompoundDrawablesWithIntrinsicBounds(null, followDrawable, null, null);
+                        vh.followButton.setText(R.string.follow);
+                    }
+                } else {
+                    // follow
+                    Long insertedId = 0L;
+                    Follow follow = Follow.CREATOR.createInstance(route, routeStop);
+                    Timber.d("route: %s", route);
+                    Timber.d("routeStop: %s", routeStop);
+                    Timber.d("follow: %s", follow);
+                    if (followDatabase != null) {
+                        insertedId = followDatabase.followDao().insert(follow);
+                    }
+                    if (insertedId > 0) {
+                        vh.followButton.setCompoundDrawablesWithIntrinsicBounds(null, unfollowDrawable, null, null);
+                        vh.followButton.setText(R.string.action_unfollow);
+                    }
+                }
+                Intent intent = new Intent(C.ACTION.FOLLOW_UPDATE);
+                intent.putExtra(C.EXTRA.STOP_OBJECT, f);
+                intent.putExtra(C.EXTRA.UPDATED, true);
+                v.getContext().sendBroadcast(intent);
             });
             vh.notificationButton.setOnClickListener(v -> {
                 NotificationManagerCompat notificationManager = NotificationManagerCompat.from(v.getContext());
@@ -816,6 +834,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
         return new DisposableObserver<Intent>() {
             @Override
             public void onNext(Intent intent) {
+                if (vh == null) return;
                 Bundle bundle = intent.getExtras();
                 if (bundle == null) return;
                 RouteStop stop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
@@ -839,6 +858,13 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                                 Integer colorInt = ContextCompat.getColor(context,
                                         arrivalTime.getExpired() ? R.color.textDiminish :
                                                 (pos > 0 ? R.color.textPrimary : R.color.textHighlighted));
+                                if (arrivalTime.getCompanyCode().equals(C.PROVIDER.MTR)) {
+                                    colorInt = ContextCompat.getColor(context, arrivalTime.getExpired() ?
+                                            R.color.textDiminish : R.color.textPrimary);
+                                }
+                                if (!TextUtils.isEmpty(arrivalTime.getPlatform())) {
+                                    etaText.insert(0, "[" + arrivalTime.getPlatform() + "] ");
+                                }
                                 if (arrivalTime.isSchedule()) {
                                     etaText.append(" ").append(getString(R.string.scheduled_bus));
                                 }

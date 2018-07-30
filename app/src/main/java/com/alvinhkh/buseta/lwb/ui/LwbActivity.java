@@ -44,8 +44,8 @@ public class LwbActivity extends RouteActivityAbstract {
                         if (bound == null) continue;
                         Route route = new Route();
                         route.setCompanyCode(C.PROVIDER.KMB);
-                        route.setOrigin(bound.destination_tc);
-                        route.setDestination(bound.origin_tc);
+                        route.setOrigin(bound.origin_tc);
+                        route.setDestination(bound.destination_tc);
                         route.setName(routeNo);
                         route.setSequence(String.valueOf(i++));
                         route.setServiceType("01");

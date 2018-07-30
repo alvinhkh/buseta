@@ -128,7 +128,7 @@ public class MtrScheduleItemAdapter extends ArrayListRecyclerViewAdapter<MtrSche
                 try {
                     timeText = timeFormat.format(dateFormat.parse(arrivalTime.getText()));
                 } catch (ParseException ignored) {}
-                SpannableStringBuilder etaText = new SpannableStringBuilder(String.format("%s %s", arrivalTime.getDestination(), timeText));
+                SpannableStringBuilder etaText = new SpannableStringBuilder(timeText);
                 if (!TextUtils.isEmpty(arrivalTime.getEstimate())) {
                     etaText.append(" (").append(arrivalTime.getEstimate()).append(")");
                 }

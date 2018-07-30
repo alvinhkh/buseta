@@ -11,14 +11,14 @@ import java.util.Random;
 public class NwstRequestUtil {
 
     public static String syscode() {
-        StringBuilder randomInt = new StringBuilder(Integer.toString(new Random().nextInt(1000)));
-        while (randomInt.length() < 4) {
-            randomInt.append("0");
+        StringBuilder randonInt = new StringBuilder(Integer.toString(new Random().nextInt(1000)));
+        while (randonInt.length() < 4) {
+            randonInt.append("0");
         }
         String timestamp = Integer.toString(Math.round((float) (System.currentTimeMillis() / 1000)));
         timestamp = timestamp.substring(timestamp.length() - 6);
         String secret = "firstbusmwymwy";
-        return timestamp + randomInt + HashUtil.md5(timestamp + randomInt + secret);
+        return timestamp + randonInt + HashUtil.md5(timestamp + randonInt + secret);
     }
 
     public static String paramInfo(Route route) {

@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.service;
+package com.alvinhkh.buseta.arrivaltime.service;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -15,12 +15,14 @@ import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
+import com.alvinhkh.buseta.follow.dao.FollowDatabase;
+import com.alvinhkh.buseta.follow.model.Follow;
 import com.alvinhkh.buseta.model.RouteStop;
-import com.alvinhkh.buseta.model.FollowStop;
+import com.alvinhkh.buseta.service.EtaService;
+import com.alvinhkh.buseta.service.RxBroadcastReceiver;
 import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.alvinhkh.buseta.utils.NotificationUtil;
-import com.alvinhkh.buseta.utils.FollowStopUtil;
 import com.firebase.jobdispatcher.JobParameters;
 import com.firebase.jobdispatcher.JobService;
 import com.google.gson.Gson;
@@ -38,10 +40,13 @@ public class EtaJobService extends JobService {
 
     private static ArrivalTimeDatabase arrivalTimeDatabase = null;
 
+    private static FollowDatabase followDatabase = null;
+
     @Override
     public void onCreate() {
         super.onCreate();
         arrivalTimeDatabase = ArrivalTimeDatabase.Companion.getInstance(this);
+        followDatabase = FollowDatabase.Companion.getInstance(this);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager notificationManager =
                     (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -85,10 +90,10 @@ public class EtaJobService extends JobService {
         }
         if (widgetId >= 0) {
             if (ConnectivityUtil.isConnected(this)) {
-                List<FollowStop> followStops = FollowStopUtil.toList(this);
+                List<Follow> followList = followDatabase.followDao().getList();
                 ArrayList<RouteStop> routeStops = new ArrayList<>();
-                for (FollowStop stop: followStops) {
-                    routeStops.add(RouteStopUtil.fromFollowStop(stop));
+                for (Follow follow: followList) {
+                    routeStops.add(RouteStopUtil.fromFollow(follow));
                 }
                 try {
                     Intent intent = new Intent(this, EtaService.class);

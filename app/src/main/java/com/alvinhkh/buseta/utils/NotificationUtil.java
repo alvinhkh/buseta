@@ -41,25 +41,36 @@ public class NotificationUtil {
         SpannableStringBuilder contentInfo = new SpannableStringBuilder();
 
         bigContentTitle.append(object.getRoute());
-        bigContentTitle.append(" ");
-        bigContentTitle.append(object.getName());
-        bigContentTitle.append(" ");
-        bigContentTitle.append(context.getString(R.string.destination, object.getDestination()));
         subText.append(object.getRoute());
-        subText.append(" ");
-        subText.append(object.getName());
-        subText.append(" ");
-        subText.append(context.getString(R.string.destination, object.getDestination()));
+        if (!TextUtils.isEmpty(object.getName())) {
+            bigContentTitle.append(" ");
+            bigContentTitle.append(object.getName());
+            subText.append(" ");
+            subText.append(object.getName());
+        }
+        if (!TextUtils.isEmpty(object.getDestination())) {
+            bigContentTitle.append(" ");
+            bigContentTitle.append(context.getString(R.string.destination, object.getDestination()));
+            subText.append(" ");
+            subText.append(context.getString(R.string.destination, object.getDestination()));
+        }
 
         for (ArrivalTime arrivalTime : arrivalTimes) {
             arrivalTime = ArrivalTime.Companion.estimate(context, arrivalTime);
-            if (arrivalTime.getOrder() != null) {
+            if (!TextUtils.isEmpty(arrivalTime.getOrder())) {
                 SpannableStringBuilder etaSmallText = new SpannableStringBuilder(arrivalTime.getText());
                 SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.getText());
                 Integer pos = Integer.parseInt(arrivalTime.getOrder());
                 Integer colorInt = ContextCompat.getColor(context,
                         arrivalTime.getExpired() ? R.color.grey :
                                 (pos > 0 ? R.color.black : R.color.colorPrimaryA700));
+                if (arrivalTime.getCompanyCode().equals(C.PROVIDER.MTR)) {
+                    colorInt = ContextCompat.getColor(context, arrivalTime.getExpired() ?
+                            R.color.grey : R.color.black);
+                }
+                if (!TextUtils.isEmpty(arrivalTime.getPlatform())) {
+                    etaText.insert(0, "[" + arrivalTime.getPlatform() + "] ");
+                }
                 if (!TextUtils.isEmpty(arrivalTime.getNote())) {
                     etaSmallText.append("#");
                     etaText.append("#");

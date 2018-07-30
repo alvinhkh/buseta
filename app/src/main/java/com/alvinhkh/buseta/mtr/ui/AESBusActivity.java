@@ -38,7 +38,7 @@ public class AESBusActivity extends RouteActivityAbstract {
                                             Route route = new Route();
                                             route.setCompanyCode(C.PROVIDER.AESBUS);
                                             route.setName(aesBusRoute.getBusNumber());
-                                            if (aesBusRoute.getDistrictID() != null) {
+                                            if (aesBusRoute.getDistrictID() > 0) {
                                                 route.setOrigin(districts.get(String.valueOf(aesBusRoute.getDistrictID())));
                                             }
                                             route.setDescription(aesBusRoute.getServiceHours());
