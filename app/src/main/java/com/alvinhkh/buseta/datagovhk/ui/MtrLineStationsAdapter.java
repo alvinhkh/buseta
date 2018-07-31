@@ -23,8 +23,6 @@ import com.alvinhkh.buseta.ui.route.RouteStopFragment;
 import java.util.ArrayList;
 import java.util.List;
 
-import timber.log.Timber;
-
 
 public class MtrLineStationsAdapter
         extends ArrayListRecyclerViewAdapter<MtrLineStationsAdapter.ViewHolder> {
@@ -135,12 +133,12 @@ public class MtrLineStationsAdapter
                 itemView.setOnLongClickListener(l -> {
                     Route route = new Route();
                     route.setCompanyCode(object.getCompanyCode());
-                    route.setName(object.getRoute());
+                    route.setName(object.getRouteNo());
                     route.setCode(object.getRouteId());
-                    route.setDestination(object.getDestination());
-                    route.setOrigin(object.getOrigin());
+                    route.setDestination(object.getRouteDestination());
+                    route.setOrigin(object.getRouteOrigin());
                     route.setServiceType(object.getRouteServiceType());
-                    route.setSequence(object.getDirection());
+                    route.setSequence(object.getRouteSeq());
                     try {
                         BottomSheetDialogFragment bottomSheetDialogFragment = RouteStopFragment.newInstance(route, object);
                         bottomSheetDialogFragment.show(fragmentManager, bottomSheetDialogFragment.getTag());

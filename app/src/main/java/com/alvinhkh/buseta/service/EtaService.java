@@ -116,19 +116,19 @@ public class EtaService extends IntentService {
         for (int i = 0; i < routeStopList.size(); i++) {
             RouteStop routeStop = routeStopList.get(i);
             if (!TextUtils.isEmpty(routeStop.getCompanyCode())) {
-                if (!TextUtils.isEmpty(routeStop.getRoute()) && !TextUtils.isEmpty(routeStop.getCode())
+                if (!TextUtils.isEmpty(routeStop.getRouteNo()) && !TextUtils.isEmpty(routeStop.getStopId())
                         && !TextUtils.isEmpty(routeStop.getSequence())) {
                     arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.getCompanyCode(),
-                            routeStop.getRoute(), routeStop.getDirection(), routeStop.getCode(), routeStop.getSequence());
+                            routeStop.getRouteNo(), routeStop.getRouteSeq(), routeStop.getStopId(), routeStop.getSequence());
                 }
                 notifyUpdate(routeStop, C.EXTRA.UPDATING, widgetId, notificationId, row);
                 switch (routeStop.getCompanyCode()) {
                     case C.PROVIDER.KMB:
-                        disposables.add(kmbEtaApi.getEta(routeStop.getRoute(), routeStop.getDirection(), routeStop.getCode(), routeStop.getSequence(), routeStop.getRouteServiceType(), "tc", "")
+                        disposables.add(kmbEtaApi.getEta(routeStop.getRouteNo(), routeStop.getRouteSeq(), routeStop.getStopId(), routeStop.getSequence(), routeStop.getRouteServiceType(), "tc", "")
                                 .subscribeWith(kmbEtaObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size() - 1)));
                         break;
                     case C.PROVIDER.NLB:
-                        NlbEtaRequest request = new NlbEtaRequest(routeStop.getRouteId(), routeStop.getCode(), "zh");
+                        NlbEtaRequest request = new NlbEtaRequest(routeStop.getRouteId(), routeStop.getStopId(), "zh");
                         disposables.add(nlbApi.eta(request)
                                 .subscribeWith(nlbEtaObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size() - 1)));
                         break;
@@ -136,11 +136,11 @@ public class EtaService extends IntentService {
                     case C.PROVIDER.NWFB:
                     case C.PROVIDER.NWST:
                         Map<String, String> options = new HashMap<>();
-                        options.put(QUERY_STOP_ID, Integer.toString(Integer.parseInt(routeStop.getCode())));
-                        options.put(QUERY_SERVICE_NO, routeStop.getRoute());
+                        options.put(QUERY_STOP_ID, Integer.toString(Integer.parseInt(routeStop.getStopId())));
+                        options.put(QUERY_SERVICE_NO, routeStop.getRouteNo());
                         options.put("removeRepeatedSuspend", "Y");
                         options.put("interval", "60");
-                        options.put(QUERY_BOUND, routeStop.getDirection());
+                        options.put(QUERY_BOUND, routeStop.getRouteSeq());
                         options.put(QUERY_STOP_SEQ, routeStop.getSequence());
                         options.put(QUERY_RDV, routeStop.getRouteId().replaceAll("-1$", "-2")); // TODO: why -1 to -2
                         options.put("showtime", "Y");
@@ -163,7 +163,7 @@ public class EtaService extends IntentService {
                     {
                         String key = HashUtil.md5("mtrMobile_" + new SimpleDateFormat("yyyyMMddHHmm", Locale.ENGLISH).format(new Date()));
                         if (!TextUtils.isEmpty(key)) {
-                            disposables.add(aesService.getBusStopsDetail(new AESEtaBusStopsRequest(routeStop.getRoute(), "2", "zh", key))
+                            disposables.add(aesService.getBusStopsDetail(new AESEtaBusStopsRequest(routeStop.getRouteNo(), "2", "zh", key))
                                     .subscribeWith(aesBusEtaObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size() - 1)));
                         } else {
                             notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId, row);
@@ -172,7 +172,7 @@ public class EtaService extends IntentService {
                     }
                     case C.PROVIDER.MTR:
                     {
-                        if (TextUtils.isEmpty(routeStop.getRouteId()) || TextUtils.isEmpty(routeStop.getCode())) {
+                        if (TextUtils.isEmpty(routeStop.getRouteId()) || TextUtils.isEmpty(routeStop.getStopId())) {
                             notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId, row);
                             return;
                         }
@@ -219,9 +219,9 @@ public class EtaService extends IntentService {
                 if (res != null && res.etas != null && res.etas.size() > 0) {
                     for (int i = 0; i < res.etas.size(); i++) {
                         ArrivalTime arrivalTime = KmbEtaUtil.toArrivalTime(getApplicationContext(), res.etas.get(i), res.generated);
-                        arrivalTime.setRouteNo(routeStop.getRoute());
-                        arrivalTime.setRouteSeq(routeStop.getDirection());
-                        arrivalTime.setStopId(routeStop.getCode());
+                        arrivalTime.setRouteNo(routeStop.getRouteNo());
+                        arrivalTime.setRouteSeq(routeStop.getRouteSeq());
+                        arrivalTime.setStopId(routeStop.getStopId());
                         arrivalTime.setStopSeq(routeStop.getSequence());
                         arrivalTime.setOrder(Integer.toString(i));
                         if (arrivalTimeDatabase != null) {
@@ -275,9 +275,9 @@ public class EtaService extends IntentService {
                         for (int i = 0; i < s; i++) {
                             ArrivalTime arrivalTime = NlbEtaUtil.toArrivalTime(getApplicationContext(), divs.get(i));
                             arrivalTime.setOrder(Integer.toString(i));
-                            arrivalTime.setRouteNo(routeStop.getRoute());
-                            arrivalTime.setRouteSeq(routeStop.getDirection());
-                            arrivalTime.setStopId(routeStop.getCode());
+                            arrivalTime.setRouteNo(routeStop.getRouteNo());
+                            arrivalTime.setRouteSeq(routeStop.getRouteSeq());
+                            arrivalTime.setStopId(routeStop.getStopId());
                             arrivalTime.setStopSeq(routeStop.getSequence());
                             if (arrivalTimeDatabase != null) {
                                 arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime);
@@ -331,9 +331,9 @@ public class EtaService extends IntentService {
                         nwstEta.setServerTime(serverTime.replaceAll("[^0-9:]", ""));
                         ArrivalTime arrivalTime = NwstEtaUtil.toArrivalTime(getApplicationContext(), routeStop, nwstEta);
                         arrivalTime.setCompanyCode(routeStop.getCompanyCode());
-                        arrivalTime.setRouteNo(routeStop.getRoute());
-                        arrivalTime.setRouteSeq(routeStop.getDirection());
-                        arrivalTime.setStopId(routeStop.getCode());
+                        arrivalTime.setRouteNo(routeStop.getRouteNo());
+                        arrivalTime.setRouteSeq(routeStop.getRouteSeq());
+                        arrivalTime.setStopId(routeStop.getStopId());
                         arrivalTime.setStopSeq(routeStop.getSequence());
                         arrivalTime.setOrder(Integer.toString(i));
                         if (arrivalTimeDatabase != null) {
@@ -383,7 +383,7 @@ public class EtaService extends IntentService {
             @Override
             public void onNext(AESEtaBusRes res) {
                 if (res != null) {
-                    if (res.getRouteName() == null || !res.getRouteName().equals(routeStop.getRoute())) return;
+                    if (res.getRouteName() == null || !res.getRouteName().equals(routeStop.getRouteNo())) return;
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.ENGLISH);
                     Date statusTime = new Date();
                     if (res.getRouteStatusTime() != null) {
@@ -398,15 +398,15 @@ public class EtaService extends IntentService {
                         for (int i = 0; i < etas.size(); i++) {
                             AESEtaBusStop eta = etas.get(i);
                             if (eta.getBusStopId() == null) continue;
-                            if (!eta.getBusStopId().equals(routeStop.getCode()) && !eta.getBusStopId().equals("999")) continue;
+                            if (!eta.getBusStopId().equals(routeStop.getStopId()) && !eta.getBusStopId().equals("999")) continue;
                             if (eta.getBuses() != null && eta.getBuses().size() > 0) {
                                 for (int j = 0; j < eta.getBuses().size(); j++) {
                                     isAvailable = true;
                                     AESEtaBus bus = eta.getBuses().get(j);
                                     ArrivalTime arrivalTime = AESEtaBus.Companion.toArrivalTime(getApplicationContext(), bus, statusTime, routeStop);
-                                    arrivalTime.setRouteNo(routeStop.getRoute());
-                                    arrivalTime.setRouteSeq(routeStop.getDirection());
-                                    arrivalTime.setStopId(routeStop.getCode());
+                                    arrivalTime.setRouteNo(routeStop.getRouteNo());
+                                    arrivalTime.setRouteSeq(routeStop.getRouteSeq());
+                                    arrivalTime.setStopId(routeStop.getStopId());
                                     arrivalTime.setStopSeq(routeStop.getSequence());
                                     arrivalTime.setOrder(Integer.toString(j));
                                     arrivalTime.setGeneratedAt(statusTime.getTime());
@@ -484,12 +484,12 @@ public class EtaService extends IntentService {
                 String lang = "en";
                 String today = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH).format(new Date());
                 String secret = firebaseRemoteConfig.getString("mtr_schedule_secret");
-                String key = HashUtil.sha1(routeStop.getRouteId() + "|" + routeStop.getCode() + "|" + lang + "|" + today + "|" + secret);
-                if (TextUtils.isEmpty(key) || TextUtils.isEmpty(routeStop.getRouteId()) || TextUtils.isEmpty(routeStop.getCode())) {
+                String key = HashUtil.sha1(routeStop.getRouteId() + "|" + routeStop.getStopId() + "|" + lang + "|" + today + "|" + secret);
+                if (TextUtils.isEmpty(key) || TextUtils.isEmpty(routeStop.getRouteId()) || TextUtils.isEmpty(routeStop.getStopId())) {
                     notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId, rowNo);
                     return;
                 }
-                disposables.add(mtrService.getSchedule(key, routeStop.getRouteId(), routeStop.getCode(), lang)
+                disposables.add(mtrService.getSchedule(key, routeStop.getRouteId(), routeStop.getStopId(), lang)
                         .subscribeWith(mtrScheduleObserver(routeStop, widgetId, notificationId, rowNo, isLast, codeMap)));
             }
 
@@ -533,9 +533,9 @@ public class EtaService extends IntentService {
                         if (data.getUp() != null) {
                             for (MtrSchedule schedule: data.getUp()) {
                                 ArrivalTime arrivalTime = MtrSchedule.Companion.toArrivalTime(getApplicationContext(), "UT", schedule, data.getCurrentTime(), codeMap);
-                                arrivalTime.setRouteNo(routeStop.getRoute());
-                                arrivalTime.setRouteSeq(routeStop.getDirection());
-                                arrivalTime.setStopId(routeStop.getCode());
+                                arrivalTime.setRouteNo(routeStop.getRouteNo());
+                                arrivalTime.setRouteSeq(routeStop.getRouteSeq());
+                                arrivalTime.setStopId(routeStop.getStopId());
                                 arrivalTime.setStopSeq(routeStop.getSequence());
                                 arrivalTime.setOrder(String.valueOf(i));
                                 if (arrivalTimeDatabase != null) {
@@ -547,9 +547,9 @@ public class EtaService extends IntentService {
                         if (data.getDown() != null) {
                             for (MtrSchedule schedule: data.getDown()) {
                                 ArrivalTime arrivalTime = MtrSchedule.Companion.toArrivalTime(getApplicationContext(), "DT", schedule, data.getCurrentTime(), codeMap);
-                                arrivalTime.setRouteNo(routeStop.getRoute());
-                                arrivalTime.setRouteSeq(routeStop.getDirection());
-                                arrivalTime.setStopId(routeStop.getCode());
+                                arrivalTime.setRouteNo(routeStop.getRouteNo());
+                                arrivalTime.setRouteSeq(routeStop.getRouteSeq());
+                                arrivalTime.setStopId(routeStop.getStopId());
                                 arrivalTime.setStopSeq(routeStop.getSequence());
                                 arrivalTime.setOrder(String.valueOf(i));
                                 if (arrivalTimeDatabase != null) {

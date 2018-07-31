@@ -140,7 +140,7 @@ data class Follow(
             follow.routeServiceType = route?.serviceType?:""
             follow.routeOrigin = route?.origin?:""
             follow.routeDestination = route?.destination?:""
-            follow.stopId = routeStop?.code?:""
+            follow.stopId = routeStop?.stopId?:""
             follow.stopLatitude = routeStop?.latitude?:""
             follow.stopLongitude = routeStop?.longitude?:""
             follow.stopName = routeStop?.name?:""

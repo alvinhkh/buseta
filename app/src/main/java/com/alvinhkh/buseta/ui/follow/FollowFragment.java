@@ -269,9 +269,9 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setClass(getContext(), SearchActivity.class);
                     intent.putExtra(C.EXTRA.STOP_OBJECT_STRING, new Gson().toJson(routeStop));
-                    shortcuts.add(new ShortcutInfo.Builder(getContext(), "buseta-" + routeStop.getCompanyCode() + routeStop.getRoute() + routeStop.getDirection() + routeStop.getCode())
-                            .setShortLabel(routeStop.getRoute() + " " + routeStop.getName())
-                            .setLongLabel(routeStop.getRoute() + " " + routeStop.getName() + " " + getString(R.string.destination, routeStop.getDestination()))
+                    shortcuts.add(new ShortcutInfo.Builder(getContext(), "buseta-" + routeStop.getCompanyCode() + routeStop.getRouteNo() + routeStop.getRouteSeq() + routeStop.getStopId())
+                            .setShortLabel(routeStop.getRouteNo() + " " + routeStop.getName())
+                            .setLongLabel(routeStop.getRouteNo() + " " + routeStop.getName() + " " + getString(R.string.destination, routeStop.getRouteDestination()))
                             .setIcon(Icon.createWithResource(getContext(), R.drawable.ic_shortcut_directions_bus))
                             .setIntent(intent)
                             .build());

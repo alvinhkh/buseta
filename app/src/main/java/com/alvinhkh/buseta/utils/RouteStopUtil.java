@@ -14,7 +14,6 @@ import com.alvinhkh.buseta.kmb.model.KmbRouteStop;
 import com.alvinhkh.buseta.lwb.model.LwbRouteStop;
 import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.model.RouteStop;
-import com.alvinhkh.buseta.model.FollowStop;
 import com.alvinhkh.buseta.mtr.model.AESBusStop;
 import com.alvinhkh.buseta.nlb.model.NlbRouteStop;
 import com.alvinhkh.buseta.nlb.model.NlbStop;
@@ -32,43 +31,25 @@ import timber.log.Timber;
 
 public class RouteStopUtil {
 
-    public static RouteStop fromFollowStop(FollowStop followStop) {
-        if (followStop == null) return null;
-        RouteStop object = new RouteStop();
-        object.setCompanyCode(followStop.companyCode);
-        object.setRoute(followStop.route);
-        object.setRouteId(followStop.routeId);
-        object.setDirection(followStop.direction);
-        object.setCode(followStop.code);
-        object.setSequence(followStop.sequence);
-        object.setDestination(followStop.locationEnd);
-        object.setOrigin(followStop.locationStart);
-        object.setName(followStop.name);
-        object.setEtaGet(followStop.etaGet);
-        object.setLatitude(followStop.latitude);
-        object.setLongitude(followStop.longitude);
-        return object;
-    }
-
     public static RouteStop fromFollow(Follow follow) {
         if (follow == null) return null;
         RouteStop object = new RouteStop();
         object.setCompanyCode(follow.getCompanyCode());
-        object.setRoute(follow.getRouteNo());
+        object.setRouteNo(follow.getRouteNo());
         object.setRouteId(follow.getRouteId());
         object.setRouteServiceType(follow.getRouteServiceType());
-        object.setDirection(follow.getRouteSeq());
-        object.setCode(follow.getStopId());
+        object.setRouteSeq(follow.getRouteSeq());
+        object.setStopId(follow.getStopId());
         object.setSequence(follow.getStopSeq());
-        object.setDestination(follow.getRouteDestination());
-        object.setOrigin(follow.getRouteOrigin());
+        object.setRouteDestination(follow.getRouteDestination());
+        object.setRouteOrigin(follow.getRouteOrigin());
         object.setName(follow.getStopName());
         object.setLatitude(follow.getStopLatitude());
         object.setLongitude(follow.getStopLongitude());
         object.setEtaGet(follow.getEtaGet());
         if (!TextUtils.isEmpty(object.getCompanyCode()) && object.getCompanyCode().equals(C.PROVIDER.KMB)) {
-            if (!TextUtils.isEmpty(object.getCode())) {
-                object.setImageUrl("http://www.kmb.hk/chi/img.php?file=" + object.getCode());
+            if (!TextUtils.isEmpty(object.getStopId())) {
+                object.setImageUrl("http://www.kmb.hk/chi/img.php?file=" + object.getStopId());
             }
         }
         return object;
@@ -100,11 +81,11 @@ public class RouteStopUtil {
                                              Boolean isLastStop) {
         RouteStop object = new RouteStop();
         object.setCompanyCode(C.PROVIDER.KMB);
-        object.setRoute(kmbRouteStop.route);
+        object.setRouteNo(kmbRouteStop.route);
         object.setRouteId(route.getCode());
         object.setRouteServiceType(route.getServiceType());
-        object.setDirection(kmbRouteStop.bound);
-        object.setCode(kmbRouteStop.bsiCode);
+        object.setRouteSeq(kmbRouteStop.bound);
+        object.setStopId(kmbRouteStop.bsiCode);
         object.setSequence(Integer.toString(position));
         object.setName(kmbRouteStop.nameTc);
         object.setFare(kmbRouteStop.airFare);
@@ -115,13 +96,13 @@ public class RouteStopUtil {
             object.setLatitude(String.valueOf(latlong.first));
             object.setLongitude(String.valueOf(latlong.second));
         }
-        object.setDestination(route.getDestination());
-        object.setOrigin(route.getOrigin());
-        if (!TextUtils.isEmpty(object.getCode())) {
-            object.setImageUrl("http://www.kmb.hk/chi/img.php?file=" + object.getCode());
+        object.setRouteDestination(route.getDestination());
+        object.setRouteOrigin(route.getOrigin());
+        if (!TextUtils.isEmpty(object.getStopId())) {
+            object.setImageUrl("http://www.kmb.hk/chi/img.php?file=" + object.getStopId());
         }
         object.setEtaGet(String.format("/?action=geteta&lang=tc&route=%s&bound=%s&stop=%s&stop_seq=%s&serviceType=%s",
-                object.getRoute(), object.getDirection(), object.getCode(), isLastStop ? 999 : object.getSequence(), route.getServiceType()));
+                object.getRouteNo(), object.getRouteSeq(), object.getStopId(), isLastStop ? 999 : object.getSequence(), route.getServiceType()));
         return object;
     }
 
@@ -131,24 +112,24 @@ public class RouteStopUtil {
                                     Boolean isLastStop) {
         RouteStop object = new RouteStop();
         object.setCompanyCode(C.PROVIDER.KMB);
-        object.setRoute(route.getName());
+        object.setRouteNo(route.getName());
         object.setRouteId(route.getCode());
         object.setRouteServiceType(route.getServiceType());
-        object.setDirection(route.getSequence());
-        object.setCode(lwbRouteStop.subarea);
+        object.setRouteSeq(route.getSequence());
+        object.setStopId(lwbRouteStop.subarea);
         object.setSequence(Integer.toString(position));
         object.setName(lwbRouteStop.name_tc);
         object.setFare(lwbRouteStop.air_cond_fare);
         object.setLatitude(lwbRouteStop.lat);
         object.setLongitude(lwbRouteStop.lng);
         object.setLocation(lwbRouteStop.address_tc);
-        object.setDestination(route.getDestination());
-        object.setOrigin(route.getOrigin());
-        if (!TextUtils.isEmpty(object.getCode())) {
-            object.setImageUrl("http://www.kmb.hk/chi/img.php?file=" + object.getCode());
+        object.setRouteDestination(route.getDestination());
+        object.setRouteOrigin(route.getOrigin());
+        if (!TextUtils.isEmpty(object.getStopId())) {
+            object.setImageUrl("http://www.kmb.hk/chi/img.php?file=" + object.getStopId());
         }
         object.setEtaGet(String.format("/?action=geteta&lang=tc&route=%s&bound=%s&stop=%s&stop_seq=%s&serviceType=%s",
-                object.getRoute(), object.getDirection(), object.getCode(), isLastStop ? 999 : object.getSequence(), route.getServiceType()));
+                object.getRouteNo(), object.getRouteSeq(), object.getStopId(), isLastStop ? 999 : object.getSequence(), route.getServiceType()));
         return object;
     }
 
@@ -157,37 +138,37 @@ public class RouteStopUtil {
                                     @NonNull Route route) {
         RouteStop object = new RouteStop();
         object.setCompanyCode(C.PROVIDER.NLB);
-        object.setRoute(route.getName());
+        object.setRouteNo(route.getName());
         object.setRouteId(nlbRouteStop.route_id);
         object.setRouteServiceType(route.getServiceType());
-        object.setDirection(route.getSequence());
-        object.setCode(nlbRouteStop.stop_id);
+        object.setRouteSeq(route.getSequence());
+        object.setStopId(nlbRouteStop.stop_id);
         object.setName(nlbStop.stop_name_c);
         object.setFare(nlbRouteStop.fare);
         object.setFareHoliday(nlbRouteStop.fare_holiday);
         object.setLatitude(nlbStop.latitude);
         object.setLongitude(nlbStop.longitude);
         object.setLocation(nlbStop.stop_location_c);
-        object.setDestination(route.getDestination());
-        object.setOrigin(route.getOrigin());
+        object.setRouteDestination(route.getDestination());
+        object.setRouteOrigin(route.getOrigin());
         return object;
     }
 
     public static RouteStop fromNwst(@NonNull NwstStop nwstStop,
                                      @NonNull Route route) {
         RouteStop object = new RouteStop();
-        object.setCode(nwstStop.getStopId());
+        object.setStopId(nwstStop.getStopId());
         object.setCompanyCode(route.getCompanyCode());
-        object.setDestination(route.getDestination());
-        object.setDirection(route.getSequence());
+        object.setRouteDestination(route.getDestination());
+        object.setRouteSeq(route.getSequence());
         object.setFare(Double.toString(nwstStop.getAdultFare()));
         object.setFareChild(Double.toString(nwstStop.getChildFare()));
         object.setFareSenior(Double.toString(nwstStop.getSeniorFare()));
         object.setLatitude(Double.toString(nwstStop.getLatitude()));
         object.setLongitude(Double.toString(nwstStop.getLongitude()));
         object.setName(TextUtils.isEmpty(nwstStop.getStopName()) ? nwstStop.getStopName() : nwstStop.getStopName().split(",")[0]);
-        object.setOrigin(route.getOrigin());
-        object.setRoute(route.getName());
+        object.setRouteOrigin(route.getOrigin());
+        object.setRouteNo(route.getName());
         object.setRouteId(nwstStop.getRdv());
         object.setRouteServiceType(route.getServiceType());
         object.setSequence(Integer.toString(nwstStop.getSequence()));
@@ -203,10 +184,10 @@ public class RouteStopUtil {
                                        @Nullable MtrBusFare mtrBusFare,
                                        @NonNull Route route) {
         RouteStop object = new RouteStop();
-        object.setCode(String.valueOf(mtrBusStop.getStationSequenceNo()));
+        object.setStopId(String.valueOf(mtrBusStop.getStationSequenceNo()));
         object.setCompanyCode(route.getCompanyCode());
-        object.setDestination(route.getDestination());
-        object.setDirection(route.getSequence());
+        object.setRouteDestination(route.getDestination());
+        object.setRouteSeq(route.getSequence());
         if (mtrBusFare != null) {
             object.setFare(String.valueOf(mtrBusFare.getFareSingleAdult()));
             object.setFareChild(String.valueOf(mtrBusFare.getFareSingleChild()));
@@ -217,8 +198,8 @@ public class RouteStopUtil {
         if (!TextUtils.isEmpty(mtrBusStop.getStationNameChi())) {
             object.setName(Parser.unescapeEntities(mtrBusStop.getStationNameChi(), false));
         }
-        object.setOrigin(route.getOrigin());
-        object.setRoute(route.getName());
+        object.setRouteOrigin(route.getOrigin());
+        object.setRouteNo(route.getName());
         object.setRouteId(mtrBusStop.getRouteId());
         object.setRouteServiceType(route.getServiceType());
         object.setSequence(String.valueOf(mtrBusStop.getStationSequenceNo()));
@@ -230,16 +211,16 @@ public class RouteStopUtil {
     public static RouteStop fromAESBus(@NonNull AESBusStop aesBusStop,
                                        @NonNull Route route) {
         RouteStop object = new RouteStop();
-        object.setCode(String.valueOf(aesBusStop.getStopId()));
+        object.setStopId(String.valueOf(aesBusStop.getStopId()));
         object.setCompanyCode(route.getCompanyCode());
-        object.setDestination(route.getDestination());
-        object.setDirection(route.getSequence());
+        object.setRouteDestination(route.getDestination());
+        object.setRouteSeq(route.getSequence());
         object.setFare("0");
         object.setLatitude(aesBusStop.getStopLatitude());
         object.setLongitude(aesBusStop.getStopLongitude());
         object.setName(aesBusStop.getStopNameCn());
-        object.setOrigin(route.getOrigin());
-        object.setRoute(route.getName());
+        object.setRouteOrigin(route.getOrigin());
+        object.setRouteNo(route.getName());
         object.setRouteId(aesBusStop.getBusNumber());
         object.setRouteServiceType(route.getServiceType());
         object.setSequence(String.valueOf(aesBusStop.getNearestStopID()));
@@ -250,16 +231,16 @@ public class RouteStopUtil {
 
     public static RouteStop fromMtrLineStation(@NonNull MtrLineStation mtrLineStation) {
         RouteStop object = new RouteStop();
-        object.setCode(mtrLineStation.getStationCode());
+        object.setStopId(mtrLineStation.getStationCode());
         object.setCompanyCode(C.PROVIDER.MTR);
-        // object.destination = "";
-        object.setDirection(mtrLineStation.getDirection());
+        // object.routeDestination = "";
+        object.setRouteSeq(mtrLineStation.getDirection());
         // object.fare = "0";
         // object.latitude = "";
         // object.longitude = "";
         object.setName(mtrLineStation.getChineseName());
-        // object.origin = "";
-        object.setRoute(mtrLineStation.getLineCode());
+        // object.routeOrigin = "";
+        object.setRouteNo(mtrLineStation.getLineCode());
         object.setRouteId(mtrLineStation.getLineCode());
         object.setSequence(mtrLineStation.getStationID());
         object.setEtaGet("");

@@ -6,10 +6,10 @@ import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.follow.model.Follow
 
 data class RouteStop(
-        var code: String? = null,
+        var stopId: String? = null,
         var companyCode: String? = null,
-        var destination: String? = null,
-        var direction: String? = null,
+        var routeDestination: String? = null,
+        var routeSeq: String? = null,
         var etaGet: String? = null,
         var fare: String? = null,
         var fareHoliday: String? = null,
@@ -20,9 +20,9 @@ data class RouteStop(
         var location: String? = null,
         var longitude: String? = null,
         var name: String? = null,
-        var origin: String? = null,
+        var routeOrigin: String? = null,
         var sequence: String? = null,
-        var route: String? = null,
+        var routeNo: String? = null,
         var routeId: String? = null,
         var routeServiceType: String? = null,
         var description: String? = null
@@ -50,10 +50,10 @@ data class RouteStop(
             parcel.readString())
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeString(code)
+        parcel.writeString(stopId)
         parcel.writeString(companyCode)
-        parcel.writeString(destination)
-        parcel.writeString(direction)
+        parcel.writeString(routeDestination)
+        parcel.writeString(routeSeq)
         parcel.writeString(etaGet)
         parcel.writeString(fare)
         parcel.writeString(fareHoliday)
@@ -64,9 +64,9 @@ data class RouteStop(
         parcel.writeString(location)
         parcel.writeString(longitude)
         parcel.writeString(name)
-        parcel.writeString(origin)
+        parcel.writeString(routeOrigin)
         parcel.writeString(sequence)
-        parcel.writeString(route)
+        parcel.writeString(routeNo)
         parcel.writeString(routeId)
         parcel.writeString(routeServiceType)
         parcel.writeString(description)
@@ -93,12 +93,12 @@ data class RouteStop(
                 follow.type = Follow.TYPE_RAILWAY_STOP
             }
             follow.routeId = routeStop.routeId?:""
-            follow.routeNo = routeStop.route?:""
-            follow.routeSeq = routeStop.direction?:""
+            follow.routeNo = routeStop.routeNo?:""
+            follow.routeSeq = routeStop.routeSeq?:""
             follow.routeServiceType = routeStop.routeServiceType?:""
-            follow.routeDestination = routeStop.destination?:""
-            follow.routeOrigin = routeStop.origin?:""
-            follow.stopId = routeStop.code?:""
+            follow.routeDestination = routeStop.routeDestination?:""
+            follow.routeOrigin = routeStop.routeOrigin?:""
+            follow.stopId = routeStop.stopId?:""
             follow.stopSeq = routeStop.sequence?:""
             follow.stopName = routeStop.name?:""
             follow.stopLatitude = routeStop.latitude?:""

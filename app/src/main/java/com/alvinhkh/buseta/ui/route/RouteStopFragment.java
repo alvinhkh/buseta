@@ -222,7 +222,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
         if (task.isSuccessful()) {
             if (mPendingGeofenceTask == PendingGeofenceTask.ADD) {
                 updateGeofencesAdded(String.format(Locale.ENGLISH, "%s-%s-%s-%s", routeStop.getCompanyCode(),
-                        routeStop.getRoute(), routeStop.getDirection(), routeStop.getCode()));
+                        routeStop.getRouteNo(), routeStop.getRouteSeq(), routeStop.getStopId()));
                 showSnackbar(getString(R.string.arrival_alert_added));
             } else if (mPendingGeofenceTask == PendingGeofenceTask.REMOVE) {
                 updateGeofencesAdded("");
@@ -300,7 +300,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
         return PreferenceManager.getDefaultSharedPreferences(getContext())
                 .getString(C.PREF.GEOFENCES_KEY, "")
                 .equals(String.format(Locale.ENGLISH, "%s-%s-%s-%s", routeStop.getCompanyCode(),
-                        routeStop.getRoute(), routeStop.getDirection(), routeStop.getCode()));
+                        routeStop.getRouteNo(), routeStop.getRouteSeq(), routeStop.getStopId()));
     }
 
     /**
@@ -509,8 +509,8 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
         /*
         if (!TextUtils.isEmpty(routeStop.getCompanyCode())
                 && routeStop.getCompanyCode().equals(C.PROVIDER.KMB)
-                && !TextUtils.isEmpty(routeStop.getCode())) {
-            disposables.add(kmbService.getRoutesInStop(routeStop.getCode())
+                && !TextUtils.isEmpty(routeStop.getStopId())) {
+            disposables.add(kmbService.getRoutesInStop(routeStop.getStopId())
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeWith(kmbRoutesInStopObserver()));
@@ -560,7 +560,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
             /*
             if (!TextUtils.isEmpty(routeStop.latitude) && !TextUtils.isEmpty(routeStop.longitude)) {
                 mGeofenceList.add(new Geofence.Builder()
-                        .setRequestId(String.format(Locale.ENGLISH, "%s %s", routeStop.route, routeStop.name))
+                        .setRequestId(String.format(Locale.ENGLISH, "%s %s", routeStop.routeNo, routeStop.name))
                         .setCircularRegion(
                                 Double.parseDouble(routeStop.latitude),
                                 Double.parseDouble(routeStop.longitude),
@@ -756,9 +756,9 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
             });
 
             vh.nameText.setText(TextUtils.isEmpty(routeStop.getName()) ? "" : routeStop.getName().trim());
-            vh.routeNoText.setText(TextUtils.isEmpty(routeStop.getRoute()) ? "" : routeStop.getRoute().trim());
-            if (!TextUtils.isEmpty(routeStop.getOrigin()) && !TextUtils.isEmpty(routeStop.getDestination())) {
-                vh.routeLocationText.setText(getString(R.string.destination, routeStop.getDestination()));
+            vh.routeNoText.setText(TextUtils.isEmpty(routeStop.getRouteNo()) ? "" : routeStop.getRouteNo().trim());
+            if (!TextUtils.isEmpty(routeStop.getRouteOrigin()) && !TextUtils.isEmpty(routeStop.getRouteDestination())) {
+                vh.routeLocationText.setText(getString(R.string.destination, routeStop.getRouteDestination()));
             }
             vh.stopLocationText.setText(TextUtils.isEmpty(routeStop.getLocation()) ? "" : routeStop.getLocation().trim());
             StringBuilder fareText = new StringBuilder();

@@ -116,7 +116,7 @@ public class EtaWidgetService extends RemoteViewsService {
                     remoteViews.setViewVisibility(R.id.eta, View.VISIBLE);
                     remoteViews.setViewVisibility(R.id.eta2, View.GONE);
                     remoteViews.setViewVisibility(R.id.eta3, View.GONE);
-                    remoteViews.setTextViewText(R.id.left_line1, stop.getRoute() + " " + stop.getName());
+                    remoteViews.setTextViewText(R.id.left_line1, stop.getRouteNo() + " " + stop.getName());
                 } else if (itemNoOfLines == 2) {
                     remoteViews.setViewVisibility(R.id.left_line1, View.VISIBLE);
                     remoteViews.setViewVisibility(R.id.left_line2, View.VISIBLE);
@@ -124,11 +124,11 @@ public class EtaWidgetService extends RemoteViewsService {
                     remoteViews.setViewVisibility(R.id.eta, View.VISIBLE);
                     remoteViews.setViewVisibility(R.id.eta2, View.VISIBLE);
                     remoteViews.setViewVisibility(R.id.eta3, View.GONE);
-                    if (!TextUtils.isEmpty(stop.getDestination())) {
-                        remoteViews.setTextViewText(R.id.left_line1, stop.getRoute() + " " +
-                                getString(R.string.destination, stop.getDestination()));
+                    if (!TextUtils.isEmpty(stop.getRouteDestination())) {
+                        remoteViews.setTextViewText(R.id.left_line1, stop.getRouteNo() + " " +
+                                getString(R.string.destination, stop.getRouteDestination()));
                     } else {
-                        remoteViews.setTextViewText(R.id.left_line1, stop.getRoute());
+                        remoteViews.setTextViewText(R.id.left_line1, stop.getRouteNo());
                     }
                     remoteViews.setTextViewText(R.id.left_line2, stop.getName());
                 } else {
@@ -138,10 +138,10 @@ public class EtaWidgetService extends RemoteViewsService {
                     remoteViews.setViewVisibility(R.id.eta2, View.VISIBLE);
                     remoteViews.setViewVisibility(R.id.eta3, View.VISIBLE);
                     remoteViews.setTextViewText(R.id.left_line1, stop.getName());
-                    remoteViews.setTextViewText(R.id.left_line2, stop.getRoute());
-                    if (!TextUtils.isEmpty(stop.getDestination())) {
+                    remoteViews.setTextViewText(R.id.left_line2, stop.getRouteNo());
+                    if (!TextUtils.isEmpty(stop.getRouteDestination())) {
                         remoteViews.setViewVisibility(R.id.left_line3, View.VISIBLE);
-                        remoteViews.setTextViewText(R.id.left_line3, getString(R.string.destination, stop.getDestination()));
+                        remoteViews.setTextViewText(R.id.left_line3, getString(R.string.destination, stop.getRouteDestination()));
                     } else {
                         remoteViews.setViewVisibility(R.id.left_line3, View.GONE);
                     }

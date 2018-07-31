@@ -29,7 +29,6 @@ import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.datagovhk.DataGovHkService;
 import com.alvinhkh.buseta.datagovhk.model.MtrLineStation;
-import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.service.EtaService;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
@@ -40,7 +39,6 @@ import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.RetryWithDelay;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -331,7 +329,7 @@ public class MtrLineStationsFragment extends Fragment
                     for (MtrLineStation station: stations) {
                         RouteStop routeStop = RouteStopUtil.fromMtrLineStation(station);
                         if (!codeMap.containsKey(station.getStationCode())) {
-                            routeStop.setRoute(lineName);
+                            routeStop.setRouteNo(lineName);
                             adapter.add(new Item(Item.TYPE_DATA, routeStop));
                             codeMap.put(station.getStationCode(), station.getChineseName());
                         }

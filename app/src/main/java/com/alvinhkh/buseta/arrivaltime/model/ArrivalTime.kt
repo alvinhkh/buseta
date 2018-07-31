@@ -118,9 +118,9 @@ data class ArrivalTime (
             calendar.add(Calendar.MINUTE, 1)
             arrivalTime.expire = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).format(calendar.time)
             arrivalTime.companyCode = routeStop?.companyCode?:""
-            arrivalTime.routeNo = routeStop?.route?:""
-            arrivalTime.routeSeq = routeStop?.direction?:""
-            arrivalTime.stopId = routeStop?.code?:""
+            arrivalTime.routeNo = routeStop?.routeNo?:""
+            arrivalTime.routeSeq = routeStop?.routeSeq?:""
+            arrivalTime.stopId = routeStop?.stopId?:""
             arrivalTime.stopSeq = routeStop?.sequence?:""
             return arrivalTime
         }
@@ -140,9 +140,9 @@ data class ArrivalTime (
 
         fun getList(database: ArrivalTimeDatabase, stop: RouteStop): List<ArrivalTime> {
             return database.arrivalTimeDao().getList(stop.companyCode?:"",
-                    stop.route?:"",
-                    stop.direction?:"",
-                    stop.code?:"",
+                    stop.routeNo?:"",
+                    stop.routeSeq?:"",
+                    stop.stopId?:"",
                     stop.sequence?:"",
                     System.currentTimeMillis() - 600000,
                     System.currentTimeMillis().toString())

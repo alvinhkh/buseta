@@ -215,11 +215,11 @@ class SearchActivity : AppCompatActivity() {
                     if (routeStop.companyCode!! == C.PROVIDER.MTR) {
                         val i = Intent(applicationContext, MtrActivity::class.java)
                         i.putExtra(C.EXTRA.LINE_CODE, routeStop.routeId)
-                        i.putExtra(C.EXTRA.LINE_NAME, routeStop.route)
+                        i.putExtra(C.EXTRA.LINE_NAME, routeStop.routeNo)
                         return i
                     }
                     val i = getBusIntent(routeStop.companyCode!!)
-                    i.putExtra(C.EXTRA.ROUTE_NO, routeStop.route)
+                    i.putExtra(C.EXTRA.ROUTE_NO, routeStop.routeNo)
                     i.putExtra(C.EXTRA.STOP_OBJECT, routeStop)
                     return i
                 } else if (!TextUtils.isEmpty(routeNo) && !TextUtils.isEmpty(company)) {

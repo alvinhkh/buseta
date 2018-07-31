@@ -89,7 +89,7 @@ public abstract class RouteActivityAbstract extends BaseActivity {
         }
         if (TextUtils.isEmpty(routeNo)) {
             if (stopFromIntent != null) {
-                routeNo = stopFromIntent.getRoute();
+                routeNo = stopFromIntent.getRouteNo();
             }
         }
 
@@ -141,12 +141,6 @@ public abstract class RouteActivityAbstract extends BaseActivity {
             @Override
             public void onChanged() {
                 super.onChanged();
-                if (isScrollToPage) {
-                    if (viewPager != null) {
-                        viewPager.setCurrentItem(fragNo, false);
-                    }
-                    isScrollToPage = false;
-                }
                 if (pagerAdapter.getCount() > 0) {
                     if (emptyView != null) {
                         emptyView.setVisibility(View.GONE);
@@ -250,11 +244,10 @@ public abstract class RouteActivityAbstract extends BaseActivity {
             if (TextUtils.isEmpty(route.getName()) || !route.getName().equals(routeNo)) continue;
             companyCode = route.getCompanyCode();
             pagerAdapter.addSequence(route);
-            if (
-                    stopFromIntent != null && route.isSpecial() != null && !route.isSpecial()
-                    && route.getCompanyCode() != null && route.getSequence() != null && route.getServiceType() != null
+            if (stopFromIntent != null && route.getCompanyCode() != null
+                    && route.getSequence() != null && route.getServiceType() != null
                     && route.getCompanyCode().equals(stopFromIntent.getCompanyCode())
-                    && route.getSequence().equals(stopFromIntent.getDirection())
+                    && route.getSequence().equals(stopFromIntent.getRouteSeq())
                     && route.getServiceType().equals(stopFromIntent.getRouteServiceType())
             ) {
                 fragNo = pagerAdapter.getCount();
@@ -274,6 +267,13 @@ public abstract class RouteActivityAbstract extends BaseActivity {
                 suggestionDatabase.suggestionDao().insert(suggestion);
             }
             appIndexStart(suggestion);
+        }
+
+        if (isScrollToPage) {
+            if (viewPager != null && fragNo - 1 >= 0) {
+                viewPager.setCurrentItem(fragNo - 1, false);
+            }
+            isScrollToPage = false;
         }
     }
 

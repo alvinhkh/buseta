@@ -13,7 +13,6 @@ import android.text.style.ForegroundColorSpan;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
 import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.service.NotificationService;
@@ -40,19 +39,19 @@ public class NotificationUtil {
         SpannableStringBuilder subText = new SpannableStringBuilder();
         SpannableStringBuilder contentInfo = new SpannableStringBuilder();
 
-        bigContentTitle.append(object.getRoute());
-        subText.append(object.getRoute());
+        bigContentTitle.append(object.getRouteNo());
+        subText.append(object.getRouteNo());
         if (!TextUtils.isEmpty(object.getName())) {
             bigContentTitle.append(" ");
             bigContentTitle.append(object.getName());
             subText.append(" ");
             subText.append(object.getName());
         }
-        if (!TextUtils.isEmpty(object.getDestination())) {
+        if (!TextUtils.isEmpty(object.getRouteDestination())) {
             bigContentTitle.append(" ");
-            bigContentTitle.append(context.getString(R.string.destination, object.getDestination()));
+            bigContentTitle.append(context.getString(R.string.destination, object.getRouteDestination()));
             subText.append(" ");
-            subText.append(context.getString(R.string.destination, object.getDestination()));
+            subText.append(context.getString(R.string.destination, object.getRouteDestination()));
         }
 
         for (ArrivalTime arrivalTime : arrivalTimes) {
@@ -214,9 +213,9 @@ public class NotificationUtil {
 
     public static Integer getNotificationId(RouteStop object) {
         Integer notificationId = 1000;
-        if (!TextUtils.isEmpty(object.getRoute())) {
-            for (int i = 0; i < object.getRoute().length(); i++) {
-                notificationId += object.getRoute().charAt(i);
+        if (!TextUtils.isEmpty(object.getRouteNo())) {
+            for (int i = 0; i < object.getRouteNo().length(); i++) {
+                notificationId += object.getRouteNo().charAt(i);
             }
         }
         if (!TextUtils.isEmpty(object.getName())) {
@@ -226,8 +225,8 @@ public class NotificationUtil {
         if (!TextUtils.isEmpty(object.getCompanyCode())) {
             notificationId += object.getCompanyCode().codePointAt(0);
         }
-        if (!TextUtils.isEmpty(object.getDestination())) {
-            notificationId += object.getDestination().codePointAt(0);
+        if (!TextUtils.isEmpty(object.getRouteDestination())) {
+            notificationId += object.getRouteDestination().codePointAt(0);
         }
         notificationId = Math.abs(notificationId);
         return notificationId;

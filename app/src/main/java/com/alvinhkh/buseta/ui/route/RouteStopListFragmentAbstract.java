@@ -340,6 +340,11 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
 
     @Override
     public void onDestroy() {
+        if (mapFragment != null) {
+            if (getChildFragmentManager() != null) {
+                getChildFragmentManager().beginTransaction().remove(mapFragment).commitAllowingStateLoss();
+            }
+        }
         disposables.clear();
         initLoadHandler.removeCallbacksAndMessages(null);
         refreshHandler.removeCallbacksAndMessages(null);
@@ -608,8 +613,8 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                 if (bundle == null) return;
                 RouteStop routeStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
                 if (routeStop == null) return;
-                if (routeStop.getRoute() == null || !routeStop.getRoute().equals(route.getName())) return;
-                if (routeStop.getDirection() == null || !routeStop.getDirection().equals(route.getSequence())) return;
+                if (routeStop.getRouteNo() == null || !routeStop.getRouteNo().equals(route.getName())) return;
+                if (routeStop.getRouteSeq() == null || !routeStop.getRouteSeq().equals(route.getSequence())) return;
                 if (bundle.getBoolean(C.EXTRA.UPDATED) || bundle.getBoolean(C.EXTRA.FAIL)) {
                     if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
                         swipeRefreshLayout.setRefreshing(false);
@@ -713,7 +718,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
             }
             routeStops.clear();
             if (adapter.getItemCount() > 0 && getContext() != null) {
-                for (int i = 0, j = 0; i < adapter.getItemCount(); i++) {
+                for (int i = 0; i < adapter.getItemCount(); i++) {
                     Item item = adapter.getItem(i);
                     if (item.getType() != Item.TYPE_DATA) continue;
                     RouteStop stop = (RouteStop) item.getObject();
@@ -728,7 +733,6 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                                 .position(new LatLng(Double.parseDouble(stop.getLatitude()), Double.parseDouble(stop.getLongitude())))
                                 .icon(BitmapDescriptorFactory.fromBitmap(bmp))).setTag(stop);
                     }
-                    j++;
                 }
                 PolylineOptions singleLine = new PolylineOptions().width(20).zIndex(1)
                         .color(ContextCompat.getColor(getContext(), R.color.grey))
@@ -824,24 +828,22 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         adapterUpdateHandler.post(adapterUpdateRunnable);
         if (adapter != null) {
             if (adapter.getItemCount() > 0) {
-                if (navToStop != null) {
-                    for (int i = 0, j = 0; i < adapter.getItemCount(); i++) {
+                if (route != null && navToStop != null
+                        && route.getCompanyCode().equals(navToStop.getCompanyCode())
+                        && route.getName().equals(navToStop.getRouteNo())
+                        && route.getSequence().equals(navToStop.getRouteSeq())
+                        && route.getServiceType().equals(navToStop.getRouteServiceType())) {
+                    for (int i = 0; i < adapter.getItemCount(); i++) {
                         Item item = adapter.getItem(i);
                         if (item.getType() != Item.TYPE_DATA) continue;
                         RouteStop stop = (RouteStop) item.getObject();
                         if (stop != null &&
-                                stop.getCompanyCode() != null &&
-                                stop.getRoute() != null &&
                                 stop.getName() != null &&
-                                stop.getDirection() != null &&
                                 stop.getSequence() != null &&
-                                stop.getCompanyCode().equals(navToStop.getCompanyCode()) &&
-                                stop.getRoute().equals(navToStop.getRoute()) &&
                                 stop.getName().equals(navToStop.getName()) &&
-                                stop.getDirection().equals(navToStop.getDirection()) &&
                                 stop.getSequence().equals(navToStop.getSequence())
                                 ) {
-                            scrollToPosition = j;
+                            scrollToPosition = i;
                             isScrollToPosition = true;
                         }
                     }
