@@ -4,7 +4,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'io.fabric.tools:gradle:1.25.2'
+        classpath 'io.fabric.tools:gradle:1.25.4'
     }
 }
 
@@ -19,14 +19,14 @@ apply plugin: 'kotlin-kapt'
 def versionMajor = 1
 def versionMinor = 0
 def versionPatch = 2
-def versionBuild = 0
+def versionBuild = 1
 
 android {
     compileSdkVersion 27
     buildToolsVersion '27.0.3'
     defaultConfig {
         applicationId "com.alvinhkh.buseta"
-        minSdkVersion 15
+        minSdkVersion 16
         targetSdkVersion 27
         versionCode versionMajor * 10000 + versionMinor * 1000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
@@ -68,13 +68,8 @@ android {
     }
 }
 
-repositories {
-    mavenCentral()
-    maven { url 'https://maven.fabric.io/public' }
-}
-
 dependencies {
-    implementation('com.squareup.okhttp3:okhttp:3.10.0') {
+    implementation('com.squareup.okhttp3:okhttp:3.11.0') {
         exclude group: 'org.json'
     }
     implementation 'android.arch.lifecycle:runtime:1.1.1'
@@ -97,24 +92,24 @@ dependencies {
     implementation 'com.google.android.gms:play-services-location:15.0.1'
     implementation 'com.google.android.gms:play-services-maps:15.0.1'
     implementation 'com.google.android.gms:play-services-oss-licenses:16.0.0'
-    implementation 'com.google.code.gson:gson:2.8.2'
+    implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.google.firebase:firebase-ads:15.0.1'
     implementation 'com.google.firebase:firebase-appindexing:16.0.1'
     implementation 'com.google.firebase:firebase-config:16.0.0'
     implementation 'com.google.firebase:firebase-core:16.0.1'
     implementation 'com.google.firebase:firebase-firestore:17.0.3'
     implementation 'com.google.maps.android:android-maps-utils:0.5'
-    implementation 'com.google.maps:google-maps-services:0.2.7'
+    implementation 'com.google.maps:google-maps-services:0.2.9'
     implementation 'com.firebase:firebase-jobdispatcher:0.8.5'
-    implementation ('com.firebaseui:firebase-ui-firestore:3.3.0') {
+    implementation ('com.firebaseui:firebase-ui-firestore:4.1.0') {
         exclude group: 'com.google.firebase'
     }
     implementation (group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1') {
         exclude group: 'stax', module: 'stax-api'
         exclude group: 'xpp3', module: 'xpp3'
     }
-    implementation 'org.jsoup:jsoup:1.11.2'
-    implementation 'com.opencsv:opencsv:4.1'
+    implementation 'org.jsoup:jsoup:1.11.3'
+    implementation 'com.opencsv:opencsv:4.2'
     implementation 'com.github.chrisbanes:PhotoView:2.1.3'
     implementation 'com.squareup.retrofit2:retrofit:2.4.0'
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
@@ -124,17 +119,15 @@ dependencies {
     implementation ('com.squareup.retrofit2:converter-simplexml:2.4.0') {
         exclude group: 'org.simpleframework', module: 'simple-xml'
     }
-    implementation 'com.jakewharton.timber:timber:4.7.0'
+    implementation 'com.jakewharton.timber:timber:4.7.1'
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
-    implementation 'io.reactivex.rxjava2:rxjava:2.1.12'
-    implementation 'org.osmdroid:osmdroid-android:6.0.1'
+    implementation 'io.reactivex.rxjava2:rxjava:2.1.17'
+    implementation 'org.osmdroid:osmdroid-android:6.0.2'
     implementation 'org.osgeo:proj4j:0.1.0'
     implementation 'org.slf4j:slf4j-nop:1.7.25'
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.5.4'
-    releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.4'
-    implementation('com.crashlytics.sdk.android:crashlytics:2.9.1@aar') {
-        transitive = true
-    }
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.6.1'
+    releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.1'
+    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.4'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'androidx.core:core-ktx:0.3'
 }
