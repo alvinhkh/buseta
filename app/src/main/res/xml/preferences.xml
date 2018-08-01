@@ -116,13 +116,6 @@
             android:positiveButtonText="@string/action_confirm" />
 
         <SwitchPreferenceCompat
-            android:key="map_direction_api"
-            android:title="@string/map_direction_api"
-            android:summaryOn="@string/display"
-            android:summaryOff="@string/hide"
-            android:defaultValue="false" />
-
-        <SwitchPreferenceCompat
             android:visible="false"
             android:key="com.alvinhkh.buseta.AD_HIDE"
             android:title="@string/title_hide_ad"

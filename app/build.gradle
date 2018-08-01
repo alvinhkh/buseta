@@ -99,7 +99,6 @@ dependencies {
     implementation 'com.google.firebase:firebase-core:16.0.1'
     implementation 'com.google.firebase:firebase-firestore:17.0.3'
     implementation 'com.google.maps.android:android-maps-utils:0.5'
-    implementation 'com.google.maps:google-maps-services:0.2.9'
     implementation 'com.firebase:firebase-jobdispatcher:0.8.5'
     implementation ('com.firebaseui:firebase-ui-firestore:4.1.0') {
         exclude group: 'com.google.firebase'

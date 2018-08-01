@@ -63,18 +63,8 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.RoundCap;
-import com.google.maps.DirectionsApi;
-import com.google.maps.DirectionsApiRequest;
-import com.google.maps.GeoApiContext;
 import com.google.maps.android.ui.IconGenerator;
-import com.google.maps.errors.ApiException;
-import com.google.maps.model.DirectionsLeg;
-import com.google.maps.model.DirectionsResult;
-import com.google.maps.model.DirectionsRoute;
-import com.google.maps.model.DirectionsStep;
-import com.google.maps.model.EncodedPolyline;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -696,22 +686,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
 
     private void loadMapData(GoogleMap map) {
         if (map != null && adapter != null) {
-            Boolean isSnapToRoad = false;
-            if (getActivity() != null) {
-                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-                isSnapToRoad = preferences != null && preferences.getBoolean("map_direction_api", false);
-            }
-            if (hasMapCoordinates) {
-                isSnapToRoad = false;
-            }
 
-            // note: there is an api free limit
-            GeoApiContext geoApiContext = null;
-            if (isSnapToRoad) {
-                geoApiContext = new GeoApiContext.Builder()
-                        .apiKey(getString(R.string.DIRECTION_API_KEY))
-                        .build();
-            }
             map.clear();
             if (!hasMapCoordinates) {
                 mapCoordinates.clear();
@@ -741,72 +716,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                     if (pair.first == null || pair.second == null) continue;
                     singleLine.add(new LatLng(pair.first, pair.second));
                 }
-                Boolean hasError = false;
-                if (isSnapToRoad) {
-                    for (int i = 0; i < mapCoordinates.size(); i++) {
-                        if (hasError) break;
-                        List<LatLng> path = new ArrayList<>();
-                        Pair<Double, Double> pair = mapCoordinates.get(i);
-                        if (i + 1 < mapCoordinates.size() && mapCoordinates.get(i + 1) != null) {
-                            Pair<Double, Double> nextPair = mapCoordinates.get(i + 1);
-                            // https://stackoverflow.com/a/47556917/2411672
-                            DirectionsApiRequest req = DirectionsApi.getDirections(geoApiContext,
-                                    pair.first + "," + pair.second, nextPair.first + "," + nextPair.second);
-                            try {
-                                DirectionsResult res = req.await();
-                                // loop through legs and steps to get encoded polylines of each step
-                                if (res.routes != null && res.routes.length > 0) {
-                                    DirectionsRoute route = res.routes[0];
-                                    if (route.legs != null) {
-                                        for (int j = 0; j < route.legs.length; j++) {
-                                            DirectionsLeg leg = route.legs[j];
-                                            if (leg.steps != null) {
-                                                for (int k = 0; k < leg.steps.length; k++) {
-                                                    DirectionsStep step = leg.steps[k];
-                                                    if (step.steps != null && step.steps.length > 0) {
-                                                        for (int l = 0; l < step.steps.length; l++) {
-                                                            DirectionsStep step1 = step.steps[l];
-                                                            EncodedPolyline points1 = step1.polyline;
-                                                            if (points1 != null) {
-                                                                // decode polyline and add points to list of route coordinates
-                                                                List<com.google.maps.model.LatLng> coords1 = points1.decodePath();
-                                                                for (com.google.maps.model.LatLng coord1 : coords1) {
-                                                                    path.add(new LatLng(coord1.lat, coord1.lng));
-                                                                }
-                                                            }
-                                                        }
-                                                    } else {
-                                                        EncodedPolyline points = step.polyline;
-                                                        if (points != null) {
-                                                            // decode polyline and add points to list of route coordinates
-                                                            List<com.google.maps.model.LatLng> coords = points.decodePath();
-                                                            for (com.google.maps.model.LatLng coord : coords) {
-                                                                path.add(new LatLng(coord.lat, coord.lng));
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            } catch (InterruptedException|IOException e) {
-                                Timber.d(e);
-                                hasError = true;
-                            } catch (ApiException e) {
-                                hasError = true;
-                            }
-                        }
-
-                        if (!hasError && path.size() > 0) {
-                            PolylineOptions line = new PolylineOptions().width(20).zIndex(1)
-                                    .color(ContextCompat.getColor(getContext(), R.color.grey))
-                                    .startCap(new RoundCap()).endCap(new RoundCap());
-                            map.addPolyline(line.addAll(path));
-                        }
-                    }
-                }
-                if (hasMapCoordinates || !isSnapToRoad || hasError) {
+                if (hasMapCoordinates) {
                     map.addPolyline(singleLine);
                 }
             }

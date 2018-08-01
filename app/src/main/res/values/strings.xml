@@ -138,7 +138,6 @@
     <string name="notice">通告</string>
     <string name="km">%1$.2f公里</string>
     <string name="km_short">%1$.2fkm</string>
-    <string name="map_direction_api">Direction API</string>
     <string name="bus">巴士</string>
     <string name="railway">地鐵</string>
     <string name="provider_aes_bus">機場快綫穿梭巴士</string>
