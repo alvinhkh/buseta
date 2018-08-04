@@ -1,7 +1,12 @@
 package com.alvinhkh.buseta.ui.route;
 
+import android.content.Intent;
+import android.content.pm.ShortcutInfo;
+import android.content.pm.ShortcutManager;
 import android.database.DataSetObserver;
+import android.graphics.drawable.Icon;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -20,18 +25,23 @@ import android.widget.Toast;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.follow.dao.FollowDatabase;
+import com.alvinhkh.buseta.follow.model.Follow;
 import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase;
 import com.alvinhkh.buseta.search.model.Suggestion;
+import com.alvinhkh.buseta.search.ui.SearchActivity;
 import com.alvinhkh.buseta.ui.BaseActivity;
 import com.alvinhkh.buseta.utils.AdViewUtil;
+import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.RouteUtil;
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.ContentViewEvent;
 import com.google.android.gms.maps.MapView;
 import com.google.firebase.appindexing.Action;
 import com.google.firebase.appindexing.FirebaseUserActions;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +52,8 @@ import timber.log.Timber;
 public abstract class RouteActivityAbstract extends BaseActivity {
 
     protected final CompositeDisposable disposables = new CompositeDisposable();
+
+    protected static FollowDatabase followDatabase = null;
 
     protected static SuggestionDatabase suggestionDatabase = null;
 
@@ -93,6 +105,7 @@ public abstract class RouteActivityAbstract extends BaseActivity {
             }
         }
 
+        followDatabase = FollowDatabase.Companion.getInstance(this);
         suggestionDatabase = SuggestionDatabase.Companion.getInstance(this);
 
         setContentView(R.layout.activity_route);
@@ -184,6 +197,12 @@ public abstract class RouteActivityAbstract extends BaseActivity {
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        updateAppShortcuts();
     }
 
     @Override
@@ -316,4 +335,46 @@ public abstract class RouteActivityAbstract extends BaseActivity {
                 });
     }
 
+    private void updateAppShortcuts() {
+        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return;
+        if (getApplicationContext() == null) return;
+        // Dynamic App Shortcut
+        try {
+            ShortcutManager shortcutManager = getApplicationContext().getSystemService(ShortcutManager.class);
+            if (shortcutManager == null) return;
+            ArrayList<ShortcutInfo> shortcuts = new ArrayList<>();
+            List<Follow> followList = followDatabase.followDao().getList();
+            Integer maxShortcutCount = shortcutManager.getMaxShortcutCountPerActivity();
+            for (int i = 0; i < maxShortcutCount-1 && i < followList.size(); i++) {
+                Follow follow = followList.get(i);
+                RouteStop routeStop = RouteStopUtil.fromFollow(follow);
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setClass(getApplicationContext(), SearchActivity.class);
+                intent.putExtra(C.EXTRA.STOP_OBJECT_STRING, new Gson().toJson(routeStop));
+                shortcuts.add(new ShortcutInfo.Builder(getApplicationContext(), "buseta-" + routeStop.getCompanyCode() + routeStop.getRouteNo() + routeStop.getRouteSeq() + routeStop.getStopId())
+                        .setShortLabel(routeStop.getRouteNo() + " " + routeStop.getName())
+                        .setLongLabel(routeStop.getRouteNo() + " " + routeStop.getName() + " " + getString(R.string.destination, routeStop.getRouteDestination()))
+                        .setIcon(Icon.createWithResource(getApplicationContext(), R.drawable.ic_shortcut_directions_bus))
+                        .setIntent(intent)
+                        .build());
+            }
+            if (followList.size() < maxShortcutCount - 1) {
+                List<Suggestion> historyList = suggestionDatabase.suggestionDao().historyList(maxShortcutCount);
+                for (int i = 0; i < maxShortcutCount-followList.size()-1 && i < historyList.size(); i++) {
+                    Suggestion suggestion = historyList.get(i);
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setClass(getApplicationContext(), SearchActivity.class);
+                    intent.putExtra(C.EXTRA.ROUTE_NO, suggestion.getRoute());
+                    intent.putExtra(C.EXTRA.COMPANY_CODE, suggestion.getCompanyCode());
+                    shortcuts.add(new ShortcutInfo.Builder(getApplicationContext(), "buseta-q-" + suggestion.getCompanyCode() + suggestion.getRoute())
+                            .setShortLabel(suggestion.getRoute())
+                            .setLongLabel(suggestion.getRoute())
+                            .setIcon(Icon.createWithResource(getApplicationContext(), R.drawable.ic_shortcut_search))
+                            .setIntent(intent)
+                            .build());
+                }
+            }
+            shortcutManager.setDynamicShortcuts(shortcuts);
+        } catch (NoClassDefFoundError|NoSuchMethodError ignored) {}
+    }
 }

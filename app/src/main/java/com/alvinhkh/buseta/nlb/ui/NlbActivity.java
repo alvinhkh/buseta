@@ -45,10 +45,10 @@ public class NlbActivity extends RouteActivityAbstract {
                             Route route = new Route();
                             route.setCompanyCode(C.PROVIDER.NLB);
                             String[] location = nlbRoute.route_name_c.split(" > ");
+                            route.setOrigin(location[0]);
                             if (location.length > 1) {
-                                route.setOrigin(location[1]);
+                                route.setDestination(location[1]);
                             }
-                            route.setDestination(location[0]);
                             route.setName(nlbRoute.route_no);
                             route.setSequence(nlbRoute.route_id);
                             routes.add(route);
@@ -74,7 +74,7 @@ public class NlbActivity extends RouteActivityAbstract {
 
             @Override
             public void onComplete() {
-                runOnUiThread(() -> onCompleteRoute(routes, C.PROVIDER.KMB));
+                runOnUiThread(() -> onCompleteRoute(routes, C.PROVIDER.NLB));
             }
         };
     }

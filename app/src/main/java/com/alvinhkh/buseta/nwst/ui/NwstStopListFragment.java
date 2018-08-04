@@ -25,7 +25,6 @@ import com.alvinhkh.buseta.utils.RetryWithDelay;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +68,7 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
             options.put(QUERY_INFO, qInfo);
             options.put(QUERY_LANGUAGE, LANGUAGE_TC);
             options.put(QUERY_PLATFORM, PLATFORM);
-            options.put(QUERY_APP_VERSION, APP_VERSION);
+            options.put(QUERY_VERSION, APP_VERSION);
             options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
             disposables.add(nwstService.stopList(options)
                     .retryWhen(new RetryWithDelay(5, 3000))
@@ -136,7 +135,7 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
                 options.put(QUERY_R, variant.getRdv());
                 options.put(QUERY_LANGUAGE, LANGUAGE_TC);
                 options.put(QUERY_PLATFORM, PLATFORM);
-                options.put(QUERY_APP_VERSION, APP_VERSION);
+                options.put(QUERY_VERSION, APP_VERSION);
                 options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
                 disposables.add(nwstService.latlongList(options)
                         .retryWhen(new RetryWithDelay(5, 3000))

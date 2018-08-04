@@ -96,6 +96,7 @@
     <string name="message_total_routes">(共 %s 條路線)</string>
     <string name="no_follow_stops">沒有追蹤車站</string>
     <string name="removed_from_follow_list">「%1$s」已從追蹤名單中移除</string>
+    <string name="removed_from_search_history">「%1$s」已從搜尋記錄中移除</string>
     <string name="swipe_to_remove_follow_stop">向左右掃即可移除追蹤車站</string>
     <string name="provider_no_eta">營運商尚未提供到站時間預報</string>
 
@@ -115,6 +116,7 @@
     <string name="route">路線</string>
     <string name="route_path">%1$s 往%2$s</string>
     <string name="scheduled_bus">預定班次</string>
+    <string name="search_history">搜尋記錄</string>
     <string name="general">一般</string>
     <string name="github_issues">問題回報 (via GitHub)</string>
     <string name="github_issues_url" translatable="false">https://github.com/alvinhkh/buseta/issues</string>

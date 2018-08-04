@@ -16,13 +16,11 @@ import retrofit2.http.QueryMap;
 
 public interface NwstService {
 
-    String APP_VERSION = "3.4";
+    String APP_VERSION = "3.4.2";
 
     String LANGUAGE_TC = "0";
 
     String PLATFORM = "android";
-
-    String QUERY_APP_VERSION = "appversion";
 
     String QUERY_BOUND = "bound";
 
@@ -51,6 +49,8 @@ public interface NwstService {
     String QUERY_STOP_SEQ = "stopseq";
 
     String QUERY_SYSCODE = "syscode";
+
+    String QUERY_VERSION = "version";
 
     String TYPE_ALL_ROUTES = "0";
 

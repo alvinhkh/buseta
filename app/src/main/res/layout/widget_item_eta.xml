@@ -28,7 +28,7 @@
             android:maxLines="1"
             style="@style/TextAppearance.AppCompat.Small"
             android:textColor="@color/widgetTextPrimary"
-            tool:text="@string/route" />
+            tool:text="@string/stop_name" />
 
         <TextView
             android:id="@+id/eta"
@@ -36,86 +36,80 @@
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
-            android:paddingLeft="4dp"
+            android:layout_toRightOf="@+id/left_line1"
+            android:layout_toEndOf="@+id/left_line1"
             android:gravity="end"
             android:maxLines="1"
             style="@style/TextAppearance.AppCompat.Small"
             android:textColor="@color/widgetTextHighlighted"
-            android:background="@drawable/widget_item_background"
             tool:text="@string/eta" />
 
     </RelativeLayout>
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_weight="1"
-        android:layout_height="0dp"
+        android:layout_height="match_parent"
         android:orientation="horizontal"
         android:layout_gravity="start"
-        android:layout_marginBottom="1dp">
+        android:layout_marginTop="1dp">
 
-        <TextView
-            android:id="@+id/left_line2"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentLeft="true"
-            android:maxLines="1"
-            style="@style/TextAppearance.AppCompat.Small"
-            android:textColor="@color/widgetTextPrimary"
-            tool:text="@string/stop_name" />
+            android:layout_gravity="bottom|start">
+
+            <TextView
+                android:id="@+id/left_line2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="4dp"
+                android:layout_marginEnd="4dp"
+                android:maxLines="1"
+                style="@style/TextAppearance.AppCompat.Small"
+                android:textColor="@color/widgetTextPrimary"
+                tool:text="@string/dots" />
+
+        </LinearLayout>
 
         <TextView
             android:id="@+id/eta2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_toRightOf="@+id/left_line2"
-            android:layout_toEndOf="@+id/left_line2"
-            android:gravity="end"
-            android:maxLines="1"
             style="@style/TextAppearance.AppCompat.Small"
             android:textColor="@color/widgetTextPrimary"
-            android:background="@drawable/widget_item_background"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:gravity="bottom|end"
             tool:text="@string/eta" />
 
-    </RelativeLayout>
+    </LinearLayout>
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_weight="1"
-        android:layout_height="0dp"
+        android:layout_height="match_parent"
         android:orientation="horizontal"
         android:layout_gravity="start"
-        android:layout_marginBottom="1dp">
+        android:layout_marginTop="1dp">
 
         <TextView
             android:id="@+id/left_line3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentLeft="true"
+            android:layout_gravity="bottom|start"
             android:maxLines="1"
             style="@style/TextAppearance.AppCompat.Small"
-            android:textColor="@color/widgetTextPrimary"
-            tool:text="@string/dest" />
+            android:textColor="@color/widgetTextSecondary"
+            tool:text="@string/dots" />
 
         <TextView
             android:id="@+id/eta3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_toRightOf="@+id/left_line3"
-            android:layout_toEndOf="@+id/left_line3"
-            android:gravity="end"
-            android:maxLines="1"
             style="@style/TextAppearance.AppCompat.Small"
             android:textColor="@color/widgetTextPrimary"
-            android:background="@drawable/widget_item_background"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:gravity="bottom|end"
             tool:text="@string/eta" />
 
-    </RelativeLayout>
+    </LinearLayout>
 
 </LinearLayout>

@@ -46,7 +46,7 @@ public class NwstActivity extends RouteActivityAbstract {
         options.put(QUERY_MODE, mode);
         options.put(QUERY_LANGUAGE, LANGUAGE_TC);
         options.put(QUERY_PLATFORM, PLATFORM);
-        options.put(QUERY_APP_VERSION, APP_VERSION);
+        options.put(QUERY_VERSION, APP_VERSION);
         options.put(QUERY_SYSCODE, sysCode);
         disposables.add(nwstService.routeList(options)
                 .subscribeOn(Schedulers.io())
@@ -73,7 +73,7 @@ public class NwstActivity extends RouteActivityAbstract {
                             options.put(QUERY_ID, nwstRoute.getRdv());
                             options.put(QUERY_LANGUAGE, LANGUAGE_TC);
                             options.put(QUERY_PLATFORM, PLATFORM);
-                            options.put(QUERY_APP_VERSION, APP_VERSION);
+                            options.put(QUERY_VERSION, APP_VERSION);
                             options.put(QUERY_SYSCODE, sysCode);
                             disposables.add(nwstService.variantList(options)
                                     .subscribeOn(Schedulers.io())

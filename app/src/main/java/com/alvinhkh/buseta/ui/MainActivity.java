@@ -15,13 +15,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.follow.dao.FollowDatabase;
+import com.alvinhkh.buseta.follow.ui.FollowFragment;
 import com.alvinhkh.buseta.mtr.ui.MtrLineStatusFragment;
+import com.alvinhkh.buseta.search.ui.HistoryFragment;
 import com.alvinhkh.buseta.search.ui.SearchActivity;
 import com.alvinhkh.buseta.service.CheckUpdateService;
 import com.alvinhkh.buseta.follow.ui.EditFollowFragment;
-import com.alvinhkh.buseta.ui.follow.FollowFragment;
 import com.alvinhkh.buseta.utils.AdViewUtil;
 import com.alvinhkh.buseta.utils.ColorUtil;
+
+import timber.log.Timber;
 
 
 public class MainActivity extends BaseActivity {
@@ -30,9 +34,11 @@ public class MainActivity extends BaseActivity {
 
     private BottomNavigationView bottomNavigationView;
 
-    private FollowFragment followFragment;
+    private Fragment followFragment;
 
-    private MtrLineStatusFragment mtrLineStatusFragment;
+    private Fragment historyFragment;
+
+    private Fragment mtrLineStatusFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +55,8 @@ public class MainActivity extends BaseActivity {
             actionBar.setDisplayHomeAsUpEnabled(false);
         }
 
-        followFragment = FollowFragment.newInstance();
+        followFragment = new FollowFragment();
+        historyFragment = new HistoryFragment();
         mtrLineStatusFragment = MtrLineStatusFragment.newInstance();
 
         adViewContainer = findViewById(R.id.adView_container);
@@ -83,6 +90,22 @@ public class MainActivity extends BaseActivity {
                                 ft.replace(R.id.fragment_container, followFragment);
                                 ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
                                 ft.addToBackStack("follow_list");
+                                ft.commit();
+                            }
+                            break;
+                        }
+                        case R.id.action_search_history:
+                        {
+                            if (fm.findFragmentByTag("search_history") == null) {
+                                if (getSupportActionBar() != null) {
+                                    getSupportActionBar().setTitle(R.string.app_name);
+                                    getSupportActionBar().setSubtitle(null);
+                                }
+                                colorInt = ContextCompat.getColor(this, R.color.colorPrimary);
+                                FragmentTransaction ft = fm.beginTransaction();
+                                ft.replace(R.id.fragment_container, historyFragment);
+                                ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                                ft.addToBackStack("search_history");
                                 ft.commit();
                             }
                             break;
@@ -126,6 +149,9 @@ public class MainActivity extends BaseActivity {
                     case "FollowFragment":
                         bottomNavigationView.setSelectedItemId(R.id.action_follow);
                         break;
+                    case "HistoryFragment":
+                        bottomNavigationView.setSelectedItemId(R.id.action_search_history);
+                        break;
                     case "MtrLineStatusFragment":
                         bottomNavigationView.setSelectedItemId(R.id.action_railway);
                         break;
@@ -134,7 +160,12 @@ public class MainActivity extends BaseActivity {
 
         });
         if (bottomNavigationView != null) {
-            bottomNavigationView.setSelectedItemId(R.id.action_follow);
+            FollowDatabase followDatabase = FollowDatabase.Companion.getInstance(getApplicationContext());
+            if (followDatabase != null && followDatabase.followDao().count() > 0) {
+                bottomNavigationView.setSelectedItemId(R.id.action_follow);
+            } else {
+                bottomNavigationView.setSelectedItemId(R.id.action_search_history);
+            }
         }
 
         try {

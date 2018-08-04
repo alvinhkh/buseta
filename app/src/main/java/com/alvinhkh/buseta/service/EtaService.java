@@ -11,6 +11,8 @@ import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
 import com.alvinhkh.buseta.datagovhk.DataGovHkService;
 import com.alvinhkh.buseta.datagovhk.model.MtrLineStation;
+import com.alvinhkh.buseta.follow.dao.FollowDatabase;
+import com.alvinhkh.buseta.follow.model.Follow;
 import com.alvinhkh.buseta.kmb.KmbService;
 import com.alvinhkh.buseta.kmb.model.network.KmbEtaRes;
 import com.alvinhkh.buseta.kmb.util.KmbEtaUtil;
@@ -33,6 +35,7 @@ import com.alvinhkh.buseta.nwst.util.NwstEtaUtil;
 import com.alvinhkh.buseta.nwst.util.NwstRequestUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.alvinhkh.buseta.utils.HashUtil;
+import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 
 import org.jsoup.Jsoup;
@@ -45,6 +48,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -62,6 +66,8 @@ public class EtaService extends IntentService {
     private final CompositeDisposable disposables = new CompositeDisposable();
 
     private ArrivalTimeDatabase arrivalTimeDatabase;
+
+    private FollowDatabase followDatabase;
 
     private final MtrService aesService = MtrService.Companion.getAes().create(MtrService.class);
 
@@ -85,6 +91,7 @@ public class EtaService extends IntentService {
     public void onCreate() {
         super.onCreate();
         arrivalTimeDatabase = ArrivalTimeDatabase.Companion.getInstance(this);
+        followDatabase = FollowDatabase.Companion.getInstance(this);
     }
 
     @Override
@@ -113,6 +120,12 @@ public class EtaService extends IntentService {
         if (stop != null) {
             routeStopList.add(stop);
         }
+        if (extras.getBoolean(C.EXTRA.FOLLOW)) {
+            List<Follow> followList = followDatabase.followDao().getList();
+            for (Follow follow: followList) {
+                routeStopList.add(RouteStopUtil.fromFollow(follow));
+            }
+        }
         for (int i = 0; i < routeStopList.size(); i++) {
             RouteStop routeStop = routeStopList.get(i);
             if (!TextUtils.isEmpty(routeStop.getCompanyCode())) {
@@ -128,26 +141,26 @@ public class EtaService extends IntentService {
                                 .subscribeWith(kmbEtaObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size() - 1)));
                         break;
                     case C.PROVIDER.NLB:
-                        NlbEtaRequest request = new NlbEtaRequest(routeStop.getRouteId(), routeStop.getStopId(), "zh");
+                        NlbEtaRequest request = new NlbEtaRequest(routeStop.getRouteSeq(), routeStop.getStopId(), "zh");
                         disposables.add(nlbApi.eta(request)
                                 .subscribeWith(nlbEtaObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size() - 1)));
                         break;
                     case C.PROVIDER.CTB:
                     case C.PROVIDER.NWFB:
                     case C.PROVIDER.NWST:
-                        Map<String, String> options = new HashMap<>();
+                        Map<String, String> options = new LinkedHashMap<>();
                         options.put(QUERY_STOP_ID, Integer.toString(Integer.parseInt(routeStop.getStopId())));
                         options.put(QUERY_SERVICE_NO, routeStop.getRouteNo());
                         options.put("removeRepeatedSuspend", "Y");
                         options.put("interval", "60");
+                        options.put(QUERY_LANGUAGE, LANGUAGE_TC);
                         options.put(QUERY_BOUND, routeStop.getRouteSeq());
                         options.put(QUERY_STOP_SEQ, routeStop.getSequence());
-                        options.put(QUERY_RDV, routeStop.getRouteId().replaceAll("-1$", "-2")); // TODO: why -1 to -2
+                        options.put(QUERY_RDV, routeStop.getRouteId());
                         options.put("showtime", "Y");
-                        options.put(QUERY_LANGUAGE, LANGUAGE_TC);
-                        options.put(QUERY_PLATFORM,  PLATFORM);
-                        options.put(QUERY_APP_VERSION, APP_VERSION);
                         options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
+                        options.put(QUERY_PLATFORM, PLATFORM);
+                        options.put(QUERY_VERSION, APP_VERSION);
                         disposables.add(nwstApi.eta(options)
                                 .subscribeWith(nwstEtaObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size() - 1)));
                         break;

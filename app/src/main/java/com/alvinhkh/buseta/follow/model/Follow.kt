@@ -1,12 +1,10 @@
 package com.alvinhkh.buseta.follow.model
 
-import android.arch.persistence.room.ColumnInfo
-import android.arch.persistence.room.Entity
-import android.arch.persistence.room.Index
-import android.arch.persistence.room.PrimaryKey
+import android.arch.persistence.room.*
 import android.os.Parcel
 import android.os.Parcelable
 import com.alvinhkh.buseta.C
+import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
 import com.alvinhkh.buseta.follow.model.Follow.CREATOR.COLUMN_COMPANY_CODE
 import com.alvinhkh.buseta.follow.model.Follow.CREATOR.COLUMN_ROUTE_NO
 import com.alvinhkh.buseta.follow.model.Follow.CREATOR.COLUMN_ROUTE_SEQ
@@ -54,12 +52,14 @@ data class Follow(
         @ColumnInfo(name = Follow.COLUMN_DISPLAY_ORDER, typeAffinity = ColumnInfo.INTEGER)
         var order: Int,
         @ColumnInfo(name = Follow.COLUMN_UPDATED_AT, typeAffinity = ColumnInfo.INTEGER)
-        var updatedAt: Long
+        var updatedAt: Long,
+        @Ignore
+        var etas: List<ArrivalTime> = listOf<ArrivalTime>()
 ) : Parcelable {
 
     constructor() : this(0, "", "", "", "", "", "",
             "", "", "", "", "",
-            "", "", "", 0, 0)
+            "", "", "", 0, 0, listOf<ArrivalTime>())
 
     constructor(parcel: Parcel) : this(
             parcel.readLong(),
@@ -78,7 +78,8 @@ data class Follow(
             parcel.readString(),
             parcel.readString(),
             parcel.readInt(),
-            parcel.readLong())
+            parcel.readLong(),
+            listOf<ArrivalTime>())
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeLong(_id)

@@ -10,7 +10,7 @@
 
     <dimen name="card_horizontal_margin">16dp</dimen>
     <dimen name="card_vertical_margin">4dp</dimen>
-    <dimen name="card_corner_radius">4dp</dimen>
+    <dimen name="card_corner_radius">8dp</dimen>
     <dimen name="card_elevation">2dp</dimen>
     <dimen name="card_item_height">72dp</dimen>
     <dimen name="card_item_height_singleline">48dp</dimen>

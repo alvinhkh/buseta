@@ -21,6 +21,9 @@ interface SuggestionDao {
     @Query("SELECT COUNT(*) FROM suggestions WHERE type = 'default'")
     fun countDefault(): Int
 
+    @Query("SELECT COUNT(*) FROM suggestions WHERE type = 'history'")
+    fun countHistory(): Int
+
     @Query("DELETE FROM suggestions WHERE type = 'history'")
     fun clearHistory(): Int
 
@@ -28,7 +31,7 @@ interface SuggestionDao {
     fun clearDefault()
 
     @Query("SELECT * FROM suggestions WHERE type = 'default' ORDER BY company DESC, text ASC")
-    fun getAll(): LiveData<MutableList<Suggestion>>
+    fun suggestionLiveData(): LiveData<MutableList<Suggestion>>
 
     @Query("SELECT * FROM suggestions WHERE text LIKE :text AND type = 'default' ORDER BY company DESC, text ASC")
     fun get(text: String): LiveData<MutableList<Suggestion>>
@@ -38,5 +41,11 @@ interface SuggestionDao {
 
     @Query("SELECT _id, * FROM suggestions WHERE type = 'history' ORDER BY date DESC LIMIT :limit")
     fun historyCursor(limit: Int): Cursor
+
+    @Query("SELECT * FROM suggestions WHERE type = 'history' ORDER BY date DESC, company DESC, text ASC")
+    fun historyLiveData(): LiveData<MutableList<Suggestion>>
+
+    @Query("SELECT * FROM suggestions WHERE type = 'history' ORDER BY date DESC, company DESC, text ASC LIMIT :limit")
+    fun historyList(limit: Int): List<Suggestion>
 
 }

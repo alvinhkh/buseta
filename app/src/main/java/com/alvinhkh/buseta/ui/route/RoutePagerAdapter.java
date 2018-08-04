@@ -101,7 +101,7 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
         if (route != null) {
             if (!TextUtils.isEmpty(route.getOrigin())) {
                 return (TextUtils.isEmpty(route.getOrigin()) ? "" : (route.getOrigin() + (getCount() > 1 ? "\n" : " ")))
-                        + context.getString(R.string.destination, route.getDestination())
+                        + (!TextUtils.isEmpty(route.getDestination()) ? context.getString(R.string.destination, route.getDestination()) : "")
                         + (route.isSpecial() ? "#" : "");
             }
             if (!TextUtils.isEmpty(route.getName())) {

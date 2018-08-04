@@ -122,7 +122,7 @@ public class FollowFragment extends Fragment implements SwipeRefreshLayout.OnRef
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_follow, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_history, container, false);
         setHasOptionsMenu(true);
 
         swipeRefreshLayout = rootView.findViewById(R.id.swipe_refresh_layout);

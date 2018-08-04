@@ -14,6 +14,7 @@ import android.text.TextUtils
 import android.text.TextWatcher
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
+import androidx.core.util.arraySetOf
 
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
@@ -119,27 +120,41 @@ class SearchActivity : AppCompatActivity() {
         var lastCompanyCode = ""
         viewModel.getAsLiveData(route).observe(this@SearchActivity, Observer {
             viewAdapter.clear()
+            val routeNo = route.replace(Regex("[^a-zA-Z0-9]"), "")
+            val shownCompanyCode = arrayListOf<String>()
             if (it?.size?:0 > 0) {
                 if (it?.size?:0 == 1 && !it?.get(0)?.companyCode.isNullOrEmpty() && singleWillOpen && !isOpened) {
                     isOpened = true
                     val intent = Intent(Intent.ACTION_VIEW)
                     intent.setClass(applicationContext, SearchActivity::class.java)
-                    intent.putExtra(C.EXTRA.ROUTE_NO, route)
+                    intent.putExtra(C.EXTRA.ROUTE_NO, routeNo)
                     intent.putExtra(C.EXTRA.COMPANY_CODE, it?.get(0)?.companyCode?:"")
                     startActivity(intent)
                     finish()
                 } else {
                     it?.forEach {
                         if (lastCompanyCode != it.companyCode) {
+                            if (lastCompanyCode.isNotBlank() && routeNo.isNotBlank()) {
+                                viewAdapter.addButton(Suggestion(0, lastCompanyCode, routeNo, 0, Suggestion.TYPE_DEFAULT))
+                            }
                             val companyName = RouteUtil.getCompanyName(applicationContext, it.companyCode, it.route)
                             viewAdapter.addSection(companyName)
+                            shownCompanyCode.add(it.companyCode)
                         }
                         viewAdapter.addItem(it)
                         lastCompanyCode = it.companyCode
                     }
                 }
-            } else {
-                viewAdapter.addSection(getString(R.string.no_search_result))
+            }
+            if (routeNo.isNotBlank()) {
+                listOf(C.PROVIDER.CTB, C.PROVIDER.KMB, C.PROVIDER.NLB, C.PROVIDER.NWFB).forEach {
+                    if (!shownCompanyCode.contains(it)) {
+                        val companyName = RouteUtil.getCompanyName(applicationContext, it, route.replace(Regex("[^a-zA-Z0-9]"), ""))
+                        viewAdapter.addSection(companyName)
+                        viewAdapter.addSection(getString(R.string.no_search_result))
+                        viewAdapter.addButton(Suggestion(0, it, route.replace(Regex("[^a-zA-Z0-9]"), ""), 0, Suggestion.TYPE_DEFAULT))
+                    }
+                }
             }
         })
     }

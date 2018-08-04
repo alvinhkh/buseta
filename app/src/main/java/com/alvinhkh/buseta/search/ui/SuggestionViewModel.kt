@@ -14,7 +14,7 @@ class SuggestionViewModel(application: Application) : AndroidViewModel(applicati
 
     init {
         if (suggestionDatabase != null) {
-            list = suggestionDatabase.suggestionDao().getAll()
+            list = suggestionDatabase.suggestionDao().suggestionLiveData()
         }
     }
 
@@ -23,7 +23,7 @@ class SuggestionViewModel(application: Application) : AndroidViewModel(applicati
             if (route.isNotEmpty()) {
                 list = suggestionDatabase.suggestionDao().get(route)
             } else {
-                list = suggestionDatabase.suggestionDao().getAll()
+                list = suggestionDatabase.suggestionDao().suggestionLiveData()
             }
         }
         return list

@@ -1,12 +1,14 @@
 package com.alvinhkh.buseta.search.ui
 
 import android.content.Context
+import android.content.Intent
 import android.support.v4.content.ContextCompat
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.search.model.Suggestion
 import com.alvinhkh.buseta.ui.PinnedHeaderItemDecoration
@@ -32,6 +34,8 @@ class SuggestionViewAdapter(
             const val TYPE_SECTION = 1
 
             const val TYPE_SUGGESTION = 2
+
+            const val TYPE_BUTTON = 3
         }
     }
 
@@ -72,6 +76,14 @@ class SuggestionViewAdapter(
         notifyItemInserted(data?.size?:0)
     }
 
+    fun addButton(s: Suggestion) {
+        if (data == null) {
+            data = mutableListOf()
+        }
+        data?.add(Data(Data.TYPE_BUTTON, s))
+        notifyItemInserted(data?.size?:0)
+    }
+
     fun clear() {
         data?.clear()
         notifyDataSetChanged()
@@ -95,6 +107,16 @@ class SuggestionViewAdapter(
                 }
             } else if (data?.type == Data.TYPE_SECTION) {
                 itemView.section_label.text = data.obj as String
+            } else if (data?.type == Data.TYPE_BUTTON) {
+                val suggestion = data.obj as Suggestion
+                itemView.section_label.text = ">>"
+                itemView.setOnClickListener {
+                    val intent = Intent(Intent.ACTION_VIEW)
+                    intent.setClass(it.context, SearchActivity::class.java)
+                    intent.putExtra(C.EXTRA.ROUTE_NO, suggestion.route)
+                    intent.putExtra(C.EXTRA.COMPANY_CODE, suggestion.companyCode)
+                    it.context.startActivity(intent)
+                }
             }
         }
 

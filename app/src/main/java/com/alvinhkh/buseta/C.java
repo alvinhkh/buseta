@@ -33,6 +33,8 @@ public class C {
 
         String FAIL = "com.alvinhkh.buseta.FAIL";
 
+        String FOLLOW = "com.alvinhkh.buseta.FOLLOW";
+
         String LINE_CODE = "com.alvinhkh.buseta.LINE_CODE";
 
         String LINE_COLOUR = "com.alvinhkh.buseta.LINE_COLOUR";
