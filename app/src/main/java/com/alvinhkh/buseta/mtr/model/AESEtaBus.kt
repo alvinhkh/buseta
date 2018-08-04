@@ -5,9 +5,8 @@ import android.location.Location
 import android.text.TextUtils
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
-import com.alvinhkh.buseta.model.ArrivalTime
+import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
 import com.alvinhkh.buseta.model.RouteStop
-import com.alvinhkh.buseta.utils.ArrivalTimeUtil
 import com.google.gson.annotations.SerializedName
 import timber.log.Timber
 import java.text.ParseException
@@ -98,8 +97,7 @@ data class AESEtaBus(
                           statusTime: Date,
                           routeStop: RouteStop?): ArrivalTime {
             val sdf = SimpleDateFormat("HH:mm", Locale.ENGLISH)
-            var arrivalTime = ArrivalTimeUtil.emptyInstance(context)
-            arrivalTime.companyCode = C.PROVIDER.AESBUS;
+            var arrivalTime = ArrivalTime.emptyInstance(context, routeStop)
             arrivalTime.estimate = aesEtaBus.arrivalTimeText.orEmpty()
             val calendar = Calendar.getInstance()
             calendar.time = statusTime
@@ -112,7 +110,7 @@ data class AESEtaBus(
             arrivalTime.isSchedule = aesEtaBus.isScheduled == "1"
             arrivalTime.latitude = 0.0
             arrivalTime.longitude = 0.0
-            arrivalTime.distanceKM = -1.0f
+            arrivalTime.distanceKM = -1.0
             if (!arrivalTime.isSchedule) {
                 aesEtaBus.busLocation?.let {
                     arrivalTime.latitude = it.latitude
@@ -129,14 +127,14 @@ data class AESEtaBus(
                     busLocation.latitude = arrivalTime.latitude
                     busLocation.longitude = arrivalTime.longitude
                     if (busLocation.distanceTo(stopLocation).toDouble() != 0.0) {
-                        arrivalTime.distanceKM = busLocation.distanceTo(stopLocation) / 1000.0f
+                        arrivalTime.distanceKM = busLocation.distanceTo(stopLocation) / 1000.0
                     } else {
-                        arrivalTime.distanceKM = 0.0f
+                        arrivalTime.distanceKM = 0.0
                     }
                 }
             }
             arrivalTime.updatedAt = System.currentTimeMillis()
-            arrivalTime = ArrivalTimeUtil.estimate(context, arrivalTime)
+            arrivalTime = ArrivalTime.estimate(context, arrivalTime)
             return arrivalTime
         }
 

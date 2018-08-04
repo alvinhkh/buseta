@@ -1,6 +1,7 @@
 package com.alvinhkh.buseta.mtr.dao
 
 import android.arch.persistence.room.Dao
+import android.arch.persistence.room.Insert
 import android.arch.persistence.room.Query
 import com.alvinhkh.buseta.mtr.model.AESBusDistrict
 import com.alvinhkh.buseta.mtr.model.AESBusRoute
@@ -10,6 +11,15 @@ import io.reactivex.Flowable
 
 @Dao
 interface AESBusDao {
+
+    @Insert
+    fun insertRoutes(data: List<AESBusRoute>)
+
+    @Insert
+    fun insertStops(data: List<AESBusStop>)
+
+    @Insert
+    fun insertDistricts(data: List<AESBusDistrict>)
 
     @Query("SELECT * FROM Bus_new")
     fun getAllRoutes(): Flowable<List<AESBusRoute>>

@@ -8,23 +8,21 @@ import android.arch.persistence.room.PrimaryKey
 data class AESBusStop(
         @PrimaryKey
         @ColumnInfo(name = "StopID", typeAffinity = ColumnInfo.TEXT)
-        var stopId: String = "",
+        var stopId: String,
         @ColumnInfo(name = "BusNumber", typeAffinity = ColumnInfo.TEXT)
-        var busNumber: String?,
+        var busNumber: String,
         @ColumnInfo(name = "StopNameCN", typeAffinity = ColumnInfo.TEXT)
-        var stopNameCn: String?,
+        var stopNameCn: String? = null,
         @ColumnInfo(name = "StopNameEN", typeAffinity = ColumnInfo.TEXT)
-        var stopNameEn: String?,
+        var stopNameEn: String? = null,
         @ColumnInfo(name = "StopLatitude", typeAffinity = ColumnInfo.TEXT)
-        var stopLatitude: String?,
+        var stopLatitude: String? = null,
         @ColumnInfo(name = "StopLongitude", typeAffinity = ColumnInfo.TEXT)
-        var stopLongitude: String?,
+        var stopLongitude: String? = null,
         @ColumnInfo(name = "RouteSection", typeAffinity = ColumnInfo.TEXT)
-        var routeSection: String?,
+        var routeSection: String? = null,
         @ColumnInfo(name = "DisplayStopNo", typeAffinity = ColumnInfo.TEXT)
-        var displayStopNo: String?,
+        var displayStopNo: String? = null,
         @ColumnInfo(name = "NearestStopID", typeAffinity = ColumnInfo.TEXT)
-        var nearestStopID: String?
-) {
-        constructor() : this("", "", "", "", "", "", "" ,"", "")
-}
+        var nearestStopID: String? = null
+)

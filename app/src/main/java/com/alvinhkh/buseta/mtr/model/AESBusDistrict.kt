@@ -8,11 +8,9 @@ import android.arch.persistence.room.PrimaryKey
 data class AESBusDistrict(
         @PrimaryKey
         @ColumnInfo(name = "DistrictID", typeAffinity = ColumnInfo.TEXT)
-        var districtID: String = "",
+        var districtID: String,
         @ColumnInfo(name = "DistrictCN", typeAffinity = ColumnInfo.TEXT)
-        var districtCn: String?,
+        var districtCn: String,
         @ColumnInfo(name = "DistrictEN", typeAffinity = ColumnInfo.TEXT)
-        var districtEn: String?
-) {
-        constructor() : this("", "", "")
-}
+        var districtEn: String
+)

@@ -1,0 +1,169 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "36fe9c9ebb0893329370b67083a9e7dd",
+    "entities": [
+      {
+        "tableName": "Bus_new",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`BusNumber` TEXT NOT NULL, `Route` TEXT NOT NULL, `ServiceHours` TEXT, `Frequency` TEXT, `NearestAEMTRStation` INTEGER NOT NULL, `RouteSection` INTEGER NOT NULL, `DistrictID` INTEGER NOT NULL, PRIMARY KEY(`BusNumber`))",
+        "fields": [
+          {
+            "fieldPath": "busNumber",
+            "columnName": "BusNumber",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "route",
+            "columnName": "Route",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "serviceHours",
+            "columnName": "ServiceHours",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "frequency",
+            "columnName": "Frequency",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nearestAEMTRStation",
+            "columnName": "NearestAEMTRStation",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "routeSection",
+            "columnName": "RouteSection",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "districtID",
+            "columnName": "DistrictID",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "BusNumber"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "Stop_new",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`StopID` TEXT NOT NULL, `BusNumber` TEXT NOT NULL, `StopNameCN` TEXT, `StopNameEN` TEXT, `StopLatitude` TEXT, `StopLongitude` TEXT, `RouteSection` TEXT, `DisplayStopNo` TEXT, `NearestStopID` TEXT, PRIMARY KEY(`StopID`))",
+        "fields": [
+          {
+            "fieldPath": "stopId",
+            "columnName": "StopID",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "busNumber",
+            "columnName": "BusNumber",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "stopNameCn",
+            "columnName": "StopNameCN",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "stopNameEn",
+            "columnName": "StopNameEN",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "stopLatitude",
+            "columnName": "StopLatitude",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "stopLongitude",
+            "columnName": "StopLongitude",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "routeSection",
+            "columnName": "RouteSection",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "displayStopNo",
+            "columnName": "DisplayStopNo",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "nearestStopID",
+            "columnName": "NearestStopID",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "StopID"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "District",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`DistrictID` TEXT NOT NULL, `DistrictCN` TEXT NOT NULL, `DistrictEN` TEXT NOT NULL, PRIMARY KEY(`DistrictID`))",
+        "fields": [
+          {
+            "fieldPath": "districtID",
+            "columnName": "DistrictID",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "districtCn",
+            "columnName": "DistrictCN",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "districtEn",
+            "columnName": "DistrictEN",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "DistrictID"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"36fe9c9ebb0893329370b67083a9e7dd\")"
+    ]
+  }
+}
