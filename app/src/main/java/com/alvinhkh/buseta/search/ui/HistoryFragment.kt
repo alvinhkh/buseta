@@ -33,34 +33,6 @@ class HistoryFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
     private lateinit var emptyView: View
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
-    private val fetchEtaHandler = Handler()
-    private val fetchEtaRunnable = object : Runnable {
-        override fun run() {
-            // Check internet connection
-            if (ConnectivityUtil.isConnected(context)) {
-                val intent = Intent(context, EtaService::class.java)
-                intent.putExtra(C.EXTRA.FOLLOW, true)
-                context?.startService(intent)
-            } else {
-                if (activity != null) {
-                    Snackbar.make(activity!!.findViewById(R.id.coordinator_layout),
-                            R.string.message_no_internet_connection, Snackbar.LENGTH_LONG).show()
-                }
-            }
-            fetchEtaHandler.postDelayed(this, 30000)
-        }
-    }
-
-    private val refreshHandler = Handler()
-    private val refreshRunnable = object : Runnable {
-        override fun run() {
-            for (i in 0..viewAdapter.itemCount) {
-                viewAdapter.notifyItemChanged(i)
-            }
-            refreshHandler.postDelayed(this, 10000)
-        }
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_history, container, false)
@@ -85,7 +57,7 @@ class HistoryFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
                 it?.forEach {
                     viewAdapter.addItem(it)
                 }
-                emptyView?.visibility = if (viewAdapter.itemCount > 0) View.GONE else View.VISIBLE
+                emptyView.visibility = if (viewAdapter.itemCount > 0) View.GONE else View.VISIBLE
             })
         }
 
@@ -100,14 +72,6 @@ class HistoryFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
             val fab = activity!!.findViewById<FloatingActionButton>(R.id.fab)
             fab?.show()
         }
-        fetchEtaHandler.postDelayed(fetchEtaRunnable, 500)
-        refreshHandler.postDelayed(refreshRunnable, 500)
-    }
-
-    override fun onPause() {
-        super.onPause()
-        fetchEtaHandler.removeCallbacksAndMessages(null)
-        refreshHandler.removeCallbacksAndMessages(null)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
