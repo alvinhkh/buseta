@@ -22,10 +22,12 @@ import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.follow.model.Follow
-import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.ui.SearchActivity
 import com.alvinhkh.buseta.utils.PreferenceUtil
 import java.util.*
+import com.alvinhkh.buseta.utils.RouteStopUtil
+
+
 
 class FollowViewAdapter(
         recyclerView: RecyclerView,
@@ -96,8 +98,7 @@ class FollowViewAdapter(
                 itemView.setOnClickListener {
                     val intent = Intent(Intent.ACTION_VIEW)
                     intent.setClass(itemView.context, SearchActivity::class.java)
-                    intent.putExtra(C.EXTRA.COMPANY_CODE, follow.companyCode)
-                    intent.putExtra(C.EXTRA.ROUTE_NO, follow.routeNo)
+                    intent.putExtra(C.EXTRA.STOP_OBJECT, RouteStopUtil.fromFollow(follow))
                     itemView.context.startActivity(intent)
                 }
                 itemView.setOnLongClickListener {
