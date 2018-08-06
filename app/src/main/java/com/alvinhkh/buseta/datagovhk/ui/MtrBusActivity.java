@@ -59,7 +59,7 @@ public class MtrBusActivity extends RouteActivityAbstract {
 
             @Override
             public void onComplete() {
-                onCompleteRoute(routes, C.PROVIDER.LRTFEEDER);
+                runOnUiThread(() -> onCompleteRoute(routes, C.PROVIDER.LRTFEEDER));
             }
         };
     }

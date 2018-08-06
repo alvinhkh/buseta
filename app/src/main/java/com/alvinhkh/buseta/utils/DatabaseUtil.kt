@@ -18,6 +18,7 @@ class DatabaseUtil {
                 copyDatabase(context, databaseName)
             }
             return Room.databaseBuilder(context, AESBusDatabase::class.java, databaseName)
+                    .fallbackToDestructiveMigration()
                     .allowMainThreadQueries()
                     .build()
         }

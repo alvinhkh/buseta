@@ -285,7 +285,7 @@ public class MtrLineStationsFragment extends Fragment
                 if (bundle == null) return;
                 RouteStop routeStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT);
                 if (routeStop == null) return;
-                if (!routeStop.getRouteId().equals(lineCode)) return;
+                if (TextUtils.isEmpty(routeStop.getRouteId()) || TextUtils.isEmpty(lineCode) || !routeStop.getRouteId().equals(lineCode)) return;
                 if (bundle.getBoolean(C.EXTRA.UPDATED) || bundle.getBoolean(C.EXTRA.FAIL)) {
                     if (swipeRefreshLayout != null && swipeRefreshLayout.isRefreshing()) {
                         swipeRefreshLayout.setRefreshing(false);

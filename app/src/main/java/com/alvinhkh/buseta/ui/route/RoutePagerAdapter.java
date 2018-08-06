@@ -33,6 +33,8 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
 
     private RouteStop routeStop;
 
+    private boolean doNotifyDataSetChangedOnce = false;
+
     public RoutePagerAdapter(FragmentManager fm, Context context, RouteStop routeStop) {
         super(fm);
         this.context = context;
@@ -47,13 +49,13 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
 
     public void addSequence(@NonNull Route route) {
         if (routes.contains(route)) return;
+        doNotifyDataSetChangedOnce = true;
         routes.add(route);
-        notifyDataSetChanged();
     }
 
     public void clearSequence() {
+        doNotifyDataSetChangedOnce = true;
         routes.clear();
-        notifyDataSetChanged();
     }
 
     public List<Route> getRoutes() {
@@ -89,6 +91,10 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public int getCount() {
+        if (doNotifyDataSetChangedOnce) {
+            doNotifyDataSetChangedOnce = false;
+            notifyDataSetChanged();
+        }
         return routes.size();
     }
 
@@ -102,7 +108,7 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
             if (!TextUtils.isEmpty(route.getOrigin())) {
                 return (TextUtils.isEmpty(route.getOrigin()) ? "" : (route.getOrigin() + (getCount() > 1 ? "\n" : " ")))
                         + (!TextUtils.isEmpty(route.getDestination()) ? context.getString(R.string.destination, route.getDestination()) : "")
-                        + (route.isSpecial() ? "#" : "");
+                        + (route.isSpecial() != null && route.isSpecial() ? "#" : "");
             }
             if (!TextUtils.isEmpty(route.getName())) {
                 return route.getName();

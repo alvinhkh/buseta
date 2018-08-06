@@ -46,7 +46,7 @@ public class AESBusActivity extends RouteActivityAbstract {
                                             routes.add(route);
                                         }
                                     }
-                                    onCompleteRoute(routes, C.PROVIDER.AESBUS);
+                                    runOnUiThread(() -> onCompleteRoute(routes, C.PROVIDER.AESBUS));
                                 }, Timber::d));
                     }, Timber::d));
         }
