@@ -6,6 +6,7 @@ import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.nwst.model.NwstVariant;
 import com.alvinhkh.buseta.utils.HashUtil;
 
+import java.util.Locale;
 import java.util.Random;
 
 public class NwstRequestUtil {
@@ -18,7 +19,7 @@ public class NwstRequestUtil {
         String timestamp = Integer.toString(Math.round((float) (System.currentTimeMillis() / 1000)));
         timestamp = timestamp.substring(timestamp.length() - 6);
         String secret = "firstbusmwymwy";
-        return timestamp + randonInt + HashUtil.md5(timestamp + randonInt + secret);
+        return (timestamp + randonInt + HashUtil.md5(timestamp + randonInt + secret)).toUpperCase(Locale.ENGLISH);
     }
 
     public static String paramInfo(Route route) {
