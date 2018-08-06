@@ -45,6 +45,8 @@ class FollowFragment: Fragment() {
                 }
             }
             fetchEtaHandler.postDelayed(this, 30000)
+            refreshHandler.removeCallbacks(null)
+            refreshHandler.postDelayed(refreshRunnable, 10000)
         }
     }
 
@@ -77,9 +79,10 @@ class FollowFragment: Fragment() {
                 viewAdapter.clear()
                 it?.forEach { follow ->
                     val index = viewAdapter.addItem(follow)
+                    val id = follow.companyCode + follow.routeNo + follow.routeSeq + follow.stopId + follow.stopSeq
                     val arrivalTimeLiveData = arrivalTimeDatabase.arrivalTimeDao().getLiveData(follow.companyCode, follow.routeNo, follow.routeSeq, follow.stopId, follow.stopSeq)
                     arrivalTimeLiveData.observe(this@FollowFragment, Observer { etas ->
-                        if (etas != null) {
+                        if (etas != null && id == (follow.companyCode + follow.routeNo + follow.routeSeq + follow.stopId + follow.stopSeq)) {
                             follow.etas = etas
                             viewAdapter.replaceItem(index, follow)
                         }
@@ -101,7 +104,7 @@ class FollowFragment: Fragment() {
             fab?.show()
         }
         fetchEtaHandler.postDelayed(fetchEtaRunnable, 500)
-        refreshHandler.postDelayed(refreshRunnable, 500)
+        refreshHandler.postDelayed(refreshRunnable, 1000)
     }
 
     override fun onPause() {

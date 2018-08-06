@@ -14,7 +14,6 @@ import android.text.TextUtils
 import android.text.TextWatcher
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
-import androidx.core.util.arraySetOf
 
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R

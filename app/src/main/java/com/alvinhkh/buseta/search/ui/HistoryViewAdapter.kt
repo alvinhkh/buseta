@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.suggestion.ui
+package com.alvinhkh.buseta.search.ui
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -8,15 +8,12 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.model.Suggestion
-import com.alvinhkh.buseta.search.ui.SearchActivity
 import com.alvinhkh.buseta.utils.RouteUtil
-import java.util.*
 
 class HistoryViewAdapter(
         recyclerView: RecyclerView,

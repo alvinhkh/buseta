@@ -2,25 +2,18 @@ package com.alvinhkh.buseta.search.ui
 
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
-import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
 import android.support.design.widget.FloatingActionButton
-import android.support.design.widget.Snackbar
 import android.support.v4.app.Fragment
 import android.support.v4.widget.SwipeRefreshLayout
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.*
-import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.model.Suggestion
-import com.alvinhkh.buseta.service.EtaService
-import com.alvinhkh.buseta.suggestion.ui.HistoryViewAdapter
-import com.alvinhkh.buseta.utils.ConnectivityUtil
 
 
 class HistoryFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
