@@ -77,10 +77,6 @@
             android:label="@string/app_name"
             android:launchMode="singleTop" />
         <activity
-            android:name=".ui.follow.FollowActivity"
-            android:label="@string/app_name"
-            android:launchMode="singleTop" />
-        <activity
             android:name=".ui.route.RouteAnnounceActivity"
             android:label="@string/notice" />
         <activity
