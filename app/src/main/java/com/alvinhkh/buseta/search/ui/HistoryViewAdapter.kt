@@ -99,7 +99,9 @@ class HistoryViewAdapter(
                     builder.setPositiveButton(R.string.action_confirm) { _, _ ->
                         val rowDeleted = suggestionDatabase?.suggestionDao()?.delete(suggestion.type, suggestion.companyCode, suggestion.route)
                         if (rowDeleted != null && rowDeleted > 0) {
-                            Snackbar.make(itemView.rootView, itemView.context.getString(R.string.removed_from_search_history, companyName + " " + suggestion.route), Snackbar.LENGTH_LONG)
+                            Snackbar.make(itemView.rootView.findViewById(R.id.coordinator_layout)?:itemView.rootView,
+                                    itemView.context.getString(R.string.removed_from_search_history, companyName + " " + suggestion.route),
+                                    Snackbar.LENGTH_LONG)
                                     .addCallback(object : Snackbar.Callback() {
                                         override fun onDismissed(snackbar: Snackbar?, event: Int) {
                                             when (event) {

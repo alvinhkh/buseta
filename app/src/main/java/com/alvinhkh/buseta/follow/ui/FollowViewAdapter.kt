@@ -108,8 +108,10 @@ class FollowViewAdapter(
                     builder.setPositiveButton(R.string.action_confirm) { _, _ ->
                         val rowDeleted = followDatabase?.followDao()?.delete(follow.type, follow.companyCode, follow.routeNo, follow.routeSeq, follow.routeServiceType, follow.stopId, follow.stopSeq)
                         if (rowDeleted != null && rowDeleted > 0) {
-                            Snackbar.make(itemView.rootView, itemView.context.getString(R.string.removed_from_follow_list,
-                                    String.format(Locale.ENGLISH, "%s %s", follow.routeNo, follow.stopName)), Snackbar.LENGTH_LONG)
+                            Snackbar.make(itemView.rootView.findViewById(R.id.coordinator_layout)?:itemView.rootView,
+                                    itemView.context.getString(R.string.removed_from_follow_list,
+                                    String.format(Locale.ENGLISH, "%s %s", follow.routeNo, follow.stopName)),
+                                    Snackbar.LENGTH_LONG)
                                     .addCallback(object : Snackbar.Callback() {
                                         override fun onDismissed(snackbar: Snackbar?, event: Int) {
                                             when (event) {

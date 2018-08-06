@@ -67,8 +67,10 @@ class EditFollowViewAdapter(
         val rowDeleted = followDatabase?.followDao()?.delete(follow.type, follow.companyCode, follow.routeNo, follow.routeSeq, follow.routeServiceType, follow.stopId, follow.stopSeq)
         if (rowDeleted != null && rowDeleted > 0) {
             notifyItemRemoved(position)
-            Snackbar.make(recyclerView, context.getString(R.string.removed_from_follow_list,
-                    String.format(Locale.ENGLISH, "%s %s", follow.routeNo, follow.stopName)), Snackbar.LENGTH_LONG)
+            Snackbar.make(recyclerView.rootView.findViewById(R.id.constraint_layout)?:recyclerView,
+                    context.getString(R.string.removed_from_follow_list,
+                    String.format(Locale.ENGLISH, "%s %s", follow.routeNo, follow.stopName)),
+                    Snackbar.LENGTH_LONG)
                     .addCallback(object : Snackbar.Callback() {
                         override fun onDismissed(snackbar: Snackbar?, event: Int) {
                             when (event) {
