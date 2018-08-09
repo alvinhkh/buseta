@@ -65,7 +65,7 @@
             android:title="@string/map"
             android:summaryOn="@string/auto_load"
             android:summaryOff="@string/manual"
-            android:defaultValue="true" />
+            android:defaultValue="false" />
 
         <ListPreference
             android:key="load_eta"
