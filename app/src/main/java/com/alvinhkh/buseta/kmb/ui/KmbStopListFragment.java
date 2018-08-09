@@ -25,7 +25,6 @@ import com.google.gson.JsonParseException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.observers.DisposableObserver;
@@ -90,7 +89,7 @@ public class KmbStopListFragment extends RouteStopListFragmentAbstract {
                 if (res != null && res.data != null && adapter != null) {
                     if (res.data.routeStops != null) {
                         for (int i = 0; i < res.data.routeStops.size(); i++) {
-                            RouteStop stop = RouteStopUtil.fromKmbRouteStop(res.data.routeStops.get(i),
+                            RouteStop stop = RouteStopUtil.fromKmb(res.data.routeStops.get(i),
                                     route, i, i >= res.data.routeStops.size() - 1);
                             items.add(new Item(Item.TYPE_DATA, stop));
                         }

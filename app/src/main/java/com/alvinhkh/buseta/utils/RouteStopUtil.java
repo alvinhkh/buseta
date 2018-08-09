@@ -75,10 +75,10 @@ public class RouteStopUtil {
         return null;
     }
 
-    public static RouteStop fromKmbRouteStop(@NonNull KmbRouteStop kmbRouteStop,
-                                             @NonNull Route route,
-                                             Integer position,
-                                             Boolean isLastStop) {
+    public static RouteStop fromKmb(@NonNull KmbRouteStop kmbRouteStop,
+                                    @NonNull Route route,
+                                    Integer position,
+                                    Boolean isLastStop) {
         RouteStop object = new RouteStop();
         object.setCompanyCode(C.PROVIDER.KMB);
         object.setRouteNo(kmbRouteStop.route);
@@ -86,7 +86,7 @@ public class RouteStopUtil {
         object.setRouteServiceType(route.getServiceType());
         object.setRouteSeq(kmbRouteStop.bound);
         object.setStopId(kmbRouteStop.bsiCode);
-        object.setSequence(Integer.toString(position));
+        object.setSequence(isLastStop ? "999" : Integer.toString(position));
         object.setName(kmbRouteStop.nameTc);
         object.setFare(kmbRouteStop.airFare);
         object.setLocation(kmbRouteStop.locationTc);
@@ -117,7 +117,7 @@ public class RouteStopUtil {
         object.setRouteServiceType(route.getServiceType());
         object.setRouteSeq(route.getSequence());
         object.setStopId(lwbRouteStop.subarea);
-        object.setSequence(Integer.toString(position));
+        object.setSequence(isLastStop ? "999" : Integer.toString(position));
         object.setName(lwbRouteStop.name_tc);
         object.setFare(lwbRouteStop.air_cond_fare);
         object.setLatitude(lwbRouteStop.lat);
