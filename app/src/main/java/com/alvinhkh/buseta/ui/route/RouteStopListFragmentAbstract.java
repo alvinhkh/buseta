@@ -576,9 +576,9 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
             return;
         }
         if (getContext() == null) return;
-        if (mapFragment != null) return;
         new Thread(() -> {
             try {
+                if (mapFragment != null) return;
                 mapFragment = SupportMapFragment.newInstance();
                 if (!mapFragment.isAdded()) {
                     getChildFragmentManager().beginTransaction().add(R.id.map, mapFragment).runOnCommit(() -> {
@@ -739,6 +739,10 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         if (adapter != null) {
             if (adapter.getItemCount() > 0) {
                 if (route != null && navToStop != null
+                        && route.getCompanyCode() != null && route.getName() != null
+                        && route.getSequence() != null && route.getServiceType() != null
+                        && navToStop.getCompanyCode() != null && navToStop.getName() != null
+                        && navToStop.getSequence() != null && navToStop.getRouteServiceType() != null
                         && route.getCompanyCode().equals(navToStop.getCompanyCode())
                         && route.getName().equals(navToStop.getRouteNo())
                         && route.getSequence().equals(navToStop.getRouteSeq())
