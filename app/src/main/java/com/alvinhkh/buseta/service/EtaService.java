@@ -48,7 +48,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -148,20 +147,10 @@ public class EtaService extends IntentService {
                     case C.PROVIDER.CTB:
                     case C.PROVIDER.NWFB:
                     case C.PROVIDER.NWST:
-                        Map<String, String> options = new LinkedHashMap<>();
-                        options.put(QUERY_STOP_ID, Integer.toString(Integer.parseInt(routeStop.getStopId())));
-                        options.put(QUERY_SERVICE_NO, routeStop.getRouteNo());
-                        options.put("removeRepeatedSuspend", "Y");
-                        options.put("interval", "60");
-                        options.put(QUERY_LANGUAGE, LANGUAGE_TC);
-                        options.put(QUERY_BOUND, routeStop.getRouteSeq());
-                        options.put(QUERY_STOP_SEQ, routeStop.getSequence());
-                        options.put(QUERY_RDV, routeStop.getRouteId());
-                        options.put("showtime", "Y");
-                        options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
-                        options.put(QUERY_PLATFORM, PLATFORM);
-                        options.put(QUERY_VERSION, APP_VERSION);
-                        disposables.add(nwstApi.eta(options)
+                        disposables.add(nwstApi.eta(Integer.toString(Integer.parseInt(routeStop.getStopId())),
+                                routeStop.getRouteNo(), "Y", "60", LANGUAGE_TC, routeStop.getRouteSeq(),
+                                routeStop.getSequence(), routeStop.getRouteId(), "Y", "Y",
+                                NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, NwstRequestUtil.syscode2())
                                 .subscribeWith(nwstEtaObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size() - 1)));
                         break;
                     case C.PROVIDER.LRTFEEDER:
