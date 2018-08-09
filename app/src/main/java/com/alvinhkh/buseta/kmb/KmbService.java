@@ -24,7 +24,7 @@ import retrofit2.http.Url;
 
 public interface KmbService {
     
-    String ANNOUNEMENT_PICTURE = "http://search.kmb.hk/KMBWebSite/AnnouncementPicture.ashx?url=";
+    String ANNOUNCEMENT_PICTURE = "http://search.kmb.hk/KMBWebSite/AnnouncementPicture.ashx?url=";
 
     Gson gson = new GsonBuilder()
             .serializeNulls()

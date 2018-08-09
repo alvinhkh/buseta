@@ -127,10 +127,10 @@ public class KmbAnnounceAdapter
                     Intent intent = new Intent(context, ImageActivity.class);
                     intent.putExtra(ImageActivity.IMAGE_TITLE, announce.titleTc);
                     intent.putExtra(ImageActivity.IMAGE_URL,
-                            KmbService.ANNOUNEMENT_PICTURE + announce.url);
+                            KmbService.ANNOUNCEMENT_PICTURE + announce.url);
                     context.startActivity(intent);
                 } else if (announce.url.contains(".pdf")) {
-                    openPdf(KmbService.ANNOUNEMENT_PICTURE + announce.url);
+                    openPdf(KmbService.ANNOUNCEMENT_PICTURE + announce.url);
                 } else {
                     KmbService kmbService = KmbService.webSearchHtml.create(KmbService.class);
                     kmbService.getAnnouncementPicture(announce.url)
@@ -169,7 +169,7 @@ public class KmbAnnounceAdapter
                         Intent intent = new Intent(context, ImageActivity.class);
                         intent.putExtra(ImageActivity.IMAGE_TITLE, announce.titleTc);
                         intent.putExtra(ImageActivity.IMAGE_URL,
-                                KmbService.ANNOUNEMENT_PICTURE + announce.url);
+                                KmbService.ANNOUNCEMENT_PICTURE + announce.url);
                         context.startActivity(intent);
                     } else if (contentType.contains("html")) {
                         try {
