@@ -247,7 +247,6 @@ public abstract class RouteActivityAbstract extends BaseActivity {
     protected void loadRouteNo(String no) {
         if (pagerAdapter != null) {
             pagerAdapter.clearSequence();
-            pagerAdapter.getCount();
         }
         if (TextUtils.isEmpty(no)) {
             showEmptyView();
@@ -258,8 +257,6 @@ public abstract class RouteActivityAbstract extends BaseActivity {
 
     protected void onCompleteRoute(List<Route> routes, String companyCode) {
         if (pagerAdapter == null || TextUtils.isEmpty(companyCode)) return;
-        pagerAdapter.clearSequence();
-        pagerAdapter.getCount();
         for (Route route : routes) {
             if (route == null) continue;
             if (TextUtils.isEmpty(route.getName()) || !route.getName().equals(routeNo)) continue;

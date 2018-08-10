@@ -7,7 +7,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.text.TextUtils;
-import android.view.ViewGroup;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
@@ -33,29 +32,23 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
 
     private RouteStop routeStop;
 
-    private boolean doNotifyDataSetChangedOnce = false;
-
     public RoutePagerAdapter(FragmentManager fm, Context context, RouteStop routeStop) {
         super(fm);
         this.context = context;
         this.routeStop = routeStop;
     }
 
-    @Override
-    public void destroyItem(ViewGroup container, int position, Object object) {
-        routes.remove(position);
-        super.destroyItem(container, position, object);
-    }
-
     public void addSequence(@NonNull Route route) {
         if (routes.contains(route)) return;
-        doNotifyDataSetChangedOnce = true;
         routes.add(route);
+        notifyDataSetChanged();
     }
 
     public void clearSequence() {
-        doNotifyDataSetChangedOnce = true;
-        routes.clear();
+        if (routes.size() > 0) {
+            routes.clear();
+            notifyDataSetChanged();
+        }
     }
 
     public List<Route> getRoutes() {
@@ -64,26 +57,28 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-        Route route = routes.get(position);
-        if (route != null && route.getCompanyCode() != null) {
-            switch (route.getCompanyCode()) {
-                case C.PROVIDER.AESBUS:
-                    return AESBusStopListFragment.newInstance(route, routeStop);
-                case C.PROVIDER.CTB:
-                case C.PROVIDER.NWFB:
-                case C.PROVIDER.NWST:
-                    return NwstStopListFragment.newInstance(route, routeStop);
-                case C.PROVIDER.LRTFEEDER:
-                    return MtrBusStopListFragment.newInstance(route, routeStop);
-                case C.PROVIDER.NLB:
-                    return NlbStopListFragment.newInstance(route, routeStop);
-                case C.PROVIDER.KMB:
-                default:
-                    if (PreferenceUtil.isUsingNewKmbApi(context)) {
-                        return KmbStopListFragment.newInstance(route, routeStop);
-                    } else {
-                        return LwbStopListFragment.newInstance(route, routeStop);
-                    }
+        if (routes.size() > position) {
+            Route route = routes.get(position);
+            if (route != null && route.getCompanyCode() != null) {
+                switch (route.getCompanyCode()) {
+                    case C.PROVIDER.AESBUS:
+                        return AESBusStopListFragment.newInstance(route, routeStop);
+                    case C.PROVIDER.CTB:
+                    case C.PROVIDER.NWFB:
+                    case C.PROVIDER.NWST:
+                        return NwstStopListFragment.newInstance(route, routeStop);
+                    case C.PROVIDER.LRTFEEDER:
+                        return MtrBusStopListFragment.newInstance(route, routeStop);
+                    case C.PROVIDER.NLB:
+                        return NlbStopListFragment.newInstance(route, routeStop);
+                    case C.PROVIDER.KMB:
+                    default:
+                        if (PreferenceUtil.isUsingNewKmbApi(context)) {
+                            return KmbStopListFragment.newInstance(route, routeStop);
+                        } else {
+                            return LwbStopListFragment.newInstance(route, routeStop);
+                        }
+                }
             }
         }
         return null;
@@ -91,18 +86,12 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public int getCount() {
-        if (doNotifyDataSetChangedOnce) {
-            doNotifyDataSetChangedOnce = false;
-            notifyDataSetChanged();
-        }
         return routes.size();
     }
 
     @Override
     public CharSequence getPageTitle(int position) {
-        if (position > getCount()) {
-            throw new IllegalArgumentException();
-        }
+        if (context == null) return "" + position;
         Route route = routes.get(position);
         if (route != null) {
             if (!TextUtils.isEmpty(route.getOrigin())) {
@@ -115,5 +104,12 @@ public class RoutePagerAdapter extends FragmentStatePagerAdapter {
             }
         }
         return context.getString(R.string.route) + " " + position;
+    }
+
+    @Override
+    public int getItemPosition(@NonNull Object object) {
+        // Causes adapter to reload all Fragments when
+        // notifyDataSetChanged is called
+        return POSITION_NONE;
     }
 }

@@ -245,7 +245,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
             navToStop = getArguments().getParcelable(C.EXTRA.STOP_OBJECT);
         }
         swipeRefreshLayout.setVisibility(View.VISIBLE);
-        swipeRefreshLayout.setRefreshing(true);
+        swipeRefreshLayout.setRefreshing(false);
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         isShowMapFragment = preferences != null && preferences.getBoolean("load_map", false);
@@ -394,17 +394,11 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
     }
 
     @Override
-    public void onLowMemory() {
-        super.onLowMemory();
-        Timber.i("LowMemory");
-    }
-
-    @Override
     public void onRefresh() {
+        if (swipeRefreshLayout != null) {
+            swipeRefreshLayout.setRefreshing(false);
+        }
         if (getContext() != null && adapter != null && adapter.getDataItemCount() > 0) {
-            if (swipeRefreshLayout != null && !swipeRefreshLayout.isRefreshing()) {
-                swipeRefreshLayout.setRefreshing(true);
-            }
             ArrayList<RouteStop> routeStopList = new ArrayList<>();
             for (int i = 0; i < adapter.getItemCount(); i++) {
                 if (adapter.getItem(i).getType() == TYPE_DATA &&
