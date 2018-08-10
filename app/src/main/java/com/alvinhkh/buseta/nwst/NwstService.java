@@ -99,7 +99,7 @@ public interface NwstService {
             @Query(QUERY_SYSCODE) String sysCode,
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
-            @Query(QUERY_SYSCODE2) String sysCode2
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
     );
 
     @GET("api6/getline_multi2.php")
