@@ -11,7 +11,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.ActionBar;
-import android.view.Menu;
 import android.view.MenuItem;
 
 import com.alvinhkh.buseta.R;
@@ -24,8 +23,6 @@ import com.alvinhkh.buseta.service.CheckUpdateService;
 import com.alvinhkh.buseta.follow.ui.EditFollowFragment;
 import com.alvinhkh.buseta.utils.AdViewUtil;
 import com.alvinhkh.buseta.utils.ColorUtil;
-
-import timber.log.Timber;
 
 
 public class MainActivity extends BaseActivity {
@@ -172,14 +169,6 @@ public class MainActivity extends BaseActivity {
             Intent intent = new Intent(this, CheckUpdateService.class);
             startService(intent);
         } catch (IllegalStateException ignored) {}
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        super.onCreateOptionsMenu(menu);
-        final MenuItem itemShare = menu.findItem(R.id.action_share);
-        itemShare.setShowAsActionFlags(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-        return true;
     }
 
     @Override
