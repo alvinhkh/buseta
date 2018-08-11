@@ -255,7 +255,7 @@ public abstract class RouteActivityAbstract extends BaseActivity {
         showLoadingView();
     }
 
-    protected void onCompleteRoute(List<Route> routes, String companyCode) {
+    synchronized protected void onCompleteRoute(List < Route > routes, String companyCode){
         if (pagerAdapter == null || TextUtils.isEmpty(companyCode)) return;
         for (Route route : routes) {
             if (route == null) continue;
@@ -268,7 +268,7 @@ public abstract class RouteActivityAbstract extends BaseActivity {
                     && route.getCompanyCode().equals(stopFromIntent.getCompanyCode())
                     && route.getSequence().equals(stopFromIntent.getRouteSeq())
                     && route.getServiceType().equals(stopFromIntent.getRouteServiceType())
-            ) {
+                    ) {
                 fragNo = fragmentCount;
                 isScrollToPage = true;
             }
@@ -335,7 +335,7 @@ public abstract class RouteActivityAbstract extends BaseActivity {
                 });
     }
 
-    private void updateAppShortcuts() {
+    synchronized private void updateAppShortcuts() {
         if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return;
         if (getApplicationContext() == null) return;
         // Dynamic App Shortcut

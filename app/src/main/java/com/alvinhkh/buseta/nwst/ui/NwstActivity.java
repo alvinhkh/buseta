@@ -119,7 +119,7 @@ public class NwstActivity extends RouteActivityAbstract {
                         if (TextUtils.isEmpty(text)) continue;
                         NwstVariant variant = NwstVariant.Companion.fromString(text);
                         Route route = RouteUtil.fromNwst(nwstRoute, variant);
-                        if (route.getName().equals(routeNo)) {
+                        if (route.getName() != null && routeNo != null && route.getName().equals(routeNo)) {
                             routeList.add(route);
                         }
                     }
