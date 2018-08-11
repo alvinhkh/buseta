@@ -70,6 +70,7 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
             options.put(QUERY_PLATFORM, PLATFORM);
             options.put(QUERY_VERSION, APP_VERSION);
             options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
+            options.put(QUERY_SYSCODE2, NwstRequestUtil.syscode2());
             disposables.add(nwstService.stopList(options)
                     .retryWhen(new RetryWithDelay(5, 3000))
                     .subscribeWith(stopListObserver()));
@@ -137,6 +138,7 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
                 options.put(QUERY_PLATFORM, PLATFORM);
                 options.put(QUERY_VERSION, APP_VERSION);
                 options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
+                options.put(QUERY_SYSCODE2, NwstRequestUtil.syscode2());
                 disposables.add(nwstService.latlongList(options)
                         .retryWhen(new RetryWithDelay(5, 3000))
                         .subscribeWith(latlongListObserver()));

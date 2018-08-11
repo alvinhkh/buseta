@@ -115,6 +115,7 @@ public class CheckUpdateService extends IntentService {
         options.put(QUERY_PLATFORM, PLATFORM);
         options.put(QUERY_VERSION, APP_VERSION);
         options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
+        options.put(QUERY_SYSCODE2, NwstRequestUtil.syscode2());
         disposables.add(nwstService.routeList(options)
                 .retryWhen(new RetryWithDelay(3, 3000))
                 .subscribeOn(Schedulers.io())

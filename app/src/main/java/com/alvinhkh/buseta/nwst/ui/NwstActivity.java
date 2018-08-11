@@ -48,6 +48,7 @@ public class NwstActivity extends RouteActivityAbstract {
         options.put(QUERY_PLATFORM, PLATFORM);
         options.put(QUERY_VERSION, APP_VERSION);
         options.put(QUERY_SYSCODE, sysCode);
+        options.put(QUERY_SYSCODE2, NwstRequestUtil.syscode2());
         disposables.add(nwstService.routeList(options)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -75,6 +76,7 @@ public class NwstActivity extends RouteActivityAbstract {
                             options.put(QUERY_PLATFORM, PLATFORM);
                             options.put(QUERY_VERSION, APP_VERSION);
                             options.put(QUERY_SYSCODE, sysCode);
+                            options.put(QUERY_SYSCODE2, NwstRequestUtil.syscode2());
                             disposables.add(nwstService.variantList(options)
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
