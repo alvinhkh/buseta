@@ -18,7 +18,7 @@ apply plugin: 'kotlin-kapt'
 
 def versionMajor = 1
 def versionMinor = 0
-def versionPatch = 5
+def versionPatch = 6
 def versionBuild = 0
 
 android {
@@ -97,7 +97,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-appindexing:16.0.1'
     implementation 'com.google.firebase:firebase-config:16.0.0'
     implementation 'com.google.firebase:firebase-core:16.0.1'
-    implementation 'com.google.firebase:firebase-firestore:17.0.3'
+    implementation 'com.google.firebase:firebase-firestore:17.0.4'
     implementation 'com.google.maps.android:android-maps-utils:0.5'
     implementation 'com.firebase:firebase-jobdispatcher:0.8.5'
     implementation ('com.firebaseui:firebase-ui-firestore:4.1.0') {
