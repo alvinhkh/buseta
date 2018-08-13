@@ -25,6 +25,8 @@ import retrofit2.http.Query;
 
 public interface NlbService {
 
+    String TIMETABLE_URL = "https://nlb.kcbh.com.hk:8443/api/passenger/route.php?action=getDetail&routeId=";
+
     Gson gson = new GsonBuilder()
             .serializeNulls()
             .create();

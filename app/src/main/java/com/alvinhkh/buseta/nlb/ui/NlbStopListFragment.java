@@ -1,13 +1,21 @@
 package com.alvinhkh.buseta.nlb.ui;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.customtabs.CustomTabsIntent;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.alvinhkh.buseta.C;
+import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.model.RouteStop;
 import com.alvinhkh.buseta.nlb.NlbService;
@@ -15,6 +23,7 @@ import com.alvinhkh.buseta.nlb.model.NlbDatabase;
 import com.alvinhkh.buseta.nlb.model.NlbRouteStop;
 import com.alvinhkh.buseta.nlb.model.NlbStop;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
+import com.alvinhkh.buseta.ui.image.ImageActivity;
 import com.alvinhkh.buseta.ui.route.RouteStopListFragmentAbstract;
 import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.RetryWithDelay;
@@ -29,6 +38,8 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
+
+import static com.alvinhkh.buseta.nlb.NlbService.TIMETABLE_URL;
 
 
 public class NlbStopListFragment extends RouteStopListFragmentAbstract {
@@ -64,6 +75,40 @@ public class NlbStopListFragment extends RouteStopListFragmentAbstract {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(databaseObserver()));
         return rootView;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        MenuItem timetableItem = menu.findItem(R.id.action_timetable);
+        timetableItem.setVisible(true);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case R.id.action_timetable:
+                if (route != null && getContext() != null) {
+                    Uri link = Uri.parse(TIMETABLE_URL + route.getCode());
+                    if (link != null) {
+                        try {
+                            CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+                            builder.setToolbarColor(ContextCompat.getColor(getContext(), R.color.black));
+                            CustomTabsIntent customTabsIntent = builder.build();
+                            customTabsIntent.launchUrl(getContext(), link);
+                        } catch (Exception ignored) {
+                            Intent intent = new Intent(Intent.ACTION_VIEW, link);
+                            if (intent.resolveActivity(getContext().getPackageManager()) != null) {
+                                startActivity(intent);
+                            }
+                        }
+                    }
+                    return true;
+                }
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     DisposableObserver<NlbDatabase> databaseObserver() {

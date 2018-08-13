@@ -17,4 +17,12 @@
         android:visible="false"
         android:orderInCategory="91"
         app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/action_timetable"
+        android:icon="@drawable/ic_event_note_white_24dp"
+        android:title="@string/timetable"
+        android:orderInCategory="92"
+        android:visible="false"
+        app:showAsAction="ifRoom"/>
 </menu>

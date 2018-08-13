@@ -40,6 +40,7 @@
     <string name="search_route">搜尋路線</string>
     <string name="start_search_route">按右下角按鈕，開始搜尋路線</string>
     <string name="stop_name">站名</string>
+    <string name="timetable">時間表</string>
 
     <string name="label_last_updated">數據最後更新：</string>
     <string name="label_server_time">獲取數據（伺服器時間）：</string>

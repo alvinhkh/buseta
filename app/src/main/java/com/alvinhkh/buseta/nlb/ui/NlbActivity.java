@@ -8,7 +8,6 @@ import com.alvinhkh.buseta.nlb.model.NlbDatabase;
 import com.alvinhkh.buseta.nlb.model.NlbRoute;
 import com.alvinhkh.buseta.ui.route.RouteActivityAbstract;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
-import com.alvinhkh.buseta.utils.RetryWithDelay;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +50,7 @@ public class NlbActivity extends RouteActivityAbstract {
                             }
                             route.setName(nlbRoute.route_no);
                             route.setSequence(nlbRoute.route_id);
+                            route.setCode(nlbRoute.route_id);
                             routes.add(route);
                         }
                     }
