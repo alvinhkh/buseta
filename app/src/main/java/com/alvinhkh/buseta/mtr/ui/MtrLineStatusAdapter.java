@@ -126,12 +126,20 @@ public class MtrLineStatusAdapter
             if (!TextUtils.isEmpty(status.getUrlTc())) {
                 openUrlIv.setVisibility(View.VISIBLE);
                 openUrlIv.setOnClickListener(l -> {
-                    try {
-                        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
-                        builder.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimary));
-                        CustomTabsIntent customTabsIntent = builder.build();
-                        customTabsIntent.launchUrl(context, Uri.parse(status.getUrlTc()));
-                    } catch (Exception ignored) { }
+                    Uri link = Uri.parse(status.getUrlTc());
+                    if (link != null) {
+                        try {
+                            CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+                            builder.setToolbarColor(ContextCompat.getColor(context, R.color.colorPrimary));
+                            CustomTabsIntent customTabsIntent = builder.build();
+                            customTabsIntent.launchUrl(context, link);
+                        } catch (Exception ignored) {
+                            Intent intent = new Intent(Intent.ACTION_VIEW, link);
+                            if (intent.resolveActivity(context.getPackageManager()) != null) {
+                                context.startActivity(intent);
+                            }
+                        }
+                    }
                 });
             } else {
                 openUrlIv.setVisibility(View.GONE);
