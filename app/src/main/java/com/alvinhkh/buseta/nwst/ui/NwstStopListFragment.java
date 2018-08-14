@@ -1,11 +1,15 @@
 package com.alvinhkh.buseta.nwst.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.util.Pair;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -20,6 +24,7 @@ import com.alvinhkh.buseta.nwst.model.NwstVariant;
 import com.alvinhkh.buseta.nwst.util.NwstRequestUtil;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
 import com.alvinhkh.buseta.ui.route.RouteStopListFragmentAbstract;
+import com.alvinhkh.buseta.ui.webview.WebViewActivity;
 import com.alvinhkh.buseta.utils.RouteStopUtil;
 
 import java.io.IOException;
@@ -39,6 +44,8 @@ import static com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item.TYPE_DATA
 public class NwstStopListFragment extends RouteStopListFragmentAbstract {
 
     private final NwstService nwstService = NwstService.api.create(NwstService.class);
+
+    private String timetableHtml = "";
 
     /**
      * Returns a new instance of this fragment for the given section
@@ -72,6 +79,31 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
             onStopListError(new Error(getString(R.string.message_fail_to_request)));
         }
         return rootView;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        MenuItem timetableItem = menu.findItem(R.id.action_timetable);
+        timetableItem.setVisible(true);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case R.id.action_timetable:
+                if (!TextUtils.isEmpty(timetableHtml)) {
+                    Intent intent = new Intent(getContext(), WebViewActivity.class);
+                    intent.putExtra(WebViewActivity.TITLE, route == null || TextUtils.isEmpty(route.getName()) ?
+                            getString(R.string.timetable) : route.getName() + " " + getString(R.string.timetable));
+                    intent.putExtra(WebViewActivity.HTML, timetableHtml);
+                    startActivity(intent);
+                    return true;
+                }
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     DisposableObserver<ResponseBody> stopListObserver() {
@@ -137,6 +169,11 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
                     String[] temp = rdv.substring(1).split("\\*{3}");
                     rdv = temp[0] + "||" + temp[1] + "||" + temp[2] + "||" + temp[3];
                 }
+                disposables.add(nwstService.timetable(rdv, route.getSequence(), LANGUAGE_TC,
+                        NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, NwstRequestUtil.syscode2())
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribeWith(timetableObserver()));
             }
         };
     }
@@ -175,6 +212,30 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
             public void onComplete() {
                 if (getActivity() == null) return;
                 getActivity().runOnUiThread(() -> onStopListComplete());
+            }
+        };
+    }
+
+    DisposableObserver<ResponseBody> timetableObserver() {
+        return new DisposableObserver<ResponseBody>() {
+            @Override
+            public void onNext(ResponseBody body) {
+                timetableHtml = "";
+                try {
+                    timetableHtml = body.string();
+                } catch (IOException e) {
+                    Timber.d(e);
+                }
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                timetableHtml = "";
+                Timber.d(e);
+            }
+
+            @Override
+            public void onComplete() {
             }
         };
     }
