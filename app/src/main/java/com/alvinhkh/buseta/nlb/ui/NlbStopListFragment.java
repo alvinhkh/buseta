@@ -23,7 +23,6 @@ import com.alvinhkh.buseta.nlb.model.NlbDatabase;
 import com.alvinhkh.buseta.nlb.model.NlbRouteStop;
 import com.alvinhkh.buseta.nlb.model.NlbStop;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
-import com.alvinhkh.buseta.ui.image.ImageActivity;
 import com.alvinhkh.buseta.ui.route.RouteStopListFragmentAbstract;
 import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.RetryWithDelay;

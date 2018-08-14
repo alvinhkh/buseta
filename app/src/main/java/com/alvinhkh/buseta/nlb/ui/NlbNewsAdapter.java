@@ -1,6 +1,7 @@
 package com.alvinhkh.buseta.nlb.ui;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
@@ -18,6 +19,7 @@ import com.alvinhkh.buseta.nlb.model.NlbNews;
 import com.alvinhkh.buseta.nlb.model.NlbNewsRequest;
 import com.alvinhkh.buseta.nlb.model.NlbNewsRes;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter;
+import com.alvinhkh.buseta.ui.webview.WebViewActivity;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -137,15 +139,12 @@ public class NlbNewsAdapter
             return new DisposableObserver<NlbNewsRes>() {
                 @Override
                 public void onNext(NlbNewsRes res) {
+                    if (context == null) return;
                     if (res == null || res.news == null || TextUtils.isEmpty(res.news.content)) return;
-                    // TODO: maybe another format instead of dialog
-                    AlertDialog.Builder alert = new AlertDialog.Builder(context);
-                    alert.setTitle(res.news.title);
-                    WebView wv = new WebView(context);
-                    wv.loadData(res.news.content, "text/html; charset=UTF-8",null);
-                    alert.setView(wv);
-                    alert.setPositiveButton(R.string.action_confirm, (dialoginterface, i) -> dialoginterface.cancel());
-                    alert.show();
+                    Intent intent = new Intent(context, WebViewActivity.class);
+                    intent.putExtra(WebViewActivity.TITLE, res.news.title);
+                    intent.putExtra(WebViewActivity.HTML, res.news.content);
+                    context.startActivity(intent);
                 }
 
                 @Override
