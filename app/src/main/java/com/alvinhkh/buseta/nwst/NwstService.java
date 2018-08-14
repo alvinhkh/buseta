@@ -70,19 +70,38 @@ public interface NwstService {
             .build();
 
     @GET("api6/getmmroutelist.php")
-    Observable<ResponseBody> routeList(@QueryMap Map<String, String> options);
+    Observable<ResponseBody> routeList(
+            @Query(QUERY_ROUTE_NO) String routeNo,
+            @Query(QUERY_MODE) String mode,
+            @Query(QUERY_LANGUAGE) String language,
+            @Query(QUERY_SYSCODE) String sysCode,
+            @Query(QUERY_PLATFORM) String platform,
+            @Query(QUERY_VERSION) String version,
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
+    );
 
     @GET("api6/getvariantlist.php")
-    Observable<ResponseBody> variantList(@QueryMap Map<String, String> options);
+    Observable<ResponseBody> variantList(
+            @Query(QUERY_ID) String id,
+            @Query(QUERY_LANGUAGE) String language,
+            @Query(QUERY_SYSCODE) String sysCode,
+            @Query(QUERY_PLATFORM) String platform,
+            @Query(QUERY_VERSION) String version,
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
+    );
 
     @GET("api6/ppstoplist.php")
-    Observable<ResponseBody> stopList(@QueryMap Map<String, String> options);
+    Observable<ResponseBody> stopList(
+            @Query(QUERY_INFO) String info,
+            @Query(QUERY_LANGUAGE) String language,
+            @Query(QUERY_SYSCODE) String sysCode,
+            @Query(QUERY_PLATFORM) String platform,
+            @Query(QUERY_VERSION) String version,
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
+    );
 
     @GET("api6/get_notice_4.php")
     Observable<ResponseBody> notice(@QueryMap Map<String, String> options);
-
-    @GET("api6/getnextbus2.php")
-    Observable<ResponseBody> eta(@QueryMap Map<String, String> options);
 
     @GET("api6/getnextbus2.php")
     Observable<ResponseBody> eta(
@@ -103,6 +122,24 @@ public interface NwstService {
     );
 
     @GET("api6/getline_multi2.php")
-    Observable<ResponseBody> latlongList(@QueryMap Map<String, String> options);
+    Observable<ResponseBody> latlongList(
+            @Query(QUERY_R) String r,
+            @Query(QUERY_LANGUAGE) String language,
+            @Query(QUERY_SYSCODE) String sysCode,
+            @Query(QUERY_PLATFORM) String platform,
+            @Query(QUERY_VERSION) String version,
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
+    );
+
+    @GET("api6/gettimetable.php")
+    Observable<ResponseBody> timetable(
+            @Query(QUERY_RDV) String rdv,
+            @Query(QUERY_BOUND) String bound,
+            @Query(QUERY_LANGUAGE) String language,
+            @Query(QUERY_SYSCODE) String sysCode,
+            @Query(QUERY_PLATFORM) String platform,
+            @Query(QUERY_VERSION) String version,
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
+    );
 
 }

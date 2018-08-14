@@ -108,15 +108,8 @@ public class CheckUpdateService extends IntentService {
                 .subscribeOn(Schedulers.io())
                 .subscribeWith(nlbDatabaseObserver(manualUpdate)));
         NwstService nwstService = NwstService.api.create(NwstService.class);
-        Map<String, String> options = new HashMap<>();
-        options.put(QUERY_ROUTE_NO, "");
-        options.put(QUERY_MODE, TYPE_ALL_ROUTES);
-        options.put(QUERY_LANGUAGE, LANGUAGE_TC);
-        options.put(QUERY_PLATFORM, PLATFORM);
-        options.put(QUERY_VERSION, APP_VERSION);
-        options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
-        options.put(QUERY_SYSCODE2, NwstRequestUtil.syscode2());
-        disposables.add(nwstService.routeList(options)
+        disposables.add(nwstService.routeList("", TYPE_ALL_ROUTES,
+                LANGUAGE_TC, NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, NwstRequestUtil.syscode2())
                 .retryWhen(new RetryWithDelay(3, 3000))
                 .subscribeOn(Schedulers.io())
                 .subscribeWith(nwstRouteListObserver(manualUpdate)));

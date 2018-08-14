@@ -16,6 +16,7 @@ import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,29 +41,20 @@ public class NwstActivity extends RouteActivityAbstract {
 
     private void loadRouteNo(String no, String mode) {
         super.loadRouteNo(no);
-        String sysCode = NwstRequestUtil.syscode();
-        Map<String, String> options = new HashMap<>();
-        options.put(QUERY_ROUTE_NO, mode.equals(TYPE_ALL_ROUTES) ? "" : no);
-        options.put(QUERY_MODE, mode);
-        options.put(QUERY_LANGUAGE, LANGUAGE_TC);
-        options.put(QUERY_PLATFORM, PLATFORM);
-        options.put(QUERY_VERSION, APP_VERSION);
-        options.put(QUERY_SYSCODE, sysCode);
-        options.put(QUERY_SYSCODE2, NwstRequestUtil.syscode2());
-        disposables.add(nwstService.routeList(options)
+        disposables.add(nwstService.routeList(mode.equals(TYPE_ALL_ROUTES) ? "" : no, mode,
+                LANGUAGE_TC, NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, NwstRequestUtil.syscode2())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(routeListObserver(no, sysCode)));
+                .subscribeWith(routeListObserver(no)));
     }
 
-    DisposableObserver<ResponseBody> routeListObserver(String routeNo, String sysCode) {
+    DisposableObserver<ResponseBody> routeListObserver(String routeNo) {
         return new DisposableObserver<ResponseBody>() {
             @Override
             public void onNext(ResponseBody body) {
                 try {
                     routeList.clear();
                     String[] routeArray = body.string().split("\\|\\*\\|", -1);
-                    Map<String, String> options;
                     for (String route : routeArray) {
                         String text = route.replace("<br>", "").trim();
                         if (TextUtils.isEmpty(text)) continue;
@@ -70,14 +62,8 @@ public class NwstActivity extends RouteActivityAbstract {
                         if (nwstRoute != null &&
                                 !TextUtils.isEmpty(nwstRoute.getRouteNo()) &&
                                 nwstRoute.getRouteNo().equals(routeNo)) {
-                            options = new HashMap<>();
-                            options.put(QUERY_ID, nwstRoute.getRdv());
-                            options.put(QUERY_LANGUAGE, LANGUAGE_TC);
-                            options.put(QUERY_PLATFORM, PLATFORM);
-                            options.put(QUERY_VERSION, APP_VERSION);
-                            options.put(QUERY_SYSCODE, sysCode);
-                            options.put(QUERY_SYSCODE2, NwstRequestUtil.syscode2());
-                            disposables.add(nwstService.variantList(options)
+                            disposables.add(nwstService.variantList(nwstRoute.getRdv(), LANGUAGE_TC,
+                                    NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, NwstRequestUtil.syscode2())
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribeWith(variantListObserver(nwstRoute)));

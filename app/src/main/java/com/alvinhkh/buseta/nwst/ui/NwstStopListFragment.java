@@ -21,15 +21,14 @@ import com.alvinhkh.buseta.nwst.util.NwstRequestUtil;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
 import com.alvinhkh.buseta.ui.route.RouteStopListFragmentAbstract;
 import com.alvinhkh.buseta.utils.RouteStopUtil;
-import com.alvinhkh.buseta.utils.RetryWithDelay;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.observers.DisposableObserver;
+import io.reactivex.schedulers.Schedulers;
 import okhttp3.ResponseBody;
 import timber.log.Timber;
 
@@ -64,15 +63,10 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
             if (swipeRefreshLayout != null && !swipeRefreshLayout.isRefreshing()) {
                 swipeRefreshLayout.setRefreshing(true);
             }
-            Map<String, String> options = new LinkedHashMap<>();
-            options.put(QUERY_INFO, qInfo);
-            options.put(QUERY_LANGUAGE, LANGUAGE_TC);
-            options.put(QUERY_PLATFORM, PLATFORM);
-            options.put(QUERY_VERSION, APP_VERSION);
-            options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
-            options.put(QUERY_SYSCODE2, NwstRequestUtil.syscode2());
-            disposables.add(nwstService.stopList(options)
-                    .retryWhen(new RetryWithDelay(5, 3000))
+            disposables.add(nwstService.stopList(qInfo, LANGUAGE_TC, NwstRequestUtil.syscode(),
+                    PLATFORM, APP_VERSION, NwstRequestUtil.syscode2())
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribeWith(stopListObserver()));
         } else {
             onStopListError(new Error(getString(R.string.message_fail_to_request)));
@@ -122,7 +116,6 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
                         adapter.addAll(items);
                     }
                 });
-                Map<String, String> options = new LinkedHashMap<>();
                 String routeInfo = route.getInfoKey();
                 if (TextUtils.isEmpty(routeInfo)) {
                     onStopListComplete();
@@ -133,15 +126,17 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
                     onStopListComplete();
                     return;
                 }
-                options.put(QUERY_R, variant.getRdv());
-                options.put(QUERY_LANGUAGE, LANGUAGE_TC);
-                options.put(QUERY_PLATFORM, PLATFORM);
-                options.put(QUERY_VERSION, APP_VERSION);
-                options.put(QUERY_SYSCODE, NwstRequestUtil.syscode());
-                options.put(QUERY_SYSCODE2, NwstRequestUtil.syscode2());
-                disposables.add(nwstService.latlongList(options)
-                        .retryWhen(new RetryWithDelay(5, 3000))
+                disposables.add(nwstService.latlongList(variant.getRdv(), LANGUAGE_TC,
+                        NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, NwstRequestUtil.syscode2())
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribeWith(latlongListObserver()));
+
+                String rdv = route.getInfoKey();
+                if (!TextUtils.isEmpty(rdv)) {
+                    String[] temp = rdv.substring(1).split("\\*{3}");
+                    rdv = temp[0] + "||" + temp[1] + "||" + temp[2] + "||" + temp[3];
+                }
             }
         };
     }
