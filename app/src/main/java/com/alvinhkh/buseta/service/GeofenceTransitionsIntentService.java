@@ -106,7 +106,7 @@ public class GeofenceTransitionsIntentService extends IntentService {
                 stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, C.NOTIFICATION.CHANNEL_ARRIVAL_ALERT);
-        builder.setSmallIcon(R.drawable.ic_directions_bus_white_24dp)
+        builder.setSmallIcon(R.drawable.ic_outline_directions_bus_24dp)
                 //.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_directions_bus_white_24dp))
                 .setColor(ContextCompat.getColor(this, R.color.colorPrimary))
                 .setContentTitle(title)

@@ -43,7 +43,8 @@
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
             android:contentDescription="@string/action_refresh"
-            android:src="@drawable/ic_refresh_white_24dp"/>
+            android:src="@drawable/ic_outline_refresh_24dp"
+            android:tint="@color/white" />
 
     </RelativeLayout>
 

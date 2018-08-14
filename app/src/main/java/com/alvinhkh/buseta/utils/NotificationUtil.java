@@ -54,6 +54,8 @@ public class NotificationUtil {
             subText.append(context.getString(R.string.destination, object.getRouteDestination()));
         }
 
+        Integer notificationSmallIcon = R.drawable.ic_outline_directions_bus_24dp;
+
         for (ArrivalTime arrivalTime : arrivalTimes) {
             arrivalTime = ArrivalTime.Companion.estimate(context, arrivalTime);
             if (!TextUtils.isEmpty(arrivalTime.getOrder())) {
@@ -64,6 +66,7 @@ public class NotificationUtil {
                         arrivalTime.getExpired() ? R.color.grey :
                                 (pos > 0 ? R.color.black : R.color.colorPrimaryA700));
                 if (arrivalTime.getCompanyCode().equals(C.PROVIDER.MTR)) {
+                    notificationSmallIcon = R.drawable.ic_outline_directions_railway_24dp;
                     colorInt = ContextCompat.getColor(context, arrivalTime.getExpired() ?
                             R.color.grey : R.color.black);
                 }
@@ -198,7 +201,7 @@ public class NotificationUtil {
                         .setBigContentTitle(bigContentTitle.length() > 0 ? bigContentTitle : null)
                         .setSummaryText(bigSummaryText.length() > 0 ? bigSummaryText : null)
                         .bigText(bigText.length() > 0 ? bigText : null))
-                .setSmallIcon(R.drawable.ic_directions_bus_white_24dp)
+                .setSmallIcon(notificationSmallIcon)
                 .setColor(color)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)

@@ -73,7 +73,7 @@
             android:layout_centerInParent="true"
             android:contentDescription="@string/content_description_icon"
             android:tint="@color/icons"
-            android:src="@drawable/ic_drag_handle_black_24dp" />
+            android:src="@drawable/ic_outline_drag_indicator_24dp" />
 
     </RelativeLayout>
 

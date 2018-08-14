@@ -234,7 +234,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
         if (vh != null && vh.arrivalAlertButton != null) {
             vh.arrivalAlertButton.setCompoundDrawablesWithIntrinsicBounds(null,
                     ContextCompat.getDrawable(getContext(), isThisGeofencesAdded() ?
-                            R.drawable.ic_alarm_on_black_48dp : R.drawable.ic_alarm_black_48dp),
+                            R.drawable.ic_outline_alarm_on_48dp : R.drawable.ic_outline_alarm_add_48dp),
                     null, null);
         }
         mPendingGeofenceTask = PendingGeofenceTask.NONE;
@@ -631,8 +631,8 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
             }
 
 
-            Drawable followDrawable = ContextCompat.getDrawable(getContext(), R.drawable.ic_bookmark_border_black_48dp);
-            Drawable unfollowDrawable = ContextCompat.getDrawable(getContext(), R.drawable.ic_bookmark_black_48dp);
+            Drawable followDrawable = ContextCompat.getDrawable(getContext(), R.drawable.ic_outline_bookmark_border_48dp);
+            Drawable unfollowDrawable = ContextCompat.getDrawable(getContext(), R.drawable.ic_outline_bookmark_48dp);
             vh.followButton.setCompoundDrawablesWithIntrinsicBounds(null, followDrawable, null, null);
             vh.followButton.setText(R.string.follow);
 
@@ -669,7 +669,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                 vh.arrivalAlertButton.setVisibility(BuildConfig.DEBUG ? View.VISIBLE : View.GONE);
                 vh.arrivalAlertButton.setCompoundDrawablesWithIntrinsicBounds(null,
                         ContextCompat.getDrawable(getContext(),
-                                isThisGeofencesAdded() ? R.drawable.ic_alarm_on_black_48dp : R.drawable.ic_alarm_black_48dp),
+                                isThisGeofencesAdded() ? R.drawable.ic_outline_alarm_on_48dp : R.drawable.ic_outline_alarm_add_48dp),
                         null, null);
                 vh.arrivalAlertButton.setOnClickListener(v -> {
                     Timber.d("isThisGeofencesAdded: %s", isThisGeofencesAdded());
@@ -911,7 +911,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                                     }
                                 }
                                 if (arrivalTime.getHasWheelchair()) {
-                                    Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_accessible_black_18dp);
+                                    Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_outline_accessible_18dp);
                                     drawable = DrawableCompat.wrap(drawable);
                                     drawable.setBounds(0, 0, vh.etaText.getLineHeight(), vh.etaText.getLineHeight());
                                     DrawableCompat.setTint(drawable.mutate(), colorInt);
@@ -922,7 +922,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                                     }
                                 }
                                 if (arrivalTime.getHasWifi()) {
-                                    Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_network_wifi_black_18dp);
+                                    Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_outline_wifi_18dp);
                                     if (drawable != null) {
                                         drawable = DrawableCompat.wrap(drawable);
                                         drawable.setBounds(0, 0, vh.etaText.getLineHeight(), vh.etaText.getLineHeight());

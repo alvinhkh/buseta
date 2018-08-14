@@ -107,7 +107,7 @@ public class MtrLineStatusAdapter
             MtrLineStatus status = (MtrLineStatus) item.getObject();
             assert status != null;
             nameTv.setText(status.getLineName());
-            iconIv.setImageResource(R.drawable.ic_directions_railway_black_24dp);
+            iconIv.setImageResource(R.drawable.ic_outline_directions_railway_24dp);
             if (!TextUtils.isEmpty(status.getLineColour())) {
                 iconIv.setColorFilter(Color.parseColor(status.getLineColour()));
             }

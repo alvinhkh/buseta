@@ -195,7 +195,7 @@ class FollowViewAdapter(
                             }
                         }
                         if (arrivalTime.hasWheelchair && PreferenceUtil.isShowWheelchairIcon(itemView.context)) {
-                            var drawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_accessible_black_18dp)
+                            var drawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_outline_accessible_18dp)
                             drawable = DrawableCompat.wrap(drawable!!)
                             if (pos == 0) {
                                 drawable!!.setBounds(0, 0, itemView.findViewById<TextView>(R.id.eta).lineHeight, itemView.findViewById<TextView>(R.id.eta).lineHeight)
@@ -210,7 +210,7 @@ class FollowViewAdapter(
                             }
                         }
                         if (arrivalTime.hasWifi && PreferenceUtil.isShowWifiIcon(itemView.context)) {
-                            var drawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_network_wifi_black_18dp)
+                            var drawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_outline_wifi_18dp)
                             drawable = DrawableCompat.wrap(drawable!!)
                             if (pos == 0) {
                                 drawable!!.setBounds(0, 0, itemView.findViewById<TextView>(R.id.eta).lineHeight, itemView.findViewById<TextView>(R.id.eta).lineHeight)

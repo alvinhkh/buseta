@@ -115,11 +115,11 @@ abstract public class BaseActivity extends AppCompatActivity
                 ImageView imageView = aView.findViewById(R.id.icon);
                 switch (iconText) {
                     case Suggestion.TYPE_HISTORY:
-                        drawable = ContextCompat.getDrawable(this, R.drawable.ic_history_black_24dp);
+                        drawable = ContextCompat.getDrawable(this, R.drawable.ic_outline_history_24dp);
                         break;
                     case Suggestion.TYPE_DEFAULT:
                     default:
-                        drawable = ContextCompat.getDrawable(this, R.drawable.ic_directions_bus_black_24dp);
+                        drawable = ContextCompat.getDrawable(this, R.drawable.ic_outline_directions_bus_24dp);
                         break;
                 }
                 if (imageView != null) {

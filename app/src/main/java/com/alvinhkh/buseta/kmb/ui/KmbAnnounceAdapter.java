@@ -116,11 +116,11 @@ public class KmbAnnounceAdapter
             assert announce != null;
             titleTextView.setText(announce.titleTc);
             if (!TextUtils.isEmpty(announce.url) && announce.url.contains(".jpg")) {
-                iconImageView.setImageResource(R.drawable.ic_event_black_24dp);
+                iconImageView.setImageResource(R.drawable.ic_outline_event_note_24dp);
             } else if (!TextUtils.isEmpty(announce.url) && announce.url.contains(".pdf")) {
-                iconImageView.setImageResource(R.drawable.ic_picture_as_pdf_black_24dp);
+                iconImageView.setImageResource(R.drawable.ic_outline_picture_as_pdf_24dp);
             } else {
-                iconImageView.setImageResource(R.drawable.ic_event_note_black_24dp);
+                iconImageView.setImageResource(R.drawable.ic_outline_event_note_24dp);
             }
             view.setOnClickListener(v -> {
                 if (announce.url.contains(".jpg")) {

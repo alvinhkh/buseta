@@ -301,7 +301,7 @@ public class RouteStopListAdapter
                                 }
                             }
                             if (arrivalTime.getHasWheelchair() && PreferenceUtil.isShowWheelchairIcon(context)) {
-                                Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_accessible_black_18dp);
+                                Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_outline_accessible_18dp);
                                 if (drawable != null) {
                                     drawable = DrawableCompat.wrap(drawable);
                                     if (pos == 0) {
@@ -320,7 +320,7 @@ public class RouteStopListAdapter
                                 }
                             }
                             if (arrivalTime.getHasWifi() && PreferenceUtil.isShowWifiIcon(context)) {
-                                Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_network_wifi_black_18dp);
+                                Drawable drawable = ContextCompat.getDrawable(context, R.drawable.ic_outline_wifi_18dp);
                                 if (drawable != null) {
                                     drawable = DrawableCompat.wrap(drawable);
                                     if (pos == 0) {

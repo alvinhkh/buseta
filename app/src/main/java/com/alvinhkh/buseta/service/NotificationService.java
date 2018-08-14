@@ -184,7 +184,7 @@ public class NotificationService extends Service {
         builder.setOnlyAlertOnce(true)
                 .setVisibility(NotificationCompat.VISIBILITY_SECRET)
                 .setPriority(NotificationCompat.PRIORITY_MIN)
-                .setSmallIcon(R.drawable.ic_directions_bus_white_24dp)
+                .setSmallIcon(R.drawable.ic_outline_directions_bus_24dp)
                 .setCategory(NotificationCompat.CATEGORY_SYSTEM)
                 .setShowWhen(false)
                 .setContentTitle(getString(R.string.channel_name_foreground, getString(R.string.app_name)))

@@ -95,9 +95,9 @@ class SuggestionViewAdapter(
             if (data?.type == Data.TYPE_SUGGESTION) {
                 val suggestion = data.obj as Suggestion
                 if (suggestion.type == Suggestion.TYPE_HISTORY) {
-                    itemView.icon.setImageDrawable(ContextCompat.getDrawable(itemView.context, R.drawable.ic_history_black_24dp))
+                    itemView.icon.setImageDrawable(ContextCompat.getDrawable(itemView.context, R.drawable.ic_outline_history_24dp))
                 } else {
-                    itemView.icon.setImageDrawable(ContextCompat.getDrawable(itemView.context, R.drawable.ic_directions_bus_black_24dp))
+                    itemView.icon.setImageDrawable(ContextCompat.getDrawable(itemView.context, R.drawable.ic_outline_directions_bus_24dp))
                 }
                 itemView.findViewById<TextView>(android.R.id.text1).text = suggestion.route
                 itemView.setOnClickListener{ listener?.onClick(suggestion) }

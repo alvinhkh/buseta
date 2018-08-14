@@ -114,7 +114,7 @@ public class NlbNewsAdapter
             final NlbNews news = (NlbNews) item.getObject();
             assert news != null;
             titleTextView.setText(news.title);
-            iconImageView.setImageResource(R.drawable.ic_event_note_black_24dp);
+            iconImageView.setImageResource(R.drawable.ic_outline_event_note_24dp);
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
                 SimpleDateFormat displaySdf = new SimpleDateFormat("dd/MM", Locale.ENGLISH);

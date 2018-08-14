@@ -31,7 +31,7 @@
             android:layout_marginRight="@dimen/card_horizontal_margin"
             android:contentDescription="@string/content_description_icon"
             android:tint="@color/icons"
-            android:src="@drawable/ic_history_black_24dp"/>
+            android:src="@drawable/ic_outline_history_24dp"/>
 
         <TextView
             android:id="@android:id/text1"
