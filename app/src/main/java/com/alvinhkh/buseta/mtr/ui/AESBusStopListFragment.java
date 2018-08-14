@@ -1,8 +1,12 @@
 package com.alvinhkh.buseta.mtr.ui;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.customtabs.CustomTabsIntent;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -35,6 +39,8 @@ import timber.log.Timber;
 
 
 public class AESBusStopListFragment extends RouteStopListFragmentAbstract {
+
+    private static final String WEBPAGE_URL = "https://www.mtr.com.hk/ch/customer/services/complom_free_bus.html";
 
     public AESBusStopListFragment() {}
 
@@ -126,5 +132,31 @@ public class AESBusStopListFragment extends RouteStopListFragmentAbstract {
         super.onCreateOptionsMenu(menu, inflater);
         MenuItem noticeMenuItem = menu.findItem(R.id.action_notice);
         noticeMenuItem.setVisible(false);
+        MenuItem timetableItem = menu.findItem(R.id.action_timetable);
+        timetableItem.setVisible(true);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case R.id.action_timetable:
+                Uri link = Uri.parse(WEBPAGE_URL);
+                if (link != null && getContext() != null) {
+                    try {
+                        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+                        builder.setToolbarColor(ContextCompat.getColor(getContext(), R.color.colorPrimary));
+                        CustomTabsIntent customTabsIntent = builder.build();
+                        customTabsIntent.launchUrl(getContext(), link);
+                    } catch (Exception ignored) {
+                        Intent intent = new Intent(Intent.ACTION_VIEW, link);
+                        if (intent.resolveActivity(getContext().getPackageManager()) != null) {
+                            startActivity(intent);
+                        }
+                    }
+                }
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }
