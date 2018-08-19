@@ -705,9 +705,6 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                     // follow
                     Long insertedId = 0L;
                     Follow follow = Follow.CREATOR.createInstance(route, routeStop);
-                    Timber.d("route: %s", route);
-                    Timber.d("routeStop: %s", routeStop);
-                    Timber.d("follow: %s", follow);
                     if (followDatabase != null) {
                         insertedId = followDatabase.followDao().insert(follow);
                     }

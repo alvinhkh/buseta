@@ -41,26 +41,4 @@ public class PreferenceUtil {
         return intent;
     }
 
-    public static Intent shareApkintent(@NonNull Context context) {
-        // TODO: FileProvider, API 24+
-        // TODO: apk filename?
-        Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_SEND);
-
-        final Intent mainIntent = new Intent(Intent.ACTION_MAIN, null);
-        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-        mainIntent.setPackage(BuildConfig.APPLICATION_ID);
-        List<ResolveInfo> apps = context.getPackageManager().queryIntentActivities(mainIntent, 0);
-        if (apps.size() > 0) {
-            File file = new File(apps.get(0).activityInfo.applicationInfo.publicSourceDir);  // apk file
-            // MIME of .apk is "application/vnd.android.package-archive".
-            // but Bluetooth does not accept this. Let's use "*/*" instead.
-            intent.setType("*/*");
-            // Append file and send Intent
-            intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
-        }
-
-        return intent;
-    }
-
 }

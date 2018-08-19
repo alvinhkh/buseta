@@ -61,7 +61,6 @@ public class NwstNoticeFragment extends Fragment implements SwipeRefreshLayout.O
      * number.
      */
     public static NwstNoticeFragment newInstance(@NonNull Route route) {
-        Timber.d(route.toString());
         NwstNoticeFragment fragment = new NwstNoticeFragment();
         Bundle args = new Bundle();
         args.putParcelable(C.EXTRA.ROUTE_OBJECT, route);
