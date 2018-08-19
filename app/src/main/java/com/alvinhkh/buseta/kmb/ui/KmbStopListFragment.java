@@ -1,15 +1,20 @@
 package com.alvinhkh.buseta.kmb.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.util.Pair;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.alvinhkh.buseta.C;
+import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.kmb.KmbService;
 import com.alvinhkh.buseta.kmb.model.KmbRouteStop;
 import com.alvinhkh.buseta.kmb.model.network.KmbStopsRes;
@@ -30,6 +35,8 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 import timber.log.Timber;
+
+import static com.alvinhkh.buseta.nlb.NlbService.TIMETABLE_URL;
 
 
 public class KmbStopListFragment extends RouteStopListFragmentAbstract {
@@ -75,8 +82,26 @@ public class KmbStopListFragment extends RouteStopListFragmentAbstract {
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        MenuItem timetableItem = menu.findItem(R.id.action_timetable);
+        timetableItem.setVisible(true);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        switch (id) {
+            case R.id.action_timetable:
+                if (route != null && getContext() != null) {
+                    Intent intent = new Intent(getContext(), KmbScheduleActivity.class);
+                    intent.putExtra(C.EXTRA.ROUTE_OBJECT, route);
+                    startActivity(intent);
+                    return true;
+                }
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     DisposableObserver<KmbStopsRes> routeStopsObserver() {

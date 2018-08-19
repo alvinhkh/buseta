@@ -5,25 +5,28 @@ import com.alvinhkh.buseta.kmb.model.KmbEtaRoutes;
 import com.alvinhkh.buseta.kmb.model.network.KmbAnnounceRes;
 import com.alvinhkh.buseta.kmb.model.network.KmbEtaRes;
 import com.alvinhkh.buseta.kmb.model.network.KmbRouteBoundRes;
+import com.alvinhkh.buseta.kmb.model.network.KmbScheduleRes;
 import com.alvinhkh.buseta.kmb.model.network.KmbSpecialRouteRes;
 import com.alvinhkh.buseta.kmb.model.network.KmbStopsRes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.jakewharton.retrofit2.adapter.kotlin.coroutines.experimental.CoroutineCallAdapterFactory;
 
 import java.util.List;
 
 import io.reactivex.Observable;
+import kotlinx.coroutines.experimental.Deferred;
 import okhttp3.ResponseBody;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
-import retrofit2.http.Url;
 
 
 public interface KmbService {
-    
+
     String ANNOUNCEMENT_PICTURE = "http://search.kmb.hk/KMBWebSite/AnnouncementPicture.ashx?url=";
 
     Gson gson = new GsonBuilder()
@@ -49,6 +52,16 @@ public interface KmbService {
     @GET("FunctionRequest.ashx?action=getStops")
     Observable<KmbStopsRes> getStops(@Query("route") String route, @Query("bound") String bound, @Query("serviceType") String serviceType);
 
+    Retrofit webSearchCoroutine = new Retrofit.Builder()
+            .client(App.httpClient)
+            .baseUrl("http://search.kmb.hk/KMBWebSite/Function/")
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .addCallAdapterFactory(CoroutineCallAdapterFactory.create())
+            .build();
+
+    @GET("FunctionRequest.ashx?action=getschedule")
+    Deferred<Response<KmbScheduleRes>> schedule(@Query("route") String route, @Query("bound") String bound);
+
     Retrofit webSearchHtml = new Retrofit.Builder()
             .client(App.httpClient)
             .baseUrl("http://search.kmb.hk/KMBWebSite/")
@@ -64,9 +77,6 @@ public interface KmbService {
             .addConverterFactory(GsonConverterFactory.create(gson))
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build();
-
-    @GET
-    Observable<KmbEtaRes> getEta(@Url String url);
 
     @GET("?action=geteta")
     Observable<KmbEtaRes> getEta(@Query("route") String route, @Query("bound") String bound,

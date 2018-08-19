@@ -115,7 +115,6 @@ public class KmbAnnounceFragment extends Fragment implements SwipeRefreshLayout.
     public void onRefresh() {
         if (route != null) {
             if (!TextUtils.isEmpty(route.getName()) && !TextUtils.isEmpty(route.getSequence())) {
-                Timber.d("%s %s", route.getName(), route.getSequence());
                 loadAnnounce(route.getName(), route.getSequence());
                 return;
             }

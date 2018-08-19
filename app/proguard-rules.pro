@@ -125,3 +125,7 @@
 
 # https://github.com/osmdroid/osmdroid/issues/633 SDK version 26
 -dontwarn org.osmdroid.tileprovider.modules.NetworkAvailabliltyCheck
+
+-keepclassmembernames class kotlinx.** {
+    volatile <fields>;
+}
