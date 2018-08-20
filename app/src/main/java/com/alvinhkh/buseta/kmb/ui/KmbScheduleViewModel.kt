@@ -25,7 +25,7 @@ class KmbScheduleViewModel(application: Application) : AndroidViewModel(applicat
                 val response = kmbService.schedule(routeNo, routeBound).await()
                 if (response.isSuccessful) {
                     withContext(UI) {
-                        result.value = response.body()?.data?.get(response.body()?.data?.keys?.first())
+                        result.value = response.body()?.data?.flatMap { it.value }
                     }
                 } else {
                     withContext(UI) { result.value = null }

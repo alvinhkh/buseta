@@ -47,10 +47,16 @@ class KmbScheduleFragment: Fragment() {
                 viewModel.getAsLiveData(routeNo, routeBound).observe(this@KmbScheduleFragment, Observer { list ->
                     viewAdapter.clear()
                     var lastDayType = ""
+                    var lastServiceType = ""
                     list?.forEach {
+                        if (lastServiceType != it.serviceTypeTc && !it.serviceTypeTc.isNullOrEmpty()) {
+                            viewAdapter.addSection(it.serviceTypeTc?:"")
+                            lastServiceType = it.serviceTypeTc?:""
+                        }
                         if (lastDayType != it.dayType) {
                             var dayTypeText = ""
                             when ((it.dayType?:"").trim().toUpperCase()) {
+                                "D" -> dayTypeText = getString(R.string.everyday)
                                 "MF" -> dayTypeText = getString(R.string.monday_to_friday)
                                 "S" -> dayTypeText = getString(R.string.saturday)
                                 "H" -> dayTypeText = getString(R.string.sunday_and_holiday)
@@ -58,8 +64,8 @@ class KmbScheduleFragment: Fragment() {
                             viewAdapter.addSection(dayTypeText)
                             lastDayType = it.dayType?:""
                         }
-                        if ((routeBound.replace("0", "") == "1" && (it.boundText1?:"").isNotEmpty() && (it.boundTime1?:"").isNotEmpty())
-                            || routeBound.replace("0", "") == "2" && (it.boundText2?:"").isNotEmpty() && (it.boundTime2?:"").isNotEmpty()) {
+                        if ((routeBound.replace("0", "") == "1" && (it.boundText1?:"").isNotEmpty())
+                            || routeBound.replace("0", "") == "2" && (it.boundText2?:"").isNotEmpty()) {
                             viewAdapter.addItem(it)
                         }
                     }

@@ -75,11 +75,21 @@ class KmbScheduleViewAdapter(
             if (data?.type == Data.TYPE_SCHEDULE) {
                 val kmbSchedule = data.obj as KmbSchedule
                 if (routeBound.replace("0", "") == "2") {
-                    itemView.text.text = kmbSchedule.boundText2
-                    itemView.time.text = kmbSchedule.boundTime2
+                    if (kmbSchedule.boundTime2.isNullOrEmpty()) {
+                        itemView.minute.visibility = View.GONE
+                        itemView.text.text = kmbSchedule.boundText2
+                    } else {
+                        itemView.text.text = kmbSchedule.boundText2
+                        itemView.time.text = kmbSchedule.boundTime2
+                    }
                 } else {
-                    itemView.text.text = kmbSchedule.boundText1
-                    itemView.time.text = kmbSchedule.boundTime1
+                    if (kmbSchedule.boundTime1.isNullOrEmpty()) {
+                        itemView.minute.visibility = View.GONE
+                        itemView.text.text = kmbSchedule.boundText1
+                    } else {
+                        itemView.text.text = kmbSchedule.boundText1
+                        itemView.time.text = kmbSchedule.boundTime1
+                    }
                 }
             } else if (data?.type == Data.TYPE_SECTION) {
                 itemView.section_label.text = data.obj as String

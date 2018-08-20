@@ -29,22 +29,23 @@
     <string name="edit">編輯</string>
     <string name="eta">到站時間預報</string>
     <string name="eta_short">ETA</string>
+    <string name="everyday">每天</string>
     <string name="hint_enter_route">輸入路線&#8230;</string>
     <string name="interpunct" translatable="false">\u00A0&#183;\u00A0</string>
     <string name="minute">分鐘</string>
     <string name="minutes">%1$s分鐘</string>
+    <string name="monday_to_friday">星期一至五</string>
     <string name="now">現在</string>
     <string name="open_source_license">開放原始碼授權</string>
     <string name="undo">復原</string>
     <string name="orig">從</string>
     <string name="origin">從%s</string>
+    <string name="saturday">星期六</string>
     <string name="search_route">搜尋路線</string>
     <string name="start_search_route">按右下角按鈕，開始搜尋路線</string>
     <string name="stop_name">站名</string>
-    <string name="timetable">時間表</string>
-    <string name="monday_to_friday">星期一至五</string>
-    <string name="saturday">星期六</string>
     <string name="sunday_and_holiday">星期日及公眾假期</string>
+    <string name="timetable">時間表</string>
 
     <string name="label_last_updated">數據最後更新：</string>
     <string name="label_server_time">獲取數據（伺服器時間）：</string>

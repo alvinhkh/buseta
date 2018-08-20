@@ -18,7 +18,6 @@
         android:layout_height="wrap_content"
         android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
         android:layout_gravity="center_vertical"
-        android:maxLines="1"
         tool:text="SECTION" />
 
 </FrameLayout>
