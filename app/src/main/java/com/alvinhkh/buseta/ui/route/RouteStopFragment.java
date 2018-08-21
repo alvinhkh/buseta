@@ -234,7 +234,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
         if (vh != null && vh.arrivalAlertButton != null) {
             vh.arrivalAlertButton.setCompoundDrawablesWithIntrinsicBounds(null,
                     ContextCompat.getDrawable(getContext(), isThisGeofencesAdded() ?
-                            R.drawable.ic_outline_alarm_on_48dp : R.drawable.ic_outline_alarm_add_48dp),
+                            R.drawable.ic_outline_alarm_on_36dp : R.drawable.ic_outline_alarm_add_36dp),
                     null, null);
         }
         mPendingGeofenceTask = PendingGeofenceTask.NONE;
@@ -631,8 +631,8 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
             }
 
 
-            Drawable followDrawable = ContextCompat.getDrawable(getContext(), R.drawable.ic_outline_bookmark_border_48dp);
-            Drawable unfollowDrawable = ContextCompat.getDrawable(getContext(), R.drawable.ic_outline_bookmark_48dp);
+            Drawable followDrawable = ContextCompat.getDrawable(getContext(), R.drawable.ic_outline_bookmark_border_36dp);
+            Drawable unfollowDrawable = ContextCompat.getDrawable(getContext(), R.drawable.ic_outline_bookmark_36dp);
             vh.followButton.setCompoundDrawablesWithIntrinsicBounds(null, followDrawable, null, null);
             vh.followButton.setText(R.string.follow);
 
@@ -669,7 +669,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                 vh.arrivalAlertButton.setVisibility(BuildConfig.DEBUG ? View.VISIBLE : View.GONE);
                 vh.arrivalAlertButton.setCompoundDrawablesWithIntrinsicBounds(null,
                         ContextCompat.getDrawable(getContext(),
-                                isThisGeofencesAdded() ? R.drawable.ic_outline_alarm_on_48dp : R.drawable.ic_outline_alarm_add_48dp),
+                                isThisGeofencesAdded() ? R.drawable.ic_outline_alarm_on_36dp : R.drawable.ic_outline_alarm_add_36dp),
                         null, null);
                 vh.arrivalAlertButton.setOnClickListener(v -> {
                     Timber.d("isThisGeofencesAdded: %s", isThisGeofencesAdded());
