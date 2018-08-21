@@ -27,6 +27,15 @@
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="6032abdc0a74733a4c4cdf5c47ef72307cc54795" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_outline_notifications_none_36dp" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/colorAccent" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="@string/default_notification_channel_id"/>
 
         <activity
             android:name=".view.MainActivity"
@@ -168,6 +177,12 @@
         <service
             android:name=".service.GeofenceTransitionsIntentService"
             android:enabled="true" />
+        <service
+            android:name=".service.FcmService">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
 
         <!-- Broadcast Receiver -->
         <receiver android:name=".provider.EtaWidgetProvider">
