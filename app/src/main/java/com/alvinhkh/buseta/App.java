@@ -2,6 +2,7 @@ package com.alvinhkh.buseta;
 
 import android.app.Application;
 import android.content.Context;
+import android.os.Looper;
 import android.support.multidex.MultiDex;
 import android.support.v7.preference.PreferenceManager;
 import android.text.TextUtils;
@@ -21,6 +22,9 @@ import com.squareup.leakcanary.LeakCanary;
 import io.fabric.sdk.android.Fabric;
 import org.osmdroid.config.Configuration;
 
+import io.reactivex.Scheduler;
+import io.reactivex.android.plugins.RxAndroidPlugins;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import okhttp3.OkHttpClient;
 import timber.log.Timber;
 
@@ -82,6 +86,9 @@ public class App extends Application {
                 .setPersistenceEnabled(true)
                 .build();
         FirebaseFirestore.getInstance().setFirestoreSettings(settings);
+
+        // rxandroid async
+        RxAndroidPlugins.setInitMainThreadSchedulerHandler(callable -> AndroidSchedulers.from(Looper.getMainLooper(), true));
     }
 
     @Override
