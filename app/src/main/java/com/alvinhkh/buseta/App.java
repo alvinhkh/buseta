@@ -13,8 +13,6 @@ import com.crashlytics.android.Crashlytics;
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.core.CrashlyticsCore;
 import com.google.firebase.analytics.FirebaseAnalytics;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.FirebaseFirestoreSettings;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.squareup.leakcanary.LeakCanary;
@@ -22,7 +20,6 @@ import com.squareup.leakcanary.LeakCanary;
 import io.fabric.sdk.android.Fabric;
 import org.osmdroid.config.Configuration;
 
-import io.reactivex.Scheduler;
 import io.reactivex.android.plugins.RxAndroidPlugins;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import okhttp3.OkHttpClient;
@@ -80,12 +77,6 @@ public class App extends Application {
                         firebaseRemoteConfig.activateFetched();
                     }
                 });
-
-        // configure offline persistence
-        FirebaseFirestoreSettings settings = new FirebaseFirestoreSettings.Builder()
-                .setPersistenceEnabled(true)
-                .build();
-        FirebaseFirestore.getInstance().setFirestoreSettings(settings);
 
         // rxandroid async
         RxAndroidPlugins.setInitMainThreadSchedulerHandler(callable -> AndroidSchedulers.from(Looper.getMainLooper(), true));

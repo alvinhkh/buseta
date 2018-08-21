@@ -94,13 +94,9 @@ dependencies {
     implementation 'com.google.firebase:firebase-appindexing:16.0.1'
     implementation 'com.google.firebase:firebase-config:16.0.0'
     implementation 'com.google.firebase:firebase-core:16.0.1'
-    implementation 'com.google.firebase:firebase-firestore:17.1.0'
     implementation 'com.google.firebase:firebase-messaging:17.3.0'
     implementation 'com.google.maps.android:android-maps-utils:0.5'
     implementation 'com.firebase:firebase-jobdispatcher:0.8.5'
-    implementation ('com.firebaseui:firebase-ui-firestore:4.1.0') {
-        exclude group: 'com.google.firebase'
-    }
     implementation (group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1') {
         exclude group: 'stax', module: 'stax-api'
         exclude group: 'xpp3', module: 'xpp3'
