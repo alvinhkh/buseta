@@ -32,6 +32,8 @@
     <color name="widgetTextDiminish">#61000000</color>
     <color name="widgetTextHighlighted">#FFD50000</color>
     <color name="searchViewBackground">#FFFFFFFF</color>
+    <color name="bottomNavigationBackground">#FFFFFFFF</color>
+    <color name="bottomNavigationIcon">#80000000</color>
 
     <color name="provider_mtr">#07234d</color>
 </resources>

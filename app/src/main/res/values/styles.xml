@@ -4,7 +4,7 @@
         Base application theme, dependent on API level. This theme is replaced
         by AppBaseTheme from res/values-vXX/styles.xml on newer devices.
     -->
-    <style name="AppTheme.Base" parent="Theme.AppCompat.DayNight">
+    <style name="AppTheme.Base" parent="AppTheme.DayNight">
         <!--
             Theme customizations available in newer API levels can go in
             res/values-vXX/styles.xml, while customizations related to
@@ -20,6 +20,8 @@
         <item name="popupTheme">@style/AppTheme.PopupOverlay</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
     </style>
+
+    <style name="AppTheme.DayNight" parent="Theme.MaterialComponents.Light" />
 
     <!-- Application theme. -->
     <style name="AppTheme" parent="AppTheme.Base">
@@ -66,10 +68,10 @@
         <item name="android:textSize">12sp</item>
     </style>
 
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar"/>
 
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.MaterialComponents.Light"/>
 
-    <style name="AppTheme.PopupOverlay.Dark" parent="ThemeOverlay.AppCompat.Dark"/>
+    <style name="AppTheme.PopupOverlay.Dark" parent="ThemeOverlay.MaterialComponents.Dark"/>
 
 </resources>

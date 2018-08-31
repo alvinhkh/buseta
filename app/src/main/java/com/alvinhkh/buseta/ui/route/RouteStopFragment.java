@@ -17,6 +17,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.design.button.MaterialButton;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.BottomSheetDialogFragment;
 import android.support.design.widget.CoordinatorLayout;
@@ -32,7 +33,6 @@ import android.text.TextUtils;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -232,10 +232,8 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
             Timber.w(task.getException());
         }
         if (vh != null && vh.arrivalAlertButton != null) {
-            vh.arrivalAlertButton.setCompoundDrawablesWithIntrinsicBounds(null,
-                    ContextCompat.getDrawable(getContext(), isThisGeofencesAdded() ?
-                            R.drawable.ic_outline_alarm_on_36dp : R.drawable.ic_outline_alarm_add_36dp),
-                    null, null);
+            vh.arrivalAlertButton.setIconResource(isThisGeofencesAdded() ?
+                    R.drawable.ic_outline_alarm_on_36dp : R.drawable.ic_outline_alarm_add_36dp);
         }
         mPendingGeofenceTask = PendingGeofenceTask.NONE;
     }
@@ -264,8 +262,8 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
      * @param text The Snackbar text.
      */
     private void showSnackbar(final String text) {
-        if (vh.buttonContainer == null) return;
-        Snackbar.make(vh.buttonContainer, text, Snackbar.LENGTH_LONG).show();
+        if (vh.coordinatorLayout == null) return;
+        Snackbar.make(vh.coordinatorLayout, text, Snackbar.LENGTH_LONG).show();
     }
 
     /**
@@ -276,9 +274,9 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
      * @param listener         The listener associated with the Snackbar action.
      */
     private void showSnackbar(final int mainTextStringId, final int actionStringId, View.OnClickListener listener) {
-        if (vh.buttonContainer == null) return;
+        if (vh.coordinatorLayout == null) return;
         Snackbar.make(
-                vh.buttonContainer,
+                vh.coordinatorLayout,
                 getString(mainTextStringId),
                 Snackbar.LENGTH_INDEFINITE)
                 .setAction(getString(actionStringId), listener).show();
@@ -353,6 +351,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
      * Also specifies how the geofence notifications are initially triggered.
      */
     private GeofencingRequest getGeofencingRequest() {
+        if (mGeofenceList.size() < 1) return null;
         GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
 
         // The INITIAL_TRIGGER_ENTER flag indicates that geofencing service should trigger a
@@ -524,7 +523,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
         vh.stopImage = contentView.findViewById(R.id.stop_image);
         vh.stopImage.setVisibility(View.GONE);
 
-        vh.buttonContainer = contentView.findViewById(R.id.button_container);
+        vh.coordinatorLayout = contentView.findViewById(R.id.coordinator_layout);
         vh.followButton = contentView.findViewById(R.id.follow_button);
         vh.mapButton = contentView.findViewById(R.id.open_map_button);
         vh.notificationButton = contentView.findViewById(R.id.notification_button);
@@ -630,16 +629,10 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                 vh.mapView.setVisibility(View.GONE);
             }
 
-
-            Drawable followDrawable = ContextCompat.getDrawable(getContext(), R.drawable.ic_outline_bookmark_border_36dp);
-            Drawable unfollowDrawable = ContextCompat.getDrawable(getContext(), R.drawable.ic_outline_bookmark_36dp);
-            vh.followButton.setCompoundDrawablesWithIntrinsicBounds(null, followDrawable, null, null);
-            vh.followButton.setText(R.string.follow);
-
             Follow object = RouteStop.CREATOR.toFollow(routeStop);
             Integer count = followDatabase.followDao().count(object.getType(), object.getCompanyCode(), object.getRouteNo(), object.getRouteSeq(), object.getRouteServiceType(), object.getStopId(), object.getStopSeq());
             vh.followButton.setText(count > 0 ? R.string.action_unfollow : R.string.follow);
-            vh.followButton.setCompoundDrawablesWithIntrinsicBounds(null, count > 0 ? unfollowDrawable : followDrawable, null, null);
+            vh.followButton.setIconResource(count > 0 ? R.drawable.ic_outline_bookmark_36dp : R.drawable.ic_outline_bookmark_border_36dp);
 
             if (!TextUtils.isEmpty(routeStop.getLatitude()) && !TextUtils.isEmpty(routeStop.getLongitude())) {
                 vh.mapButton.setVisibility(View.VISIBLE);
@@ -667,10 +660,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                     }
                 });
                 vh.arrivalAlertButton.setVisibility(BuildConfig.DEBUG ? View.VISIBLE : View.GONE);
-                vh.arrivalAlertButton.setCompoundDrawablesWithIntrinsicBounds(null,
-                        ContextCompat.getDrawable(getContext(),
-                                isThisGeofencesAdded() ? R.drawable.ic_outline_alarm_on_36dp : R.drawable.ic_outline_alarm_add_36dp),
-                        null, null);
+                vh.arrivalAlertButton.setIconResource(isThisGeofencesAdded() ? R.drawable.ic_outline_alarm_on_36dp : R.drawable.ic_outline_alarm_add_36dp);
                 vh.arrivalAlertButton.setOnClickListener(v -> {
                     Timber.d("isThisGeofencesAdded: %s", isThisGeofencesAdded());
                     if (isThisGeofencesAdded()) {
@@ -698,7 +688,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                         rowDeleted = followDatabase.followDao().delete(follow.getType(), follow.getCompanyCode(), follow.getRouteNo(), follow.getRouteSeq(), follow.getRouteServiceType(), follow.getStopId(), follow.getStopSeq());
                     }
                     if (rowDeleted > 0) {
-                        vh.followButton.setCompoundDrawablesWithIntrinsicBounds(null, followDrawable, null, null);
+                        vh.followButton.setIconResource(R.drawable.ic_outline_bookmark_border_36dp);
                         vh.followButton.setText(R.string.follow);
                     }
                 } else {
@@ -709,7 +699,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                         insertedId = followDatabase.followDao().insert(follow);
                     }
                     if (insertedId > 0) {
-                        vh.followButton.setCompoundDrawablesWithIntrinsicBounds(null, unfollowDrawable, null, null);
+                        vh.followButton.setIconResource(R.drawable.ic_outline_bookmark_36dp);
                         vh.followButton.setText(R.string.action_unfollow);
                     }
                 }
@@ -804,14 +794,14 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
 
         Bitmap stopBitmap;
         ImageView stopImage;
-        Button stopImageButton;
+        MaterialButton stopImageButton;
 
-        View buttonContainer;
-        Button followButton;
-        Button mapButton;
-        Button notificationButton;
-        Button streetviewButton;
-        Button arrivalAlertButton;
+        View coordinatorLayout;
+        MaterialButton followButton;
+        MaterialButton mapButton;
+        MaterialButton notificationButton;
+        MaterialButton streetviewButton;
+        MaterialButton arrivalAlertButton;
 
         TextView nameText;
         TextView routeNoText;

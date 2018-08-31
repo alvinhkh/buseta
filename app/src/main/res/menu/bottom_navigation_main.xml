@@ -1,22 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/action_follow"
         android:enabled="true"
         android:icon="@drawable/ic_outline_bookmarks_24dp"
-        android:title="@string/follow"
-        app:iconTint="@color/white" />
+        android:title="@string/follow" />
     <item
         android:id="@+id/action_search_history"
         android:enabled="true"
         android:icon="@drawable/ic_outline_history_24dp"
-        android:title="@string/search_history"
-        app:iconTint="@color/white" />
+        android:title="@string/search_history" />
     <item
         android:id="@+id/action_railway"
         android:enabled="true"
         android:icon="@drawable/ic_outline_directions_railway_24dp"
-        android:title="@string/railway"
-        app:iconTint="@color/white" />
+        android:title="@string/railway" />
 </menu>

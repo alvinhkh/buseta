@@ -133,9 +133,6 @@ public class MainActivity extends BaseActivity {
                             getWindow().setStatusBarColor(ColorUtil.Companion.darkenColor(colorInt));
                             getWindow().setNavigationBarColor(ColorUtil.Companion.darkenColor(colorInt));
                         }
-                        if (bottomNavigationView != null) {
-                            bottomNavigationView.setBackgroundColor(colorInt);
-                        }
                     }
                     return true;
                 });
