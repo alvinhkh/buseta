@@ -23,22 +23,26 @@ class KmbScheduleActivity : BaseActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(false)
 
         val fab = findViewById<FloatingActionButton>(R.id.fab)
-        fab?.visibility = View.GONE
+        fab?.hide()
 
         val bundle = intent.extras
         if (bundle != null) {
-            val route: Route = bundle.getParcelable(C.EXTRA.ROUTE_OBJECT)
-            val routeNo = route.name
-            val routeBound = route.sequence
-            if (routeNo.isNullOrEmpty() || routeBound.isNullOrEmpty()) {
-                Toast.makeText(this, R.string.missing_input, Toast.LENGTH_SHORT).show()
+            val route: Route? = bundle.getParcelable(C.EXTRA.ROUTE_OBJECT)
+            if (route != null) {
+                val routeNo = route.name
+                val routeBound = route.sequence
+                if (routeNo.isNullOrEmpty() || routeBound.isNullOrEmpty()) {
+                    Toast.makeText(this, R.string.missing_input, Toast.LENGTH_SHORT).show()
+                    finish()
+                }
+                val fragmentTransaction = supportFragmentManager.beginTransaction()
+                val fragment = KmbScheduleFragment()
+                fragment.arguments = bundle
+                fragmentTransaction.replace(R.id.fragment_container, fragment)
+                fragmentTransaction.commit()
+            } else {
                 finish()
             }
-            val fragmentTransaction = supportFragmentManager.beginTransaction()
-            val fragment = KmbScheduleFragment()
-            fragment.arguments = bundle
-            fragmentTransaction.replace(R.id.fragment_container, fragment)
-            fragmentTransaction.commit()
         } else {
             finish()
         }

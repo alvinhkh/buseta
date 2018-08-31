@@ -268,10 +268,13 @@ abstract public class BaseActivity extends AppCompatActivity
     }
 
     protected void setTaskDescription(String title) {
-        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
-        Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
-        setTaskDescription(new ActivityManager.TaskDescription(title, bm,
-                ContextCompat.getColor(this, R.color.colorPrimary600)));
+        if (Build.VERSION.SDK_INT >= 28) {
+            setTaskDescription(new ActivityManager.TaskDescription(title, R.mipmap.ic_launcher, R.color.colorPrimary600));
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
+            setTaskDescription(new ActivityManager.TaskDescription(title, bm,
+                    ContextCompat.getColor(this, R.color.colorPrimary600)));
+        }
     }
 
     protected void setToolbar() {

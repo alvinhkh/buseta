@@ -98,7 +98,7 @@ class ImageFragment : Fragment() {
         photoView = view.findViewById(R.id.image_view)
         photoView?.maximumScale = 4f
         val mTextView = view.findViewById<TextView>(android.R.id.text1)
-        mTextView.setOnClickListener { v -> photoView?.scale = 1f }
+        mTextView.setOnClickListener { _ -> photoView?.scale = 1f }
         if (!imageTitle.isNullOrEmpty()) {
             mTextView.text = imageTitle
             mTextView.visibility = View.VISIBLE
@@ -124,7 +124,6 @@ class ImageFragment : Fragment() {
 
     override fun onDestroyView() {
         photoView?.setImageBitmap(null)
-        photoView?.destroyDrawingCache()
         view?.visibility = View.GONE
         disposables.clear()
         super.onDestroyView()
@@ -142,10 +141,16 @@ class ImageFragment : Fragment() {
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     private fun setTaskDescription(title: String?) {
         // overview task
-        val bm = BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher)
-        val taskDesc = ActivityManager.TaskDescription(title, bm,
-                ContextCompat.getColor(context!!, R.color.colorPrimary600))
-        (context as AppCompatActivity).setTaskDescription(taskDesc)
+        if (Build.VERSION.SDK_INT >= 28) {
+            val taskDesc = ActivityManager.TaskDescription(title,
+                    R.mipmap.ic_launcher, R.color.colorPrimary600)
+            activity?.setTaskDescription(taskDesc)
+        } else {
+            val bm = BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher)
+            val taskDesc = ActivityManager.TaskDescription(title, bm,
+                    ContextCompat.getColor(context!!, R.color.colorPrimary600))
+            activity?.setTaskDescription(taskDesc)
+        }
     }
 
     private fun showNoticeImage(url: String?) {

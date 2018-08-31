@@ -22,13 +22,13 @@ public interface Api {
 
     Retrofit raw = new Retrofit.Builder()
             .client(App.httpClient)
-            .baseUrl("http://buseta.alvinhkh.com")
+            .baseUrl("https://buseta.alvinhkh.com")
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build();
 
     Retrofit retrofit = new Retrofit.Builder()
             .client(App.httpClient)
-            .baseUrl("http://buseta.alvinhkh.com")
+            .baseUrl("https://buseta.alvinhkh.com")
             .addConverterFactory(GsonConverterFactory.create(gson))
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build();

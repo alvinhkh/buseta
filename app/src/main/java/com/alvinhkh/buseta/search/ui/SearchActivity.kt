@@ -86,7 +86,7 @@ class SearchActivity : AppCompatActivity() {
                 text.clear()
                 text.insert(0, query)
             }
-            setOnEditorActionListener(TextView.OnEditorActionListener { textView, actionId, keyEvent ->
+            setOnEditorActionListener(TextView.OnEditorActionListener { _, actionId, _ ->
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                     val t = text?.replace("[^a-zA-Z0-9]*".toRegex(), "")?.toUpperCase()
                     loadSearchResult(t?:"", true)

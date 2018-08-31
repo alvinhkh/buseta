@@ -21,7 +21,7 @@ class ImageActivity : BaseActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(false)
 
         val fab = findViewById<FloatingActionButton>(R.id.fab)
-        fab?.visibility = View.GONE
+        fab?.hide()
 
         val bundle = intent.extras
         if (bundle != null) {
@@ -33,7 +33,7 @@ class ImageActivity : BaseActivity() {
                 finish()
             }
             val fragmentTransaction = supportFragmentManager.beginTransaction()
-            fragmentTransaction.replace(R.id.fragment_container, ImageFragment.newInstance(imageTitle, imageUrl, taskDescription))
+            fragmentTransaction.replace(R.id.fragment_container, ImageFragment.newInstance(imageTitle?:"", imageUrl?:"", taskDescription))
             fragmentTransaction.commit()
         } else {
             finish()

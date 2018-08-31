@@ -88,8 +88,10 @@ class EditFollowFragment: Fragment(), OnItemDragListener {
     }
 
     override fun onItemStartDrag(viewHolder: RecyclerView.ViewHolder?) {
-        itemTouchHelper.startDrag(viewHolder)
-        dragItemPosition = viewHolder?.adapterPosition?:0
+        if (viewHolder != null) {
+            itemTouchHelper.startDrag(viewHolder)
+            dragItemPosition = viewHolder.adapterPosition
+        }
     }
 
     override fun onItemStopDrag(viewHolder: RecyclerView.ViewHolder?) {

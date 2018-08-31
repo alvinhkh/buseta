@@ -98,7 +98,7 @@
     <string name="message_request_hide_ad_again">除咗設定嗰頁，其他廣告都已經隱藏晒，唔洗講咁多次!</string>
     <string name="message_request_show_ad">所有廣告都唔再隱藏喇 :)</string>
     <string name="message_share_title">同朋友分享 BusETA</string>
-    <string name="message_share_text">快啲下載 BusETA 巴士到站時間預報 App :)\nhttp://buseta.alvinhkh.com</string>
+    <string name="message_share_text">快啲下載 BusETA 巴士到站時間預報 App :)\nhttps://buseta.alvinhkh.com</string>
     <string name="message_shown_as_notification">已顯示在通知欄</string>
     <string name="message_total_routes">(共 %s 條路線)</string>
     <string name="no_follow_stops">沒有追蹤車站</string>
@@ -107,8 +107,8 @@
     <string name="swipe_to_remove_follow_stop">向左右掃即可移除追蹤車站</string>
     <string name="provider_no_eta">營運商尚未提供到站時間預報</string>
 
-    <string name="url_app" translatable="false">http://buseta.alvinhkh.com</string>
-    <string name="url_developer" translatable="false">http://www.alvinhkh.com</string>
+    <string name="url_app" translatable="false">https://buseta.alvinhkh.com</string>
+    <string name="url_developer" translatable="false">https://www.alvinhkh.com</string>
 
     <string name="content_description_icon">Icon</string>
 

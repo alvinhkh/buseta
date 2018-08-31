@@ -85,7 +85,7 @@ class FollowViewAdapter(
         notifyDataSetChanged()
     }
 
-    class Holder(itemView: View?): RecyclerView.ViewHolder(itemView) {
+    class Holder(itemView: View?): RecyclerView.ViewHolder(itemView!!) {
 
         @SuppressLint("ClickableViewAccessibility")
         fun bindItems(data: Data?, followDatabase: FollowDatabase?) {
@@ -132,7 +132,7 @@ class FollowViewAdapter(
                 }
 
                 var direction = ""
-                follow.etas.forEachIndexed { index, obj ->
+                follow.etas.forEachIndexed { _, obj ->
                     val arrivalTime = ArrivalTime.estimate(itemView.context, obj)
                     if (!TextUtils.isEmpty(arrivalTime.order)) {
                         val etaText = SpannableStringBuilder(arrivalTime.text)

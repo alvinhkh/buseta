@@ -21,7 +21,7 @@ class WebViewActivity : BaseActivity() {
         supportActionBar?.setDisplayHomeAsUpEnabled(false)
 
         val fab = findViewById<FloatingActionButton>(R.id.fab)
-        fab?.visibility = View.GONE
+        fab?.hide()
 
         val bundle = intent.extras
         if (bundle != null) {
@@ -30,9 +30,10 @@ class WebViewActivity : BaseActivity() {
             if (contentTitle.isNullOrEmpty() || contentHtml.isNullOrEmpty()) {
                 Toast.makeText(this, R.string.missing_input, Toast.LENGTH_SHORT).show()
                 finish()
+                return
             }
             val fragmentTransaction = supportFragmentManager.beginTransaction()
-            fragmentTransaction.replace(R.id.fragment_container, WebViewFragment.newInstance(contentTitle, contentHtml))
+            fragmentTransaction.replace(R.id.fragment_container, WebViewFragment.newInstance(contentTitle?:"", contentHtml?:""))
             fragmentTransaction.commit()
         } else {
             finish()

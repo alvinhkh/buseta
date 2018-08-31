@@ -89,7 +89,7 @@ class SuggestionViewAdapter(
         notifyDataSetChanged()
     }
 
-    class Holder(itemView: View?): RecyclerView.ViewHolder(itemView) {
+    class Holder(itemView: View?): RecyclerView.ViewHolder(itemView!!) {
 
         fun bindItems(data: Data?, listener: OnItemClickListener?) {
             if (data?.type == Data.TYPE_SUGGESTION) {

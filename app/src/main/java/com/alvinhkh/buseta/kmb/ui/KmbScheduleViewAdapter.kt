@@ -69,24 +69,26 @@ class KmbScheduleViewAdapter(
         notifyDataSetChanged()
     }
 
-    class Holder(itemView: View?): RecyclerView.ViewHolder(itemView){
+    class Holder(itemView: View?): RecyclerView.ViewHolder(itemView!!){
 
         fun bindItems(routeBound: String, data: Data?) {
             if (data?.type == Data.TYPE_SCHEDULE) {
                 val kmbSchedule = data.obj as KmbSchedule
                 if (routeBound.replace("0", "") == "2") {
                     if (kmbSchedule.boundTime2.isNullOrEmpty()) {
-                        itemView.minute.visibility = View.GONE
+                        itemView.minute.visibility = View.INVISIBLE
                         itemView.text.text = kmbSchedule.boundText2
                     } else {
+                        itemView.minute.visibility = View.VISIBLE
                         itemView.text.text = kmbSchedule.boundText2
                         itemView.time.text = kmbSchedule.boundTime2
                     }
                 } else {
                     if (kmbSchedule.boundTime1.isNullOrEmpty()) {
-                        itemView.minute.visibility = View.GONE
+                        itemView.minute.visibility = View.INVISIBLE
                         itemView.text.text = kmbSchedule.boundText1
                     } else {
+                        itemView.minute.visibility = View.VISIBLE
                         itemView.text.text = kmbSchedule.boundText1
                         itemView.time.text = kmbSchedule.boundTime1
                     }

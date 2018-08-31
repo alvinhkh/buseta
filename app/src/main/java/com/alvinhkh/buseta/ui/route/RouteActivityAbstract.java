@@ -38,7 +38,6 @@ import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.RouteUtil;
 import com.crashlytics.android.answers.Answers;
 import com.crashlytics.android.answers.ContentViewEvent;
-import com.google.android.gms.maps.MapView;
 import com.google.firebase.appindexing.Action;
 import com.google.firebase.appindexing.FirebaseUserActions;
 import com.google.gson.Gson;
@@ -167,23 +166,12 @@ public abstract class RouteActivityAbstract extends BaseActivity {
             }
         });
 
-
         if (!TextUtils.isEmpty(routeNo)) {
             loadRouteNo(routeNo);
         } else {
             Toast.makeText(this, R.string.missing_input, Toast.LENGTH_SHORT).show();
             finish();
         }
-
-        // Fixing Later Map loading Delay
-        new Thread(() -> {
-            try {
-                MapView mv = new MapView(getApplicationContext());
-                mv.onCreate(null);
-                mv.onPause();
-                mv.onDestroy();
-            } catch (Exception | NoSuchMethodError ignored){}
-        }).start();
     }
 
     @Override
@@ -197,6 +185,14 @@ public abstract class RouteActivityAbstract extends BaseActivity {
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (suggestion != null) {
+            appIndexStart(suggestion);
+        }
     }
 
     @Override
@@ -324,7 +320,7 @@ public abstract class RouteActivityAbstract extends BaseActivity {
     }
 
     private void appIndexStop(@NonNull Suggestion suggestion) {
-        if (TextUtils.isEmpty(routeNo)) return;
+        if (TextUtils.isEmpty(suggestion.getRoute())) return;
         FirebaseUserActions.getInstance().end(getIndexApiAction(suggestion))
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
@@ -357,6 +353,7 @@ public abstract class RouteActivityAbstract extends BaseActivity {
                         .setIcon(Icon.createWithResource(getApplicationContext(), R.drawable.ic_shortcut_directions_bus))
                         .setIntent(intent)
                         .build());
+
             }
             if (followList.size() < maxShortcutCount - 1) {
                 List<Suggestion> historyList = suggestionDatabase.suggestionDao().historyList(maxShortcutCount);

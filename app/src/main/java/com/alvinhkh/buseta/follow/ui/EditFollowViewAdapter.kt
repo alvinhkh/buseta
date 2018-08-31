@@ -114,7 +114,7 @@ class EditFollowViewAdapter(
     }
 
     class Holder(itemView: View?, private val onItemDragListener: OnItemDragListener?):
-            RecyclerView.ViewHolder(itemView), ItemTouchHelperViewHolder {
+            RecyclerView.ViewHolder(itemView!!), ItemTouchHelperViewHolder {
 
         @SuppressLint("ClickableViewAccessibility")
         fun bindItems(data: Data?) {
