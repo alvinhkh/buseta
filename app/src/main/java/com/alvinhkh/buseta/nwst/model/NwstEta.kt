@@ -62,7 +62,7 @@ data class NwstEta(
                     obj.title = data[12]
                 } else if (obj.companyCode.contains("HTML")) {
                     obj.title = Jsoup.parse(data[1]).text()
-                } else if (obj.companyCode.contains("TEXT")) {
+                } else if (obj.companyCode.contains("TEXT") || obj.companyCode.contains("SUSPEND")) {
                     obj.title = data[1]
                 }
                 obj.companyCode = "NWST"
