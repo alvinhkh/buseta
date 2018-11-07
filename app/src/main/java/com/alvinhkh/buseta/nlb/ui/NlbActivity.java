@@ -24,7 +24,7 @@ public class NlbActivity extends RouteActivityAbstract {
     @Override
     protected void loadRouteNo(String no) {
         super.loadRouteNo(no);
-        disposables.add(nlbService.getDatabase()
+        getDisposables().add(nlbService.getDatabase()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(databaseObserver()));
@@ -40,7 +40,7 @@ public class NlbActivity extends RouteActivityAbstract {
                 if (database != null && database.routes != null) {
                     for (NlbRoute nlbRoute : database.routes) {
                         if (nlbRoute == null) continue;
-                        if (nlbRoute.route_no.equals(routeNo)) {
+                        if (nlbRoute.route_no.equals(getRouteNo())) {
                             Route route = new Route();
                             route.setCompanyCode(C.PROVIDER.NLB);
                             String[] location = nlbRoute.route_name_c.split(" > ");
@@ -62,11 +62,11 @@ public class NlbActivity extends RouteActivityAbstract {
                 Timber.d(e);
                 runOnUiThread(() -> {
                     showEmptyView();
-                    if (emptyText != null) {
+                    if (getEmptyText() != null) {
                         if (!ConnectivityUtil.isConnected(getApplicationContext())) {
-                            emptyText.setText(R.string.message_no_internet_connection);
+                            getEmptyText().setText(R.string.message_no_internet_connection);
                         } else {
-                            emptyText.setText(R.string.message_fail_to_request);
+                            getEmptyText().setText(R.string.message_fail_to_request);
                         }
                     }
                 });

@@ -23,7 +23,7 @@ public class AESBusActivity extends RouteActivityAbstract {
         List<Route> routes = new ArrayList<>();
         if (getApplicationContext() != null) {
             AESBusDatabase database = DatabaseUtil.Companion.getAESBusDatabase(getApplicationContext());
-            disposables.add(database.aesBusDao().getAllDistricts()
+            getDisposables().add(database.aesBusDao().getAllDistricts()
                     .subscribe(aesBusDistricts -> {
                         HashMap<String, String> districts = new HashMap<>();
                         if (aesBusDistricts != null) {
@@ -31,7 +31,7 @@ public class AESBusActivity extends RouteActivityAbstract {
                                 districts.put(aesBusDistrict.getDistrictID(), aesBusDistrict.getDistrictCn());
                             }
                         }
-                        disposables.add(database.aesBusDao().getAllRoutes()
+                        getDisposables().add(database.aesBusDao().getAllRoutes()
                                 .subscribe(aesBusRoutes -> {
                                     if (aesBusRoutes != null) {
                                         for (AESBusRoute aesBusRoute: aesBusRoutes) {

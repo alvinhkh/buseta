@@ -55,7 +55,7 @@
             android:tint="@color/white"
             app:layout_anchor="@+id/cardList"
             app:layout_anchorGravity="bottom|end|right"
-            app:layout_behavior="com.alvinhkh.buseta.view.common.FloatingActionButtonScrollBehavior"
+            app:layout_behavior="com.alvinhkh.buseta.ui.FloatingActionButtonScrollBehavior"
             app:fabSize="normal" />
 
     </android.support.design.widget.CoordinatorLayout>

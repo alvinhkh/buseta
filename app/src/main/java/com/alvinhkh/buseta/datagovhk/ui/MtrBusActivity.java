@@ -27,7 +27,7 @@ public class MtrBusActivity extends RouteActivityAbstract {
     @Override
     protected void loadRouteNo(String no) {
         super.loadRouteNo(no);
-        disposables.add(dataGovHkService.mtrBusRoutes()
+        getDisposables().add(dataGovHkService.mtrBusRoutes()
                 .retryWhen(new RetryWithDelay(5, 3000))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())

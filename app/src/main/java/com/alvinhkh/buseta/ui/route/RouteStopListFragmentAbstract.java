@@ -119,7 +119,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
 
     private List<RouteStop> routeStops = new ArrayList<>();
 
-    private Boolean isShowMapFragment = true;
+    private Boolean isShowMapFragment = false;
 
     private SupportMapFragment mapFragment = null;
 
@@ -248,7 +248,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         swipeRefreshLayout.setRefreshing(false);
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        isShowMapFragment = preferences != null && preferences.getBoolean("load_map", false);
+        // isShowMapFragment = preferences != null && preferences.getBoolean("load_map", false);
 
         Guideline guideTopInfo = rootView.findViewById(R.id.guideline);
         if (guideTopInfo != null) {

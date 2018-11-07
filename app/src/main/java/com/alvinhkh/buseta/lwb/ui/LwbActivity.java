@@ -25,7 +25,7 @@ public class LwbActivity extends RouteActivityAbstract {
     @Override
     protected void loadRouteNo(String no) {
         super.loadRouteNo(no);
-        disposables.add(lwbService.getRouteBound(no, Math.random())
+        getDisposables().add(lwbService.getRouteBound(no, Math.random())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(routeBoundObserver()));
@@ -46,7 +46,7 @@ public class LwbActivity extends RouteActivityAbstract {
                         route.setCompanyCode(C.PROVIDER.KMB);
                         route.setOrigin(bound.origin_tc);
                         route.setDestination(bound.destination_tc);
-                        route.setName(routeNo);
+                        route.setName(getRouteNo());
                         route.setSequence(String.valueOf(i++));
                         route.setServiceType("01");
                         routes.add(route);
@@ -59,11 +59,11 @@ public class LwbActivity extends RouteActivityAbstract {
                 Timber.d(e);
                 runOnUiThread(() -> {
                     showEmptyView();
-                    if (emptyText != null) {
+                    if (getEmptyText() != null) {
                         if (!ConnectivityUtil.isConnected(getApplicationContext())) {
-                            emptyText.setText(R.string.message_no_internet_connection);
+                            getEmptyText().setText(R.string.message_no_internet_connection);
                         } else {
-                            emptyText.setText(R.string.message_fail_to_request);
+                            getEmptyText().setText(R.string.message_fail_to_request);
                         }
                     }
                 });

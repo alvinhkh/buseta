@@ -41,7 +41,7 @@ public class NwstActivity extends RouteActivityAbstract {
 
     private void loadRouteNo(String no, String mode) {
         super.loadRouteNo(no);
-        disposables.add(nwstService.routeList(mode.equals(TYPE_ALL_ROUTES) ? "" : no, mode,
+        getDisposables().add(nwstService.routeList(mode.equals(TYPE_ALL_ROUTES) ? "" : no, mode,
                 LANGUAGE_TC, NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, NwstRequestUtil.syscode2())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -62,7 +62,7 @@ public class NwstActivity extends RouteActivityAbstract {
                         if (nwstRoute != null &&
                                 !TextUtils.isEmpty(nwstRoute.getRouteNo()) &&
                                 nwstRoute.getRouteNo().equals(routeNo)) {
-                            disposables.add(nwstService.variantList(nwstRoute.getRdv(), LANGUAGE_TC,
+                            getDisposables().add(nwstService.variantList(nwstRoute.getRdv(), LANGUAGE_TC,
                                     NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, NwstRequestUtil.syscode2())
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
@@ -79,11 +79,11 @@ public class NwstActivity extends RouteActivityAbstract {
                 Timber.e(e);
                 runOnUiThread(() -> {
                     showEmptyView();
-                    if (emptyText != null) {
+                    if (getEmptyText() != null) {
                         if (!ConnectivityUtil.isConnected(getApplicationContext())) {
-                            emptyText.setText(R.string.message_no_internet_connection);
+                            getEmptyText().setText(R.string.message_no_internet_connection);
                         } else {
-                            emptyText.setText(R.string.message_fail_to_request);
+                            getEmptyText().setText(R.string.message_fail_to_request);
                         }
                     }
                 });
@@ -107,7 +107,7 @@ public class NwstActivity extends RouteActivityAbstract {
                         if (TextUtils.isEmpty(text)) continue;
                         NwstVariant variant = NwstVariant.Companion.fromString(text);
                         Route route = RouteUtil.fromNwst(nwstRoute, variant);
-                        if (route.getName() != null && routeNo != null && route.getName().equals(routeNo)) {
+                        if (route.getName() != null && getRouteNo() != null && route.getName().equals(getRouteNo())) {
                             routeList.add(route);
                         }
                     }
@@ -121,11 +121,11 @@ public class NwstActivity extends RouteActivityAbstract {
                 Timber.e(e);
                 runOnUiThread(() -> {
                     showEmptyView();
-                    if (emptyText != null) {
+                    if (getEmptyText() != null) {
                         if (!ConnectivityUtil.isConnected(getApplicationContext())) {
-                            emptyText.setText(R.string.message_no_internet_connection);
+                            getEmptyText().setText(R.string.message_no_internet_connection);
                         } else {
-                            emptyText.setText(R.string.message_fail_to_request);
+                            getEmptyText().setText(R.string.message_fail_to_request);
                         }
                     }
                 });

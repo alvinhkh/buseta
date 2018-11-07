@@ -31,7 +31,7 @@ public class KmbActivity extends RouteActivityAbstract {
     @Override
     protected void loadRouteNo(String no) {
         super.loadRouteNo(no);
-        disposables.add(kmbService.getRouteBound(no)
+        getDisposables().add(kmbService.getRouteBound(no)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(routeBoundObserver())
@@ -48,8 +48,8 @@ public class KmbActivity extends RouteActivityAbstract {
                     for (KmbRouteBound bound : res.data) {
                         if (list.contains(bound.bound)) continue;
                         list.add(bound.bound);
-                        disposables.add(kmbService.getSpecialRoute(bound.route, String.valueOf(bound.bound))
-                                .retryWhen(new RetryWithDelay(5, 3000))
+                        getDisposables().add(kmbService.getSpecialRoute(bound.route, String.valueOf(bound.bound))
+                                //.retryWhen(new RetryWithDelay(5, 3000))
                                 .subscribeOn(Schedulers.io())
                                 .doOnNext(r -> {
                                     for (KmbRoute route : r.data.routes) {
@@ -69,8 +69,8 @@ public class KmbActivity extends RouteActivityAbstract {
                 Timber.d(e);
                 runOnUiThread(() -> {
                     showEmptyView();
-                    if (emptyText != null) {
-                        emptyText.setText(e.getMessage());
+                    if (getEmptyText() != null) {
+                        getEmptyText().setText(e.getMessage());
                     }
                 });
             }
@@ -98,11 +98,11 @@ public class KmbActivity extends RouteActivityAbstract {
                 Timber.d(e);
                 runOnUiThread(() -> {
                     showEmptyView();
-                    if (emptyText != null) {
+                    if (getEmptyText() != null) {
                         if (!ConnectivityUtil.isConnected(getApplicationContext())) {
-                            emptyText.setText(R.string.message_no_internet_connection);
+                            getEmptyText().setText(R.string.message_no_internet_connection);
                         } else {
-                            emptyText.setText(R.string.message_fail_to_request);
+                            getEmptyText().setText(R.string.message_fail_to_request);
                         }
                     }
                 });
