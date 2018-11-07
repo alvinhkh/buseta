@@ -3,6 +3,8 @@ package com.alvinhkh.buseta.ui;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.Region;
+import android.os.Build;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseBooleanArray;
@@ -34,7 +36,7 @@ public class PinnedHeaderItemDecoration extends RecyclerView.ItemDecoration {
     private Rect mClipBounds;
 
     @Override
-    public void onDraw(Canvas c, RecyclerView parent, RecyclerView.State state) {
+    public void onDraw(Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
         createPinnedHeader(parent);
 
         if (mPinnedHeaderView != null) {
@@ -56,12 +58,16 @@ public class PinnedHeaderItemDecoration extends RecyclerView.ItemDecoration {
     }
 
     @Override
-    public void onDrawOver(Canvas c, RecyclerView parent, RecyclerView.State state) {
+    public void onDrawOver(Canvas c, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
         if (mPinnedHeaderView != null) {
             c.save();
 
             mClipBounds.top = 0;
-            c.clipRect(mClipBounds, Region.Op.UNION);
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                c.clipRect(mClipBounds, Region.Op.UNION);
+            } else {
+                c.clipOutRect(mClipBounds);
+            }
             c.translate(0, mPinnedHeaderTop);
             mPinnedHeaderView.draw(c);
 
