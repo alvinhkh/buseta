@@ -92,7 +92,8 @@ abstract public class BasePreferenceActivity extends AppCompatPreferenceActivity
     protected void setTaskDescription(String title) {
         // overview task
         if (Build.VERSION.SDK_INT >= 28) {
-            setTaskDescription(new ActivityManager.TaskDescription(title, R.mipmap.ic_launcher, R.color.colorPrimary600));
+            setTaskDescription(new ActivityManager.TaskDescription(title, R.mipmap.ic_launcher,
+                    ContextCompat.getColor(this, R.color.colorPrimary600)));
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
             setTaskDescription(new ActivityManager.TaskDescription(title, bm,
