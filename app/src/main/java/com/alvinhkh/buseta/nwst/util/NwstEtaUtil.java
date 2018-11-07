@@ -35,7 +35,9 @@ public class NwstEtaUtil {
                 .replaceAll("预计未来([0-9]+)分钟没有抵站班次或服务时间已过", "$1分钟+/已过服务时间")
                 .replaceAll("No departure estimated in the next ([0-9]+) min or outside service hours", "$1 mins+/outside service hours")
                 .replaceAll("。$", "").replaceAll("\\.$", "")
-                .replaceAll("往: ", "往");
+                .replaceAll("往: ", "往")
+                .replaceAll(" ?新巴", "")
+                .replaceAll(" ?城巴", "");
     }
 
     public static ArrivalTime estimate(@NonNull Context context, @NonNull ArrivalTime object) {

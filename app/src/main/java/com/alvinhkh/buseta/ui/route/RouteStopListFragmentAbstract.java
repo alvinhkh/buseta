@@ -273,7 +273,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
                     guideTopInfo.setLayoutParams(params);
                 }
             }
-            initLoadHandler.post(initLoadRunnable);
+            initLoadHandler.postDelayed(initLoadRunnable, 10);
             if (mapFragment == null && isShowMapFragment) {
                 showMapFragment();
             }
