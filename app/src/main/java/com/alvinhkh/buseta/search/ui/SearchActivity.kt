@@ -119,7 +119,7 @@ class SearchActivity : AppCompatActivity() {
         var lastCompanyCode = ""
         viewModel.getAsLiveData(route).observe(this@SearchActivity, Observer {
             viewAdapter.clear()
-            val routeNo = route.replace(Regex("[^a-zA-Z0-9]"), "")
+            val routeNo = route.replace(Regex("[^a-zA-Z0-9 ]"), "")
             val shownCompanyCode = arrayListOf<String>()
             if (it?.size?:0 > 0) {
                 if (it?.size?:0 == 1 && !it?.get(0)?.companyCode.isNullOrEmpty() && singleWillOpen && !isOpened) {
