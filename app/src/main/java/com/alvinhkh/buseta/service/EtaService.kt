@@ -131,7 +131,7 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
                     C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> disposables.add(nwstApi.eta((routeStop.stopId?:"0").toInt().toString(),
                             routeStop.routeNo, "Y", "60", LANGUAGE_TC, routeStop.routeSeq,
                             routeStop.sequence, routeStop.routeId, "Y", "Y",
-                            NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, NwstRequestUtil.syscode2())
+                            NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, NwstRequestUtil.syscode2(), "0")
                             .subscribeWith(nwstEtaObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size - 1)))
                     C.PROVIDER.LRTFEEDER -> {
                         val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
