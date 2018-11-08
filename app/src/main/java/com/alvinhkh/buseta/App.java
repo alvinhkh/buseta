@@ -31,6 +31,8 @@ public class App extends Application {
 
     public static OkHttpClient httpClient;
 
+    public static OkHttpClient httpClient2;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -44,6 +46,13 @@ public class App extends Application {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
         builder.addNetworkInterceptor(new UserAgentInterceptor());
         httpClient = builder
+                .connectTimeout(20, TimeUnit.SECONDS)
+                .writeTimeout(20, TimeUnit.SECONDS)
+                .readTimeout(60, TimeUnit.SECONDS)
+                .build();
+        OkHttpClient.Builder builder2 = new OkHttpClient.Builder();
+        builder2.addNetworkInterceptor(new UserAgentInterceptor("CitybusNWFB/5 CFNetwork/975.0.3 Darwin/18.2.0"));
+        httpClient2 = builder2
                 .connectTimeout(20, TimeUnit.SECONDS)
                 .writeTimeout(20, TimeUnit.SECONDS)
                 .readTimeout(60, TimeUnit.SECONDS)
@@ -75,7 +84,7 @@ public class App extends Application {
                 .build();
         firebaseRemoteConfig.setConfigSettings(configSettings);
         firebaseRemoteConfig.setDefaults(R.xml.remote_config_defaults);
-        firebaseRemoteConfig.fetch(3600L)
+        firebaseRemoteConfig.fetch(0)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         // After config data is successfully fetched, it must be activated before newly fetched

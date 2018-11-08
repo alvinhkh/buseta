@@ -17,11 +17,13 @@ import retrofit2.http.QueryMap;
 
 public interface NwstService {
 
-    String APP_VERSION = "3.5.5";
+    String APP_VERSION = "3.5.3";
+
+    String APP_VERSION2 = "5";
 
     String LANGUAGE_TC = "0";
 
-    String PLATFORM = "android";
+    String PLATFORM = "iPhone";
 
     String QUERY_BOUND = "bound";
 
@@ -53,9 +55,13 @@ public interface NwstService {
 
     String QUERY_SYSCODE2 = "syscode2";
 
+    String QUERY_SYSCODE3 = "syscode3";
+
     String QUERY_TK = "tk";
 
     String QUERY_VERSION = "version";
+
+    String QUERY_VERSION2 = "version2";
 
     String TYPE_ALL_ROUTES = "0";
 
@@ -66,7 +72,7 @@ public interface NwstService {
     String TYPE_NIGHT_ROUTES = "1";
 
     Retrofit api = new Retrofit.Builder()
-            .client(App.httpClient)
+            .client(App.httpClient2)
             .baseUrl("http://mobile.nwstbus.com.hk/")
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build();
@@ -120,6 +126,7 @@ public interface NwstService {
             @Query(QUERY_SYSCODE) String sysCode,
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
+            @Query(QUERY_VERSION2) String version2,
             @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
             @Query(QUERY_TK) String tk
     );

@@ -111,27 +111,26 @@ public class NwstSecret {
     }
 
     public static String syscode2() {
-        // unmodified code
         StringBuilder num = new StringBuilder(Integer.toString(new Random().nextInt(10000)));
         while (num.length() < 5) {
             num.append("0");
         }
-        String valueOf = String.valueOf(System.currentTimeMillis() / 1000);
-        String str = valueOf.substring(2, 3) + valueOf.substring(9, 10) + valueOf.substring(4, 5) + valueOf.substring(6, 7) + valueOf.substring(3, 4) + valueOf.substring(0, 1) + valueOf.substring(8, 9) + valueOf.substring(7, 8) + valueOf.substring(5, 6) + valueOf.substring(1, 2);
-        valueOf = a(new int[]{145, 82, 154, 104, 150, 77, 151, 53, 144, 53, 154, 112, 156, 100, 140, 79, 145, 50, 137, 50, 146, 74, 147, 115, 149, 57, 146, 94});
-        String str2 = valueOf.substring(2, 3) + valueOf.substring(7, 8) + valueOf.substring(5, 6) + valueOf.substring(4, 5) + valueOf.substring(6, 7) + valueOf.substring(3, 4) + valueOf.substring(0, 1) + valueOf.substring(1, 2);
-        valueOf = "";
+        String timestamp = String.valueOf(System.currentTimeMillis() / 1000);
+        String str = timestamp.substring(2, 3) + timestamp.substring(9, 10) + timestamp.substring(4, 5) + timestamp.substring(6, 7) + timestamp.substring(3, 4) + timestamp.substring(0, 1) + timestamp.substring(8, 9) + timestamp.substring(7, 8) + timestamp.substring(5, 6) + timestamp.substring(1, 2);
+        timestamp = a(new int[]{145, 82, 154, 104, 150, 77, 151, 53, 144, 53, 154, 112, 156, 100, 140, 79, 145, 50, 137, 50, 146, 74, 147, 115, 149, 57, 146, 94});
+        String str2 = timestamp.substring(2, 3) + timestamp.substring(7, 8) + timestamp.substring(5, 6) + timestamp.substring(4, 5) + timestamp.substring(6, 7) + timestamp.substring(3, 4) + timestamp.substring(0, 1) + timestamp.substring(1, 2);
+        timestamp = "";
         try {
             MessageDigest instance = MessageDigest.getInstance("SHA-256");
             instance.update((str + str2 + num).getBytes());
-            valueOf = a(instance.digest());
+            timestamp = a(instance.digest());
         } catch (NoSuchAlgorithmException e) {
             Timber.d(e);
         }
-        num.insert(0, str + valueOf.toLowerCase());
-        valueOf = a(new int[]{145, 53, 154, 104, 150, 106, 151, 107, 144, 90, 154, 56, 156, 100, 140, 80, 145, 104, 137, 89, 146, 113, 147, 71, 149, 120, 146, 87, 149, 56, 151, 96, 150, 81, 85, 71});
-        valueOf = valueOf.substring(2, 3) + valueOf.substring(7, 8) + valueOf.substring(5, 6) + valueOf.substring(4, 5) + valueOf.substring(6, 7) + valueOf.substring(3, 4) + valueOf.substring(0, 1) + valueOf.substring(1, 2) + "infomwyy";
+        num.insert(0, str + timestamp.toLowerCase());
+        timestamp = a(new int[]{145, 53, 154, 104, 150, 106, 151, 107, 144, 90, 154, 56, 156, 100, 140, 80, 145, 104, 137, 89, 146, 113, 147, 71, 149, 120, 146, 87, 149, 56, 151, 96, 150, 81, 85, 71});
+        timestamp = timestamp.substring(2, 3) + timestamp.substring(7, 8) + timestamp.substring(5, 6) + timestamp.substring(4, 5) + timestamp.substring(6, 7) + timestamp.substring(3, 4) + timestamp.substring(0, 1) + timestamp.substring(1, 2) + "infomwyy";
         str2 = a(new int[]{83, 108, 85, 52, 137, 71, 135, 89, 86, 51, 86, 101, 136, 118, 136, 94, 132, 63, 89, 90, 83, 94, 89, 118, 83, 109, 83, 74, 137, 52, 86, 115});
-        return Base64.encodeToString(j(a(num.toString(), valueOf, str2.substring(8, 9) + str2.substring(1, 2) + str2.substring(13, 14) + str2.substring(15, 16) + str2.substring(5, 6) + str2.substring(0, 1) + str2.substring(6, 7) + str2.substring(2, 3) + str2.substring(3, 4) + str2.substring(4, 5) + str2.substring(14, 15) + str2.substring(9, 10) + str2.substring(10, 11) + str2.substring(11, 12) + str2.substring(12, 13) + str2.substring(7, 8))), 0).replaceAll("\r", "").replaceAll("\n", "").replaceAll("=", "");
+        return Base64.encodeToString(j(a(num.toString(), timestamp, str2.substring(8, 9) + str2.substring(1, 2) + str2.substring(13, 14) + str2.substring(15, 16) + str2.substring(5, 6) + str2.substring(0, 1) + str2.substring(6, 7) + str2.substring(2, 3) + str2.substring(3, 4) + str2.substring(4, 5) + str2.substring(14, 15) + str2.substring(9, 10) + str2.substring(10, 11) + str2.substring(11, 12) + str2.substring(12, 13) + str2.substring(7, 8))), 0).replaceAll("\r", "").replaceAll("\n", "").replaceAll("=", "");
     }
 }
