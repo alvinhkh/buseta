@@ -12,7 +12,7 @@
     <color name="textHighlighted">#FF8A80</color>
     <color name="icons">#80FFFFFF</color>
 
-    <color name="background">#FF000000</color>
-    <color name="bottomNavigationBackground">#000000</color>
+    <color name="background">#ff1c1c1c</color>
+    <color name="bottomNavigationBackground">#1c1c1c</color>
     <color name="bottomNavigationIcon">#deffffff</color>
 </resources>
