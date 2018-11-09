@@ -1,5 +1,7 @@
 package com.alvinhkh.buseta.nwst.ui;
 
+import android.content.SharedPreferences;
+import android.support.v7.preference.PreferenceManager;
 import android.text.TextUtils;
 
 import com.alvinhkh.buseta.C;
@@ -15,10 +17,7 @@ import com.alvinhkh.buseta.utils.ConnectivityUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.observers.DisposableObserver;
@@ -41,8 +40,10 @@ public class NwstActivity extends RouteActivityAbstract {
 
     private void loadRouteNo(String no, String mode) {
         super.loadRouteNo(no);
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         getDisposables().add(nwstService.routeList(mode.equals(TYPE_ALL_ROUTES) ? "" : no, mode,
-                LANGUAGE_TC, NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, NwstRequestUtil.syscode2())
+                LANGUAGE_TC, NwstRequestUtil.syscode(), PLATFORM, APP_VERSION,
+                NwstRequestUtil.syscode2(), preferences.getString("nwst_tk", ""))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(routeListObserver(no)));
@@ -54,6 +55,7 @@ public class NwstActivity extends RouteActivityAbstract {
             public void onNext(ResponseBody body) {
                 try {
                     routeList.clear();
+                    SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                     String[] routeArray = body.string().split("\\|\\*\\|", -1);
                     for (String route : routeArray) {
                         String text = route.replace("<br>", "").trim();
@@ -63,7 +65,8 @@ public class NwstActivity extends RouteActivityAbstract {
                                 !TextUtils.isEmpty(nwstRoute.getRouteNo()) &&
                                 nwstRoute.getRouteNo().equals(routeNo)) {
                             getDisposables().add(nwstService.variantList(nwstRoute.getRdv(), LANGUAGE_TC,
-                                    NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, NwstRequestUtil.syscode2())
+                                    NwstRequestUtil.syscode(), PLATFORM, APP_VERSION,
+                                    NwstRequestUtil.syscode2(), preferences.getString("nwst_tk", ""))
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribeWith(variantListObserver(nwstRoute)));

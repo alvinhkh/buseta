@@ -1,10 +1,12 @@
 package com.alvinhkh.buseta.nwst.ui;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.util.Pair;
+import android.support.v7.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -64,6 +66,7 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         View rootView = super.onCreateView(inflater, container, savedInstanceState);
         String qInfo = NwstRequestUtil.paramInfo(route);
         if (!TextUtils.isEmpty(qInfo)) {
@@ -71,7 +74,7 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
                 swipeRefreshLayout.setRefreshing(true);
             }
             disposables.add(nwstService.stopList(qInfo, LANGUAGE_TC, NwstRequestUtil.syscode(),
-                    PLATFORM, APP_VERSION, NwstRequestUtil.syscode2())
+                    PLATFORM, APP_VERSION, NwstRequestUtil.syscode2(), preferences.getString("nwst_tk", ""))
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeWith(stopListObserver()));

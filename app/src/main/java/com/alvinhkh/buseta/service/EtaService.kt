@@ -2,6 +2,7 @@ package com.alvinhkh.buseta.service
 
 import android.app.IntentService
 import android.content.Intent
+import android.support.v7.preference.PreferenceManager
 import android.text.TextUtils
 
 import com.alvinhkh.buseta.C
@@ -50,11 +51,13 @@ import okhttp3.ResponseBody
 import timber.log.Timber
 
 import com.alvinhkh.buseta.nwst.NwstService.*
+import io.reactivex.schedulers.Schedulers
 
 
 class EtaService : IntentService(EtaService::class.java.simpleName) {
 
     private val disposables = CompositeDisposable()
+    private val disposables2 = CompositeDisposable()
 
     private lateinit var arrivalTimeDatabase: ArrivalTimeDatabase
 
@@ -78,10 +81,17 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
         super.onCreate()
         arrivalTimeDatabase = ArrivalTimeDatabase.getInstance(this)!!
         followDatabase = FollowDatabase.getInstance(this)!!
+
+        val randomHex64 = HashUtil.randomHexString(64)
+        disposables2.add(nwstApi.pushTokenEnable(randomHex64, LANGUAGE_TC, "Y", NwstRequestUtil.syscode(),
+                PLATFORM, APP_VERSION, APP_VERSION2, NwstRequestUtil.syscode2())
+                .subscribeOn(Schedulers.io())
+                .subscribeWith(nwstTkObserver(randomHex64)))
     }
 
     override fun onDestroy() {
         disposables.clear()
+        disposables2.clear()
         super.onDestroy()
     }
 
@@ -111,6 +121,8 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
                 routeStopList.add(RouteStopUtil.fromFollow(follow))
             }
         }
+        val preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+        val nwstToken = preferences.getString("nwst_tk", "")
         for (i in routeStopList.indices) {
             val routeStop = routeStopList[i]
             if (!TextUtils.isEmpty(routeStop.companyCode)) {
@@ -131,7 +143,7 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
                     C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> disposables.add(nwstApi.eta((routeStop.stopId?:"0").toInt().toString(),
                             routeStop.routeNo, "Y", "60", LANGUAGE_TC, routeStop.routeSeq,
                             routeStop.sequence, routeStop.routeId, "Y", "Y",
-                            NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, APP_VERSION2, NwstRequestUtil.syscode2(), firebaseRemoteConfig.getString("nwst_tk"))
+                            NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, APP_VERSION2, NwstRequestUtil.syscode2(), nwstToken)
                             .subscribeWith(nwstEtaObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size - 1)))
                     C.PROVIDER.LRTFEEDER -> {
                         val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
@@ -516,6 +528,25 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
                 if (!isError) {
                     notifyUpdate(routeStop, C.EXTRA.COMPLETE, widgetId, notificationId, rowNo)
                 }
+            }
+        }
+    }
+
+    private fun nwstTkObserver(randomHex64: String): DisposableObserver<ResponseBody> {
+        return object : DisposableObserver<ResponseBody>() {
+
+            override fun onNext(res: ResponseBody) {
+                val preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                val editor = preferences.edit()
+                editor.putString("nwst_tk", randomHex64)
+                editor.apply()
+            }
+
+            override fun onError(e: Throwable) {
+                Timber.d(e)
+            }
+
+            override fun onComplete() {
             }
         }
     }

@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Random;
 
 import timber.log.Timber;
 
@@ -41,5 +42,14 @@ public class HashUtil {
             hexString.append(h);
         }
         return hexString.toString();
+    }
+
+    public static String randomHexString(int numchars){
+        Random r = new Random();
+        StringBuffer sb = new StringBuffer();
+        while(sb.length() < numchars){
+            sb.append(Integer.toHexString(r.nextInt()));
+        }
+        return sb.toString().substring(0, numchars);
     }
 }

@@ -2,8 +2,10 @@ package com.alvinhkh.buseta.service;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.v7.preference.PreferenceManager;
 import android.text.TextUtils;
 
 import com.alvinhkh.buseta.Api;
@@ -27,6 +29,7 @@ import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.model.AppUpdate;
 import com.alvinhkh.buseta.utils.DatabaseUtil;
+import com.alvinhkh.buseta.utils.HashUtil;
 import com.alvinhkh.buseta.utils.RetryWithDelay;
 import com.alvinhkh.buseta.utils.ZipUtil;
 
@@ -37,9 +40,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableObserver;
@@ -53,6 +54,8 @@ public class CheckUpdateService extends IntentService {
 
     private final MtrService mtrMobService = MtrService.Companion.getMob().create(MtrService.class);
 
+    private final NwstService nwstService = NwstService.api.create(NwstService.class);
+
     private final CompositeDisposable disposables = new CompositeDisposable();
 
     private SuggestionDatabase suggestionDatabase;
@@ -65,6 +68,12 @@ public class CheckUpdateService extends IntentService {
     public void onCreate() {
         super.onCreate();
         suggestionDatabase = SuggestionDatabase.Companion.getInstance(this);
+
+        String randomHex64 = HashUtil.randomHexString(64);
+        disposables.add(nwstService.pushTokenEnable(randomHex64, LANGUAGE_TC, "Y",
+                NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, APP_VERSION2, NwstRequestUtil.syscode2())
+                .subscribeOn(Schedulers.io())
+                .subscribeWith(nwstTkObserver(randomHex64)));
     }
 
     @Override
@@ -96,6 +105,7 @@ public class CheckUpdateService extends IntentService {
         if (suggestionDatabase != null) {
             suggestionDatabase.suggestionDao().clearDefault();
         }
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         // start fetch available kmb route with eta
         KmbService kmbService = KmbService.etadatafeed.create(KmbService.class);
         disposables.add(kmbService.getEtaRoutes()
@@ -109,7 +119,8 @@ public class CheckUpdateService extends IntentService {
                 .subscribeWith(nlbDatabaseObserver(manualUpdate)));
         NwstService nwstService = NwstService.api.create(NwstService.class);
         disposables.add(nwstService.routeList("", TYPE_ALL_ROUTES,
-                LANGUAGE_TC, NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, NwstRequestUtil.syscode2())
+                LANGUAGE_TC, NwstRequestUtil.syscode(), PLATFORM, APP_VERSION,
+                NwstRequestUtil.syscode2(), preferences.getString("nwst_tk", ""))
                 .retryWhen(new RetryWithDelay(3, 3000))
                 .subscribeOn(Schedulers.io())
                 .subscribeWith(nwstRouteListObserver(manualUpdate)));
@@ -424,6 +435,27 @@ public class CheckUpdateService extends IntentService {
                 output.close();
                 bis.close();
                 return outputFile;
+            }
+        };
+    }
+
+    DisposableObserver<ResponseBody> nwstTkObserver(String randomHex64) {
+        return new DisposableObserver<ResponseBody>() {
+            @Override
+            public void onNext(ResponseBody res) {
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                SharedPreferences.Editor editor = preferences.edit();
+                editor.putString("nwst_tk", randomHex64);
+                editor.apply();
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Timber.d(e);
+            }
+
+            @Override
+            public void onComplete() {
             }
         };
     }

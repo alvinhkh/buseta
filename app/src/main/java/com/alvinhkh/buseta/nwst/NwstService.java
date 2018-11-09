@@ -27,6 +27,8 @@ public interface NwstService {
 
     String QUERY_BOUND = "bound";
 
+    String QUERY_DEVICETOKEN = "devicetoken";
+
     String QUERY_ID = "id";
 
     String QUERY_INFO = "info";
@@ -77,6 +79,18 @@ public interface NwstService {
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build();
 
+    @GET("push/pushtokenenable.php")
+    Observable<ResponseBody> pushTokenEnable(
+            @Query(QUERY_DEVICETOKEN) String devicetoken,
+            @Query(QUERY_LANGUAGE) String language,
+            @Query(QUERY_MODE) String mode,
+            @Query(QUERY_SYSCODE) String sysCode,
+            @Query(QUERY_PLATFORM) String platform,
+            @Query(QUERY_VERSION) String version,
+            @Query(QUERY_VERSION2) String version2,
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
+    );
+
     @GET("api6/getmmroutelist.php")
     Observable<ResponseBody> routeList(
             @Query(QUERY_ROUTE_NO) String routeNo,
@@ -85,7 +99,8 @@ public interface NwstService {
             @Query(QUERY_SYSCODE) String sysCode,
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
-            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
+            @Query(QUERY_TK) String tk
     );
 
     @GET("api6/getvariantlist.php")
@@ -95,7 +110,8 @@ public interface NwstService {
             @Query(QUERY_SYSCODE) String sysCode,
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
-            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
+            @Query(QUERY_TK) String tk
     );
 
     @GET("api6/ppstoplist.php")
@@ -105,7 +121,8 @@ public interface NwstService {
             @Query(QUERY_SYSCODE) String sysCode,
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
-            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
+            @Query(QUERY_TK) String tk
     );
 
     @GET("api6/get_notice_4.php")
