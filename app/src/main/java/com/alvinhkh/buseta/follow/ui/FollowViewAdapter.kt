@@ -107,7 +107,9 @@ class FollowViewAdapter(
                     builder.setMessage(itemView.context.getString(R.string.message_remove_from_follow_list))
                     builder.setNegativeButton(R.string.action_cancel) { d, _ -> d.cancel() }
                     builder.setPositiveButton(R.string.action_confirm) { _, _ ->
-                        val rowDeleted = followDatabase?.followDao()?.delete(follow.type, follow.companyCode, follow.routeNo, follow.routeSeq, follow.routeServiceType, follow.stopId, follow.stopSeq)
+                        val rowDeleted = followDatabase?.followDao()?.delete(follow.type,
+                                follow.companyCode, follow.routeNo, follow.routeSeq,
+                                follow.routeServiceType, follow.stopId, follow.stopSeq)
                         if (rowDeleted != null && rowDeleted > 0) {
                             Snackbar.make(itemView.rootView.findViewById(R.id.coordinator_layout)?:itemView.rootView,
                                     itemView.context.getString(R.string.removed_from_follow_list,
@@ -122,7 +124,7 @@ class FollowViewAdapter(
                                             }
                                         }
                                     })
-                                    .setAction(R.string.undo) { _ ->
+                                    .setAction(R.string.undo) {
                                         // do nothing
                                     }.show()
                         }
@@ -132,16 +134,21 @@ class FollowViewAdapter(
                 }
 
                 var direction = ""
+                if (follow.etas.isEmpty()) {
+                    itemView.findViewById<TextView>(R.id.eta).text = ""
+                    itemView.findViewById<TextView>(R.id.eta_next).text = ""
+                }
                 follow.etas.forEachIndexed { _, obj ->
                     val arrivalTime = ArrivalTime.estimate(itemView.context, obj)
                     if (!TextUtils.isEmpty(arrivalTime.order)) {
                         val etaText = SpannableStringBuilder(arrivalTime.text)
                         val pos = Integer.parseInt(arrivalTime.order)
                         var colorInt: Int? = ContextCompat.getColor(itemView.context,
-                                if (arrivalTime.expired)
-                                    R.color.textDiminish
-                                else
-                                    if (pos > 0) R.color.textPrimary else R.color.textHighlighted)
+                                when {
+                                    arrivalTime.expired -> R.color.textDiminish
+                                    pos > 0 -> R.color.textPrimary
+                                    else -> R.color.textHighlighted
+                                })
                         if (arrivalTime.companyCode == C.PROVIDER.MTR) {
                             colorInt = ContextCompat.getColor(itemView.context, if (arrivalTime.expired)
                                 R.color.textDiminish
@@ -168,23 +175,28 @@ class FollowViewAdapter(
                         }
                         if (arrivalTime.capacity >= 0) {
                             var drawable: Drawable? = null
-                            if (arrivalTime.capacity == 0L) {
-                                drawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_capacity_0_black)
-                            } else if (arrivalTime.capacity > 0 && arrivalTime.capacity <= 3) {
-                                drawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_capacity_20_black)
-                            } else if (arrivalTime.capacity > 3 && arrivalTime.capacity <= 6) {
-                                drawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_capacity_50_black)
-                            } else if (arrivalTime.capacity > 6 && arrivalTime.capacity <= 9) {
-                                drawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_capacity_80_black)
-                            } else if (arrivalTime.capacity >= 10) {
-                                drawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_capacity_100_black)
+                            when {
+                                arrivalTime.capacity == 0L -> drawable =
+                                        ContextCompat.getDrawable(itemView.context, R.drawable.ic_capacity_0_black)
+                                arrivalTime.capacity in 1..3 -> drawable =
+                                        ContextCompat.getDrawable(itemView.context, R.drawable.ic_capacity_20_black)
+                                arrivalTime.capacity in 4..6 -> drawable =
+                                        ContextCompat.getDrawable(itemView.context, R.drawable.ic_capacity_50_black)
+                                arrivalTime.capacity in 7..9 -> drawable =
+                                        ContextCompat.getDrawable(itemView.context, R.drawable.ic_capacity_80_black)
+                                arrivalTime.capacity >= 10 -> drawable =
+                                        ContextCompat.getDrawable(itemView.context, R.drawable.ic_capacity_100_black)
                             }
                             if (drawable != null) {
                                 drawable = DrawableCompat.wrap(drawable)
                                 if (pos == 0) {
-                                    drawable!!.setBounds(0, 0, itemView.findViewById<TextView>(R.id.eta).lineHeight, itemView.findViewById<TextView>(R.id.eta).lineHeight)
+                                    drawable!!.setBounds(0, 0,
+                                            itemView.findViewById<TextView>(R.id.eta).lineHeight,
+                                            itemView.findViewById<TextView>(R.id.eta).lineHeight)
                                 } else {
-                                    drawable!!.setBounds(0, 0, itemView.findViewById<TextView>(R.id.eta_next).lineHeight, itemView.findViewById<TextView>(R.id.eta_next).lineHeight)
+                                    drawable!!.setBounds(0, 0,
+                                            itemView.findViewById<TextView>(R.id.eta_next).lineHeight,
+                                            itemView.findViewById<TextView>(R.id.eta_next).lineHeight)
                                 }
                                 DrawableCompat.setTint(drawable.mutate(), colorInt!!)
                                 val imageSpan = ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM)
@@ -198,9 +210,11 @@ class FollowViewAdapter(
                             var drawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_outline_accessible_18dp)
                             drawable = DrawableCompat.wrap(drawable!!)
                             if (pos == 0) {
-                                drawable!!.setBounds(0, 0, itemView.findViewById<TextView>(R.id.eta).lineHeight, itemView.findViewById<TextView>(R.id.eta).lineHeight)
+                                drawable!!.setBounds(0, 0, itemView.findViewById<TextView>(R.id.eta).lineHeight,
+                                        itemView.findViewById<TextView>(R.id.eta).lineHeight)
                             } else {
-                                drawable!!.setBounds(0, 0, itemView.findViewById<TextView>(R.id.eta_next).lineHeight, itemView.findViewById<TextView>(R.id.eta_next).lineHeight)
+                                drawable!!.setBounds(0, 0, itemView.findViewById<TextView>(R.id.eta_next).lineHeight,
+                                        itemView.findViewById<TextView>(R.id.eta_next).lineHeight)
                             }
                             DrawableCompat.setTint(drawable.mutate(), colorInt!!)
                             val imageSpan = ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM)
@@ -213,9 +227,11 @@ class FollowViewAdapter(
                             var drawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_outline_wifi_18dp)
                             drawable = DrawableCompat.wrap(drawable!!)
                             if (pos == 0) {
-                                drawable!!.setBounds(0, 0, itemView.findViewById<TextView>(R.id.eta).lineHeight, itemView.findViewById<TextView>(R.id.eta).lineHeight)
+                                drawable!!.setBounds(0, 0, itemView.findViewById<TextView>(R.id.eta).lineHeight,
+                                        itemView.findViewById<TextView>(R.id.eta).lineHeight)
                             } else {
-                                drawable!!.setBounds(0, 0, itemView.findViewById<TextView>(R.id.eta_next).lineHeight, itemView.findViewById<TextView>(R.id.eta_next).lineHeight)
+                                drawable!!.setBounds(0, 0, itemView.findViewById<TextView>(R.id.eta_next).lineHeight,
+                                        itemView.findViewById<TextView>(R.id.eta_next).lineHeight)
                             }
                             DrawableCompat.setTint(drawable.mutate(), colorInt!!)
                             val imageSpan = ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM)
