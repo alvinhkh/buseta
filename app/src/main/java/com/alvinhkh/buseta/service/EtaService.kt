@@ -83,8 +83,9 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
         followDatabase = FollowDatabase.getInstance(this)!!
 
         val randomHex64 = HashUtil.randomHexString(64)
-        disposables2.add(nwstApi.pushTokenEnable(randomHex64, LANGUAGE_TC, "Y", NwstRequestUtil.syscode(),
-                PLATFORM, APP_VERSION, APP_VERSION2, NwstRequestUtil.syscode2())
+        disposables2.add(nwstApi.pushTokenEnable(randomHex64, LANGUAGE_TC, "Y", PLATFORM,
+                NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, APP_VERSION2,
+                NwstRequestUtil.syscode2(), "")
                 .subscribeOn(Schedulers.io())
                 .subscribeWith(nwstTkObserver(randomHex64)))
     }
@@ -123,6 +124,7 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
         }
         val preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
         val nwstToken = preferences.getString("nwst_tk", "")
+        val nwstSyscode3 = preferences.getString("nwst_syscode3", "")
         for (i in routeStopList.indices) {
             val routeStop = routeStopList[i]
             if (!TextUtils.isEmpty(routeStop.companyCode)) {
@@ -143,7 +145,7 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
                     C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> disposables.add(nwstApi.eta((routeStop.stopId?:"0").toInt().toString(),
                             routeStop.routeNo, "Y", "60", LANGUAGE_TC, routeStop.routeSeq,
                             routeStop.sequence, routeStop.routeId, "Y", "Y",
-                            NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, APP_VERSION2, NwstRequestUtil.syscode2(), nwstToken)
+                            NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, APP_VERSION2, NwstRequestUtil.syscode2(), nwstToken, nwstSyscode3)
                             .subscribeWith(nwstEtaObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size - 1)))
                     C.PROVIDER.LRTFEEDER -> {
                         val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
@@ -533,6 +535,26 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
     }
 
     private fun nwstTkObserver(randomHex64: String): DisposableObserver<ResponseBody> {
+        return object : DisposableObserver<ResponseBody>() {
+
+            override fun onNext(res: ResponseBody) {
+                disposables2.add(nwstApi.pushToken(randomHex64, LANGUAGE_TC, "Y", PLATFORM,
+                        NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, APP_VERSION2,
+                        NwstRequestUtil.syscode2(), "")
+                        .subscribeOn(Schedulers.io())
+                        .subscribeWith(nwstPushTokenObserver(randomHex64)))
+            }
+
+            override fun onError(e: Throwable) {
+                Timber.d(e)
+            }
+
+            override fun onComplete() {
+            }
+        }
+    }
+
+    private fun nwstPushTokenObserver(randomHex64: String): DisposableObserver<ResponseBody> {
         return object : DisposableObserver<ResponseBody>() {
 
             override fun onNext(res: ResponseBody) {

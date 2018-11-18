@@ -71,7 +71,7 @@ public class CheckUpdateService extends IntentService {
 
         String randomHex64 = HashUtil.randomHexString(64);
         disposables.add(nwstService.pushTokenEnable(randomHex64, LANGUAGE_TC, "Y",
-                NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, APP_VERSION2, NwstRequestUtil.syscode2())
+                NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, APP_VERSION2, NwstRequestUtil.syscode2(), "", "")
                 .subscribeOn(Schedulers.io())
                 .subscribeWith(nwstTkObserver(randomHex64)));
     }
@@ -120,7 +120,8 @@ public class CheckUpdateService extends IntentService {
         NwstService nwstService = NwstService.api.create(NwstService.class);
         disposables.add(nwstService.routeList("", TYPE_ALL_ROUTES,
                 LANGUAGE_TC, NwstRequestUtil.syscode(), PLATFORM, APP_VERSION,
-                NwstRequestUtil.syscode2(), preferences.getString("nwst_tk", ""))
+                NwstRequestUtil.syscode2(), preferences.getString("nwst_tk", ""),
+                preferences.getString("nwst_syscode3", ""))
                 .retryWhen(new RetryWithDelay(3, 3000))
                 .subscribeOn(Schedulers.io())
                 .subscribeWith(nwstRouteListObserver(manualUpdate)));
@@ -443,9 +444,32 @@ public class CheckUpdateService extends IntentService {
         return new DisposableObserver<ResponseBody>() {
             @Override
             public void onNext(ResponseBody res) {
+                disposables.add(nwstService.pushToken(randomHex64, LANGUAGE_TC, "Y", PLATFORM,
+                        NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, APP_VERSION2,
+                        NwstRequestUtil.syscode2(), "")
+                        .subscribeOn(Schedulers.io())
+                        .subscribeWith(nwstPushTokenObserver(randomHex64)));
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Timber.d(e);
+            }
+
+            @Override
+            public void onComplete() {
+            }
+        };
+    }
+
+    DisposableObserver<ResponseBody> nwstPushTokenObserver(String randomHex64) {
+        return new DisposableObserver<ResponseBody>() {
+            @Override
+            public void onNext(ResponseBody res) {
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                 SharedPreferences.Editor editor = preferences.edit();
                 editor.putString("nwst_tk", randomHex64);
+                editor.putString("nwst_syscode3", "");
                 editor.apply();
             }
 

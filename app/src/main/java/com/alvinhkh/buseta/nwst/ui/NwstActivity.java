@@ -43,7 +43,8 @@ public class NwstActivity extends RouteActivityAbstract {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         getDisposables().add(nwstService.routeList(mode.equals(TYPE_ALL_ROUTES) ? "" : no, mode,
                 LANGUAGE_TC, NwstRequestUtil.syscode(), PLATFORM, APP_VERSION,
-                NwstRequestUtil.syscode2(), preferences.getString("nwst_tk", ""))
+                NwstRequestUtil.syscode2(), preferences.getString("nwst_tk", ""),
+                preferences.getString("nwst_syscode3", ""))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(routeListObserver(no)));
@@ -66,7 +67,7 @@ public class NwstActivity extends RouteActivityAbstract {
                                 nwstRoute.getRouteNo().equals(routeNo)) {
                             getDisposables().add(nwstService.variantList(nwstRoute.getRdv(), LANGUAGE_TC,
                                     NwstRequestUtil.syscode(), PLATFORM, APP_VERSION,
-                                    NwstRequestUtil.syscode2(), preferences.getString("nwst_tk", ""))
+                                    NwstRequestUtil.syscode2(), preferences.getString("nwst_tk", ""), preferences.getString("nwst_syscode3", ""))
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribeWith(variantListObserver(nwstRoute)));

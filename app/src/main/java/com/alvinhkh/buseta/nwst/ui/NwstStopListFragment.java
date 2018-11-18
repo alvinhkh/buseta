@@ -74,7 +74,9 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
                 swipeRefreshLayout.setRefreshing(true);
             }
             disposables.add(nwstService.stopList(qInfo, LANGUAGE_TC, NwstRequestUtil.syscode(),
-                    PLATFORM, APP_VERSION, NwstRequestUtil.syscode2(), preferences.getString("nwst_tk", ""))
+                    PLATFORM, APP_VERSION, NwstRequestUtil.syscode2(),
+                    preferences.getString("nwst_tk", ""),
+                    preferences.getString("nwst_syscode3", ""))
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribeWith(stopListObserver()));
@@ -161,8 +163,10 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
                     onStopListComplete();
                     return;
                 }
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
                 disposables.add(nwstService.latlongList(variant.getRdv(), LANGUAGE_TC,
-                        NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, NwstRequestUtil.syscode2())
+                        NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, NwstRequestUtil.syscode2(),
+                        preferences.getString("nwst_tk", ""), preferences.getString("nwst_syscode3", ""))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeWith(latlongListObserver()));
@@ -173,7 +177,8 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
                     rdv = temp[0] + "||" + temp[1] + "||" + temp[2] + "||" + temp[3];
                 }
                 disposables.add(nwstService.timetable(rdv, route.getSequence(), LANGUAGE_TC,
-                        NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, NwstRequestUtil.syscode2())
+                        NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, NwstRequestUtil.syscode2(),
+                        preferences.getString("nwst_tk", ""), preferences.getString("nwst_syscode3", ""))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeWith(timetableObserver()));

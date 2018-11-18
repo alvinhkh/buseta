@@ -29,6 +29,8 @@ public interface NwstService {
 
     String QUERY_DEVICETOKEN = "devicetoken";
 
+    String QUERY_DEVICETYPE = "deviceType";
+
     String QUERY_ID = "id";
 
     String QUERY_INFO = "info";
@@ -74,7 +76,7 @@ public interface NwstService {
     String TYPE_NIGHT_ROUTES = "1";
 
     Retrofit api = new Retrofit.Builder()
-            .client(App.httpClient2)
+            .client(App.httpClient)
             .baseUrl("http://mobile.nwstbus.com.hk/")
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build();
@@ -84,11 +86,27 @@ public interface NwstService {
             @Query(QUERY_DEVICETOKEN) String devicetoken,
             @Query(QUERY_LANGUAGE) String language,
             @Query(QUERY_MODE) String mode,
+            @Query(QUERY_DEVICETYPE) String deviceType,
             @Query(QUERY_SYSCODE) String sysCode,
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
             @Query(QUERY_VERSION2) String version2,
-            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
+            @Query(QUERY_SYSCODE3) String sysCode3
+    );
+
+    @GET("push/pushtoken.php")
+    Observable<ResponseBody> pushToken(
+            @Query(QUERY_DEVICETOKEN) String devicetoken,
+            @Query(QUERY_LANGUAGE) String language,
+            @Query(QUERY_MODE) String mode,
+            @Query(QUERY_DEVICETYPE) String deviceType,
+            @Query(QUERY_SYSCODE) String sysCode,
+            @Query(QUERY_PLATFORM) String platform,
+            @Query(QUERY_VERSION) String version,
+            @Query(QUERY_VERSION2) String version2,
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
+            @Query(QUERY_SYSCODE3) String sysCode3
     );
 
     @GET("api6/getmmroutelist.php")
@@ -100,7 +118,8 @@ public interface NwstService {
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
             @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
-            @Query(QUERY_TK) String tk
+            @Query(QUERY_TK) String tk,
+            @Query(QUERY_SYSCODE3) String sysCode3
     );
 
     @GET("api6/getvariantlist.php")
@@ -111,7 +130,8 @@ public interface NwstService {
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
             @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
-            @Query(QUERY_TK) String tk
+            @Query(QUERY_TK) String tk,
+            @Query(QUERY_SYSCODE3) String sysCode3
     );
 
     @GET("api6/ppstoplist.php")
@@ -122,7 +142,8 @@ public interface NwstService {
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
             @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
-            @Query(QUERY_TK) String tk
+            @Query(QUERY_TK) String tk,
+            @Query(QUERY_SYSCODE3) String sysCode3
     );
 
     @GET("api6/get_notice_4.php")
@@ -145,7 +166,8 @@ public interface NwstService {
             @Query(QUERY_VERSION) String version,
             @Query(QUERY_VERSION2) String version2,
             @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
-            @Query(QUERY_TK) String tk
+            @Query(QUERY_TK) String tk,
+            @Query(QUERY_SYSCODE3) String sysCode3
     );
 
     @GET("api6/getline_multi2.php")
@@ -155,7 +177,9 @@ public interface NwstService {
             @Query(QUERY_SYSCODE) String sysCode,
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
-            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
+            @Query(QUERY_TK) String tk,
+            @Query(QUERY_SYSCODE3) String sysCode3
     );
 
     @GET("api6/gettimetable.php")
@@ -166,7 +190,9 @@ public interface NwstService {
             @Query(QUERY_SYSCODE) String sysCode,
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
-            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
+            @Query(QUERY_TK) String tk,
+            @Query(QUERY_SYSCODE3) String sysCode3
     );
 
 }
