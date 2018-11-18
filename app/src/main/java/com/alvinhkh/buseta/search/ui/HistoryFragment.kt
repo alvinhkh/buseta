@@ -29,7 +29,6 @@ class HistoryFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_history, container, false)
-        setHasOptionsMenu(true)
 
         arrivalTimeDatabase = ArrivalTimeDatabase.getInstance(rootView.context)!!
         suggestionDatabase = SuggestionDatabase.getInstance(rootView.context)!!
@@ -65,11 +64,6 @@ class HistoryFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
             val fab = activity!!.findViewById<FloatingActionButton>(R.id.fab)
             fab?.show()
         }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
-        super.onCreateOptionsMenu(menu, inflater)
-        inflater!!.inflate(R.menu.menu_follow, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {

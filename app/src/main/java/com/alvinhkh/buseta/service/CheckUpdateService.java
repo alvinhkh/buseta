@@ -118,7 +118,7 @@ public class CheckUpdateService extends IntentService {
                 .subscribeOn(Schedulers.io())
                 .subscribeWith(nlbDatabaseObserver(manualUpdate)));
         NwstService nwstService = NwstService.api.create(NwstService.class);
-        disposables.add(nwstService.routeList("", TYPE_ALL_ROUTES,
+        disposables.add(nwstService.mmroutelist("", TYPE_ALL_ROUTES,
                 LANGUAGE_TC, NwstRequestUtil.syscode(), PLATFORM, APP_VERSION,
                 NwstRequestUtil.syscode2(), preferences.getString("nwst_tk", ""),
                 preferences.getString("nwst_syscode3", ""))
@@ -126,7 +126,7 @@ public class CheckUpdateService extends IntentService {
                 .subscribeOn(Schedulers.io())
                 .subscribeWith(nwstRouteListObserver(manualUpdate)));
         DataGovHkService dataGovHkService = DataGovHkService.resource.create(DataGovHkService.class);
-        disposables.add(dataGovHkService.mtrBusRoutes()
+        disposables.add(dataGovHkService.getMtrBusRoutes()
                 .retryWhen(new RetryWithDelay(5, 3000))
                 .subscribeOn(Schedulers.io())
                 .subscribeWith(mtrBusRoutesObserver(manualUpdate)));

@@ -17,8 +17,8 @@ apply plugin: 'kotlin-kapt'
 
 
 def versionMajor = 1
-def versionMinor = 2
-def versionPatch = 2
+def versionMinor = 3
+def versionPatch = 0
 def versionBuild = 0
 
 android {
@@ -98,6 +98,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging:17.3.2'
     implementation 'com.google.maps.android:android-maps-utils:0.5'
     implementation 'com.firebase:firebase-jobdispatcher:0.8.5'
+    implementation "android.arch.work:work-runtime:1.0.0-alpha11"
     implementation (group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1') {
         exclude group: 'stax', module: 'stax-api'
         exclude group: 'xpp3', module: 'xpp3'

@@ -6,6 +6,7 @@ import java.util.Map;
 
 import io.reactivex.Observable;
 import okhttp3.ResponseBody;
+import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.http.GET;
@@ -110,7 +111,20 @@ public interface NwstService {
     );
 
     @GET("api6/getmmroutelist.php")
-    Observable<ResponseBody> routeList(
+    Observable<ResponseBody> mmroutelist(
+            @Query(QUERY_ROUTE_NO) String routeNo,
+            @Query(QUERY_MODE) String mode,
+            @Query(QUERY_LANGUAGE) String language,
+            @Query(QUERY_SYSCODE) String sysCode,
+            @Query(QUERY_PLATFORM) String platform,
+            @Query(QUERY_VERSION) String version,
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
+            @Query(QUERY_TK) String tk,
+            @Query(QUERY_SYSCODE3) String sysCode3
+    );
+
+    @GET("api6/getmmroutelist.php")
+    Call<ResponseBody> routeList(
             @Query(QUERY_ROUTE_NO) String routeNo,
             @Query(QUERY_MODE) String mode,
             @Query(QUERY_LANGUAGE) String language,
@@ -123,7 +137,7 @@ public interface NwstService {
     );
 
     @GET("api6/getvariantlist.php")
-    Observable<ResponseBody> variantList(
+    Call<ResponseBody> variantList(
             @Query(QUERY_ID) String id,
             @Query(QUERY_LANGUAGE) String language,
             @Query(QUERY_SYSCODE) String sysCode,

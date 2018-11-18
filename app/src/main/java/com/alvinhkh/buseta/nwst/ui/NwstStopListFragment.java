@@ -174,7 +174,9 @@ public class NwstStopListFragment extends RouteStopListFragmentAbstract {
                 String rdv = route.getInfoKey();
                 if (!TextUtils.isEmpty(rdv)) {
                     String[] temp = rdv.substring(1).split("\\*{3}");
-                    rdv = temp[0] + "||" + temp[1] + "||" + temp[2] + "||" + temp[3];
+                    if (temp.length >= 4) {
+                        rdv = temp[0] + "||" + temp[1] + "||" + temp[2] + "||" + temp[3];
+                    }
                 }
                 disposables.add(nwstService.timetable(rdv, route.getSequence(), LANGUAGE_TC,
                         NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, NwstRequestUtil.syscode2(),

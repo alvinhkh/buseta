@@ -182,6 +182,7 @@ class SearchActivity : AppCompatActivity() {
                 }
             }
         }
+        intent.putExtra(C.EXTRA.COMPANY_CODE, companyCode)
         return intent
     }
 

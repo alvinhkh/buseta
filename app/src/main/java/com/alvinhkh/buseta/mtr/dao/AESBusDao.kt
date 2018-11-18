@@ -30,4 +30,13 @@ interface AESBusDao {
     @Query("SELECT * FROM District")
     fun getAllDistricts(): Flowable<List<AESBusDistrict>>
 
+    @Query("SELECT * FROM Bus_new")
+    fun allRoutes(): List<AESBusRoute>
+
+    @Query("SELECT * FROM Stop_new")
+    fun allStops(): List<AESBusStop>
+
+    @Query("SELECT * FROM District")
+    fun allDistricts(): List<AESBusDistrict>
+
 }

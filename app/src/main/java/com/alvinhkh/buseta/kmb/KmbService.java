@@ -17,6 +17,7 @@ import java.util.List;
 import io.reactivex.Observable;
 import kotlinx.coroutines.experimental.Deferred;
 import okhttp3.ResponseBody;
+import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
@@ -39,6 +40,12 @@ public interface KmbService {
             .addConverterFactory(GsonConverterFactory.create(gson))
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build();
+
+    @GET("FunctionRequest.ashx?action=getRouteBound")
+    Call<KmbRouteBoundRes> routeBound(@Query("route") String route);
+
+    @GET("FunctionRequest.ashx?action=getSpecialRoute")
+    Call<KmbSpecialRouteRes> specialRoute(@Query("route") String route, @Query("bound") String bound);
 
     @GET("FunctionRequest.ashx?action=getAnnounce")
     Observable<KmbAnnounceRes> getAnnounce(@Query("route") String route, @Query("bound") String bound);

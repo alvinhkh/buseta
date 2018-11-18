@@ -10,6 +10,7 @@ import com.google.gson.GsonBuilder;
 import java.util.List;
 
 import io.reactivex.Observable;
+import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -32,6 +33,9 @@ public interface LwbService {
             .addConverterFactory(GsonConverterFactory.create(gson))
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build();
+
+    @GET("/ajax/getRoute_info.php")
+    Call<LwbRouteBoundRes> routeBound(@Query("field9") String routeNo, @Query("t") Double t);
 
     @GET("/ajax/getRoute_info.php")
     Observable<LwbRouteBoundRes> getRouteBound(@Query("field9") String routeNo, @Query("t") Double t);

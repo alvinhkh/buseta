@@ -14,6 +14,7 @@ import com.google.gson.GsonBuilder;
 
 import io.reactivex.Observable;
 import okhttp3.ResponseBody;
+import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -37,6 +38,9 @@ public interface NlbService {
             .addConverterFactory(GsonConverterFactory.create(gson))
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build();
+
+    @GET("app.php?action=getDatabase")
+    Call<NlbDatabase> database();
 
     @GET("app.php?action=getDatabase")
     Observable<NlbDatabase> getDatabase();

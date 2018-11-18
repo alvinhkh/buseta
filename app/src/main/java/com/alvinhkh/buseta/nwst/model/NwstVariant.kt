@@ -29,9 +29,11 @@ data class NwstVariant(
             obj.routeInfo = data[4]
             if (obj.rdv.isNotEmpty()) {
                 val tmp = obj.rdv.split("-")
-                obj.r = tmp[0]
-                obj.d = tmp[1]
-                obj.v = tmp[2]
+                if (tmp.size > 3) {
+                    obj.r = tmp[0]
+                    obj.d = tmp[1]
+                    obj.v = tmp[2]
+                }
             }
             if (obj.routeInfo.isNotEmpty()) {
                 val tmp2 = obj.routeInfo.split("***")

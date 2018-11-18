@@ -1,12 +1,9 @@
 package com.alvinhkh.buseta.ui.route
 
-import android.content.Intent
-import android.content.pm.ShortcutInfo
-import android.content.pm.ShortcutManager
+import android.arch.lifecycle.Observer
+import android.arch.lifecycle.ViewModelProviders
 import android.database.DataSetObserver
-import android.graphics.drawable.Icon
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.support.design.widget.AppBarLayout
 import android.support.design.widget.CoordinatorLayout
@@ -22,28 +19,36 @@ import android.view.View
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
-import com.alvinhkh.buseta.follow.dao.FollowDatabase
+import com.alvinhkh.buseta.kmb.KmbRouteWorker
+import com.alvinhkh.buseta.lwb.LwbRouteWorker
 import com.alvinhkh.buseta.model.Route
 import com.alvinhkh.buseta.model.RouteStop
+import com.alvinhkh.buseta.mtr.AESBusRouteWorker
+import com.alvinhkh.buseta.mtr.LrtFeederRouteWorker
+import com.alvinhkh.buseta.nlb.NlbRouteWorker
+import com.alvinhkh.buseta.nwst.NwstRouteWorker
+import com.alvinhkh.buseta.route.UpdateAppShortcutWorker
+import com.alvinhkh.buseta.route.ui.RouteViewModel
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.model.Suggestion
-import com.alvinhkh.buseta.search.ui.SearchActivity
 import com.alvinhkh.buseta.ui.BaseActivity
 import com.alvinhkh.buseta.utils.AdViewUtil
-import com.alvinhkh.buseta.utils.RouteStopUtil
+import com.alvinhkh.buseta.utils.ConnectivityUtil
+import com.alvinhkh.buseta.utils.PreferenceUtil
 import com.alvinhkh.buseta.utils.RouteUtil
 import com.crashlytics.android.answers.Answers
 import com.crashlytics.android.answers.ContentViewEvent
 import com.google.firebase.appindexing.Action
 import com.google.firebase.appindexing.FirebaseUserActions
-import com.google.gson.Gson
 
 import org.osmdroid.views.MapView
-
-import java.util.ArrayList
 
 import io.reactivex.disposables.CompositeDisposable
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -54,14 +59,11 @@ import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import timber.log.Timber
+import java.util.*
 
 abstract class RouteActivityAbstract : BaseActivity() {
 
-    val disposables = CompositeDisposable()
-
-    lateinit var followDatabase: FollowDatabase
-
-    lateinit var suggestionDatabase: SuggestionDatabase
+    private val disposables = CompositeDisposable()
 
     /**
      * The [PagerAdapter] that will provide
@@ -71,28 +73,24 @@ abstract class RouteActivityAbstract : BaseActivity() {
      * may be best to switch to a
      * [FragmentStatePagerAdapter].
      */
-    var pagerAdapter: RoutePagerAdapter? = null
+    lateinit var pagerAdapter: RoutePagerAdapter
 
     /**
      * The [ViewPager] that will host the section contents.
      */
-    var viewPager: ViewPager? = null
+    lateinit var viewPager: ViewPager
 
-    var fab: FloatingActionButton? = null
+    lateinit var fab: FloatingActionButton
 
-    var appBarLayout: AppBarLayout? = null
+    lateinit var appBarLayout: AppBarLayout
 
-    var emptyView: View? = null
+    lateinit var emptyView: View
 
-    var progressBar: ProgressBar? = null
+    lateinit var progressBar: ProgressBar
 
-    var emptyText: TextView? = null
+    lateinit var emptyText: TextView
 
-    var mapView: MapView? = null
-
-    var stopFromIntent: RouteStop? = null
-
-    var routeNo: String? = null
+    lateinit var mapView: MapView
 
     private var suggestion: Suggestion? = null
 
@@ -100,35 +98,42 @@ abstract class RouteActivityAbstract : BaseActivity() {
 
     private var fragNo: Int? = 0
 
+    private var companyCode: String? = null
+
+    private var routeNo: String? = null
+
+    private var requestId: UUID? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        var stopFromIntent: RouteStop? = null
+
         val bundle = intent.extras
         if (bundle != null) {
+            companyCode = bundle.getString(C.EXTRA.COMPANY_CODE)
             routeNo = bundle.getString(C.EXTRA.ROUTE_NO)
             stopFromIntent = bundle.getParcelable(C.EXTRA.STOP_OBJECT)
         }
         if (TextUtils.isEmpty(routeNo)) {
             if (stopFromIntent != null) {
-                routeNo = stopFromIntent!!.routeNo
+                companyCode = stopFromIntent.companyCode
+                routeNo = stopFromIntent.routeNo
             }
         }
 
-        followDatabase = FollowDatabase.getInstance(this)!!
-        suggestionDatabase = SuggestionDatabase.getInstance(this)!!
+        val suggestionDatabase = SuggestionDatabase.getInstance(this)!!
 
         setContentView(R.layout.activity_route)
 
         // set action bar
         setToolbar()
         val actionBar = supportActionBar
-        if (actionBar != null) {
-            actionBar.setTitle(R.string.app_name)
-            actionBar.subtitle = null
-            actionBar.setDisplayHomeAsUpEnabled(true)
-        }
+        actionBar?.setTitle(R.string.app_name)
+        actionBar?.subtitle = null
+        actionBar?.setDisplayHomeAsUpEnabled(true)
         appBarLayout = findViewById(R.id.app_bar_layout)
-        appBarLayout?.setExpanded(true)
+        appBarLayout.setExpanded(true)
 
         adViewContainer = findViewById(R.id.adView_container)
         if (adViewContainer != null) {
@@ -138,36 +143,36 @@ abstract class RouteActivityAbstract : BaseActivity() {
 
         emptyView = findViewById(android.R.id.empty)
         progressBar = findViewById(R.id.progressBar)
-        progressBar?.isIndeterminate = true
+        progressBar.isIndeterminate = true
         emptyText = findViewById(R.id.empty_text)
         showLoadingView()
 
         // TODO: map show route
         mapView = findViewById(R.id.map)
-        mapView?.visibility = View.GONE
-        mapView?.setTileSource(TileSourceFactory.MAPNIK)
-        mapView?.setBuiltInZoomControls(false)
-        mapView?.setMultiTouchControls(true)
-        mapView?.isTilesScaledToDpi = true
-        mapView?.maxZoomLevel = 20.0
-        mapView?.minZoomLevel = 14.0
-        val mapController = mapView?.controller
+        mapView.visibility = View.GONE
+        mapView.setTileSource(TileSourceFactory.MAPNIK)
+        mapView.setBuiltInZoomControls(false)
+        mapView.setMultiTouchControls(true)
+        mapView.isTilesScaledToDpi = true
+        mapView.maxZoomLevel = 20.0
+        mapView.minZoomLevel = 14.0
+        val mapController = mapView.controller
         mapController?.setZoom(10.0)
         mapController?.setCenter(GeoPoint(22.396428, 114.109497))
 
-        val rotationOverlay = RotationGestureOverlay(mapView!!)
+        val rotationOverlay = RotationGestureOverlay(mapView)
         rotationOverlay.isEnabled = true
-        mapView?.setMultiTouchControls(true)
-        mapView?.overlays?.add(rotationOverlay)
+        mapView.setMultiTouchControls(true)
+        mapView.overlays?.add(rotationOverlay)
 
-        val locationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(applicationContext), mapView!!)
+        val locationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(applicationContext), mapView)
         locationOverlay.enableMyLocation()
-        mapView?.overlays?.add(locationOverlay)
+        mapView.overlays?.add(locationOverlay)
 
-        val compassOverlay = CompassOverlay(applicationContext, InternalCompassOrientationProvider(applicationContext), mapView!!)
+        val compassOverlay = CompassOverlay(applicationContext, InternalCompassOrientationProvider(applicationContext), mapView)
         compassOverlay.enableCompass()
-        mapView?.overlays?.add(compassOverlay)
-//        mapView?.overlays?.add(new CopyrightOverlay(getContext()));
+        mapView.overlays?.add(compassOverlay)
+//        mapView.overlays?.add(new CopyrightOverlay(getContext()));
 
         // Disable vertical scroll
         val appBarLayout: AppBarLayout = findViewById(R.id.app_bar_layout)
@@ -185,25 +190,25 @@ abstract class RouteActivityAbstract : BaseActivity() {
 
         // Set up the ViewPager with the sections adapter.
         viewPager = findViewById(R.id.viewPager)
-        viewPager?.adapter = pagerAdapter
+        viewPager.adapter = pagerAdapter
 
         val tabLayout = findViewById<TabLayout>(R.id.tabs)
         tabLayout.setupWithViewPager(viewPager)
         tabLayout.tabMode = TabLayout.MODE_SCROLLABLE
         tabLayout.addOnTabSelectedListener(object : TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
             override fun onTabReselected(tab: TabLayout.Tab?) {
-                val routes = ArrayList(pagerAdapter!!.routes)
-                val fragment = RouteSelectDialogFragment.newInstance(routes, viewPager!!)
+                val routes = ArrayList(pagerAdapter.routes)
+                val fragment = RouteSelectDialogFragment.newInstance(routes, viewPager)
                 fragment.show(supportFragmentManager, "route_select_dialog_fragment")
             }
         })
 
-        pagerAdapter?.registerDataSetObserver(object : DataSetObserver() {
+        pagerAdapter.registerDataSetObserver(object : DataSetObserver() {
             override fun onChanged() {
                 super.onChanged()
-                if (pagerAdapter?.count?:0 > 0) {
-                    emptyView?.visibility = View.GONE
-                    viewPager?.offscreenPageLimit = Math.min(pagerAdapter?.count?:0, 10)
+                if (pagerAdapter.count > 0) {
+                    emptyView.visibility = View.GONE
+                    viewPager.offscreenPageLimit = Math.min(pagerAdapter.count, 10)
                 } else {
                     showEmptyView()
                 }
@@ -211,22 +216,60 @@ abstract class RouteActivityAbstract : BaseActivity() {
         })
 
         if (routeNo?.isNotBlank() == true) {
-            loadRouteNo(routeNo!!)
+            loadRouteNo(companyCode?:"", routeNo?:"")
         } else {
             Toast.makeText(this, R.string.missing_input, Toast.LENGTH_SHORT).show()
             finish()
+            return
         }
+
+        // load route from database
+        val viewModel = ViewModelProviders.of(this).get(RouteViewModel::class.java)
+        viewModel.getAsLiveData(companyCode?:"", routeNo?:"")
+                .observe(this, Observer<MutableList<Route>> { routes ->
+                    var company = ""
+                    pagerAdapter.clearSequence()
+                    routes?.forEach { route ->
+                        company = route.companyCode?:companyCode?:""
+                        pagerAdapter.addSequence(route)
+                        val fragmentCount = pagerAdapter.count
+                        if (stopFromIntent != null && route.companyCode != null
+                                && route.sequence != null && route.serviceType != null
+                                && route.companyCode == stopFromIntent.companyCode
+                                && route.sequence == stopFromIntent.routeSeq
+                                && route.serviceType == stopFromIntent.routeServiceType) {
+                            fragNo = fragmentCount
+                            isScrollToPage = true
+                        }
+                    }
+
+                    val routeName = RouteUtil.getCompanyName(this, company, routeNo) + " " + routeNo
+                    supportActionBar?.title = routeName
+                    if (routes?.isNotEmpty() == true && !TextUtils.isEmpty(company)) {
+                        suggestion = Suggestion.createInstance()
+                        suggestion?.companyCode = company
+                        suggestion?.route = routeNo?:""
+                        suggestion?.type = Suggestion.TYPE_HISTORY
+                        if (suggestion != null) {
+                            suggestionDatabase.suggestionDao().insert(suggestion!!)
+                            appIndexStart(suggestion!!)
+                        }
+                    }
+
+                    if (isScrollToPage!!) {
+                        if (fragNo!! - 1 >= 0) {
+                            viewPager.setCurrentItem(fragNo!! - 1, false)
+                        }
+                        isScrollToPage = false
+                    }
+                })
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
         when (id) {
-            R.id.action_refresh -> if (routeNo?.isNotBlank() == true) {
-                loadRouteNo(routeNo!!)
-            }
-            R.id.action_show_map -> if (appBarLayout != null) {
-                appBarLayout!!.setExpanded(true)
-            }
+            R.id.action_refresh -> loadRouteNo(companyCode?:"", routeNo?:"")
+            R.id.action_show_map -> appBarLayout.setExpanded(true)
         }
         return super.onOptionsItemSelected(item)
     }
@@ -240,7 +283,8 @@ abstract class RouteActivityAbstract : BaseActivity() {
 
     public override fun onPause() {
         super.onPause()
-        updateAppShortcuts()
+        WorkManager.getInstance()
+                .enqueue(OneTimeWorkRequest.Builder(UpdateAppShortcutWorker::class.java).build())
     }
 
     override fun onDestroy() {
@@ -252,66 +296,81 @@ abstract class RouteActivityAbstract : BaseActivity() {
     }
 
     protected fun showEmptyView() {
-        emptyView?.visibility = View.VISIBLE
-        progressBar?.visibility = View.GONE
-        emptyText?.setText(R.string.message_fail_to_request)
-        fab?.hide()
+        emptyView.visibility = View.VISIBLE
+        progressBar.visibility = View.GONE
+        emptyText.setText(R.string.message_fail_to_request)
+        fab.hide()
     }
 
     protected fun showLoadingView() {
-        emptyView?.visibility = View.VISIBLE
-        progressBar?.visibility = View.VISIBLE
-        emptyText?.setText(R.string.message_loading)
-        fab?.hide()
+        emptyView.visibility = View.VISIBLE
+        progressBar.visibility = View.VISIBLE
+        emptyText.setText(R.string.message_loading)
+        fab.hide()
     }
 
-    protected open fun loadRouteNo(no: String) {
-        pagerAdapter?.clearSequence()
-        if (no.isEmpty()) {
+    protected open fun loadRouteNo(companyCode: String, no: String) {
+        if (companyCode.isEmpty() or no.isEmpty()) {
             showEmptyView()
             return
         }
         showLoadingView()
-    }
 
-    @Synchronized
-    protected fun onCompleteRoute(routes: List<Route>, code: String?) {
-        var companyCode = code
-        if (pagerAdapter == null || companyCode.isNullOrEmpty()) return
-        for (route in routes) {
-            if (route == null) continue
-            if (TextUtils.isEmpty(route.name) || route.name != routeNo) continue
-            companyCode = route.companyCode
-            pagerAdapter!!.addSequence(route)
-            val fragmentCount = pagerAdapter!!.count
-            if (stopFromIntent != null && route.companyCode != null
-                    && route.sequence != null && route.serviceType != null
-                    && route.companyCode == stopFromIntent!!.companyCode
-                    && route.sequence == stopFromIntent!!.routeSeq
-                    && route.serviceType == stopFromIntent!!.routeServiceType) {
-                fragNo = fragmentCount
-                isScrollToPage = true
+        val data = Data.Builder()
+                .putString(C.EXTRA.COMPANY_CODE, companyCode)
+                .putString(C.EXTRA.ROUTE_NO, no)
+                .build()
+        val request = when (companyCode) {
+            C.PROVIDER.KMB -> {
+                if (PreferenceUtil.isUsingNewKmbApi(applicationContext)) {
+                    OneTimeWorkRequest.Builder(KmbRouteWorker::class.java)
+                            .setInputData(data)
+                            .build()
+                } else {
+                    OneTimeWorkRequest.Builder(LwbRouteWorker::class.java)
+                            .setInputData(data)
+                            .build()
+                }
             }
+            C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST ->
+                OneTimeWorkRequest.Builder(NwstRouteWorker::class.java)
+                        .setInputData(data)
+                        .build()
+            C.PROVIDER.NLB ->
+                OneTimeWorkRequest.Builder(NlbRouteWorker::class.java)
+                        .setInputData(data)
+                        .build()
+            C.PROVIDER.AESBUS ->
+                OneTimeWorkRequest.Builder(AESBusRouteWorker::class.java)
+                        .setInputData(data)
+                        .build()
+            C.PROVIDER.LRTFEEDER ->
+                OneTimeWorkRequest.Builder(LrtFeederRouteWorker::class.java)
+                        .setInputData(data)
+                        .build()
+            else -> return
         }
-        val routeName = RouteUtil.getCompanyName(this, companyCode?:"", routeNo) + " " + routeNo
-        supportActionBar?.title = routeName
-        if (routes.isNotEmpty() && !TextUtils.isEmpty(companyCode)) {
-            suggestion = Suggestion.createInstance()
-            suggestion?.companyCode = companyCode?:""
-            suggestion?.route = routeNo?:""
-            suggestion?.type = Suggestion.TYPE_HISTORY
-            if (suggestion != null) {
-                suggestionDatabase.suggestionDao().insert(suggestion!!)
-                appIndexStart(suggestion!!)
-            }
+        if (requestId != null) {
+            WorkManager.getInstance().cancelWorkById(requestId!!)
+            requestId = null
         }
+        requestId = request.id
+        WorkManager.getInstance().enqueue(request)
 
-        if (isScrollToPage!!) {
-            if (viewPager != null && fragNo!! - 1 >= 0) {
-                viewPager!!.setCurrentItem(fragNo!! - 1, false)
-            }
-            isScrollToPage = false
-        }
+        WorkManager.getInstance().getWorkInfoByIdLiveData(request.id)
+                .observe(this, Observer { workInfo ->
+                    // val workerResult = workInfo?.outputData
+                    // val companyCode = workerResult?.getString(C.EXTRA.COMPANY_CODE)
+                    // val routeNo = workerResult?.getString(C.EXTRA.ROUTE_NO)
+                    if (workInfo?.state == WorkInfo.State.FAILED) {
+                        showEmptyView()
+                        if (!ConnectivityUtil.isConnected(applicationContext)) {
+                            emptyText.setText(R.string.message_no_internet_connection)
+                        } else {
+                            emptyText.setText(R.string.message_fail_to_request)
+                        }
+                    }
+                })
     }
 
     fun getIndexApiAction(suggestion: Suggestion): Action {
@@ -351,59 +410,5 @@ abstract class RouteActivityAbstract : BaseActivity() {
                         Timber.d("App Indexing: fail")
                     }
                 }
-    }
-
-    @Synchronized
-    private fun updateAppShortcuts() {
-        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return
-        if (applicationContext == null) return
-        // Dynamic App Shortcut
-        try {
-            val shortcutManager = applicationContext.getSystemService(ShortcutManager::class.java)
-                    ?: return
-            val shortcuts = ArrayList<ShortcutInfo>()
-            val followList = followDatabase.followDao().getList()
-            val maxShortcutCount = shortcutManager.maxShortcutCountPerActivity
-            run {
-                var i = 0
-                while (i < maxShortcutCount - 1 && i < followList.size) {
-                    val follow = followList[i]
-                    val routeStop = RouteStopUtil.fromFollow(follow)
-                    val intent = Intent(Intent.ACTION_VIEW)
-                    intent.setClass(applicationContext, SearchActivity::class.java)
-                    intent.putExtra(C.EXTRA.STOP_OBJECT_STRING, Gson().toJson(routeStop))
-                    shortcuts.add(ShortcutInfo.Builder(applicationContext, "buseta-" + routeStop.companyCode + routeStop.routeNo + routeStop.routeSeq + routeStop.stopId)
-                            .setShortLabel(routeStop.routeNo + " " + routeStop.name)
-                            .setLongLabel(routeStop.routeNo + " " + routeStop.name + " " + getString(R.string.destination, routeStop.routeDestination))
-                            .setIcon(Icon.createWithResource(applicationContext, R.drawable.ic_shortcut_directions_bus))
-                            .setIntent(intent)
-                            .build())
-                    i++
-
-                }
-            }
-            if (followList.size < maxShortcutCount - 1) {
-                val historyList = suggestionDatabase.suggestionDao().historyList(maxShortcutCount)
-                var i = 0
-                while (i < maxShortcutCount - followList.size - 1 && i < historyList.size) {
-                    val (_, companyCode, route) = historyList[i]
-                    val intent = Intent(Intent.ACTION_VIEW)
-                    intent.setClass(applicationContext, SearchActivity::class.java)
-                    intent.putExtra(C.EXTRA.ROUTE_NO, route)
-                    intent.putExtra(C.EXTRA.COMPANY_CODE, companyCode)
-                    shortcuts.add(ShortcutInfo.Builder(applicationContext, "buseta-q-$companyCode$route")
-                            .setShortLabel(route)
-                            .setLongLabel(route)
-                            .setIcon(Icon.createWithResource(applicationContext, R.drawable.ic_shortcut_search))
-                            .setIntent(intent)
-                            .build())
-                    i++
-                }
-            }
-            shortcutManager.dynamicShortcuts = shortcuts
-        } catch (ignored: NoClassDefFoundError) {
-        } catch (ignored: NoSuchMethodError) {
-        }
-
     }
 }
