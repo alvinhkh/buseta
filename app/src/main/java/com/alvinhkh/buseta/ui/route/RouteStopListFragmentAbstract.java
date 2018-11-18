@@ -248,7 +248,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
         swipeRefreshLayout.setRefreshing(false);
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
-        // isShowMapFragment = preferences != null && preferences.getBoolean("load_map", false);
+        isShowMapFragment = preferences != null && preferences.getBoolean("load_map", false);
 
         Guideline guideTopInfo = rootView.findViewById(R.id.guideline);
         if (guideTopInfo != null) {
@@ -570,6 +570,7 @@ public abstract class RouteStopListFragmentAbstract extends Fragment implements
             return;
         }
         if (getContext() == null) return;
+        if (mapFragment == null)
         new Thread(() -> {
             try {
                 if (mapFragment != null) return;
