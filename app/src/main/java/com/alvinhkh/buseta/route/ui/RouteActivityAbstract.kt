@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.ui.route
+package com.alvinhkh.buseta.route.ui
 
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
@@ -35,10 +35,11 @@ import com.alvinhkh.buseta.mtr.LrtFeederRouteWorker
 import com.alvinhkh.buseta.nlb.NlbRouteWorker
 import com.alvinhkh.buseta.nwst.NwstRouteWorker
 import com.alvinhkh.buseta.route.UpdateAppShortcutWorker
-import com.alvinhkh.buseta.route.ui.RouteViewModel
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.model.Suggestion
 import com.alvinhkh.buseta.ui.BaseActivity
+import com.alvinhkh.buseta.ui.route.RoutePagerAdapter
+import com.alvinhkh.buseta.ui.route.RouteSelectDialogFragment
 import com.alvinhkh.buseta.utils.AdViewUtil
 import com.alvinhkh.buseta.utils.ConnectivityUtil
 import com.alvinhkh.buseta.utils.PreferenceUtil
@@ -266,8 +267,7 @@ abstract class RouteActivityAbstract : BaseActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val id = item.itemId
-        when (id) {
+        when (item.itemId) {
             R.id.action_refresh -> loadRouteNo(companyCode?:"", routeNo?:"")
             R.id.action_show_map -> appBarLayout.setExpanded(true)
         }
@@ -373,7 +373,7 @@ abstract class RouteActivityAbstract : BaseActivity() {
                 })
     }
 
-    fun getIndexApiAction(suggestion: Suggestion): Action {
+    private fun getIndexApiAction(suggestion: Suggestion): Action {
         return Action.Builder(Action.Builder.VIEW_ACTION)
                 .setObject(suggestion.route, Uri.parse(C.URI.ROUTE).buildUpon()
                         .appendPath(suggestion.route).build().toString())
