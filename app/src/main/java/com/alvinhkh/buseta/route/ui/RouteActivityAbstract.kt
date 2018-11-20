@@ -26,19 +26,24 @@ import androidx.work.WorkManager
 
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
+import com.alvinhkh.buseta.datagovhk.ui.MtrBusStopListFragment
 import com.alvinhkh.buseta.kmb.KmbRouteWorker
+import com.alvinhkh.buseta.kmb.ui.KmbStopListFragment
 import com.alvinhkh.buseta.lwb.LwbRouteWorker
+import com.alvinhkh.buseta.lwb.ui.LwbStopListFragment
 import com.alvinhkh.buseta.model.Route
 import com.alvinhkh.buseta.model.RouteStop
 import com.alvinhkh.buseta.mtr.AESBusRouteWorker
 import com.alvinhkh.buseta.mtr.LrtFeederRouteWorker
+import com.alvinhkh.buseta.mtr.ui.AESBusStopListFragment
 import com.alvinhkh.buseta.nlb.NlbRouteWorker
+import com.alvinhkh.buseta.nlb.ui.NlbStopListFragment
 import com.alvinhkh.buseta.nwst.NwstRouteWorker
+import com.alvinhkh.buseta.nwst.ui.NwstStopListFragment
 import com.alvinhkh.buseta.route.UpdateAppShortcutWorker
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.model.Suggestion
 import com.alvinhkh.buseta.ui.BaseActivity
-import com.alvinhkh.buseta.ui.route.RoutePagerAdapter
 import com.alvinhkh.buseta.ui.route.RouteSelectDialogFragment
 import com.alvinhkh.buseta.utils.AdViewUtil
 import com.alvinhkh.buseta.utils.ConnectivityUtil
@@ -103,12 +108,12 @@ abstract class RouteActivityAbstract : BaseActivity() {
 
     private var routeNo: String? = null
 
+    private var stopFromIntent: RouteStop? = null
+
     private var requestId: UUID? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        var stopFromIntent: RouteStop? = null
 
         val bundle = intent.extras
         if (bundle != null) {
@@ -116,11 +121,9 @@ abstract class RouteActivityAbstract : BaseActivity() {
             routeNo = bundle.getString(C.EXTRA.ROUTE_NO)
             stopFromIntent = bundle.getParcelable(C.EXTRA.STOP_OBJECT)
         }
-        if (TextUtils.isEmpty(routeNo)) {
-            if (stopFromIntent != null) {
-                companyCode = stopFromIntent.companyCode
-                routeNo = stopFromIntent.routeNo
-            }
+        if (routeNo.isNullOrEmpty() && stopFromIntent != null) {
+            companyCode = stopFromIntent?.companyCode
+            routeNo = stopFromIntent?.routeNo
         }
 
         val suggestionDatabase = SuggestionDatabase.getInstance(this)!!
@@ -187,7 +190,7 @@ abstract class RouteActivityAbstract : BaseActivity() {
         params.behavior = behavior
 
         // Create the adapter that will return a fragment
-        pagerAdapter = RoutePagerAdapter(supportFragmentManager, this, stopFromIntent)
+        pagerAdapter = RoutePagerAdapter(supportFragmentManager)
 
         // Set up the ViewPager with the sections adapter.
         viewPager = findViewById(R.id.viewPager)
@@ -198,7 +201,7 @@ abstract class RouteActivityAbstract : BaseActivity() {
         tabLayout.tabMode = TabLayout.MODE_SCROLLABLE
         tabLayout.addOnTabSelectedListener(object : TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
             override fun onTabReselected(tab: TabLayout.Tab?) {
-                val routes = ArrayList(pagerAdapter.routes)
+                val routes = ArrayList(pagerAdapter.routeList)
                 val fragment = RouteSelectDialogFragment.newInstance(routes, viewPager)
                 fragment.show(supportFragmentManager, "route_select_dialog_fragment")
             }
@@ -209,7 +212,6 @@ abstract class RouteActivityAbstract : BaseActivity() {
                 super.onChanged()
                 if (pagerAdapter.count > 0) {
                     emptyView.visibility = View.GONE
-                    viewPager.offscreenPageLimit = Math.min(pagerAdapter.count, 10)
                 } else {
                     showEmptyView()
                 }
@@ -228,17 +230,37 @@ abstract class RouteActivityAbstract : BaseActivity() {
         val viewModel = ViewModelProviders.of(this).get(RouteViewModel::class.java)
         viewModel.getAsLiveData(companyCode?:"", routeNo?:"")
                 .observe(this, Observer<MutableList<Route>> { routes ->
+                    pagerAdapter.clear()
                     var company = ""
-                    pagerAdapter.clearSequence()
                     routes?.forEach { route ->
                         company = route.companyCode?:companyCode?:""
-                        pagerAdapter.addSequence(route)
+                        val routeStop = stopFromIntent?:RouteStop()
+                        val fragment = when (company) {
+                            C.PROVIDER.AESBUS -> AESBusStopListFragment.newInstance(route, routeStop)
+                            C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> NwstStopListFragment.newInstance(route, routeStop)
+                            C.PROVIDER.LRTFEEDER -> MtrBusStopListFragment.newInstance(route, routeStop)
+                            C.PROVIDER.NLB -> NlbStopListFragment.newInstance(route, routeStop)
+                            C.PROVIDER.KMB -> if (PreferenceUtil.isUsingNewKmbApi(applicationContext)) {
+                                KmbStopListFragment.newInstance(route, routeStop)
+                            } else {
+                                LwbStopListFragment.newInstance(route, routeStop)
+                            }
+                            else -> return@forEach
+                        }
+                        val pageTitle = if (!route.origin.isNullOrEmpty()) {
+                             ((if (route.origin.isNullOrEmpty()) "" else route.origin!! + if (routes.size > 1) "\n" else " ")
+                                     + (if (!route.destination.isNullOrEmpty()) getString(R.string.destination, route.destination) else "")
+                                     + if (route.isSpecial!!) "#" else "")
+                        } else {
+                            route.name?:getString(R.string.route)
+                        }
+                        pagerAdapter.addFragment(fragment, pageTitle, route)
                         val fragmentCount = pagerAdapter.count
                         if (stopFromIntent != null && route.companyCode != null
                                 && route.sequence != null && route.serviceType != null
-                                && route.companyCode == stopFromIntent.companyCode
-                                && route.sequence == stopFromIntent.routeSeq
-                                && route.serviceType == stopFromIntent.routeServiceType) {
+                                && route.companyCode == stopFromIntent?.companyCode
+                                && route.sequence == stopFromIntent?.routeSeq
+                                && route.serviceType == stopFromIntent?.routeServiceType) {
                             fragNo = fragmentCount
                             isScrollToPage = true
                         }
