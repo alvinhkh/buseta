@@ -27,7 +27,7 @@ class KmbRouteWorker(context : Context, params : WorkerParameters)
 
         try {
             val response = kmbService.routeBound(routeNo).execute()
-            if (!response.isSuccessful) {
+            if (!response.isSuccessful || !response.body()?.exception.isNullOrEmpty()) {
                 return Result.FAILURE
             }
 
