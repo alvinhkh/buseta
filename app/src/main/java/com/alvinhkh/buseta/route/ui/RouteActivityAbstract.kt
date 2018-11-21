@@ -285,6 +285,12 @@ abstract class RouteActivityAbstract : BaseActivity() {
                         }
                         isScrollToPage = false
                     }
+
+                    if (pagerAdapter.count > 0) {
+                        emptyView.visibility = View.GONE
+                    } else {
+                        showEmptyView()
+                    }
                 })
     }
 
