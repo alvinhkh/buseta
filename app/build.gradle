@@ -9,6 +9,11 @@ buildscript {
 }
 
 apply plugin: 'com.android.application'
+
+repositories {
+    maven { url 'https://maven.fabric.io/public' }
+}
+
 apply plugin: 'com.google.gms.oss.licenses.plugin'
 apply plugin: 'io.fabric'
 apply plugin: 'kotlin-android'
@@ -87,50 +92,49 @@ dependencies {
     implementation 'com.android.support:support-annotations:28.0.0'
     implementation 'com.android.support:support-media-compat:28.0.0'
     implementation 'com.android.support:support-v4:28.0.0'
-    implementation 'com.google.android.gms:play-services-location:15.0.1'
-    implementation 'com.google.android.gms:play-services-maps:15.0.1'
-    implementation 'com.google.android.gms:play-services-oss-licenses:16.0.0'
+    implementation 'com.google.android.gms:play-services-location:16.0.0'
+    implementation 'com.google.android.gms:play-services-maps:16.0.0'
+    implementation 'com.google.android.gms:play-services-oss-licenses:16.0.1'
     implementation 'com.google.code.gson:gson:2.8.5'
     implementation 'com.google.firebase:firebase-ads:15.0.1'
-    implementation 'com.google.firebase:firebase-appindexing:16.0.1'
-    implementation 'com.google.firebase:firebase-config:16.0.0'
-    implementation 'com.google.firebase:firebase-core:16.0.3'
-    implementation 'com.google.firebase:firebase-messaging:17.3.2'
+    implementation 'com.google.firebase:firebase-appindexing:16.0.2'
+    implementation 'com.google.firebase:firebase-config:16.1.2'
+    implementation 'com.google.firebase:firebase-core:16.0.6'
+    implementation 'com.google.firebase:firebase-messaging:17.3.4'
     implementation 'com.google.maps.android:android-maps-utils:0.5'
     implementation 'com.firebase:firebase-jobdispatcher:0.8.5'
-    implementation "android.arch.work:work-runtime:1.0.0-alpha11"
+    implementation "android.arch.work:work-runtime:1.0.0-beta01"
     implementation (group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1') {
         exclude group: 'stax', module: 'stax-api'
         exclude group: 'xpp3', module: 'xpp3'
     }
     implementation 'org.jsoup:jsoup:1.11.3'
-    implementation 'com.opencsv:opencsv:4.2'
+    implementation 'com.opencsv:opencsv:4.4'
     implementation 'com.github.chrisbanes:PhotoView:2.1.4'
-    implementation('com.squareup.okhttp3:okhttp:3.11.0') {
+    implementation('com.squareup.okhttp3:okhttp:3.12.0') {
         exclude group: 'org.json'
     }
-    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
-    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
-    implementation ('com.squareup.retrofit2:converter-gson:2.4.0') {
+    implementation 'com.squareup.retrofit2:retrofit:2.5.0'
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.5.0'
+    implementation ('com.squareup.retrofit2:converter-gson:2.5.0') {
         exclude group: 'com.google.code.gson', module: 'gson'
     }
-    implementation ('com.squareup.retrofit2:converter-simplexml:2.4.0') {
+    implementation ('com.squareup.retrofit2:converter-simplexml:2.5.0') {
         exclude group: 'org.simpleframework', module: 'simple-xml'
     }
     implementation 'com.jakewharton.timber:timber:4.7.1'
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.0'
     implementation 'org.osmdroid:osmdroid-android:6.0.2'
+    implementation 'com.github.MKergall:osmbonuspack:6.5.2'
     implementation 'org.osgeo:proj4j:0.1.0'
     implementation 'org.slf4j:slf4j-nop:1.7.25'
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.6.1'
-    releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.1'
-    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.5'
+    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.8'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
     implementation 'androidx.core:core-ktx:0.3'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.24.0'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:0.24.0'
-    implementation 'com.jakewharton.retrofit:retrofit2-kotlin-coroutines-experimental-adapter:1.0.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.1.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.1.0'
+    implementation 'com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:0.9.2'
 }
 
 apply plugin: 'com.google.gms.google-services'

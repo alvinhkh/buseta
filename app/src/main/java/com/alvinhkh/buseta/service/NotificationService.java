@@ -23,7 +23,7 @@ import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
-import com.alvinhkh.buseta.model.RouteStop;
+import com.alvinhkh.buseta.route.model.RouteStop;
 import com.alvinhkh.buseta.utils.NotificationUtil;
 import com.firebase.jobdispatcher.FirebaseJobDispatcher;
 import com.firebase.jobdispatcher.GooglePlayDriver;

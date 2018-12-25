@@ -27,6 +27,9 @@ interface FollowDao {
     @Query("SELECT COUNT(*) FROM follow WHERE `type` = :type AND `company` = :companyCode AND `no` = :routeNo AND `bound` = :routeSeq AND `route_service_type` = :routeServiceType AND `stop_code` = :stopId AND `stop_seq` = :stopSeq")
     fun count(type: String, companyCode: String, routeNo: String, routeSeq: String, routeServiceType: String, stopId: String, stopSeq: String): Int
 
+    @Query("SELECT COUNT(*) FROM follow WHERE `type` = :type AND `company` = :companyCode AND `no` = :routeNo AND `bound` = :routeSeq AND `route_service_type` = :routeServiceType AND `stop_code` = :stopId AND `stop_seq` = :stopSeq")
+    fun liveCount(type: String, companyCode: String, routeNo: String, routeSeq: String, routeServiceType: String, stopId: String, stopSeq: String): LiveData<Int>
+
     @Update
     fun updateAll(vararg entity: Follow)
 

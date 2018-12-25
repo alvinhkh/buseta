@@ -14,7 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
-import com.alvinhkh.buseta.model.Route
+import com.alvinhkh.buseta.route.model.Route
 
 
 class KmbScheduleFragment: Fragment() {
@@ -28,7 +28,7 @@ class KmbScheduleFragment: Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_follow_edit, container, false)
-        route = arguments!!.getParcelable(C.EXTRA.ROUTE_OBJECT)
+        route = arguments!!.getParcelable(C.EXTRA.ROUTE_OBJECT)?:Route()
         val routeNo: String = route.name?:""
         val routeBound: String = route.sequence?:""
         if (routeNo.isEmpty() || routeBound.isEmpty()) {
@@ -48,25 +48,28 @@ class KmbScheduleFragment: Fragment() {
                     viewAdapter.clear()
                     var lastDayType = ""
                     var lastServiceType = ""
-                    list?.forEach {
-                        if (lastServiceType != it.serviceTypeTc && !it.serviceTypeTc.isNullOrEmpty()) {
-                            viewAdapter.addSection(it.serviceTypeTc?:"")
-                            lastServiceType = it.serviceTypeTc?:""
+                    list?.forEach { item ->
+                        if (lastServiceType != item.serviceTypeTc && !item.serviceTypeTc.isNullOrEmpty()) {
+                            viewAdapter.addSection(item.serviceTypeTc?:"")
+                            lastServiceType = item.serviceTypeTc?:""
                         }
-                        if (lastDayType != it.dayType) {
+                        if (lastDayType != item.dayType) {
                             var dayTypeText = ""
-                            when ((it.dayType?:"").trim().toUpperCase()) {
-                                "D" -> dayTypeText = getString(R.string.everyday)
+                            when ((item.dayType?:"").trim().toUpperCase()) {
+                                "W" -> dayTypeText = getString(R.string.monday_to_friday)
                                 "MF" -> dayTypeText = getString(R.string.monday_to_friday)
                                 "S" -> dayTypeText = getString(R.string.saturday)
                                 "H" -> dayTypeText = getString(R.string.sunday_and_holiday)
+                                "MS" -> dayTypeText = getString(R.string.monday_to_saturday)
+                                "D" -> dayTypeText = getString(R.string.everyday)
+                                "X" -> dayTypeText = " "
                             }
                             viewAdapter.addSection(dayTypeText)
-                            lastDayType = it.dayType?:""
+                            lastDayType = item.dayType?:""
                         }
-                        if ((routeBound.replace("0", "") == "1" && (it.boundText1?:"").isNotEmpty())
-                            || routeBound.replace("0", "") == "2" && (it.boundText2?:"").isNotEmpty()) {
-                            viewAdapter.addItem(it)
+                        if ((routeBound.replace("0", "") == "1" && (item.boundText1?:"").isNotEmpty())
+                            || routeBound.replace("0", "") == "2" && (item.boundText2?:"").isNotEmpty()) {
+                            viewAdapter.addItem(item)
                         }
                     }
                     val actionBar = (activity as AppCompatActivity).supportActionBar

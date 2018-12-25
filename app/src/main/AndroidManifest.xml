@@ -158,6 +158,10 @@
 
         <!-- Services -->
         <service
+            android:name=".service.ProviderUpdateService"
+            android:enabled="true"
+            android:stopWithTask="true"  />
+        <service
             android:name=".service.CheckUpdateService"
             android:enabled="true"
             android:stopWithTask="true"  />

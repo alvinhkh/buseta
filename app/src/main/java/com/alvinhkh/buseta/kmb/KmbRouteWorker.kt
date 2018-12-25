@@ -7,12 +7,10 @@ import androidx.work.WorkerParameters
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.kmb.model.KmbRoute
 import com.alvinhkh.buseta.kmb.model.KmbRouteBound
-import com.alvinhkh.buseta.model.Route
+import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.utils.HKSCSUtil
-import com.alvinhkh.buseta.utils.RouteUtil
 import timber.log.Timber
-import java.util.ArrayList
 
 class KmbRouteWorker(context : Context, params : WorkerParameters)
     : Worker(context, params) {
@@ -22,33 +20,49 @@ class KmbRouteWorker(context : Context, params : WorkerParameters)
     private val routeDatabase = RouteDatabase.getInstance(context)
 
     override fun doWork(): Result {
+        val manualUpdate = inputData.getBoolean(C.EXTRA.MANUAL, false)
         val companyCode = inputData.getString(C.EXTRA.COMPANY_CODE)?:C.PROVIDER.KMB
-        val routeNo = inputData.getString(C.EXTRA.ROUTE_NO)?:return Result.FAILURE
+        val routeNo = inputData.getString(C.EXTRA.ROUTE_NO)?:return Result.failure()
+        val outputData = Data.Builder()
+                .putBoolean(C.EXTRA.MANUAL, manualUpdate)
+                .putString(C.EXTRA.COMPANY_CODE, companyCode)
+                .putString(C.EXTRA.ROUTE_NO, routeNo)
+                .build()
 
         try {
             val response = kmbService.routeBound(routeNo).execute()
             if (!response.isSuccessful || !response.body()?.exception.isNullOrEmpty()) {
-                return Result.FAILURE
+                return Result.failure(outputData)
             }
 
-            val routeList = ArrayList<Route>()
+            val routeList = arrayListOf<Route>()
             val timeNow = System.currentTimeMillis() / 1000
 
             val res = response.body()
-            val routeBoundList = ArrayList<Int>()
+            val routeBoundList = arrayListOf<Int>()
             for (bound in res?.data?: emptyList<KmbRouteBound>()) {
                 if (routeBoundList.contains(bound.bound)) continue
                 routeBoundList.add(bound.bound)
                 val response2 = kmbService.specialRoute(bound.route, bound.bound.toString()).execute()
                 if (!response2.isSuccessful) {
-                    return Result.FAILURE
+                    return Result.failure(outputData)
                 }
                 val res2 = response2.body()
                 for (kmbRoute in res2?.data?.routes?: emptyList<KmbRoute>()) {
                     kmbRoute.destinationTc = HKSCSUtil.convert(kmbRoute.destinationTc)
                     kmbRoute.originTc = HKSCSUtil.convert(kmbRoute.originTc)
                     kmbRoute.descTc = HKSCSUtil.convert(kmbRoute.descTc)
-                    val route = RouteUtil.fromKmb(kmbRoute)
+
+                    val route = Route()
+                    route.companyCode = C.PROVIDER.KMB
+                    route.origin = kmbRoute.originTc
+                    route.destination = kmbRoute.destinationTc
+                    route.name = kmbRoute.route
+                    route.sequence = kmbRoute.bound
+                    route.serviceType = if (kmbRoute.serviceType.isNullOrEmpty()) kmbRoute.serviceType else kmbRoute.serviceType.trim { it <= ' ' }
+                    val desc = kmbRoute.descTc.trim { it <= ' ' }
+                    route.description = desc
+                    route.isSpecial = desc.isNotEmpty()
                     route.lastUpdate = timeNow
                     routeList.add(route)
                 }
@@ -58,18 +72,11 @@ class KmbRouteWorker(context : Context, params : WorkerParameters)
             if (insertedList?.size?:0 > 0) {
                 routeDatabase?.routeDao()?.delete(companyCode, routeNo, timeNow)
             }
-
-            val output = Data.Builder()
-                    .putString(C.EXTRA.COMPANY_CODE, companyCode)
-                    .putString(C.EXTRA.ROUTE_NO, routeNo)
-                    .build()
-
-            outputData = output
         } catch (e: Exception) {
             Timber.d(e)
-            return Result.FAILURE
+            return Result.failure(outputData)
         }
 
-        return Result.SUCCESS
+        return Result.success(outputData)
     }
 }

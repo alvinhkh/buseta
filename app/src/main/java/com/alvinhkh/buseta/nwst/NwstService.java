@@ -22,9 +22,13 @@ public interface NwstService {
 
     String APP_VERSION2 = "5";
 
+    String DEVICETYPE = "iphone";
+
     String LANGUAGE_TC = "0";
 
     String PLATFORM = "iPhone";
+
+    String QUERY_BM = "bm";
 
     String QUERY_BOUND = "bound";
 
@@ -77,13 +81,27 @@ public interface NwstService {
     String TYPE_NIGHT_ROUTES = "1";
 
     Retrofit api = new Retrofit.Builder()
-            .client(App.httpClient)
+            .client(App.httpClient2)
             .baseUrl("http://mobile.nwstbus.com.hk/")
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build();
 
+    @GET("api6/getadv.php")
+    Observable<ResponseBody> adv(
+            @Query(QUERY_LANGUAGE) String language,
+            @Query("width") String width,
+            @Query(QUERY_SYSCODE) String sysCode,
+            @Query(QUERY_PLATFORM) String platform,
+            @Query(QUERY_VERSION) String version,
+            @Query(QUERY_VERSION2) String version2,
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
+            @Query(QUERY_TK) String tk,
+            @Query(QUERY_SYSCODE3) String sysCode3
+    );
+
     @GET("push/pushtokenenable.php")
     Observable<ResponseBody> pushTokenEnable(
+            @Query(QUERY_TK) String tk,
             @Query(QUERY_DEVICETOKEN) String devicetoken,
             @Query(QUERY_LANGUAGE) String language,
             @Query(QUERY_MODE) String mode,
@@ -98,6 +116,7 @@ public interface NwstService {
 
     @GET("push/pushtoken.php")
     Observable<ResponseBody> pushToken(
+            @Query(QUERY_TK) String tk,
             @Query(QUERY_DEVICETOKEN) String devicetoken,
             @Query(QUERY_LANGUAGE) String language,
             @Query(QUERY_MODE) String mode,
@@ -149,7 +168,7 @@ public interface NwstService {
     );
 
     @GET("api6/ppstoplist.php")
-    Observable<ResponseBody> stopList(
+    Call<ResponseBody> ppStopList(
             @Query(QUERY_INFO) String info,
             @Query(QUERY_LANGUAGE) String language,
             @Query(QUERY_SYSCODE) String sysCode,
@@ -185,7 +204,7 @@ public interface NwstService {
     );
 
     @GET("api6/getline_multi2.php")
-    Observable<ResponseBody> latlongList(
+    Call<ResponseBody> lineMulti2(
             @Query(QUERY_R) String r,
             @Query(QUERY_LANGUAGE) String language,
             @Query(QUERY_SYSCODE) String sysCode,
@@ -197,7 +216,7 @@ public interface NwstService {
     );
 
     @GET("api6/gettimetable.php")
-    Observable<ResponseBody> timetable(
+    Call<ResponseBody> timetable(
             @Query(QUERY_RDV) String rdv,
             @Query(QUERY_BOUND) String bound,
             @Query(QUERY_LANGUAGE) String language,

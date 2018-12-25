@@ -50,8 +50,8 @@ class EditFollowFragment: Fragment(), OnItemDragListener {
                 viewModel = ViewModelProviders.of(this@EditFollowFragment).get(EditFollowViewModel::class.java)
                 viewModel.getAsLiveData().observe(this@EditFollowFragment, Observer {
                     viewAdapter.clear()
-                    it?.forEach {
-                        viewAdapter.addItem(it)
+                    it?.forEach { follow ->
+                        viewAdapter.addItem(follow)
                     }
                     emptyView?.visibility = if (viewAdapter.itemCount > 0) View.GONE else View.VISIBLE
                 })

@@ -53,6 +53,14 @@ public class C {
 
         String ROUTE_OBJECT = "com.alvinhkh.buseta.ROUTE_OBJECT";
 
+        String ROUTE_SEQUENCE = "com.alvinhkh.buseta.ROUTE_SEQUENCE";
+
+        String ROUTE_SERVICE_TYPE = "com.alvinhkh.buseta.ROUTE_SERVICE_TYPE";
+
+        String ROUTE_INFO_KEY = "com.alvinhkh.buseta.ROUTE_INFO_KEY";
+
+        String ROUTE_TIMETABLE_HTML = "com.alvinhkh.buseta.ROUTE_TIMETABLE_HTML";
+
         String STOP_LIST = "com.alvinhkh.buseta.STOP_LIST";
 
         String STOP_OBJECT = "com.alvinhkh.buseta.STOP_OBJECT";

@@ -12,8 +12,8 @@ import com.alvinhkh.buseta.follow.model.Follow.CREATOR.COLUMN_ROUTE_SERVICE_TYPE
 import com.alvinhkh.buseta.follow.model.Follow.CREATOR.COLUMN_STOP_ID
 import com.alvinhkh.buseta.follow.model.Follow.CREATOR.COLUMN_STOP_SEQ
 import com.alvinhkh.buseta.follow.model.Follow.CREATOR.COLUMN_TYPE
-import com.alvinhkh.buseta.model.Route
-import com.alvinhkh.buseta.model.RouteStop
+import com.alvinhkh.buseta.route.model.Route
+import com.alvinhkh.buseta.route.model.RouteStop
 
 @Entity(tableName = Follow.TABLE_NAME, indices = [(Index(value = arrayOf(COLUMN_TYPE, COLUMN_COMPANY_CODE,
         COLUMN_ROUTE_NO, COLUMN_ROUTE_SEQ, COLUMN_ROUTE_SERVICE_TYPE, COLUMN_STOP_ID, COLUMN_STOP_SEQ), unique = true))])
@@ -54,7 +54,7 @@ data class Follow(
         @ColumnInfo(name = Follow.COLUMN_UPDATED_AT, typeAffinity = ColumnInfo.INTEGER)
         var updatedAt: Long,
         @Ignore
-        var etas: List<ArrivalTime> = listOf<ArrivalTime>()
+        var etas: List<ArrivalTime> = listOf()
 ) : Parcelable {
 
     constructor() : this(0, "", "", "", "", "", "",

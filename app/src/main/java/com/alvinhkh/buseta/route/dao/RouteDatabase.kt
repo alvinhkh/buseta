@@ -3,14 +3,19 @@ package com.alvinhkh.buseta.route.dao
 import android.arch.persistence.room.Database
 import android.arch.persistence.room.RoomDatabase
 import android.arch.persistence.room.Room
+import android.arch.persistence.room.TypeConverters
 import android.content.Context
-import com.alvinhkh.buseta.model.Route
+import com.alvinhkh.buseta.route.model.Route
+import com.alvinhkh.buseta.route.model.RouteStop
 
 
-@Database(entities = [(Route::class)], version = 1)
+@Database(entities = [(Route::class), (RouteStop::class)], version = 1)
+@TypeConverters(LatLngListConverter::class)
 abstract class RouteDatabase : RoomDatabase() {
 
     abstract fun routeDao(): RouteDao
+
+    abstract fun routeStopDao(): RouteStopDao
 
     companion object {
         private var instance: RouteDatabase? = null

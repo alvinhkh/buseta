@@ -37,6 +37,10 @@ public interface LwbService {
     @GET("/ajax/getRoute_info.php")
     Call<LwbRouteBoundRes> routeBound(@Query("field9") String routeNo, @Query("t") Double t);
 
+    @FormUrlEncoded
+    @POST("http://www.kmb.hk/ajax/getRouteMapByBusno.php")
+    Call<List<LwbRouteStop>> routeMap(@Field("bn") String routeNo, @Field("dir") String bound, @Field("ST") String serviceType);
+
     @GET("/ajax/getRoute_info.php")
     Observable<LwbRouteBoundRes> getRouteBound(@Query("field9") String routeNo, @Query("t") Double t);
 

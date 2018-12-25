@@ -14,7 +14,7 @@ import android.text.style.ForegroundColorSpan;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
-import com.alvinhkh.buseta.model.RouteStop;
+import com.alvinhkh.buseta.route.model.RouteStop;
 import com.alvinhkh.buseta.service.NotificationService;
 import com.alvinhkh.buseta.search.ui.SearchActivity;
 

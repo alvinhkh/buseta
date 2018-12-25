@@ -53,11 +53,15 @@ class FollowFragment: Fragment() {
     private val refreshHandler = Handler()
     private val refreshRunnable = object : Runnable {
         override fun run() {
-            for (i in 0..viewAdapter.itemCount) {
-                viewAdapter.notifyItemChanged(i)
-            }
+            viewAdapter.notifyDataSetChanged()
             refreshHandler.postDelayed(this, 10000)
         }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arrivalTimeDatabase = ArrivalTimeDatabase.getInstance(activity?.applicationContext!!)!!
+        followDatabase = FollowDatabase.getInstance(activity?.applicationContext!!)!!
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -65,8 +69,6 @@ class FollowFragment: Fragment() {
         val rootView = inflater.inflate(R.layout.fragment_follow_edit, container, false)
         setHasOptionsMenu(true)
 
-        arrivalTimeDatabase = ArrivalTimeDatabase.getInstance(rootView.context)!!
-        followDatabase = FollowDatabase.getInstance(rootView.context)!!
         emptyView = rootView.findViewById(R.id.empty_view)
         recyclerView = rootView.findViewById(R.id.recycler_view)
         with(recyclerView) {
@@ -79,11 +81,16 @@ class FollowFragment: Fragment() {
                 viewAdapter.clear()
                 it?.forEach { follow ->
                     val index = viewAdapter.addItem(follow)
-                    val id = follow.companyCode + follow.routeNo + follow.routeSeq + follow.stopId + follow.stopSeq
+                    val id = follow.companyCode + follow.routeNo + follow.routeSeq + follow.routeServiceType + follow.stopId + follow.stopSeq
                     val arrivalTimeLiveData = arrivalTimeDatabase.arrivalTimeDao().getLiveData(follow.companyCode, follow.routeNo, follow.routeSeq, follow.stopId, follow.stopSeq)
                     arrivalTimeLiveData.observe(this@FollowFragment, Observer { etas ->
-                        if (etas != null && id == (follow.companyCode + follow.routeNo + follow.routeSeq + follow.stopId + follow.stopSeq)) {
-                            follow.etas = etas
+                        if (etas != null && id == (follow.companyCode + follow.routeNo + follow.routeSeq + follow.routeServiceType + follow.stopId + follow.stopSeq)) {
+                            follow.etas = listOf()
+                            etas.forEach { eta ->
+                                if (eta.updatedAt > System.currentTimeMillis() - 600000) {
+                                    follow.etas += eta
+                                }
+                            }
                             viewAdapter.replaceItem(index, follow)
                         }
                     })

@@ -46,8 +46,8 @@ import com.alvinhkh.buseta.follow.model.Follow;
 import com.alvinhkh.buseta.kmb.KmbService;
 import com.alvinhkh.buseta.kmb.model.KmbRoutesInStop;
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
-import com.alvinhkh.buseta.model.Route;
-import com.alvinhkh.buseta.model.RouteStop;
+import com.alvinhkh.buseta.route.model.Route;
+import com.alvinhkh.buseta.route.model.RouteStop;
 import com.alvinhkh.buseta.service.EtaService;
 import com.alvinhkh.buseta.service.GeofenceTransitionsIntentService;
 import com.alvinhkh.buseta.service.NotificationService;
@@ -222,7 +222,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
         if (task.isSuccessful()) {
             if (mPendingGeofenceTask == PendingGeofenceTask.ADD) {
                 updateGeofencesAdded(String.format(Locale.ENGLISH, "%s-%s-%s-%s", routeStop.getCompanyCode(),
-                        routeStop.getRouteNo(), routeStop.getRouteSeq(), routeStop.getStopId()));
+                        routeStop.getRouteNo(), routeStop.getRouteSequence(), routeStop.getStopId()));
                 showSnackbar(getString(R.string.arrival_alert_added));
             } else if (mPendingGeofenceTask == PendingGeofenceTask.REMOVE) {
                 updateGeofencesAdded("");
@@ -298,7 +298,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
         return PreferenceManager.getDefaultSharedPreferences(getContext())
                 .getString(C.PREF.GEOFENCES_KEY, "")
                 .equals(String.format(Locale.ENGLISH, "%s-%s-%s-%s", routeStop.getCompanyCode(),
-                        routeStop.getRouteNo(), routeStop.getRouteSeq(), routeStop.getStopId()));
+                        routeStop.getRouteNo(), routeStop.getRouteSequence(), routeStop.getStopId()));
     }
 
     /**
@@ -678,6 +678,7 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
                 });
             }
             vh.followButton.setOnClickListener(v -> {
+                // TODO: follow categories
                 Follow f = RouteStop.CREATOR.toFollow(routeStop);
                 Integer c = followDatabase.followDao().count(f.getType(), f.getCompanyCode(), f.getRouteNo(), f.getRouteSeq(), f.getRouteServiceType(), f.getStopId(), f.getStopSeq());
                 if (c > 0) {
@@ -749,8 +750,8 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
             }
             vh.stopLocationText.setText(TextUtils.isEmpty(routeStop.getLocation()) ? "" : routeStop.getLocation().trim());
             StringBuilder fareText = new StringBuilder();
-            if (!TextUtils.isEmpty(routeStop.getFare())) {
-                fareText.append(String.format(Locale.ENGLISH, "$%1$,.1f", Float.valueOf(routeStop.getFare())));
+            if (!TextUtils.isEmpty(routeStop.getFareFull())) {
+                fareText.append(String.format(Locale.ENGLISH, "$%1$,.1f", Float.valueOf(routeStop.getFareFull())));
             }
             if (!TextUtils.isEmpty(routeStop.getFareHoliday())) {
                 fareText.append(String.format(Locale.ENGLISH, "/$%1$,.1f", Float.valueOf(routeStop.getFareHoliday())));

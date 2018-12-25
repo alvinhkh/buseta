@@ -21,6 +21,7 @@ import com.alvinhkh.buseta.search.ui.HistoryFragment;
 import com.alvinhkh.buseta.search.ui.SearchActivity;
 import com.alvinhkh.buseta.service.CheckUpdateService;
 import com.alvinhkh.buseta.follow.ui.EditFollowFragment;
+import com.alvinhkh.buseta.service.ProviderUpdateService;
 import com.alvinhkh.buseta.utils.AdViewUtil;
 import com.alvinhkh.buseta.utils.ColorUtil;
 
@@ -164,6 +165,10 @@ public class MainActivity extends BaseActivity {
 
         try {
             Intent intent = new Intent(this, CheckUpdateService.class);
+            startService(intent);
+        } catch (IllegalStateException ignored) {}
+        try {
+            Intent intent = new Intent(this, ProviderUpdateService.class);
             startService(intent);
         } catch (IllegalStateException ignored) {}
     }

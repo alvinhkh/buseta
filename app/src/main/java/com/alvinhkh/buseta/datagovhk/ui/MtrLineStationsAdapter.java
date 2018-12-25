@@ -14,8 +14,8 @@ import android.widget.TextView;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
-import com.alvinhkh.buseta.model.Route;
-import com.alvinhkh.buseta.model.RouteStop;
+import com.alvinhkh.buseta.route.model.Route;
+import com.alvinhkh.buseta.route.model.RouteStop;
 import com.alvinhkh.buseta.mtr.ui.MtrScheduleItemAdapter;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter;
 import com.alvinhkh.buseta.ui.route.RouteStopFragment;
@@ -138,7 +138,7 @@ public class MtrLineStationsAdapter
                     route.setDestination(object.getRouteDestination());
                     route.setOrigin(object.getRouteOrigin());
                     route.setServiceType(object.getRouteServiceType());
-                    route.setSequence(object.getRouteSeq());
+                    route.setSequence(object.getRouteSequence());
                     try {
                         BottomSheetDialogFragment bottomSheetDialogFragment = RouteStopFragment.newInstance(route, object);
                         bottomSheetDialogFragment.show(fragmentManager, bottomSheetDialogFragment.getTag());

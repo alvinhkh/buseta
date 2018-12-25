@@ -10,6 +10,7 @@ import com.google.gson.GsonBuilder
 
 import io.reactivex.Observable
 import okhttp3.ResponseBody
+import retrofit2.Call
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
@@ -38,12 +39,12 @@ interface MtrService {
     @GET("alert/ryg_line_status.xml")
     fun lineStatus(): Observable<MtrLineStatusRes>
 
-    @GET("mtrmobile_versioncheck_v12_6.xml")
-    fun zipResources(): Observable<MtrMobileVersionCheck>
+    @GET("https://www.mtr.com.hk/mob/mtrmobile_versioncheck_v12_10_2.xml")
+    fun zipResources(): Call<MtrMobileVersionCheck>
 
     @GET
     @Streaming
-    fun downloadFile(@Url url: String): Observable<ResponseBody>
+    fun downloadFile(@Url url: String): Call<ResponseBody>
 
     companion object {
 
@@ -74,9 +75,8 @@ interface MtrService {
 
         val mob = Retrofit.Builder()
                 .client(App.httpClient)
-                .baseUrl("https://www.mtr.com.hk/mob/")
+                .baseUrl("https://www.mtr.com.hk/")
                 .addConverterFactory(SimpleXmlConverterFactory.create())
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build()
     }
 }

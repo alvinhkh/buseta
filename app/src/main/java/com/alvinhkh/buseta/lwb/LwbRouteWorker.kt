@@ -5,9 +5,8 @@ import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.alvinhkh.buseta.C
-import com.alvinhkh.buseta.model.Route
+import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.dao.RouteDatabase
-import java.util.ArrayList
 
 class LwbRouteWorker(context : Context, params : WorkerParameters)
     : Worker(context, params) {
@@ -17,15 +16,21 @@ class LwbRouteWorker(context : Context, params : WorkerParameters)
     private val routeDatabase = RouteDatabase.getInstance(context)
 
     override fun doWork(): Result {
+        val manualUpdate = inputData.getBoolean(C.EXTRA.MANUAL, false)
         val companyCode = inputData.getString(C.EXTRA.COMPANY_CODE)?:C.PROVIDER.KMB
-        val routeNo = inputData.getString(C.EXTRA.ROUTE_NO)?:return Result.FAILURE
+        val routeNo = inputData.getString(C.EXTRA.ROUTE_NO)?:return Result.failure()
+        val outputData = Data.Builder()
+                .putBoolean(C.EXTRA.MANUAL, manualUpdate)
+                .putString(C.EXTRA.COMPANY_CODE, companyCode)
+                .putString(C.EXTRA.ROUTE_NO, routeNo)
+                .build()
 
         val response = lwbService.routeBound(routeNo, Math.random()).execute()
         if (!response.isSuccessful) {
-            return Result.FAILURE
+            return Result.failure(outputData)
         }
 
-        val routeList = ArrayList<Route>()
+        val routeList = arrayListOf<Route>()
         val timeNow = System.currentTimeMillis() / 1000
 
         val res = response.body()
@@ -50,13 +55,6 @@ class LwbRouteWorker(context : Context, params : WorkerParameters)
             routeDatabase?.routeDao()?.delete(companyCode, routeNo, timeNow)
         }
 
-        val output = Data.Builder()
-                .putString(C.EXTRA.COMPANY_CODE, companyCode)
-                .putString(C.EXTRA.ROUTE_NO, routeNo)
-                .build()
-
-        outputData = output
-
-        return Result.SUCCESS
+        return Result.success(outputData)
     }
 }

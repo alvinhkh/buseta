@@ -13,6 +13,6 @@
     <color name="icons">#80FFFFFF</color>
 
     <color name="background">#ff1c1c1c</color>
-    <color name="bottomNavigationBackground">#1c1c1c</color>
+    <color name="bottomNavigationBackground">#111111</color>
     <color name="bottomNavigationIcon">#deffffff</color>
 </resources>

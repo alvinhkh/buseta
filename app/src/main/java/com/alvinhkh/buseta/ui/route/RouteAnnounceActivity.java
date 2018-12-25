@@ -11,9 +11,9 @@ import android.widget.Toast;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.kmb.ui.KmbAnnounceFragment;
-import com.alvinhkh.buseta.model.Route;
 import com.alvinhkh.buseta.nlb.ui.NlbNewsFragment;
 import com.alvinhkh.buseta.nwst.ui.NwstNoticeFragment;
+import com.alvinhkh.buseta.route.model.Route;
 import com.alvinhkh.buseta.ui.BaseActivity;
 import com.alvinhkh.buseta.utils.AdViewUtil;
 

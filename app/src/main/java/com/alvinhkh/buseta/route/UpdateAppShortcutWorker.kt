@@ -24,12 +24,12 @@ class UpdateAppShortcutWorker(context : Context, params : WorkerParameters)
     private val suggestionDatabase = SuggestionDatabase.getInstance(context)
 
     override fun doWork(): Result {
-        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return Result.FAILURE
+        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return Result.failure()
 
         // Dynamic App Shortcut
         try {
             val shortcutManager = applicationContext.getSystemService(ShortcutManager::class.java)
-                    ?: return Result.FAILURE
+                    ?: return Result.failure()
             val shortcuts = ArrayList<ShortcutInfo>()
             val followList = followDatabase?.followDao()?.getList()?: emptyList()
             val maxShortcutCount = shortcutManager.maxShortcutCountPerActivity
@@ -41,7 +41,7 @@ class UpdateAppShortcutWorker(context : Context, params : WorkerParameters)
                     val intent = Intent(Intent.ACTION_VIEW)
                     intent.setClass(applicationContext, SearchActivity::class.java)
                     intent.putExtra(C.EXTRA.STOP_OBJECT_STRING, Gson().toJson(routeStop))
-                    shortcuts.add(ShortcutInfo.Builder(applicationContext, "buseta-" + routeStop.companyCode + routeStop.routeNo + routeStop.routeSeq + routeStop.stopId)
+                    shortcuts.add(ShortcutInfo.Builder(applicationContext, "buseta-" + routeStop.companyCode + routeStop.routeNo + routeStop.routeSequence + routeStop.stopId)
                             .setShortLabel(routeStop.routeNo + " " + routeStop.name)
                             .setLongLabel(routeStop.routeNo + " " + routeStop.name + " " + applicationContext.getString(R.string.destination, routeStop.routeDestination))
                             .setIcon(Icon.createWithResource(applicationContext, R.drawable.ic_shortcut_directions_bus))
@@ -71,11 +71,11 @@ class UpdateAppShortcutWorker(context : Context, params : WorkerParameters)
             }
             shortcutManager.dynamicShortcuts = shortcuts
         } catch (ignored: NoClassDefFoundError) {
-            return Result.FAILURE
+            return Result.failure()
         } catch (ignored: NoSuchMethodError) {
-            return Result.FAILURE
+            return Result.failure()
         }
 
-        return Result.SUCCESS
+        return Result.success()
     }
 }

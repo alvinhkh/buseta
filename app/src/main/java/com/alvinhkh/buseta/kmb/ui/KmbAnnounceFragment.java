@@ -19,7 +19,8 @@ import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.kmb.KmbService;
 import com.alvinhkh.buseta.kmb.model.KmbAnnounce;
 import com.alvinhkh.buseta.kmb.model.network.KmbAnnounceRes;
-import com.alvinhkh.buseta.model.Route;
+
+import com.alvinhkh.buseta.route.model.Route;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;

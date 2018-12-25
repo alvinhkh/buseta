@@ -1,12 +1,9 @@
-package com.alvinhkh.buseta.model
+package com.alvinhkh.buseta.route.model
 
-import android.arch.persistence.room.ColumnInfo
-import android.arch.persistence.room.Entity
-import android.arch.persistence.room.Index
-import android.arch.persistence.room.PrimaryKey
+import android.arch.persistence.room.*
 import android.os.Parcel
 import android.os.Parcelable
-import com.alvinhkh.buseta.model.Route.CREATOR.TABLE_NAME
+import com.alvinhkh.buseta.route.model.Route.CREATOR.TABLE_NAME
 
 @Entity(tableName = TABLE_NAME, indices = [(Index(value = arrayOf(Route.COLUMN_COMPANY_CODE,
         Route.COLUMN_NAME, Route.COLUMN_CODE, Route.COLUMN_SEQUENCE, Route.COLUMN_SERVICE_TYPE), unique = true))])
@@ -15,31 +12,33 @@ data class Route(
         @ColumnInfo(name = COLUMN_ID, typeAffinity = ColumnInfo.INTEGER)
         var id: Long = 0,
         @ColumnInfo(name = COLUMN_CODE, typeAffinity = ColumnInfo.TEXT)
-        var code: String? = null,
+        var code: String? = "",
         @ColumnInfo(name = COLUMN_COMPANY_CODE, typeAffinity = ColumnInfo.TEXT)
-        var companyCode: String? = null,
+        var companyCode: String? = "",
         @ColumnInfo(name = COLUMN_ORIGIN, typeAffinity = ColumnInfo.TEXT)
-        var origin: String? = null,
+        var origin: String? = "",
         @ColumnInfo(name = COLUMN_DESTINATION, typeAffinity = ColumnInfo.TEXT)
-        var destination: String? = null,
+        var destination: String? = "",
         @ColumnInfo(name = COLUMN_NAME, typeAffinity = ColumnInfo.TEXT)
-        var name: String? = null,
+        var name: String? = "",
         @ColumnInfo(name = COLUMN_SEQUENCE, typeAffinity = ColumnInfo.TEXT)
-        var sequence: String? = null,
+        var sequence: String? = "",
         @ColumnInfo(name = COLUMN_SERVICE_TYPE, typeAffinity = ColumnInfo.TEXT)
-        var serviceType: String? = null,
+        var serviceType: String? = "",
         @ColumnInfo(name = COLUMN_DESCRIPTION, typeAffinity = ColumnInfo.TEXT)
-        var description: String? = null,
+        var description: String? = "",
         @ColumnInfo(name = COLUMN_IS_SPECIAL, typeAffinity = ColumnInfo.INTEGER)
         var isSpecial: Boolean? = false,
         @ColumnInfo(name = COLUMN_STOPS_START_SEQUENCE, typeAffinity = ColumnInfo.INTEGER)
         var stopsStartSequence: Int? = 0,
         @ColumnInfo(name = COLUMN_INFO_KEY, typeAffinity = ColumnInfo.TEXT)
-        var infoKey: String? = null,
+        var infoKey: String? = "",
         @ColumnInfo(name = COLUMN_RDV, typeAffinity = ColumnInfo.TEXT)
-        var rdv: String? = null,
+        var rdv: String? = "",
         @ColumnInfo(name = COLUMN_LAST_UPDATE, typeAffinity = ColumnInfo.INTEGER)
-        var lastUpdate: Long? = 0
+        var lastUpdate: Long? = 0,
+        @ColumnInfo(name = COLUMN_MAP_COORDINATES)
+        var mapCoordinates: MutableList<LatLong> = arrayListOf()
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
             parcel.readLong(),
@@ -58,7 +57,7 @@ data class Route(
             parcel.readLong())
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeLong(id?:0)
+        parcel.writeLong(id)
         parcel.writeString(code)
         parcel.writeString(companyCode)
         parcel.writeString(origin)
@@ -102,6 +101,7 @@ data class Route(
         const val COLUMN_INFO_KEY = "info_key"
         const val COLUMN_RDV = "rdv"
         const val COLUMN_LAST_UPDATE = "last_update"
+        const val COLUMN_MAP_COORDINATES = "map_coordinates"
 
     }
 }

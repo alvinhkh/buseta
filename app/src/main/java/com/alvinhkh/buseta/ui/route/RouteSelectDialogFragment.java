@@ -13,7 +13,7 @@ import android.view.ViewGroup;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.Route;
+import com.alvinhkh.buseta.route.model.Route;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
 
 import java.util.ArrayList;

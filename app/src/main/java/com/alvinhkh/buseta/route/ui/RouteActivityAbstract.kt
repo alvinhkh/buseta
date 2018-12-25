@@ -1,21 +1,32 @@
 package com.alvinhkh.buseta.route.ui
 
+import android.Manifest
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.database.DataSetObserver
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.support.constraint.Guideline
 import android.support.design.widget.AppBarLayout
 import android.support.design.widget.CoordinatorLayout
 import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.TabLayout
-import android.support.v4.app.FragmentPagerAdapter
-import android.support.v4.app.FragmentStatePagerAdapter
-import android.support.v4.view.PagerAdapter
+import android.support.v4.app.ActivityCompat
+import android.support.v4.app.Fragment
+import android.support.v4.content.ContextCompat
 import android.support.v4.view.ViewPager
+import android.support.v7.preference.PreferenceManager
+import android.support.v7.widget.Toolbar
 import android.text.TextUtils
+import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
@@ -26,23 +37,24 @@ import androidx.work.WorkManager
 
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
+import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
 import com.alvinhkh.buseta.datagovhk.ui.MtrBusStopListFragment
 import com.alvinhkh.buseta.kmb.KmbRouteWorker
 import com.alvinhkh.buseta.kmb.ui.KmbStopListFragment
 import com.alvinhkh.buseta.lwb.LwbRouteWorker
 import com.alvinhkh.buseta.lwb.ui.LwbStopListFragment
-import com.alvinhkh.buseta.model.Route
-import com.alvinhkh.buseta.model.RouteStop
-import com.alvinhkh.buseta.mtr.AESBusRouteWorker
-import com.alvinhkh.buseta.mtr.LrtFeederRouteWorker
+import com.alvinhkh.buseta.route.model.Route
+import com.alvinhkh.buseta.route.model.RouteStop
 import com.alvinhkh.buseta.mtr.ui.AESBusStopListFragment
-import com.alvinhkh.buseta.nlb.NlbRouteWorker
 import com.alvinhkh.buseta.nlb.ui.NlbStopListFragment
 import com.alvinhkh.buseta.nwst.NwstRouteWorker
 import com.alvinhkh.buseta.nwst.ui.NwstStopListFragment
 import com.alvinhkh.buseta.route.UpdateAppShortcutWorker
+import com.alvinhkh.buseta.route.dao.RouteDatabase
+import com.alvinhkh.buseta.route.model.LatLong
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.model.Suggestion
+import com.alvinhkh.buseta.service.EtaService
 import com.alvinhkh.buseta.ui.BaseActivity
 import com.alvinhkh.buseta.ui.route.RouteSelectDialogFragment
 import com.alvinhkh.buseta.utils.AdViewUtil
@@ -51,40 +63,29 @@ import com.alvinhkh.buseta.utils.PreferenceUtil
 import com.alvinhkh.buseta.utils.RouteUtil
 import com.crashlytics.android.answers.Answers
 import com.crashlytics.android.answers.ContentViewEvent
+import com.google.android.gms.maps.*
+import com.google.android.gms.maps.model.*
 import com.google.firebase.appindexing.Action
 import com.google.firebase.appindexing.FirebaseUserActions
+import com.google.maps.android.ui.IconGenerator
 
-import org.osmdroid.views.MapView
-
-import io.reactivex.disposables.CompositeDisposable
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
-import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.overlay.compass.CompassOverlay
-import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider
-import org.osmdroid.views.overlay.gestures.RotationGestureOverlay
-import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
-import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import timber.log.Timber
-import java.util.*
+import java.util.HashMap
+import java.util.UUID
 
-abstract class RouteActivityAbstract : BaseActivity() {
+abstract class RouteActivityAbstract : BaseActivity(),
+        OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
-    private val disposables = CompositeDisposable()
+    lateinit var arrivalTimeDatabase: ArrivalTimeDatabase
 
-    /**
-     * The [PagerAdapter] that will provide
-     * fragments for each of the sections. We use a
-     * [FragmentPagerAdapter] derivative, which will keep every
-     * loaded fragment in memory. If this becomes too memory intensive, it
-     * may be best to switch to a
-     * [FragmentStatePagerAdapter].
-     */
-    lateinit var pagerAdapter: RoutePagerAdapter
+    lateinit var routeDatabase: RouteDatabase
 
     /**
      * The [ViewPager] that will host the section contents.
      */
     lateinit var viewPager: ViewPager
+
+    lateinit var pagerAdapter: RoutePagerAdapter
 
     lateinit var fab: FloatingActionButton
 
@@ -96,13 +97,19 @@ abstract class RouteActivityAbstract : BaseActivity() {
 
     lateinit var emptyText: TextView
 
-    lateinit var mapView: MapView
+    private var showMapMenuItem: MenuItem? = null
+
+    private var mapFragment: SupportMapFragment? = null
+
+    private var map: GoogleMap? = null
+
+    private var currentRoute: Route? = null
 
     private var suggestion: Suggestion? = null
 
-    private var isScrollToPage: Boolean? = false
+    private var isScrolledToPage: Boolean? = false
 
-    private var fragNo: Int? = 0
+    private var fragNo: Int = 0
 
     private var companyCode: String? = null
 
@@ -111,6 +118,12 @@ abstract class RouteActivityAbstract : BaseActivity() {
     private var stopFromIntent: RouteStop? = null
 
     private var requestId: UUID? = null
+
+    private var isShowMap: Boolean = false
+
+    private val markerMap = HashMap<String, Marker>()
+
+    private val mapHandler = Handler()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -126,6 +139,8 @@ abstract class RouteActivityAbstract : BaseActivity() {
             routeNo = stopFromIntent?.routeNo
         }
 
+        arrivalTimeDatabase = ArrivalTimeDatabase.getInstance(this)!!
+        routeDatabase = RouteDatabase.getInstance(this)!!
         val suggestionDatabase = SuggestionDatabase.getInstance(this)!!
 
         setContentView(R.layout.activity_route)
@@ -136,12 +151,10 @@ abstract class RouteActivityAbstract : BaseActivity() {
         actionBar?.setTitle(R.string.app_name)
         actionBar?.subtitle = null
         actionBar?.setDisplayHomeAsUpEnabled(true)
-        appBarLayout = findViewById(R.id.app_bar_layout)
-        appBarLayout.setExpanded(true)
 
         adViewContainer = findViewById(R.id.adView_container)
-        if (adViewContainer != null) {
-            adView = AdViewUtil.banner(adViewContainer, adView, false)
+        with(adViewContainer) {
+            adView = AdViewUtil.banner(this, adView, false)
         }
         fab = findViewById(R.id.fab)
 
@@ -151,35 +164,9 @@ abstract class RouteActivityAbstract : BaseActivity() {
         emptyText = findViewById(R.id.empty_text)
         showLoadingView()
 
-        // TODO: map show route
-        mapView = findViewById(R.id.map)
-        mapView.visibility = View.GONE
-        mapView.setTileSource(TileSourceFactory.MAPNIK)
-        mapView.setBuiltInZoomControls(false)
-        mapView.setMultiTouchControls(true)
-        mapView.isTilesScaledToDpi = true
-        mapView.maxZoomLevel = 20.0
-        mapView.minZoomLevel = 14.0
-        val mapController = mapView.controller
-        mapController?.setZoom(10.0)
-        mapController?.setCenter(GeoPoint(22.396428, 114.109497))
-
-        val rotationOverlay = RotationGestureOverlay(mapView)
-        rotationOverlay.isEnabled = true
-        mapView.setMultiTouchControls(true)
-        mapView.overlays?.add(rotationOverlay)
-
-        val locationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(applicationContext), mapView)
-        locationOverlay.enableMyLocation()
-        mapView.overlays?.add(locationOverlay)
-
-        val compassOverlay = CompassOverlay(applicationContext, InternalCompassOrientationProvider(applicationContext), mapView)
-        compassOverlay.enableCompass()
-        mapView.overlays?.add(compassOverlay)
-//        mapView.overlays?.add(new CopyrightOverlay(getContext()));
-
         // Disable vertical scroll
-        val appBarLayout: AppBarLayout = findViewById(R.id.app_bar_layout)
+        appBarLayout = findViewById(R.id.app_bar_layout)
+        appBarLayout.setExpanded(true)
         val params = appBarLayout.layoutParams as CoordinatorLayout.LayoutParams
         val behavior = AppBarLayout.Behavior()
         behavior.setDragCallback(object : AppBarLayout.Behavior.DragCallback() {
@@ -195,15 +182,28 @@ abstract class RouteActivityAbstract : BaseActivity() {
         // Set up the ViewPager with the sections adapter.
         viewPager = findViewById(R.id.viewPager)
         viewPager.adapter = pagerAdapter
-
         val tabLayout = findViewById<TabLayout>(R.id.tabs)
         tabLayout.setupWithViewPager(viewPager)
         tabLayout.tabMode = TabLayout.MODE_SCROLLABLE
         tabLayout.addOnTabSelectedListener(object : TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
             override fun onTabReselected(tab: TabLayout.Tab?) {
-                val routes = ArrayList(pagerAdapter.routeList)
-                val fragment = RouteSelectDialogFragment.newInstance(routes, viewPager)
+                val fragment = RouteSelectDialogFragment.newInstance(ArrayList(pagerAdapter.routeList), viewPager)
                 fragment.show(supportFragmentManager, "route_select_dialog_fragment")
+            }
+        })
+        viewPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
+            override fun onPageScrollStateChanged(state: Int) {
+            }
+            override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
+            }
+            override fun onPageSelected(position: Int) {
+                currentRoute = pagerAdapter.routeList[position]
+                if (isShowMap) {
+                    mapHandler.removeCallbacksAndMessages(null)
+                    mapHandler.postDelayed({
+                        loadMapMarkers(currentRoute!!)
+                    }, 200)
+                }
             }
         })
 
@@ -212,18 +212,22 @@ abstract class RouteActivityAbstract : BaseActivity() {
                 super.onChanged()
                 if (pagerAdapter.count > 0) {
                     emptyView.visibility = View.GONE
-                } else {
-                    showEmptyView()
                 }
             }
         })
 
         if (routeNo?.isNotBlank() == true) {
-            loadRouteNo(companyCode?:"", routeNo?:"")
+            loadRoute(companyCode?:"", routeNo?:"")
         } else {
             Toast.makeText(this, R.string.missing_input, Toast.LENGTH_SHORT).show()
             finish()
             return
+        }
+
+        val preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+        isShowMap = preferences.getBoolean("load_map", false)
+        if (isShowMap) {
+            showMapFragment()
         }
 
         // load route from database
@@ -232,10 +236,11 @@ abstract class RouteActivityAbstract : BaseActivity() {
                 .observe(this, Observer<MutableList<Route>> { routes ->
                     pagerAdapter.clear()
                     var company = ""
+                    var isScrollToPage = false
                     routes?.forEach { route ->
                         company = route.companyCode?:companyCode?:""
-                        val routeStop = stopFromIntent?:RouteStop()
-                        val fragment = when (company) {
+                        val routeStop = stopFromIntent?: RouteStop()
+                        val fragment: Fragment = when (company) {
                             C.PROVIDER.AESBUS -> AESBusStopListFragment.newInstance(route, routeStop)
                             C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> NwstStopListFragment.newInstance(route, routeStop)
                             C.PROVIDER.LRTFEEDER -> MtrBusStopListFragment.newInstance(route, routeStop)
@@ -259,9 +264,9 @@ abstract class RouteActivityAbstract : BaseActivity() {
                         if (stopFromIntent != null && route.companyCode != null
                                 && route.sequence != null && route.serviceType != null
                                 && route.companyCode == stopFromIntent?.companyCode
-                                && route.sequence == stopFromIntent?.routeSeq
+                                && route.sequence == stopFromIntent?.routeSequence
                                 && route.serviceType == stopFromIntent?.routeServiceType) {
-                            fragNo = fragmentCount
+                            fragNo = fragmentCount - 1
                             isScrollToPage = true
                         }
                     }
@@ -279,11 +284,18 @@ abstract class RouteActivityAbstract : BaseActivity() {
                         }
                     }
 
-                    if (isScrollToPage!!) {
-                        if (fragNo!! - 1 >= 0) {
-                            viewPager.setCurrentItem(fragNo!! - 1, false)
-                        }
+                    if (isScrollToPage && isScrolledToPage == false) {
+                        viewPager.setCurrentItem(fragNo, false)
+                        isScrolledToPage = true
                         isScrollToPage = false
+                    }
+                    if (isShowMap) {
+                        if (fragNo - 1 < 1) {
+                            fragNo = 0
+                        }
+                        if (viewPager.currentItem == fragNo && viewPager.currentItem < pagerAdapter.routeList.size) {
+                            loadMapMarkers(pagerAdapter.routeList[viewPager.currentItem])
+                        }
                     }
 
                     if (pagerAdapter.count > 0) {
@@ -294,10 +306,25 @@ abstract class RouteActivityAbstract : BaseActivity() {
                 })
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        super.onCreateOptionsMenu(menu)
+        menuInflater.inflate(R.menu.menu_route, menu)
+        showMapMenuItem = menu?.findItem(R.id.action_show_map)
+        val preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+        showMapMenuItem?.isVisible = preferences == null || !preferences.getBoolean("load_map", false)
+        return true
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_refresh -> loadRouteNo(companyCode?:"", routeNo?:"")
-            R.id.action_show_map -> appBarLayout.setExpanded(true)
+            R.id.action_refresh -> loadRoute(companyCode?:"", routeNo?:"")
+            R.id.action_show_map -> {
+                isShowMap = !isShowMap
+                if (viewPager.currentItem >= 0 && viewPager.currentItem < pagerAdapter.routeList.size) {
+                    currentRoute = pagerAdapter.routeList[viewPager.currentItem]
+                }
+                showMapFragment()
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -316,7 +343,6 @@ abstract class RouteActivityAbstract : BaseActivity() {
     }
 
     override fun onDestroy() {
-        disposables.clear()
         if (suggestion != null) {
             appIndexStop(suggestion!!)
         }
@@ -337,16 +363,20 @@ abstract class RouteActivityAbstract : BaseActivity() {
         fab.hide()
     }
 
-    protected open fun loadRouteNo(companyCode: String, no: String) {
-        if (companyCode.isEmpty() or no.isEmpty()) {
+    protected open fun loadRoute(companyCode: String, routeNo: String) {
+        if (companyCode.isEmpty() or routeNo.isEmpty()) {
             showEmptyView()
             return
+        }
+        when (companyCode) {
+            C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER, C.PROVIDER.NLB -> return
+            C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> return
         }
         showLoadingView()
 
         val data = Data.Builder()
                 .putString(C.EXTRA.COMPANY_CODE, companyCode)
-                .putString(C.EXTRA.ROUTE_NO, no)
+                .putString(C.EXTRA.ROUTE_NO, routeNo)
                 .build()
         val request = when (companyCode) {
             C.PROVIDER.KMB -> {
@@ -360,22 +390,10 @@ abstract class RouteActivityAbstract : BaseActivity() {
                             .build()
                 }
             }
-            C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST ->
-                OneTimeWorkRequest.Builder(NwstRouteWorker::class.java)
-                        .setInputData(data)
-                        .build()
-            C.PROVIDER.NLB ->
-                OneTimeWorkRequest.Builder(NlbRouteWorker::class.java)
-                        .setInputData(data)
-                        .build()
-            C.PROVIDER.AESBUS ->
-                OneTimeWorkRequest.Builder(AESBusRouteWorker::class.java)
-                        .setInputData(data)
-                        .build()
-            C.PROVIDER.LRTFEEDER ->
-                OneTimeWorkRequest.Builder(LrtFeederRouteWorker::class.java)
-                        .setInputData(data)
-                        .build()
+//            C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST ->
+//                OneTimeWorkRequest.Builder(NwstRouteWorker::class.java)
+//                        .setInputData(data)
+//                        .build()
             else -> return
         }
         if (requestId != null) {
@@ -391,7 +409,7 @@ abstract class RouteActivityAbstract : BaseActivity() {
                     // val companyCode = workerResult?.getString(C.EXTRA.COMPANY_CODE)
                     // val routeNo = workerResult?.getString(C.EXTRA.ROUTE_NO)
                     if (workInfo?.state == WorkInfo.State.FAILED) {
-                        showEmptyView()
+                        // showEmptyView()
                         if (!ConnectivityUtil.isConnected(applicationContext)) {
                             emptyText.setText(R.string.message_no_internet_connection)
                         } else {
@@ -399,6 +417,180 @@ abstract class RouteActivityAbstract : BaseActivity() {
                         }
                     }
                 })
+    }
+
+    private fun showMapFragment() {
+        when (companyCode) {
+            C.PROVIDER.LRTFEEDER -> {
+                showMapMenuItem?.isVisible = false
+                isShowMap = false
+            }
+        }
+        val lp = findViewById<Toolbar>(R.id.toolbar).layoutParams as ViewGroup.MarginLayoutParams
+        lp.setMargins(0, 0, 0, 0)
+        val guideline = findViewById<Guideline>(R.id.guideline)
+        if (!isShowMap) {
+            findViewById<FrameLayout>(R.id.map).visibility = View.GONE
+            if (mapFragment != null) {
+                val ft = supportFragmentManager.beginTransaction()
+                ft.remove(mapFragment!!)
+                ft.commitAllowingStateLoss()
+            }
+            if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                guideline?.setGuidelinePercent(0.0f)
+            }
+        } else {
+            mapFragment = SupportMapFragment.newInstance()
+            if (mapFragment != null && !mapFragment!!.isAdded) {
+                mapFragment!!.getMapAsync(this)
+                supportFragmentManager.beginTransaction().replace(R.id.map, mapFragment!!).commit()
+                if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    guideline?.setGuidelinePercent(0.4f)
+                } else {
+                    lp.setMargins(0, 0, 0, 440)
+                }
+            }
+        }
+        findViewById<Toolbar>(R.id.toolbar).layoutParams = lp
+    }
+
+    /**
+     * Manipulates the map once available.
+     * This callback is triggered when the map is ready to be used.
+     * If Google Play services is not installed on the device, the user will be prompted to install
+     * it inside the SupportMapFragment. This method will only be triggered once the user has
+     * installed Google Play services and returned to the app.
+     */
+    override fun onMapReady(googleMap: GoogleMap?) {
+        if (googleMap == null) return
+        map = googleMap
+        googleMap.setMapStyle(MapStyleOptions.loadRawResourceStyle(this, R.raw.map_style))
+        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(22.3964, 114.1095), 10f))
+        val options = GoogleMapOptions()
+        options.mapToolbarEnabled(false)
+        options.compassEnabled(true)
+        options.rotateGesturesEnabled(true)
+        options.scrollGesturesEnabled(false)
+        options.tiltGesturesEnabled(true)
+        options.zoomControlsEnabled(false)
+        options.zoomGesturesEnabled(true)
+        googleMap.isBuildingsEnabled = false
+        googleMap.isIndoorEnabled = false
+        googleMap.isTrafficEnabled = false
+        googleMap.setOnMarkerClickListener(this)
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this,
+                        Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            googleMap.isMyLocationEnabled = true
+        }
+        if (currentRoute != null) {
+            mapHandler.removeCallbacksAndMessages(null)
+            mapHandler.postDelayed({
+                loadMapMarkers(currentRoute!!)
+            }, 200)
+        }
+        findViewById<FrameLayout>(R.id.map).visibility = View.VISIBLE
+        appBarLayout.setExpanded(true, true)
+    }
+
+    override fun onMarkerClick(marker: Marker): Boolean {
+        try {
+            if (viewPager.currentItem >= 0 && viewPager.currentItem < pagerAdapter.routeList.size) {
+                val fragment = viewPager.adapter?.instantiateItem(viewPager, viewPager.currentItem)
+                if (fragment is RouteStopListFragmentAbstract) {
+                    fragment.onMarkerClick(marker)
+                }
+            }
+        } catch (e: Exception) {
+            Timber.d(e)
+        }
+        if (marker.tag is RouteStop) {
+            val routeStop = marker.tag as RouteStop? ?: return false
+            map?.animateCamera(CameraUpdateFactory.newLatLngZoom(
+                    LatLng(routeStop.latitude?.toDouble()?:0.0, routeStop.longitude?.toDouble()?:0.0), 16f))
+            try {
+                val intent = Intent(this, EtaService::class.java)
+                intent.putExtra(C.EXTRA.STOP_OBJECT, routeStop)
+                startService(intent)
+            } catch (ignored: IllegalStateException) {
+            }
+            return true
+        }
+        return false
+    }
+
+    public open fun mapCamera(latitude: Double?, longitude: Double?) {
+        if (isShowMap && latitude?.isFinite() == true && longitude?.isFinite() == true) {
+            map?.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(latitude, longitude), 18f))
+        }
+    }
+
+    private fun loadMapMarkers(route: Route) {
+        val routeStopLiveData = routeDatabase.routeStopDao().liveData(route.companyCode?:"", route.name?:"", route.sequence?:"", route.serviceType?:"")
+        routeStopLiveData.removeObservers(this)
+        routeStopLiveData.observe(this, Observer { list ->
+            map?.clear()
+            val mapCoordinates: MutableList<LatLong> = route.mapCoordinates
+            val hasMapCoordinates = mapCoordinates.size > 0
+            if (!hasMapCoordinates) {
+                mapCoordinates.clear()
+            }
+            list?.forEachIndexed { index, routeStop ->
+                if (!routeStop.latitude.isNullOrEmpty() && !routeStop.longitude.isNullOrEmpty()) {
+                    val lat = routeStop.latitude?.toDouble()?:0.0
+                    val lng = routeStop.longitude?.toDouble()?:0.0
+                    if (!hasMapCoordinates && lat != 0.0 && lng != 0.0) {
+                        mapCoordinates.add(LatLong(lat, lng))
+                    }
+                    val iconFactory = IconGenerator(this)
+                    val bmp = iconFactory.makeIcon(routeStop.sequence + ": " + routeStop.name)
+                    map?.addMarker(MarkerOptions()
+                            .position(LatLng(lat, lng))
+                            .icon(BitmapDescriptorFactory.fromBitmap(bmp)))?.tag = routeStop
+                    if (index == 0) {
+                        map?.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lng), 16f))
+                    }
+                }
+            }
+            val singleLine = PolylineOptions().width(20f).zIndex(1f)
+                    .color(ContextCompat.getColor(this, R.color.grey))
+                    .startCap(RoundCap()).endCap(RoundCap())
+            for (latlong in mapCoordinates) {
+                singleLine.add(LatLng(latlong.latitude, latlong.longitude))
+            }
+            if (mapCoordinates.size > 0) {
+                map?.addPolyline(singleLine)
+            }
+            routeStopLiveData.removeObservers(this@RouteActivityAbstract)
+        })
+
+        val liveData = arrivalTimeDatabase.arrivalTimeDao().getLiveData(route.companyCode?:"", route.name?:"", route.sequence?:"")
+        liveData.removeObservers(this)
+        liveData.observe(this, Observer { list ->
+            for (marker in markerMap.values.toTypedArray()) {
+                marker.remove()
+            }
+            markerMap.clear()
+            list?.forEach { arrivalTime ->
+                if (arrivalTime.latitude != 0.0 && arrivalTime.longitude != 0.0) {
+                    if (arrivalTime.plate.isNotEmpty()) {
+                        val iconFactory = IconGenerator(applicationContext)
+                        val bmp = iconFactory.makeIcon(arrivalTime.plate)
+                        if (markerMap.containsKey(arrivalTime.plate)) {
+                            markerMap[arrivalTime.plate]?.remove()
+                            markerMap.remove(arrivalTime.plate)
+                        }
+                        if (map != null) {
+                            val marker = map!!.addMarker(MarkerOptions()
+                                    .position(LatLng(arrivalTime.latitude, arrivalTime.longitude))
+                                    .icon(BitmapDescriptorFactory.fromBitmap(bmp)))
+                            marker.tag = arrivalTime
+                            markerMap[arrivalTime.plate] = marker
+                        }
+                    }
+                }
+            }
+        })
     }
 
     private fun getIndexApiAction(suggestion: Suggestion): Action {

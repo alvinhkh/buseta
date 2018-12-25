@@ -15,7 +15,7 @@ import com.alvinhkh.buseta.kmb.KmbService
 import com.alvinhkh.buseta.kmb.model.network.KmbEtaRes
 import com.alvinhkh.buseta.kmb.util.KmbEtaUtil
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
-import com.alvinhkh.buseta.model.RouteStop
+import com.alvinhkh.buseta.route.model.RouteStop
 import com.alvinhkh.buseta.mtr.MtrService
 import com.alvinhkh.buseta.mtr.model.AESEtaBus
 import com.alvinhkh.buseta.mtr.model.AESEtaBusRes
@@ -83,7 +83,7 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
         followDatabase = FollowDatabase.getInstance(this)!!
 
         val randomHex64 = HashUtil.randomHexString(64)
-        disposables2.add(nwstApi.pushTokenEnable(randomHex64, LANGUAGE_TC, "Y", PLATFORM,
+        disposables2.add(nwstApi.pushTokenEnable(randomHex64, randomHex64, LANGUAGE_TC, "Y", DEVICETYPE,
                 NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, APP_VERSION2,
                 NwstRequestUtil.syscode2(), "")
                 .subscribeOn(Schedulers.io())
@@ -131,22 +131,22 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
                 if (!TextUtils.isEmpty(routeStop.routeNo) && !TextUtils.isEmpty(routeStop.stopId)
                         && !TextUtils.isEmpty(routeStop.sequence)) {
                     arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!,
-                            routeStop.routeNo!!, routeStop.routeSeq!!, routeStop.stopId!!, routeStop.sequence!!)
+                            routeStop.routeNo!!, routeStop.routeSequence!!, routeStop.stopId!!, routeStop.sequence!!)
                 }
                 notifyUpdate(routeStop, C.EXTRA.UPDATING, widgetId, notificationId, row)
                 when (routeStop.companyCode) {
-                    C.PROVIDER.KMB -> disposables.add(kmbEtaApi.getEta(routeStop.routeNo, routeStop.routeSeq, routeStop.stopId, routeStop.sequence, routeStop.routeServiceType, "tc", "")
+                    C.PROVIDER.KMB -> disposables.add(kmbEtaApi.getEta(routeStop.routeNo, routeStop.routeSequence, routeStop.stopId, routeStop.sequence, routeStop.routeServiceType, "tc", "")
                             .subscribeWith(kmbEtaObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size - 1)))
                     C.PROVIDER.NLB -> {
-                        val request = NlbEtaRequest(routeStop.routeSeq, routeStop.stopId, "zh")
+                        val request = NlbEtaRequest(routeStop.routeSequence, routeStop.stopId, "zh")
                         disposables.add(nlbApi.eta(request)
                                 .subscribeWith(nlbEtaObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size - 1)))
                     }
-                    C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> disposables.add(nwstApi.eta((routeStop.stopId?:"0").toInt().toString(),
-                            routeStop.routeNo, "Y", "60", LANGUAGE_TC, routeStop.routeSeq,
-                            routeStop.sequence, routeStop.routeId, "Y", "Y",
-                            NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, APP_VERSION2, NwstRequestUtil.syscode2(), nwstToken, nwstSyscode3)
-                            .subscribeWith(nwstEtaObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size - 1)))
+//                    C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> disposables.add(nwstApi.eta((routeStop.stopId?:"0").toInt().toString(),
+//                            routeStop.routeNo, "Y", "60", LANGUAGE_TC, routeStop.routeSequence,
+//                            routeStop.sequence, routeStop.routeId, "Y", "Y",
+//                            NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, APP_VERSION2, NwstRequestUtil.syscode2(), nwstToken, nwstSyscode3)
+//                            .subscribeWith(nwstEtaObserver(routeStop, widgetId, notificationId, row, i == routeStopList.size - 1)))
                     C.PROVIDER.LRTFEEDER -> {
                         val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
                         arrivalTime.text = getString(R.string.provider_no_eta)
@@ -196,10 +196,10 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
     }
 
     private fun kmbEtaObserver(routeStop: RouteStop,
-                                widgetId: Int,
-                                notificationId: Int,
-                                rowNo: Int,
-                                isLast: Boolean): DisposableObserver<KmbEtaRes> {
+                               widgetId: Int,
+                               notificationId: Int,
+                               rowNo: Int,
+                               isLast: Boolean): DisposableObserver<KmbEtaRes> {
         // put kmb eta data to local eta database, EtaEntry
         return object : DisposableObserver<KmbEtaRes>() {
             override fun onNext(res: KmbEtaRes) {
@@ -207,7 +207,7 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
                     for (i in res.etas.indices) {
                         val arrivalTime = KmbEtaUtil.toArrivalTime(applicationContext, res.etas[i], res.generated)
                         arrivalTime.routeNo = routeStop.routeNo?:""
-                        arrivalTime.routeSeq = routeStop.routeSeq?:""
+                        arrivalTime.routeSeq = routeStop.routeSequence?:""
                         arrivalTime.stopId = routeStop.stopId?:""
                         arrivalTime.stopSeq = routeStop.sequence?:""
                         arrivalTime.order = Integer.toString(i)
@@ -236,10 +236,10 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
     }
 
     private fun nlbEtaObserver(routeStop: RouteStop,
-                                widgetId: Int,
-                                notificationId: Int,
-                                rowNo: Int,
-                                isLast: Boolean): DisposableObserver<NlbEtaRes> {
+                               widgetId: Int,
+                               notificationId: Int,
+                               rowNo: Int,
+                               isLast: Boolean): DisposableObserver<NlbEtaRes> {
         return object : DisposableObserver<NlbEtaRes>() {
             override fun onNext(res: NlbEtaRes) {
                 if (res.estimatedArrivalTime != null && !TextUtils.isEmpty(res.estimatedArrivalTime.html)) {
@@ -254,7 +254,7 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
                             val arrivalTime = NlbEtaUtil.toArrivalTime(applicationContext, divs[i])
                             arrivalTime.order = Integer.toString(i)
                             arrivalTime.routeNo = routeStop.routeNo?:""
-                            arrivalTime.routeSeq = routeStop.routeSeq?:""
+                            arrivalTime.routeSeq = routeStop.routeSequence?:""
                             arrivalTime.stopId = routeStop.stopId?:""
                             arrivalTime.stopSeq = routeStop.sequence?:""
                             arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
@@ -284,10 +284,10 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
     }
 
     private fun nwstEtaObserver(routeStop: RouteStop,
-                                 widgetId: Int,
-                                 notificationId: Int,
-                                 rowNo: Int,
-                                 isLast: Boolean): DisposableObserver<ResponseBody> {
+                                widgetId: Int,
+                                notificationId: Int,
+                                rowNo: Int,
+                                isLast: Boolean): DisposableObserver<ResponseBody> {
         return object : DisposableObserver<ResponseBody>() {
             override fun onNext(body: ResponseBody) {
                 try {
@@ -300,7 +300,7 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
                         val arrivalTime = NwstEtaUtil.toArrivalTime(applicationContext, routeStop, nwstEta)
                         arrivalTime.companyCode = routeStop.companyCode?:""
                         arrivalTime.routeNo = routeStop.routeNo?:""
-                        arrivalTime.routeSeq = routeStop.routeSeq?:""
+                        arrivalTime.routeSeq = routeStop.routeSequence?:""
                         arrivalTime.stopId = routeStop.stopId?:""
                         arrivalTime.stopSeq = routeStop.sequence?:""
                         arrivalTime.order = Integer.toString(i)
@@ -333,10 +333,10 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
     }
 
     private fun aesBusEtaObserver(routeStop: RouteStop,
-                                   widgetId: Int,
-                                   notificationId: Int,
-                                   rowNo: Int,
-                                   isLast: Boolean): DisposableObserver<AESEtaBusRes> {
+                                  widgetId: Int,
+                                  notificationId: Int,
+                                  rowNo: Int,
+                                  isLast: Boolean): DisposableObserver<AESEtaBusRes> {
         return object : DisposableObserver<AESEtaBusRes>() {
 
             var isError = false
@@ -350,30 +350,34 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
                             statusTime = sdf.parse(res.routeStatusTime)
                         } catch (ignored: ParseException) {
                         }
-
                     }
                     var isAvailable = false
                     val etas = res.busStops
-                    if (etas != null && etas.size > 0) {
+                    if (etas != null && etas.isNotEmpty()) {
                         // TODO: better way to store and show aes eta
+                        if (routeStop.companyCode?.isNotEmpty() == true && routeStop.routeNo?.isNotEmpty() == true && routeStop.routeSequence?.isNotEmpty() == true) {
+                            arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!, routeStop.routeNo!!, routeStop.routeSequence!!)
+                        }
                         for (i in etas.indices) {
                             val (buses, _, busStopId) = etas[i]
                             if (busStopId == null) continue
                             if (busStopId != routeStop.stopId && busStopId != "999") continue
                             if (buses != null && buses.isNotEmpty()) {
+                                val arrivalTimeList = arrayListOf<ArrivalTime>()
                                 for (j in 0 until buses.size) {
                                     isAvailable = true
                                     val bus = buses[j]
                                     val arrivalTime = AESEtaBus.toArrivalTime(applicationContext, bus, statusTime, routeStop)
                                     arrivalTime.routeNo = routeStop.routeNo?:""
-                                    arrivalTime.routeSeq = routeStop.routeSeq?:""
+                                    arrivalTime.routeSeq = routeStop.routeSequence?:""
                                     arrivalTime.stopId = routeStop.stopId?:""
                                     arrivalTime.stopSeq = routeStop.sequence?:""
                                     arrivalTime.order = Integer.toString(j)
                                     arrivalTime.generatedAt = statusTime.time
                                     arrivalTime.updatedAt = System.currentTimeMillis()
-                                    arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
+                                    arrivalTimeList.add(arrivalTime)
                                 }
+                                arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTimeList)
                             }
                             if (isAvailable) {
                                 notifyUpdate(routeStop, C.EXTRA.UPDATED, widgetId, notificationId, rowNo)
@@ -412,10 +416,10 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
     }
     
     private fun mtrLinesAndStationsObserver(routeStop: RouteStop,
-                                             widgetId: Int,
-                                             notificationId: Int,
-                                             rowNo: Int,
-                                             isLast: Boolean): DisposableObserver<ResponseBody> {
+                                            widgetId: Int,
+                                            notificationId: Int,
+                                            rowNo: Int,
+                                            isLast: Boolean): DisposableObserver<ResponseBody> {
         return object : DisposableObserver<ResponseBody>() {
 
             var codeMap = HashMap<String, String>()
@@ -453,11 +457,11 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
     }
 
     private fun mtrScheduleObserver(routeStop: RouteStop,
-                                     widgetId: Int,
-                                     notificationId: Int,
-                                     rowNo: Int,
-                                     isLast: Boolean,
-                                     codeMap: HashMap<String, String>): DisposableObserver<MtrScheduleRes> {
+                                    widgetId: Int,
+                                    notificationId: Int,
+                                    rowNo: Int,
+                                    isLast: Boolean,
+                                    codeMap: HashMap<String, String>): DisposableObserver<MtrScheduleRes> {
         return object : DisposableObserver<MtrScheduleRes>() {
             var isError: Boolean = false
 
@@ -479,7 +483,7 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
                             for (schedule in up) {
                                 val arrivalTime = MtrSchedule.toArrivalTime(applicationContext, "UT", schedule, currentTime, codeMap)
                                 arrivalTime.routeNo = routeStop.routeNo?:""
-                                arrivalTime.routeSeq = routeStop.routeSeq?:""
+                                arrivalTime.routeSeq = routeStop.routeSequence?:""
                                 arrivalTime.stopId = routeStop.stopId?:""
                                 arrivalTime.stopSeq = routeStop.sequence?:""
                                 arrivalTime.order = i.toString()
@@ -492,7 +496,7 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
                             for (schedule in down) {
                                 val arrivalTime = MtrSchedule.toArrivalTime(applicationContext, "DT", schedule, currentTime, codeMap)
                                 arrivalTime.routeNo = routeStop.routeNo?:""
-                                arrivalTime.routeSeq = routeStop.routeSeq?:""
+                                arrivalTime.routeSeq = routeStop.routeSequence?:""
                                 arrivalTime.stopId = routeStop.stopId?:""
                                 arrivalTime.stopSeq = routeStop.sequence?:""
                                 arrivalTime.order = i.toString()
@@ -508,7 +512,7 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
                 }
                 val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
                 arrivalTime.routeNo = routeStop.routeNo?:""
-                arrivalTime.routeSeq = routeStop.routeSeq?:""
+                arrivalTime.routeSeq = routeStop.routeSequence?:""
                 arrivalTime.stopId = routeStop.stopId?:""
                 arrivalTime.stopSeq = routeStop.sequence?:""
                 arrivalTime.order = "0"
@@ -538,7 +542,7 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
         return object : DisposableObserver<ResponseBody>() {
 
             override fun onNext(res: ResponseBody) {
-                disposables2.add(nwstApi.pushToken(randomHex64, LANGUAGE_TC, "Y", PLATFORM,
+                disposables2.add(nwstApi.pushToken(randomHex64, randomHex64, LANGUAGE_TC, "R", DEVICETYPE,
                         NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, APP_VERSION2,
                         NwstRequestUtil.syscode2(), "")
                         .subscribeOn(Schedulers.io())
@@ -550,6 +554,10 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
             }
 
             override fun onComplete() {
+                val preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                val editor = preferences.edit()
+                editor.putString("nwst_tk", randomHex64)
+                editor.apply()
             }
         }
     }
@@ -558,10 +566,30 @@ class EtaService : IntentService(EtaService::class.java.simpleName) {
         return object : DisposableObserver<ResponseBody>() {
 
             override fun onNext(res: ResponseBody) {
+                disposables2.add(nwstApi.adv(LANGUAGE_TC, DEVICETYPE,
+                        NwstRequestUtil.syscode(), PLATFORM, APP_VERSION, APP_VERSION2,
+                        NwstRequestUtil.syscode2(), randomHex64, "")
+                        .subscribeOn(Schedulers.io())
+                        .subscribeWith(nwstAdvObserver(randomHex64)))
+            }
+
+            override fun onError(e: Throwable) {
+                Timber.d(e)
+            }
+
+            override fun onComplete() {
                 val preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
                 val editor = preferences.edit()
                 editor.putString("nwst_tk", randomHex64)
                 editor.apply()
+            }
+        }
+    }
+
+    private fun nwstAdvObserver(randomHex64: String): DisposableObserver<ResponseBody> {
+        return object : DisposableObserver<ResponseBody>() {
+
+            override fun onNext(res: ResponseBody) {
             }
 
             override fun onError(e: Throwable) {

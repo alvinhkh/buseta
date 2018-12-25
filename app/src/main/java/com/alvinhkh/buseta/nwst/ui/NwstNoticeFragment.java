@@ -15,7 +15,7 @@ import android.widget.TextView;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.Route;
+import com.alvinhkh.buseta.route.model.Route;
 import com.alvinhkh.buseta.nwst.NwstService;
 import com.alvinhkh.buseta.nwst.model.NwstNotice;
 import com.alvinhkh.buseta.nwst.util.NwstRequestUtil;

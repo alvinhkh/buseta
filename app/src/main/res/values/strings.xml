@@ -36,6 +36,7 @@
     <string name="minute">分鐘</string>
     <string name="minutes">%1$s分鐘</string>
     <string name="monday_to_friday">星期一至五</string>
+    <string name="monday_to_saturday">星期一至六</string>
     <string name="now">現在</string>
     <string name="open_source_license">開放原始碼授權</string>
     <string name="undo">復原</string>

@@ -13,7 +13,7 @@ import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime.Companion.COLUMN_ROUTE_
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime.Companion.COLUMN_STOP_ID
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime.Companion.COLUMN_STOP_SEQ
 import com.alvinhkh.buseta.kmb.util.KmbEtaUtil
-import com.alvinhkh.buseta.model.RouteStop
+import com.alvinhkh.buseta.route.model.RouteStop
 import com.alvinhkh.buseta.mtr.model.AESEtaBus
 import com.alvinhkh.buseta.mtr.model.MtrSchedule
 import com.alvinhkh.buseta.nlb.util.NlbEtaUtil
@@ -119,7 +119,7 @@ data class ArrivalTime (
             arrivalTime.expire = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).format(calendar.time)
             arrivalTime.companyCode = routeStop?.companyCode?:""
             arrivalTime.routeNo = routeStop?.routeNo?:""
-            arrivalTime.routeSeq = routeStop?.routeSeq?:""
+            arrivalTime.routeSeq = routeStop?.routeSequence?:""
             arrivalTime.stopId = routeStop?.stopId?:""
             arrivalTime.stopSeq = routeStop?.sequence?:""
             return arrivalTime
@@ -141,7 +141,7 @@ data class ArrivalTime (
         fun getList(database: ArrivalTimeDatabase, stop: RouteStop): List<ArrivalTime> {
             return database.arrivalTimeDao().getList(stop.companyCode?:"",
                     stop.routeNo?:"",
-                    stop.routeSeq?:"",
+                    stop.routeSequence?:"",
                     stop.stopId?:"",
                     stop.sequence?:"",
                     System.currentTimeMillis() - 600000,

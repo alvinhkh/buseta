@@ -24,7 +24,7 @@ import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
 import com.alvinhkh.buseta.follow.dao.FollowDatabase;
 import com.alvinhkh.buseta.follow.model.Follow;
-import com.alvinhkh.buseta.model.RouteStop;
+import com.alvinhkh.buseta.route.model.RouteStop;
 import com.alvinhkh.buseta.search.ui.SearchActivity;
 import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;

@@ -20,7 +20,7 @@ import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.datagovhk.ui.MtrBusActivity
 import com.alvinhkh.buseta.kmb.ui.KmbActivity
 import com.alvinhkh.buseta.lwb.ui.LwbActivity
-import com.alvinhkh.buseta.model.RouteStop
+import com.alvinhkh.buseta.route.model.RouteStop
 import com.alvinhkh.buseta.mtr.ui.AESBusActivity
 import com.alvinhkh.buseta.mtr.ui.MtrActivity
 import com.alvinhkh.buseta.nlb.ui.NlbActivity

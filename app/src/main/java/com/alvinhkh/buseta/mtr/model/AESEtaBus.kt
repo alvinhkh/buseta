@@ -3,10 +3,9 @@ package com.alvinhkh.buseta.mtr.model
 import android.content.Context
 import android.location.Location
 import android.text.TextUtils
-import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
-import com.alvinhkh.buseta.model.RouteStop
+import com.alvinhkh.buseta.route.model.RouteStop
 import com.google.gson.annotations.SerializedName
 import timber.log.Timber
 import java.text.ParseException
@@ -122,7 +121,7 @@ data class AESEtaBus(
                         arrivalTime.longitude != 0.0) {
                     val stopLocation = Location("")
                     stopLocation.latitude = routeStop?.latitude!!.toDouble()
-                    stopLocation.longitude = routeStop?.longitude!!.toDouble()
+                    stopLocation.longitude = routeStop.longitude!!.toDouble()
                     val busLocation = Location("")
                     busLocation.latitude = arrivalTime.latitude
                     busLocation.longitude = arrivalTime.longitude

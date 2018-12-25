@@ -4,7 +4,8 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
 
-import com.alvinhkh.buseta.model.RouteStop;
+
+import com.alvinhkh.buseta.route.model.RouteStop;
 
 import java.util.Calendar;
 import java.util.List;

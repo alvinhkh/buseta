@@ -3,7 +3,7 @@ package com.alvinhkh.buseta.route.ui
 import android.support.v4.app.Fragment
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentPagerAdapter
-import com.alvinhkh.buseta.model.Route
+import com.alvinhkh.buseta.route.model.Route
 
 class RoutePagerAdapter(fm: FragmentManager) : FragmentPagerAdapter(fm) {
 

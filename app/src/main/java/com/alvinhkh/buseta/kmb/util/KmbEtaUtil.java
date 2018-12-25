@@ -79,12 +79,15 @@ public class KmbEtaUtil {
                     estimateMinutes = "";
                 }
                 object.setExpired(minutes <= -3);  // time past
-                object.setExpired(object.getExpired() | TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - object.getUpdatedAt()) >= 5); // maybe outdated
-                object.setExpired(object.getExpired() | TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - generatedDate.getTime()) >= 5);  // maybe outdated
+                object.setExpired(object.getExpired() || TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - object.getUpdatedAt()) >= 5); // maybe outdated
+                object.setExpired(object.getExpired() || TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - generatedDate.getTime()) >= 5);  // maybe outdated
                 if (!TextUtils.isEmpty(object.getExpire())) {
                     Date etaExpireDate = etaExpireDateFormat.parse(object.getExpire());
                     if (etaExpireDate != null)
-                        object.setExpired(object.getExpired() | TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - etaExpireDate.getTime()) >= 0);  // expired
+                        object.setExpired(object.getExpired() || TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - etaExpireDate.getTime()) >= 0);  // expired
+                }
+                if (object.getExpired()) {
+                    estimateMinutes = "";
                 }
             } catch (ParseException |ArrayIndexOutOfBoundsException ep) {
                 Timber.d(ep);

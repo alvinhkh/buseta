@@ -41,7 +41,7 @@ class HistoryFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
         with(recyclerView) {
             setHasFixedSize(true)
             layoutManager = GridLayoutManager(context, 2)
-            viewAdapter = HistoryViewAdapter(this, null)
+            viewAdapter = HistoryViewAdapter(this)
             adapter = viewAdapter
             viewModel = ViewModelProviders.of(this@HistoryFragment).get(HistoryViewModel::class.java)
             viewModel.getAsLiveData().observe(this@HistoryFragment, Observer<MutableList<Suggestion>> { it ->

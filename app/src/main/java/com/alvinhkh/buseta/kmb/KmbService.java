@@ -2,6 +2,7 @@ package com.alvinhkh.buseta.kmb;
 
 import com.alvinhkh.buseta.App;
 import com.alvinhkh.buseta.kmb.model.KmbEtaRoutes;
+import com.alvinhkh.buseta.kmb.model.KmbRoutesInStop;
 import com.alvinhkh.buseta.kmb.model.network.KmbAnnounceRes;
 import com.alvinhkh.buseta.kmb.model.network.KmbEtaRes;
 import com.alvinhkh.buseta.kmb.model.network.KmbRouteBoundRes;
@@ -10,12 +11,12 @@ import com.alvinhkh.buseta.kmb.model.network.KmbSpecialRouteRes;
 import com.alvinhkh.buseta.kmb.model.network.KmbStopsRes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.jakewharton.retrofit2.adapter.kotlin.coroutines.experimental.CoroutineCallAdapterFactory;
+import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory;
 
 import java.util.List;
 
 import io.reactivex.Observable;
-import kotlinx.coroutines.experimental.Deferred;
+import kotlinx.coroutines.Deferred;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Response;
@@ -47,6 +48,9 @@ public interface KmbService {
     @GET("FunctionRequest.ashx?action=getSpecialRoute")
     Call<KmbSpecialRouteRes> specialRoute(@Query("route") String route, @Query("bound") String bound);
 
+    @GET("FunctionRequest.ashx?action=getStops")
+    Call<KmbStopsRes> stops(@Query("route") String route, @Query("bound") String bound, @Query("serviceType") String serviceType);
+
     @GET("FunctionRequest.ashx?action=getAnnounce")
     Observable<KmbAnnounceRes> getAnnounce(@Query("route") String route, @Query("bound") String bound);
 
@@ -58,6 +62,9 @@ public interface KmbService {
 
     @GET("FunctionRequest.ashx?action=getStops")
     Observable<KmbStopsRes> getStops(@Query("route") String route, @Query("bound") String bound, @Query("serviceType") String serviceType);
+
+    @GET("FunctionRequest.ashx?action=getRoutesInStop")
+    Observable<KmbRoutesInStop> routesInStop(@Query("bsiCode") String bsiCode);
 
     Retrofit webSearchCoroutine = new Retrofit.Builder()
             .client(App.httpClient)
@@ -99,5 +106,5 @@ public interface KmbService {
             .build();
 
     @GET("GetData.ashx?type=ETA_R")
-    Observable<List<KmbEtaRoutes>> getEtaRoutes();
+    Call<List<KmbEtaRoutes>> etaRoutes();
 }

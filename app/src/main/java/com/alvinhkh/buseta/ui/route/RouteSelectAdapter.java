@@ -11,7 +11,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.model.Route;
+
+import com.alvinhkh.buseta.route.model.Route;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter;
 import com.alvinhkh.buseta.utils.RouteUtil;
 
@@ -85,6 +86,9 @@ public class RouteSelectAdapter extends ArrayListRecyclerViewAdapter<RouteSelect
             } else if (!TextUtils.isEmpty(route.getDestination())) {
                 locationTv.setVisibility(View.VISIBLE);
                 locationTv.setText(context.getString(R.string.destination, route.getDestination()));
+            } else if (!TextUtils.isEmpty(route.getOrigin())) {
+                locationTv.setVisibility(View.VISIBLE);
+                locationTv.setText(route.getOrigin());
             } else {
                 locationTv.setVisibility(View.GONE);
             }

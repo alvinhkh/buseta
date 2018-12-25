@@ -2,12 +2,11 @@ package com.alvinhkh.buseta.kmb.ui
 
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
-import android.view.View
 import android.widget.Toast
 import com.alvinhkh.buseta.C
 
 import com.alvinhkh.buseta.R
-import com.alvinhkh.buseta.model.Route
+import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.ui.BaseActivity
 
 

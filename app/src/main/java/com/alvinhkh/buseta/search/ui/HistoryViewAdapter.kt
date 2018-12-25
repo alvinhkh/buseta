@@ -2,12 +2,15 @@ package com.alvinhkh.buseta.search.ui
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.res.ColorStateList
+import android.os.Build
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
@@ -17,7 +20,7 @@ import com.alvinhkh.buseta.utils.RouteUtil
 
 class HistoryViewAdapter(
         recyclerView: RecyclerView,
-        private var data: MutableList<Data>?
+        private val data: MutableList<Data> = mutableListOf()
 ): RecyclerView.Adapter<HistoryViewAdapter.Holder>() {
 
     private val suggestionDatabase = SuggestionDatabase.getInstance(recyclerView.context)
@@ -33,7 +36,7 @@ class HistoryViewAdapter(
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
-        holder.bindItems(data?.get(position), suggestionDatabase)
+        holder.bindItems(data[position], suggestionDatabase)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
@@ -44,30 +47,27 @@ class HistoryViewAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        return data?.get(position)?.type?:0
+        return data[position].type
     }
 
-    override fun getItemCount(): Int = data?.size?:0
+    override fun getItemCount(): Int = data.size
 
     fun addItem(t: Suggestion): Int {
-        if (data == null) {
-            data = mutableListOf()
-        }
-        data?.add(Data(Data.TYPE_HISTORY, t))
-        val index = data?.size?:0
+        data.add(Data(Data.TYPE_HISTORY, t))
+        val index = data.size
         notifyItemInserted(index)
         return index - 1
     }
 
     fun replaceItem(index: Int, t: Suggestion) {
-        if (index < data?.size?:0 && index >= 0) {
-            data?.set(index, Data(Data.TYPE_HISTORY, t))
+        if (index < data.size && index >= 0) {
+            data[index] = Data(Data.TYPE_HISTORY, t)
             notifyItemChanged(index)
         }
     }
 
     fun clear() {
-        data?.clear()
+        data.clear()
         notifyDataSetChanged()
     }
 
@@ -78,7 +78,11 @@ class HistoryViewAdapter(
             if (data?.type == Data.TYPE_HISTORY) {
                 val suggestion = data.obj as Suggestion
                 itemView.findViewById<TextView>(android.R.id.text1).text = suggestion.route
-                // itemView.findViewById<ImageView>(R.id.icon).drawable
+                if (suggestion.companyCode == C.PROVIDER.MTR) {
+                    itemView.findViewById<ImageView>(R.id.icon).setImageResource(R.drawable.ic_outline_directions_railway_24dp)
+                } else {
+                    itemView.findViewById<ImageView>(R.id.icon).setImageResource(R.drawable.ic_outline_directions_bus_24dp)
+                }
 
                 itemView.setOnClickListener {
                     val intent = Intent(Intent.ACTION_VIEW)

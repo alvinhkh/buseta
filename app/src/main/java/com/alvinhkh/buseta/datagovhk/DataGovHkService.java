@@ -31,8 +31,8 @@ public interface DataGovHkService {
     Call<ResponseBody> mtrBusRoutes();
 
     @GET("mtr/data/mtr_bus_stops.csv")
-    Observable<ResponseBody> mtrBusStops();
+    Call<ResponseBody> mtrBusStops();
 
     @GET("mtr/data/mtr_bus_fares.csv")
-    Observable<ResponseBody> mtrBusFares();
+    Call<ResponseBody> mtrBusFares();
 }

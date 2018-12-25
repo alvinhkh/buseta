@@ -2,7 +2,7 @@ package com.alvinhkh.buseta.nwst.util;
 
 import android.text.TextUtils;
 
-import com.alvinhkh.buseta.model.Route;
+import com.alvinhkh.buseta.route.model.Route;
 import com.alvinhkh.buseta.nwst.model.NwstVariant;
 import com.alvinhkh.buseta.utils.HashUtil;
 
