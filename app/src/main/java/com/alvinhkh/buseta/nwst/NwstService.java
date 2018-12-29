@@ -10,23 +10,21 @@ import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.http.GET;
-import retrofit2.http.HeaderMap;
-import retrofit2.http.Headers;
 import retrofit2.http.Query;
 import retrofit2.http.QueryMap;
 
 
 public interface NwstService {
 
-    String APP_VERSION = "3.5.3";
+    String APP_VERSION = "3.5.5";
 
-    String APP_VERSION2 = "5";
+    String APP_VERSION2 = "49";
 
-    String DEVICETYPE = "iphone";
+    String DEVICETYPE = "android";
 
     String LANGUAGE_TC = "0";
 
-    String PLATFORM = "iPhone";
+    String PLATFORM = "Android";
 
     String QUERY_BM = "bm";
 
@@ -81,26 +79,26 @@ public interface NwstService {
     String TYPE_NIGHT_ROUTES = "1";
 
     Retrofit api = new Retrofit.Builder()
-            .client(App.httpClient2)
+            .client(App.httpClient)
             .baseUrl("http://mobile.nwstbus.com.hk/")
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build();
 
     @GET("api6/getadv.php")
-    Observable<ResponseBody> adv(
+    Call<ResponseBody> adv(
             @Query(QUERY_LANGUAGE) String language,
             @Query("width") String width,
             @Query(QUERY_SYSCODE) String sysCode,
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
             @Query(QUERY_VERSION2) String version2,
-            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
-            @Query(QUERY_TK) String tk,
-            @Query(QUERY_SYSCODE3) String sysCode3
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
+//            @Query(QUERY_TK) String tk,
+//            @Query(QUERY_SYSCODE3) String sysCode3
     );
 
     @GET("push/pushtokenenable.php")
-    Observable<ResponseBody> pushTokenEnable(
+    Call<ResponseBody> pushTokenEnable(
             @Query(QUERY_TK) String tk,
             @Query(QUERY_DEVICETOKEN) String devicetoken,
             @Query(QUERY_LANGUAGE) String language,
@@ -110,12 +108,12 @@ public interface NwstService {
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
             @Query(QUERY_VERSION2) String version2,
-            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
-            @Query(QUERY_SYSCODE3) String sysCode3
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
+//            @Query(QUERY_SYSCODE3) String sysCode3
     );
 
     @GET("push/pushtoken.php")
-    Observable<ResponseBody> pushToken(
+    Call<ResponseBody> pushToken(
             @Query(QUERY_TK) String tk,
             @Query(QUERY_DEVICETOKEN) String devicetoken,
             @Query(QUERY_LANGUAGE) String language,
@@ -125,8 +123,8 @@ public interface NwstService {
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
             @Query(QUERY_VERSION2) String version2,
-            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
-            @Query(QUERY_SYSCODE3) String sysCode3
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
+//            @Query(QUERY_SYSCODE3) String sysCode3
     );
 
     @GET("api6/getmmroutelist.php")
@@ -137,9 +135,9 @@ public interface NwstService {
             @Query(QUERY_SYSCODE) String sysCode,
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
-            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
-            @Query(QUERY_TK) String tk,
-            @Query(QUERY_SYSCODE3) String sysCode3
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
+//            @Query(QUERY_TK) String tk,
+//            @Query(QUERY_SYSCODE3) String sysCode3
     );
 
     @GET("api6/getmmroutelist.php")
@@ -150,9 +148,9 @@ public interface NwstService {
             @Query(QUERY_SYSCODE) String sysCode,
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
-            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
-            @Query(QUERY_TK) String tk,
-            @Query(QUERY_SYSCODE3) String sysCode3
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
+//            @Query(QUERY_TK) String tk,
+//            @Query(QUERY_SYSCODE3) String sysCode3
     );
 
     @GET("api6/getvariantlist.php")
@@ -162,9 +160,9 @@ public interface NwstService {
             @Query(QUERY_SYSCODE) String sysCode,
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
-            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
-            @Query(QUERY_TK) String tk,
-            @Query(QUERY_SYSCODE3) String sysCode3
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
+//            @Query(QUERY_TK) String tk,
+//            @Query(QUERY_SYSCODE3) String sysCode3
     );
 
     @GET("api6/ppstoplist.php")
@@ -174,16 +172,16 @@ public interface NwstService {
             @Query(QUERY_SYSCODE) String sysCode,
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
-            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
-            @Query(QUERY_TK) String tk,
-            @Query(QUERY_SYSCODE3) String sysCode3
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
+//            @Query(QUERY_TK) String tk,
+//            @Query(QUERY_SYSCODE3) String sysCode3
     );
 
     @GET("api6/get_notice_4.php")
     Observable<ResponseBody> notice(@QueryMap Map<String, String> options);
 
     @GET("api6/getnextbus2.php")
-    Observable<ResponseBody> eta(
+    Call<ResponseBody> eta(
             @Query(QUERY_STOP_ID) String stopId,
             @Query(QUERY_SERVICE_NO) String serviceNo,
             @Query("removeRepeatedSuspend") String removeRepeatedSuspend,
@@ -198,9 +196,9 @@ public interface NwstService {
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
             @Query(QUERY_VERSION2) String version2,
-            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
-            @Query(QUERY_TK) String tk,
-            @Query(QUERY_SYSCODE3) String sysCode3
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
+            // @Query(QUERY_TK) String tk,
+            // @Query(QUERY_SYSCODE3) String sysCode3
     );
 
     @GET("api6/getline_multi2.php")
@@ -210,9 +208,9 @@ public interface NwstService {
             @Query(QUERY_SYSCODE) String sysCode,
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
-            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
-            @Query(QUERY_TK) String tk,
-            @Query(QUERY_SYSCODE3) String sysCode3
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
+//            @Query(QUERY_TK) String tk,
+//            @Query(QUERY_SYSCODE3) String sysCode3
     );
 
     @GET("api6/gettimetable.php")
@@ -223,9 +221,9 @@ public interface NwstService {
             @Query(QUERY_SYSCODE) String sysCode,
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
-            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
-            @Query(QUERY_TK) String tk,
-            @Query(QUERY_SYSCODE3) String sysCode3
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
+//            @Query(QUERY_TK) String tk,
+//            @Query(QUERY_SYSCODE3) String sysCode3
     );
 
 }

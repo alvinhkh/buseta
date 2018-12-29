@@ -102,7 +102,6 @@ dependencies {
     implementation 'com.google.firebase:firebase-core:16.0.6'
     implementation 'com.google.firebase:firebase-messaging:17.3.4'
     implementation 'com.google.maps.android:android-maps-utils:0.5'
-    implementation 'com.firebase:firebase-jobdispatcher:0.8.5'
     implementation "android.arch.work:work-runtime:1.0.0-beta01"
     implementation (group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1') {
         exclude group: 'stax', module: 'stax-api'
@@ -126,7 +125,6 @@ dependencies {
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.0'
     implementation 'org.osmdroid:osmdroid-android:6.0.2'
-    implementation 'com.github.MKergall:osmbonuspack:6.5.2'
     implementation 'org.osgeo:proj4j:0.1.0'
     implementation 'org.slf4j:slf4j-nop:1.7.25'
     implementation 'com.crashlytics.sdk.android:crashlytics:2.9.8'

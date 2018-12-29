@@ -89,20 +89,18 @@ public interface KmbService {
             .client(App.httpClient)
             .baseUrl("http://etav3.kmb.hk")
             .addConverterFactory(GsonConverterFactory.create(gson))
-            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build();
 
     @GET("?action=geteta")
-    Observable<KmbEtaRes> getEta(@Query("route") String route, @Query("bound") String bound,
-                                 @Query("stop") String stop, @Query("stop_seq") String stop_seq,
-                                 @Query("serviceType") String serviceType, @Query("lang") String lang,
-                                 @Query("updated") String updated);
+    Call<KmbEtaRes> eta(@Query("route") String route, @Query("bound") String bound,
+                        @Query("stop") String stop, @Query("stop_seq") String stop_seq,
+                        @Query("serviceType") String serviceType, @Query("lang") String lang,
+                        @Query("updated") String updated);
 
     Retrofit etadatafeed = new Retrofit.Builder()
             .client(App.httpClient)
             .baseUrl("http://etadatafeed.kmb.hk:1933")
             .addConverterFactory(GsonConverterFactory.create(gson))
-            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build();
 
     @GET("GetData.ashx?type=ETA_R")

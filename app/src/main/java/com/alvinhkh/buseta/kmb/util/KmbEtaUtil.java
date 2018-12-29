@@ -4,12 +4,8 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.kmb.model.KmbEta;
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
-
-import org.jsoup.Jsoup;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -21,26 +17,6 @@ import timber.log.Timber;
 
 
 public class KmbEtaUtil {
-
-    public static String text(String text) {
-        return Jsoup.parse(text).text().replaceAll("　", " ")
-                .replaceAll(" ?預定班次", "").replaceAll(" ?時段班次", "")
-                .replaceAll(" ?Scheduled", "");
-    }
-
-    public static Long parseCapacity(String ol) {
-        if (!TextUtils.isEmpty(ol)) {
-            if (ol.equalsIgnoreCase("f")) {
-                return 10L;
-            } else if (ol.equalsIgnoreCase("e")) {
-                return 0L;
-            } else if (ol.equalsIgnoreCase("n")) {
-                return -1L;
-            }
-            return Long.parseLong(ol);
-        }
-        return -1L;
-    }
 
     public static ArrivalTime estimate(@NonNull Context context, @NonNull ArrivalTime object) {
         SimpleDateFormat etaDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.ENGLISH);
@@ -100,23 +76,6 @@ public class KmbEtaUtil {
                 }
             }
         }
-        return object;
-    }
-
-    public static ArrivalTime toArrivalTime(@NonNull Context context,
-                                            @NonNull KmbEta eta,
-                                            @NonNull Long generatedTime) {
-        ArrivalTime object = new ArrivalTime();
-        object.setCompanyCode(C.PROVIDER.KMB);
-        object.setCapacity(parseCapacity(eta.ol));
-        object.setExpire(eta.expire);
-        object.setSchedule(!TextUtils.isEmpty(eta.schedule) && eta.schedule.equals("Y"));
-        object.setHasWheelchair(!TextUtils.isEmpty(eta.wheelchair) && eta.wheelchair.equals("Y"));
-        object.setHasWifi(!TextUtils.isEmpty(eta.wifi) && eta.wifi.equals("Y"));
-        object.setText(text(eta.time));
-        object.setGeneratedAt(generatedTime);
-        object.setUpdatedAt(System.currentTimeMillis());
-        object = ArrivalTime.Companion.estimate(context, object);
         return object;
     }
 }

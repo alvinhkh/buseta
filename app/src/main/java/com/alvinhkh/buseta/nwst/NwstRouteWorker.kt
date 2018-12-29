@@ -17,7 +17,7 @@ import com.alvinhkh.buseta.nwst.util.NwstRequestUtil
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.model.Suggestion
-import com.alvinhkh.buseta.utils.RouteUtil
+import com.alvinhkh.buseta.utils.HashUtil
 import timber.log.Timber
 
 class NwstRouteWorker(context : Context, params : WorkerParameters)
@@ -45,11 +45,26 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
         val routeList = arrayListOf<Route>()
         val timeNow = System.currentTimeMillis() / 1000
 
+//        val syscode3 = preferences.getString("nwst_syscode3", "")
+//        val randomHex64 = HashUtil.randomHexString(64)
+//        val tk = randomHex64
+//        nwstService.pushTokenEnable(tk, tk, NwstService.LANGUAGE_TC, "Y", NwstService.DEVICETYPE,
+//                NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
+//                NwstRequestUtil.syscode2(), syscode3).execute()
+//        nwstService.pushToken(tk, tk, NwstService.LANGUAGE_TC, "R", NwstService.DEVICETYPE,
+//                NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
+//                NwstRequestUtil.syscode2(), syscode3).execute()
+//        nwstService.adv(NwstService.LANGUAGE_TC, NwstService.DEVICETYPE,
+//                NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
+//                NwstRequestUtil.syscode2(), tk, syscode3).execute()
+//        val editor = preferences.edit()
+//        editor.putString("nwst_tk", tk)
+//        editor.apply()
+
         try {
             val response = nwstService.routeList(routeNo, TYPE_ALL_ROUTES,
                     LANGUAGE_TC, NwstRequestUtil.syscode(), PLATFORM, APP_VERSION,
-                    NwstRequestUtil.syscode2(), preferences.getString("nwst_tk", ""),
-                    preferences.getString("nwst_syscode3", "")).execute()
+                    NwstRequestUtil.syscode2()).execute()
             if (!response.isSuccessful) {
                 return Result.failure(outputData)
             }
@@ -63,8 +78,7 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
                 if (nwstRoute != null && nwstRoute.routeNo.isNotBlank()) {
                     val response2 = nwstService.variantList(nwstRoute.rdv, LANGUAGE_TC,
                             NwstRequestUtil.syscode(), PLATFORM, APP_VERSION,
-                            NwstRequestUtil.syscode2(), preferences.getString("nwst_tk", ""),
-                            preferences.getString("nwst_syscode3", "")).execute()
+                            NwstRequestUtil.syscode2()).execute()
                     if (!response2.isSuccessful) {
                         return Result.failure(outputData)
                     }

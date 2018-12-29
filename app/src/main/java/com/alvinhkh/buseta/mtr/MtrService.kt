@@ -30,11 +30,11 @@ interface MtrService {
     fun getSchedule(@Query("key") key: String,
                     @Query("line") line: String,
                     @Query("sta") sta: String,
-                    @Query("lang") lang: String): Observable<MtrScheduleRes>
+                    @Query("lang") lang: String): Call<MtrScheduleRes>
 
     @Headers("Content-Type: application/json")
     @POST("getBusStopsDetail")
-    fun getBusStopsDetail(@Body request: AESEtaBusStopsRequest): Observable<AESEtaBusRes>
+    fun busStopsDetail(@Body request: AESEtaBusStopsRequest): Call<AESEtaBusRes>
 
     @GET("alert/ryg_line_status.xml")
     fun lineStatus(): Observable<MtrLineStatusRes>
@@ -63,7 +63,6 @@ interface MtrService {
                 .client(App.httpClient)
                 .baseUrl("https://mavmwfs1004.azurewebsites.net/AES/AESService.svc/")
                 .addConverterFactory(GsonConverterFactory.create(gson))
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build()
 
         val tnews = Retrofit.Builder()

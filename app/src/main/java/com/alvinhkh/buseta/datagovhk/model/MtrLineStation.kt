@@ -17,6 +17,17 @@ data class MtrLineStation(
         fun fromCSV(text: String, lineCode: String): List<MtrLineStation> {
             if (text.isBlank()) return listOf()
             val l: MutableList<MtrLineStation> = mutableListOf()
+            fromCSV(text).forEach {
+                if (it.lineCode == lineCode) {
+                    l.add(it)
+                }
+            }
+            return l
+        }
+
+        fun fromCSV(text: String): List<MtrLineStation> {
+            if (text.isBlank()) return listOf()
+            val l: MutableList<MtrLineStation> = mutableListOf()
             val csvParser = CSVParserBuilder().withSeparator(',')
                     .withQuoteChar('"')
                     .withStrictQuotes(false)
@@ -31,7 +42,6 @@ data class MtrLineStation(
             for (i in 1 until lines.size) {
                 val line = lines[i]
                 if (line.size <= 6 || line[0].isBlank()) continue
-                if (line[0] != lineCode) continue
                 val station = MtrLineStation()
                 station.lineCode = line[0]
                 station.direction = "";

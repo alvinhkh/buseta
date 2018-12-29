@@ -18,6 +18,9 @@ interface ArrivalTimeDao {
     @Query("DELETE FROM eta")
     fun clear(): Int
 
+    @Query("DELETE FROM eta WHERE company = :companyCode AND route_no = :routeNo")
+    fun clear(companyCode: String, routeNo: String): Int
+
     @Query("DELETE FROM eta WHERE company = :companyCode AND route_no = :routeNo AND route_seq = :routeSeq")
     fun clear(companyCode: String, routeNo: String, routeSeq: String): Int
 

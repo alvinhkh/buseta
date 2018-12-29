@@ -21,18 +21,6 @@ import java.util.regex.Pattern;
 
 public class NlbEtaUtil {
 
-    public static String text(String text) {
-        return Jsoup.parse(text).text().replaceAll("　", " ")
-                .replaceAll(" ?預計時間", "")
-                .replaceAll(" ?Estimated time", "")
-                .replaceAll(" ?預定班次", "")
-                .replaceAll(" ?Scheduled", "")
-                .replaceAll("此路線於未來([0-9]+)分鐘沒有班次途經本站", "$1分鐘+")
-                .replaceAll("This route has no departure via this stop in next ([0-9]+) mins", "$1 mins+")
-                .replaceAll("此路線的巴士預計抵站時間查詢服務將於稍後推出", "此路線未有預計抵站時間服務")
-                .replaceAll("The inquiry service of bus estimated time of arrival on this route will be come soon", "ETA service on this route will be come soon");
-    }
-
     public static ArrivalTime estimate(@NonNull Context context,
                                        @NonNull ArrivalTime object) {
         if (!TextUtils.isEmpty(object.getText())) {
@@ -51,19 +39,6 @@ public class NlbEtaUtil {
                 object.setExpired(expired);
             }
         }
-        return object;
-    }
-
-    public static ArrivalTime toArrivalTime(@NonNull Context context,
-                                            @NonNull Element div) {
-        ArrivalTime object = ArrivalTime.Companion.emptyInstance(context, null);
-        object.setCompanyCode(C.PROVIDER.NLB);
-        String text = div.text();
-        object.setText(text(text));
-        object.setSchedule(!TextUtils.isEmpty(text) && (text.contains("預定班次") || text.contains("Scheduled")));
-        object.setHasWheelchair((div.getElementsByAttributeValueContaining("alt", "Wheelchair").size() > 0 ||
-                div.getElementsByAttributeValueContaining("alt", "輪椅").size() > 0));
-        object = ArrivalTime.Companion.estimate(context, object);
         return object;
     }
 }

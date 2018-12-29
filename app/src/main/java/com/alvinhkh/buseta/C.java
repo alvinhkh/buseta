@@ -11,8 +11,6 @@ public class C {
 
         String FOLLOW_UPDATE = "com.alvinhkh.buseta.FOLLOW_UPDATE";
 
-        String HISTORY_UPDATE = "com.alvinhkh.buseta.HISTORY_UPDATE";
-
         String LOCATION_UPDATE = "com.alvinhkh.buseta.LOCATION_UPDATE";
 
         String WIDGET_UPDATE = "com.alvinhkh.buseta.WIDGET_UPDATE";
@@ -47,6 +45,8 @@ public class C {
 
         String LOCATION_OBJECT = "com.alvinhkh.buseta.LOCATION_OBJECT";
 
+        String ROUTE_ID = "com.alvinhkh.buseta.ROUTE_ID";
+
         String ROUTE_NO = "com.alvinhkh.buseta.ROUTE_NO";
 
         String ROUTE_LIST = "com.alvinhkh.buseta.ROUTE_LIST";
@@ -61,11 +61,15 @@ public class C {
 
         String ROUTE_TIMETABLE_HTML = "com.alvinhkh.buseta.ROUTE_TIMETABLE_HTML";
 
+        String STOP_ID = "com.alvinhkh.buseta.STOP_ID";
+
         String STOP_LIST = "com.alvinhkh.buseta.STOP_LIST";
 
         String STOP_OBJECT = "com.alvinhkh.buseta.STOP_OBJECT";
 
         String STOP_OBJECT_STRING = "com.alvinhkh.buseta.STOP_OBJECT_STRING";
+
+        String STOP_SEQUENCE = "com.alvinhkh.buseta.STOP_SEQUENCE";
 
         String TYPE = "com.alvinhkh.buseta.TYPE";
 
@@ -74,8 +78,6 @@ public class C {
         String NOTIFICATION_ID = "com.alvinhkh.buseta.NOTIFICATION_ID";
 
         String MANUAL = "com.alvinhkh.buseta.MANUAL";
-
-        String ROW = "com.alvinhkh.buseta.ROW";
 
         String MESSAGE_RID = "com.alvinhkh.buseta.MESSAGE_RID";
 

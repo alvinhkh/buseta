@@ -2,6 +2,7 @@ package com.alvinhkh.buseta.service
 
 import android.app.IntentService
 import android.content.Intent
+import android.content.SharedPreferences
 import android.support.v7.preference.PreferenceManager
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
@@ -9,6 +10,7 @@ import androidx.work.WorkManager
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.datagovhk.LrtFeederWorker
+import com.alvinhkh.buseta.datagovhk.MtrLineWorker
 import com.alvinhkh.buseta.kmb.KmbEtaRouteWorker
 import com.alvinhkh.buseta.mtr.AESBusWorker
 import com.alvinhkh.buseta.mtr.MtrResourceWorker
@@ -22,9 +24,12 @@ class ProviderUpdateService: IntentService(TAG) {
 
     private lateinit var suggestionDatabase: SuggestionDatabase
 
+    private lateinit var sharedPreferences: SharedPreferences
+
     override fun onCreate() {
         super.onCreate()
         suggestionDatabase = SuggestionDatabase.getInstance(this)!!
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
     }
 
     override fun onHandleIntent(intent: Intent?) {
@@ -75,6 +80,14 @@ class ProviderUpdateService: IntentService(TAG) {
         WorkManager.getInstance()
                 .enqueue(OneTimeWorkRequest.Builder(LrtFeederWorker::class.java).addTag(TAG)
                         .setInputData(dataLrtFeeder).build())
+
+        val dataMtrLine = Data.Builder()
+                .putBoolean(C.EXTRA.MANUAL, manualUpdate)
+                .putString(C.EXTRA.COMPANY_CODE, C.PROVIDER.MTR)
+                .build()
+        WorkManager.getInstance()
+                .enqueue(OneTimeWorkRequest.Builder(MtrLineWorker::class.java).addTag(TAG)
+                        .setInputData(dataMtrLine).build())
 
         val dataNlb = Data.Builder()
                 .putBoolean(C.EXTRA.MANUAL, manualUpdate)

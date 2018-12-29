@@ -13,6 +13,8 @@ data class Route(
         var id: Long = 0,
         @ColumnInfo(name = COLUMN_CODE, typeAffinity = ColumnInfo.TEXT)
         var code: String? = "",
+        @ColumnInfo(name = COLUMN_COLOUR, typeAffinity = ColumnInfo.TEXT)
+        var colour: String? = "",
         @ColumnInfo(name = COLUMN_COMPANY_CODE, typeAffinity = ColumnInfo.TEXT)
         var companyCode: String? = "",
         @ColumnInfo(name = COLUMN_ORIGIN, typeAffinity = ColumnInfo.TEXT)
@@ -50,6 +52,7 @@ data class Route(
             parcel.readString(),
             parcel.readString(),
             parcel.readString(),
+            parcel.readString(),
             parcel.readValue(Boolean::class.java.classLoader) as? Boolean,
             parcel.readInt(),
             parcel.readString(),
@@ -59,6 +62,7 @@ data class Route(
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeLong(id)
         parcel.writeString(code)
+        parcel.writeString(colour)
         parcel.writeString(companyCode)
         parcel.writeString(origin)
         parcel.writeString(destination)
@@ -89,6 +93,7 @@ data class Route(
         const val TABLE_NAME = "routes"
         const val COLUMN_ID = "_id"
         const val COLUMN_CODE = "code"
+        const val COLUMN_COLOUR = "colour"
         const val COLUMN_COMPANY_CODE = "company_code"
         const val COLUMN_ORIGIN = "origin"
         const val COLUMN_DESTINATION = "destination"

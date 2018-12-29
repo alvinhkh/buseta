@@ -258,7 +258,7 @@ public class MtrLineStationsFragment extends Fragment
             return;
         }
         codeMap.clear();
-        disposables.add(dataGovHkService.mtrLinesAndStations()
+        disposables.add(dataGovHkService.getMtrLinesAndStations()
                 .retryWhen(new RetryWithDelay(5, 3000))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())

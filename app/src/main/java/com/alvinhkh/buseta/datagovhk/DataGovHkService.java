@@ -18,14 +18,8 @@ public interface DataGovHkService {
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build();
 
-    @GET("mtr/data/mtr_bus_routes.csv")
-    Observable<ResponseBody> getMtrBusRoutes();
-
     @GET("mtr/data/mtr_lines_and_stations.csv")
-    Observable<ResponseBody> mtrLinesAndStations();
-
-    @GET("mtr/data/mtr_lines_fares.csv")
-    Observable<ResponseBody> mtrLinesFares();
+    Observable<ResponseBody> getMtrLinesAndStations();
 
     @GET("mtr/data/mtr_bus_routes.csv")
     Call<ResponseBody> mtrBusRoutes();
@@ -35,4 +29,7 @@ public interface DataGovHkService {
 
     @GET("mtr/data/mtr_bus_fares.csv")
     Call<ResponseBody> mtrBusFares();
+
+    @GET("mtr/data/mtr_lines_and_stations.csv")
+    Call<ResponseBody> mtrLinesAndStations();
 }

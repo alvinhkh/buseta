@@ -58,6 +58,6 @@ public interface NlbService {
     Observable<NlbNewsRes> getNew(@Body NlbNewsRequest body);
 
     @POST("stop.php?action=estimatedArrivalTime")
-    Observable<NlbEtaRes> eta(@Body NlbEtaRequest body);
+    Call<NlbEtaRes> eta(@Body NlbEtaRequest body);
 
 }

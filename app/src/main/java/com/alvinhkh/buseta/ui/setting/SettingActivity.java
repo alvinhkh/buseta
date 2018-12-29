@@ -209,9 +209,6 @@ public class SettingActivity extends BasePreferenceActivity {
                                                     : R.string.message_clear_fail_search_history,
                                             Snackbar.LENGTH_SHORT);
                                     snackbar.show();
-                                    Intent intent = new Intent(C.ACTION.HISTORY_UPDATE);
-                                    intent.putExtra(C.EXTRA.UPDATED, true);
-                                    mActivity.sendBroadcast(intent);
                                 }
                             })
                             .show();

@@ -30,7 +30,7 @@ public class App extends Application {
 
     public static OkHttpClient httpClient;
 
-    public static OkHttpClient httpClient2;
+//    public static OkHttpClient httpClient2;
 
     @Override
     public void onCreate() {
@@ -43,13 +43,13 @@ public class App extends Application {
                 .writeTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(60, TimeUnit.SECONDS)
                 .build();
-        OkHttpClient.Builder builder2 = new OkHttpClient.Builder();
-        builder2.addNetworkInterceptor(new UserAgentInterceptor("CitybusNWFB/5 CFNetwork/975.0.3 Darwin/18.2.0"));
-        httpClient2 = builder2
-                .connectTimeout(30, TimeUnit.SECONDS)
-                .writeTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(60, TimeUnit.SECONDS)
-                .build();
+//        OkHttpClient.Builder builder2 = new OkHttpClient.Builder();
+//        builder2.addNetworkInterceptor(new UserAgentInterceptor("CitybusNWFB/5 CFNetwork/975.0.3 Darwin/18.2.0"));
+//        httpClient2 = builder2
+//                .connectTimeout(30, TimeUnit.SECONDS)
+//                .writeTimeout(30, TimeUnit.SECONDS)
+//                .readTimeout(60, TimeUnit.SECONDS)
+//                .build();
 
         Crashlytics crashlytics = new Crashlytics.Builder()
                 .core(new CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build())

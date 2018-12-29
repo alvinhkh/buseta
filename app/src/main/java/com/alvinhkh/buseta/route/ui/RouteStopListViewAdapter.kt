@@ -321,11 +321,11 @@ class RouteStopListViewAdapter(
                                 2 -> {
                                     itemView.findViewById<TextView>(R.id.eta3).text = etaText
                                 }
-                                else -> {
-                                    etaText.insert(0, "  ")
-                                    etaText.insert(0, itemView.findViewById<TextView>(R.id.eta3).text)
-                                    itemView.findViewById<TextView>(R.id.eta3).text = etaText
-                                }
+//                                else -> {
+//                                    etaText.insert(0, "  ")
+//                                    etaText.insert(0, itemView.findViewById<TextView>(R.id.eta3).text)
+//                                    itemView.findViewById<TextView>(R.id.eta3).text = etaText
+//                                }
                             }
                         }
                     }

@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "e56b211c673abf6a0b66084bdabab1d1",
+    "identityHash": "35e20aa9fac12c57aa258b7e6c3e15fe",
     "entities": [
       {
         "tableName": "routes",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `code` TEXT, `company_code` TEXT, `origin` TEXT, `destination` TEXT, `name` TEXT, `sequence` TEXT, `service_type` TEXT, `description` TEXT, `is_special` INTEGER, `stops_start_sequence` INTEGER, `info_key` TEXT, `rdv` TEXT, `last_update` INTEGER, `map_coordinates` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `code` TEXT, `colour` TEXT, `company_code` TEXT, `origin` TEXT, `destination` TEXT, `name` TEXT, `sequence` TEXT, `service_type` TEXT, `description` TEXT, `is_special` INTEGER, `stops_start_sequence` INTEGER, `info_key` TEXT, `rdv` TEXT, `last_update` INTEGER, `map_coordinates` TEXT NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -17,6 +17,12 @@
           {
             "fieldPath": "code",
             "columnName": "code",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "colour",
+            "columnName": "colour",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -284,7 +290,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"e56b211c673abf6a0b66084bdabab1d1\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"35e20aa9fac12c57aa258b7e6c3e15fe\")"
     ]
   }
 }

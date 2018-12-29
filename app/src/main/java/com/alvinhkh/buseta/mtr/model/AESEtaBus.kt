@@ -1,11 +1,9 @@
 package com.alvinhkh.buseta.mtr.model
 
 import android.content.Context
-import android.location.Location
 import android.text.TextUtils
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
-import com.alvinhkh.buseta.route.model.RouteStop
 import com.google.gson.annotations.SerializedName
 import timber.log.Timber
 import java.text.ParseException
@@ -88,52 +86,6 @@ data class AESEtaBus(
                     }
                 }
             }
-            return arrivalTime
-        }
-        
-        fun toArrivalTime(context: Context,
-                          aesEtaBus: AESEtaBus,
-                          statusTime: Date,
-                          routeStop: RouteStop?): ArrivalTime {
-            val sdf = SimpleDateFormat("HH:mm", Locale.ENGLISH)
-            var arrivalTime = ArrivalTime.emptyInstance(context, routeStop)
-            arrivalTime.estimate = aesEtaBus.arrivalTimeText.orEmpty()
-            val calendar = Calendar.getInstance()
-            calendar.time = statusTime
-            calendar.add(Calendar.SECOND, aesEtaBus.arrivalTimeInSecond.orEmpty().toInt())
-            arrivalTime.text = sdf.format(calendar.time)
-            if (!aesEtaBus.busRemark.isNullOrEmpty()) {
-                arrivalTime.text += " " + aesEtaBus.busRemark
-            }
-            arrivalTime.plate = aesEtaBus.busId.orEmpty()
-            arrivalTime.isSchedule = aesEtaBus.isScheduled == "1"
-            arrivalTime.latitude = 0.0
-            arrivalTime.longitude = 0.0
-            arrivalTime.distanceKM = -1.0
-            if (!arrivalTime.isSchedule) {
-                aesEtaBus.busLocation?.let {
-                    arrivalTime.latitude = it.latitude
-                    arrivalTime.longitude = it.longitude
-                }
-                if (!routeStop?.latitude.isNullOrEmpty() &&
-                        !routeStop?.longitude.isNullOrEmpty() &&
-                        arrivalTime.latitude != 0.0 &&
-                        arrivalTime.longitude != 0.0) {
-                    val stopLocation = Location("")
-                    stopLocation.latitude = routeStop?.latitude!!.toDouble()
-                    stopLocation.longitude = routeStop.longitude!!.toDouble()
-                    val busLocation = Location("")
-                    busLocation.latitude = arrivalTime.latitude
-                    busLocation.longitude = arrivalTime.longitude
-                    if (busLocation.distanceTo(stopLocation).toDouble() != 0.0) {
-                        arrivalTime.distanceKM = busLocation.distanceTo(stopLocation) / 1000.0
-                    } else {
-                        arrivalTime.distanceKM = 0.0
-                    }
-                }
-            }
-            arrivalTime.updatedAt = System.currentTimeMillis()
-            arrivalTime = ArrivalTime.estimate(context, arrivalTime)
             return arrivalTime
         }
 

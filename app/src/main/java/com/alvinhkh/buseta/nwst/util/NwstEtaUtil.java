@@ -26,20 +26,6 @@ import timber.log.Timber;
 
 public class NwstEtaUtil {
 
-    public static String text(String text) {
-        return Jsoup.parse(text).text().replaceAll("　", " ")
-                .replaceAll(" ?預定班次", "")
-                .replaceAll(" ?预定班次", "")
-                .replaceAll(" ?Scheduled", "")
-                .replaceAll("預計未來([0-9]+)分鐘沒有抵站班次或服務時間已過", "$1分鐘+/已過服務時間")
-                .replaceAll("预计未来([0-9]+)分钟没有抵站班次或服务时间已过", "$1分钟+/已过服务时间")
-                .replaceAll("No departure estimated in the next ([0-9]+) min or outside service hours", "$1 mins+/outside service hours")
-                .replaceAll("。$", "").replaceAll("\\.$", "")
-                .replaceAll("往: ", "往")
-                .replaceAll(" ?新巴", "")
-                .replaceAll(" ?城巴", "");
-    }
-
     public static ArrivalTime estimate(@NonNull Context context, @NonNull ArrivalTime object) {
         SimpleDateFormat isoDf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ENGLISH);
         Date generatedDate = object.getGeneratedAt() > 0L ? new Date() : new Date(object.getGeneratedAt());
@@ -122,58 +108,6 @@ public class NwstEtaUtil {
                 }
             }
         }
-        return object;
-    }
-
-    private static Float parseDistance(String text) {
-        if (TextUtils.isEmpty(text)) return -1.0f;
-        Matcher matcher = Pattern.compile("[距離|距离|Distance]: (\\d*\\.?\\d*)").matcher(text);
-        if (matcher.find()) {
-            Float distanceKM = Float.valueOf(matcher.group(1));
-            if (distanceKM < 0.0f) {
-                distanceKM = -1.0f;
-            } else if (distanceKM > 10000.0f) {
-                // filter out extreme value
-                distanceKM = -1.0f;
-            }
-            return distanceKM;
-        }
-        return -1.0f;
-    }
-
-    public static ArrivalTime toArrivalTime(@NonNull Context context,
-                                            @NonNull RouteStop routeStop,
-                                            @NonNull NwstEta nwstEta) {
-        ArrivalTime object = ArrivalTime.Companion.emptyInstance(context, routeStop);
-        object.setCompanyCode(C.PROVIDER.NWST);
-        if (nwstEta.getCompanyCode().equals(C.PROVIDER.CTB) || nwstEta.getCompanyCode().equals(C.PROVIDER.CTB)) {
-            object.setCompanyCode(nwstEta.getCompanyCode());
-        }
-        object.setText(text(nwstEta.getTitle()));
-        String subtitle = text(nwstEta.getSubtitle());
-        if (!TextUtils.isEmpty(subtitle)) {
-            if (subtitle.contains("距離") || subtitle.contains("距离") || subtitle.contains("Distance")) {
-                object.setDistanceKM(parseDistance(subtitle));
-            }
-            if (object.getDistanceKM() < 0) {
-                object.setText(object.getText() + " " + subtitle);
-            }
-        }
-        object.setNote(nwstEta.getBoundText().trim());
-        object.setIsoTime(nwstEta.getEtaIsoTime());
-        object.setSchedule(!TextUtils.isEmpty(nwstEta.getSubtitle()) && (nwstEta.getSubtitle().contains("預定班次") || nwstEta.getSubtitle().contains("预定班次") || nwstEta.getSubtitle().contains("Scheduled")));
-        String[] data = nwstEta.getServerTime().split(":");
-        if (data.length == 3) {
-            try {
-                Calendar c = Calendar.getInstance();
-                c.set(Calendar.HOUR, Integer.parseInt(data[0]));
-                c.set(Calendar.MINUTE, Integer.parseInt(data[1]));
-                c.set(Calendar.SECOND, Integer.parseInt(data[2]));
-                object.setGeneratedAt(c.getTime().getTime());
-            } catch (NumberFormatException ignored) {}
-        }
-        object.setUpdatedAt(System.currentTimeMillis());
-        object = ArrivalTime.Companion.estimate(context, object);
         return object;
     }
 }

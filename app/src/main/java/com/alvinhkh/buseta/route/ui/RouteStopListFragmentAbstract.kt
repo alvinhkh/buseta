@@ -34,6 +34,7 @@ import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.follow.model.Follow
 import com.alvinhkh.buseta.kmb.KmbStopListWorker
 import com.alvinhkh.buseta.lwb.LwbStopListWorker
+import com.alvinhkh.buseta.mtr.ui.AESBusStopListFragment
 import com.alvinhkh.buseta.nwst.NwstStopListWorker
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.model.RouteStop
@@ -369,10 +370,14 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
     override fun onRefresh() {
         swipeRefreshLayout.isRefreshing = false
         if (context != null && viewAdapter.itemCount > 0) {
+            // TODO: refresh stop list directly in eta service, instead of sending routestop objects
             val routeStopList = arrayListOf<RouteStop>()
             for (i in 0 until viewAdapter.itemCount) {
                 if (viewAdapter.getItem(i)?.type == TYPE_ROUTE_STOP && viewAdapter.getItem(i)?.obj is RouteStop) {
                     routeStopList.add(viewAdapter.getItem(i)?.obj as RouteStop)
+                    if (this is AESBusStopListFragment) {
+                        break
+                    }
                 }
             }
             try {

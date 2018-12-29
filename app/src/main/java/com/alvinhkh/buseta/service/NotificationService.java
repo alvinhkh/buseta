@@ -120,7 +120,6 @@ public class NotificationService extends Service {
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
         String action = intent.getAction();
         int notificationId = extras.getInt(C.EXTRA.NOTIFICATION_ID);
-        int rowId = extras.getInt(C.EXTRA.ROW);
         int widgetId = extras.getInt(C.EXTRA.WIDGET_UPDATE);
         if (action != null && action.equals(C.ACTION.CANCEL)) {
             FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
@@ -146,7 +145,6 @@ public class NotificationService extends Service {
             Intent startIntent = new Intent(getApplicationContext(), EtaService.class);
             startIntent.putExtra(C.EXTRA.STOP_OBJECT, routeStop);
             startIntent.putExtra(C.EXTRA.NOTIFICATION_ID, notificationId);
-            startIntent.putExtra(C.EXTRA.ROW, rowId);
             startIntent.putExtra(C.EXTRA.WIDGET_UPDATE, widgetId);
             startService(startIntent);
         }

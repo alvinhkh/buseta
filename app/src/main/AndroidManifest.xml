@@ -173,14 +173,6 @@
             android:enabled="true"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
         <service
-            android:name=".arrivaltime.service.EtaJobService"
-            android:enabled="true"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.firebase.jobdispatcher.ACTION_EXECUTE" />
-            </intent-filter>
-        </service>
-        <service
             android:name=".service.NotificationService"
             android:enabled="true" />
         <service

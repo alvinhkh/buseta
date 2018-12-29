@@ -33,9 +33,11 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
         val routeSequence = inputData.getString(C.EXTRA.ROUTE_SEQUENCE)?:return Result.failure()
         val routeServiceType = inputData.getString(C.EXTRA.ROUTE_SERVICE_TYPE)?:""
         val routeInfoKey = inputData.getString(C.EXTRA.ROUTE_INFO_KEY)?:return Result.failure()
-        var outputData = Data.EMPTY
+        var outputData: Data
 
-        val preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+//        val preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+//        val tk = preferences.getString("nwst_tk", "")
+//        val syscode3 = preferences.getString("nwst_syscode3", "")
         val qInfo = paramInfo(companyCode, routeSequence, routeInfoKey)
         if (qInfo.isNullOrEmpty()) {
             return Result.failure()
@@ -43,10 +45,8 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
         try {
             val syscode = NwstRequestUtil.syscode()
             val syscode2 = NwstRequestUtil.syscode2()
-            val tk = preferences.getString("nwst_tk", "")
-            val syscode3 = preferences.getString("nwst_syscode3", "")
             val response = nwstService.ppStopList(qInfo, LANGUAGE_TC,
-                    syscode, PLATFORM, APP_VERSION, syscode2, tk, syscode3).execute()
+                    syscode, PLATFORM, APP_VERSION, syscode2).execute()
             if (!response.isSuccessful) {
                 return Result.failure()
             }
@@ -122,10 +122,8 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
             val variant = NwstVariant.parseInfo(routeInfoKey)
             val syscode = NwstRequestUtil.syscode()
             val syscode2 = NwstRequestUtil.syscode2()
-            val tk = preferences.getString("nwst_tk", "")
-            val syscode3 = preferences.getString("nwst_syscode3", "")
             val response = nwstService.lineMulti2(variant?.rdv, LANGUAGE_TC,
-                    syscode, PLATFORM, APP_VERSION, syscode2, tk, syscode3).execute()
+                    syscode, PLATFORM, APP_VERSION, syscode2).execute()
             if (response.isSuccessful) {
                 hasCoordinates = true
                 val res = response.body()
@@ -159,10 +157,8 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
                     val rdv = temp[0] + "||" + temp[1] + "||" + temp[2] + "||" + temp[3]
                     val syscode = NwstRequestUtil.syscode()
                     val syscode2 = NwstRequestUtil.syscode2()
-                    val tk = preferences.getString("nwst_tk", "")
-                    val syscode3 = preferences.getString("nwst_syscode3", "")
                     val response = nwstService.timetable(rdv, routeSequence,
-                            LANGUAGE_TC, syscode, PLATFORM, APP_VERSION, syscode2, tk, syscode3).execute()
+                            LANGUAGE_TC, syscode, PLATFORM, APP_VERSION, syscode2).execute()
                     val res = response.body()
                     val timetableHtml = res?.string()?:""
 
@@ -188,7 +184,7 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
         if (infoKey.isNullOrEmpty()) {
             return null
         }
-        val (_, _, rdv, _, _, _, _, _, _, startSequence, endSequence) = NwstVariant.parseInfo(infoKey!!)
+        val (_, _, rdv, _, _, _, _, _, _, startSequence, endSequence) = NwstVariant.parseInfo(infoKey)
                 ?: return null
         return "1|*|$companyCode||$rdv||$startSequence||$endSequence||$sequence"
     }
