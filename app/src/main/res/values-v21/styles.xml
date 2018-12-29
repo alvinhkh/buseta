@@ -8,7 +8,7 @@
     </style>
 
     <style name="AppTheme.NoActionBar.Black" parent="AppTheme.NoActionBar">
-        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowTranslucentStatus">false</item>
         <item name="android:windowActionBarOverlay">true</item>
         <item name="android:windowContentOverlay">@null</item>
 

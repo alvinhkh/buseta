@@ -36,6 +36,8 @@ class WebViewFragment : Fragment() {
         setHasOptionsMenu(true)
         webView = view.findViewById(R.id.web_view)
         webView.loadData(contentHtml, "text/html; charset=UTF-8", null)
+        webView.settings.loadWithOverviewMode = true
+        webView.settings.useWideViewPort = true
         return view
     }
 
