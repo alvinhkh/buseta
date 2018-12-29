@@ -32,7 +32,6 @@ import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.follow.dao.FollowDatabase;
 import com.alvinhkh.buseta.model.AppUpdate;
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase;
-import com.alvinhkh.buseta.service.CheckUpdateService;
 import com.alvinhkh.buseta.service.ProviderUpdateService;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
@@ -233,11 +232,6 @@ public class SettingActivity extends BasePreferenceActivity {
                     return true;
                 }
                 case "check_app_update": {
-                    {
-                        Intent intent = new Intent(mActivity, CheckUpdateService.class);
-                        intent.putExtra(C.EXTRA.MANUAL, true);
-                        mActivity.startService(intent);
-                    }
                     {
                         Intent intent = new Intent(mActivity, ProviderUpdateService.class);
                         intent.putExtra(C.EXTRA.MANUAL, true);

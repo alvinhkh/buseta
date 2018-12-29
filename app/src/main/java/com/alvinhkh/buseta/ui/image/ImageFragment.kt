@@ -169,7 +169,7 @@ class ImageFragment : Fragment() {
             return
         }
         progressBar?.visibility = View.VISIBLE
-        disposables.add(Api.raw.create(Api::class.java).get(url)
+        disposables.add(Api.raw.create(Api::class.java).get(url!!)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(image))

@@ -162,10 +162,6 @@
             android:enabled="true"
             android:stopWithTask="true"  />
         <service
-            android:name=".service.CheckUpdateService"
-            android:enabled="true"
-            android:stopWithTask="true"  />
-        <service
             android:name=".service.EtaService"
             android:enabled="true" />
         <service

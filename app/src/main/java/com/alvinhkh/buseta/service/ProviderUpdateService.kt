@@ -7,6 +7,7 @@ import android.support.v7.preference.PreferenceManager
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
+import com.alvinhkh.buseta.Api
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.datagovhk.LrtFeederWorker
@@ -53,6 +54,24 @@ class ProviderUpdateService: IntentService(TAG) {
             return
         }
         sharedPreferences.edit().putLong("last_update_suggestions", timeNow).apply()
+
+        try {
+            val apiService = Api.retrofit.create(Api::class.java)
+            val response = apiService.appUpdate().execute()
+            if (response.isSuccessful) {
+                val res = response.body()
+                if (res != null && res.isNotEmpty()) {
+                    val appUpdate = res[0]
+                    val i = Intent(C.ACTION.APP_UPDATE)
+                    i.putExtra(C.EXTRA.UPDATED, true)
+                    i.putExtra(C.EXTRA.MANUAL, manualUpdate)
+                    i.putExtra(C.EXTRA.APP_UPDATE_OBJECT, appUpdate)
+                    sendBroadcast(i)
+                }
+            }
+        } catch (ignored: Throwable) {
+
+        }
 
         val dataAesBus = Data.Builder()
                 .putBoolean(C.EXTRA.MANUAL, manualUpdate)

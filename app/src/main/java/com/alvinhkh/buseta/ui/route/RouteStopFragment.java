@@ -774,14 +774,14 @@ public class RouteStopFragment extends BottomSheetDialogFragment implements OnCo
             vh.stopImageButton.setVisibility(View.GONE);
             if (!TextUtils.isEmpty(routeStop.getImageUrl())) {
                 if (preferences != null && preferences.getBoolean("load_stop_image", false)) {
-                    disposables.add(Api.raw.create(Api.class).get(routeStop.getImageUrl())
+                    disposables.add(Api.Companion.getRaw().create(Api.class).get(routeStop.getImageUrl())
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribeWith(getImage()));
                 } else {
                     vh.stopImageButton.setVisibility(View.VISIBLE);
                     vh.stopImageButton.setOnClickListener(v ->
-                            disposables.add(Api.raw.create(Api.class).get(routeStop.getImageUrl())
+                            disposables.add(Api.Companion.getRaw().create(Api.class).get(routeStop.getImageUrl())
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribeWith(getImage())));
