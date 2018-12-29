@@ -45,23 +45,23 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
         val routeList = arrayListOf<Route>()
         val timeNow = System.currentTimeMillis() / 1000
 
-//        val syscode3 = preferences.getString("nwst_syscode3", "")
-//        val randomHex64 = HashUtil.randomHexString(64)
-//        val tk = randomHex64
-//        nwstService.pushTokenEnable(tk, tk, NwstService.LANGUAGE_TC, "Y", NwstService.DEVICETYPE,
-//                NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
-//                NwstRequestUtil.syscode2(), syscode3).execute()
-//        nwstService.pushToken(tk, tk, NwstService.LANGUAGE_TC, "R", NwstService.DEVICETYPE,
-//                NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
-//                NwstRequestUtil.syscode2(), syscode3).execute()
-//        nwstService.adv(NwstService.LANGUAGE_TC, NwstService.DEVICETYPE,
-//                NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
-//                NwstRequestUtil.syscode2(), tk, syscode3).execute()
-//        val editor = preferences.edit()
-//        editor.putString("nwst_tk", tk)
-//        editor.apply()
-
         try {
+//            val randomHex64 = HashUtil.randomHexString(64)
+//            val tk = randomHex64
+//            val syscode3 = preferences.getString("nwst_syscode3", "")
+//            nwstService.pushTokenEnable(tk, tk, NwstService.LANGUAGE_TC, "Y", NwstService.DEVICETYPE,
+//                    NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
+//                    NwstRequestUtil.syscode2()).execute()
+//            nwstService.pushToken(tk, tk, NwstService.LANGUAGE_TC, "R", NwstService.DEVICETYPE,
+//                    NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
+//                    NwstRequestUtil.syscode2()).execute()
+//            nwstService.adv(NwstService.LANGUAGE_TC, NwstService.DEVICETYPE,
+//                    NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
+//                    NwstRequestUtil.syscode2()).execute()
+//            val editor = preferences.edit()
+//            editor.putString("nwst_tk", tk)
+//            editor.apply()
+
             val response = nwstService.routeList(routeNo, TYPE_ALL_ROUTES,
                     LANGUAGE_TC, NwstRequestUtil.syscode(), PLATFORM, APP_VERSION,
                     NwstRequestUtil.syscode2()).execute()

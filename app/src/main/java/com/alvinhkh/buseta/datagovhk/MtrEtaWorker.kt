@@ -65,22 +65,31 @@ class MtrEtaWorker(private val context : Context, params : WorkerParameters)
             return Result.failure(outputData)
         }
         val routeStop = routeStopList[0]
+
+        val arrivalTimeList = arrayListOf<ArrivalTime>()
+        val timeNow = System.currentTimeMillis()
         
         val response1 = dataGovHkService.mtrLinesAndStations().execute()
         if (!response1.isSuccessful) {
+            if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
+                    && !routeStop.sequence.isNullOrEmpty()) {
+                arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!, routeStop.routeNo!!,
+                        routeStop.routeSequence!!, routeStop.stopId!!, routeStop.sequence!!, timeNow)
+            }
             val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
             arrivalTime.text = context.getString(R.string.message_fail_to_request)
             arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
             return Result.failure(outputData)
         }
 
-
-        val arrivalTimeList = arrayListOf<ArrivalTime>()
-        val timeNow = System.currentTimeMillis()
-
         try {
             val body = response1.body()
             if (body == null) {
+                if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
+                        && !routeStop.sequence.isNullOrEmpty()) {
+                    arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!, routeStop.routeNo!!,
+                            routeStop.routeSequence!!, routeStop.stopId!!, routeStop.sequence!!, timeNow)
+                }
                 val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
                 arrivalTime.text = context.getString(R.string.message_fail_to_request)
                 arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
@@ -106,6 +115,11 @@ class MtrEtaWorker(private val context : Context, params : WorkerParameters)
             val res = response.body() ?: return Result.failure(outputData)
             Timber.d("%s", res)
             if (res.status == 0) {
+                if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
+                        && !routeStop.sequence.isNullOrEmpty()) {
+                    arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!, routeStop.routeNo!!,
+                            routeStop.routeSequence!!, routeStop.stopId!!, routeStop.sequence!!, timeNow)
+                }
                 val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
                 arrivalTime.text = context.getString(R.string.provider_no_eta)
                 arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
@@ -147,6 +161,11 @@ class MtrEtaWorker(private val context : Context, params : WorkerParameters)
                     }
                     arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTimeList)
                 }
+                if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
+                        && !routeStop.sequence.isNullOrEmpty()) {
+                    arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!, routeStop.routeNo!!,
+                            routeStop.routeSequence!!, routeStop.stopId!!, routeStop.sequence!!, timeNow)
+                }
                 if (hasData) {
                     return Result.success(outputData)
                 }
@@ -155,6 +174,11 @@ class MtrEtaWorker(private val context : Context, params : WorkerParameters)
             Timber.d(e)
         }
 
+        if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
+                && !routeStop.sequence.isNullOrEmpty()) {
+            arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!, routeStop.routeNo!!,
+                    routeStop.routeSequence!!, routeStop.stopId!!, routeStop.sequence!!, timeNow)
+        }
         val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
         arrivalTime.routeNo = routeStop.routeNo?:""
         arrivalTime.routeSeq = routeStop.routeSequence?:""

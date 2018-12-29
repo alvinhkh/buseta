@@ -11,8 +11,6 @@ public class C {
 
         String FOLLOW_UPDATE = "com.alvinhkh.buseta.FOLLOW_UPDATE";
 
-        String LOCATION_UPDATE = "com.alvinhkh.buseta.LOCATION_UPDATE";
-
         String WIDGET_UPDATE = "com.alvinhkh.buseta.WIDGET_UPDATE";
 
         String NOTIFICATION_UPDATE = "com.alvinhkh.buseta.NOTIFICATION_ID";
@@ -24,10 +22,6 @@ public class C {
         String COMPANY_CODE = "com.alvinhkh.buseta.COMPANY_CODE";
 
         String COMPLETE = "com.alvinhkh.buseta.COMPLETE";
-
-        String REQUEST = "com.alvinhkh.buseta.REQUEST";
-
-        String QUERY = "com.alvinhkh.buseta.QUERY";
 
         String FAIL = "com.alvinhkh.buseta.FAIL";
 

@@ -286,6 +286,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                         }
                         if (swipeRefreshLayout.isRefreshing) {
                             swipeRefreshLayout.isRefreshing = false
+                            initLoadHandler.post(initLoadRunnable)
                         }
                     })
         }
@@ -369,22 +370,16 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
 
     override fun onRefresh() {
         swipeRefreshLayout.isRefreshing = false
-        if (context != null && viewAdapter.itemCount > 0) {
-            // TODO: refresh stop list directly in eta service, instead of sending routestop objects
-            val routeStopList = arrayListOf<RouteStop>()
-            for (i in 0 until viewAdapter.itemCount) {
-                if (viewAdapter.getItem(i)?.type == TYPE_ROUTE_STOP && viewAdapter.getItem(i)?.obj is RouteStop) {
-                    routeStopList.add(viewAdapter.getItem(i)?.obj as RouteStop)
-                    if (this is AESBusStopListFragment) {
-                        break
-                    }
-                }
-            }
+        if (context != null) {
             try {
                 val intent = Intent(context, EtaService::class.java)
-                intent.putParcelableArrayListExtra(C.EXTRA.STOP_LIST, routeStopList)
+                intent.putExtra(C.EXTRA.STOP_LIST, true)
+                intent.putExtra(C.EXTRA.COMPANY_CODE, route?.companyCode)
+                intent.putExtra(C.EXTRA.ROUTE_NO, route?.name)
+                intent.putExtra(C.EXTRA.ROUTE_SEQUENCE, route?.sequence)
+                intent.putExtra(C.EXTRA.ROUTE_SERVICE_TYPE, route?.serviceType)
                 context!!.startService(intent)
-            } catch (ignored: IllegalStateException) {
+            } catch (ignored: Throwable) {
             }
         }
     }
@@ -394,7 +389,6 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
         val companyCode = route.companyCode?:""
         when (companyCode) {
             C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER, C.PROVIDER.NLB -> {
-                initLoadHandler.post(initLoadRunnable)
                 return true
             }
             "" -> return false
@@ -445,7 +439,6 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                     }
                     if (workInfo?.state == WorkInfo.State.SUCCEEDED) {
                         onWorkerSucceeded(workInfo.outputData)
-                        initLoadHandler.post(initLoadRunnable)
                     }
                 })
         return true

@@ -39,9 +39,9 @@ public class App extends Application {
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
         builder.addNetworkInterceptor(new UserAgentInterceptor());
         httpClient = builder
-                .connectTimeout(30, TimeUnit.SECONDS)
-                .writeTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(60, TimeUnit.SECONDS)
+                .connectTimeout(5, TimeUnit.SECONDS)
+                .writeTimeout(5, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
                 .build();
 //        OkHttpClient.Builder builder2 = new OkHttpClient.Builder();
 //        builder2.addNetworkInterceptor(new UserAgentInterceptor("CitybusNWFB/5 CFNetwork/975.0.3 Darwin/18.2.0"));

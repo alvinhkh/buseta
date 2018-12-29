@@ -26,6 +26,7 @@ abstract class RouteDatabase : RoomDatabase() {
                     instance = Room.databaseBuilder(context.applicationContext,
                             RouteDatabase::class.java, "routes.db")
                             .fallbackToDestructiveMigration()
+                            .allowMainThreadQueries()
                             .build()
                 }
             }

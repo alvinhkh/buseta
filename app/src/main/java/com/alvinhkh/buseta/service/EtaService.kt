@@ -19,10 +19,9 @@ import com.alvinhkh.buseta.mtr.AESBusEtaWorker
 import com.alvinhkh.buseta.route.model.RouteStop
 import com.alvinhkh.buseta.nlb.NlbEtaWorker
 import com.alvinhkh.buseta.nwst.NwstEtaWorker
+import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.utils.ConnectivityUtil
 import com.alvinhkh.buseta.utils.RouteStopUtil
-
-import java.util.ArrayList
 
 
 class EtaService : LifecycleService() {
@@ -31,10 +30,13 @@ class EtaService : LifecycleService() {
 
     private lateinit var followDatabase: FollowDatabase
 
+    private lateinit var routeDatabase: RouteDatabase
+
     override fun onCreate() {
         super.onCreate()
         arrivalTimeDatabase = ArrivalTimeDatabase.getInstance(this)!!
         followDatabase = FollowDatabase.getInstance(this)!!
+        routeDatabase = RouteDatabase.getInstance(this)!!
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -46,9 +48,18 @@ class EtaService : LifecycleService() {
         val widgetId = extras.getInt(C.EXTRA.WIDGET_UPDATE, -1)
         val notificationId = extras.getInt(C.EXTRA.NOTIFICATION_ID, -1)
 
-        var routeStopList: MutableList<RouteStop>? = extras.getParcelableArrayList(C.EXTRA.STOP_LIST)
-        if (routeStopList == null) {
-            routeStopList = ArrayList()
+        val routeStopList = mutableListOf<RouteStop>()
+        if (extras.getBoolean(C.EXTRA.STOP_LIST)) {
+            val companyCode = extras.getString(C.EXTRA.COMPANY_CODE, "")
+            routeStopList.addAll(routeDatabase.routeStopDao().get(companyCode,
+                    extras.getString(C.EXTRA.ROUTE_NO, ""),
+                    extras.getString(C.EXTRA.ROUTE_SEQUENCE, ""),
+                    extras.getString(C.EXTRA.ROUTE_SERVICE_TYPE, "")))
+            if (companyCode == C.PROVIDER.AESBUS && routeStopList.size > 0) {
+                val routeStop = routeStopList[0]
+                routeStopList.clear()
+                routeStopList.add(routeStop)
+            }
         }
         val stop = extras.getParcelable<RouteStop>(C.EXTRA.STOP_OBJECT)
         if (stop != null) {
@@ -61,16 +72,12 @@ class EtaService : LifecycleService() {
             }
         }
 
-        // WorkManager.getInstance().cancelAllWorkByTag(TAG)
+        WorkManager.getInstance().cancelAllWorkByTag(TAG)
 
+        val workerRequestList = arrayListOf<OneTimeWorkRequest>()
         for (i in routeStopList.indices) {
             val routeStop = routeStopList[i]
             if (!routeStop.companyCode.isNullOrEmpty()) {
-                if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
-                        && !routeStop.sequence.isNullOrEmpty()) {
-                    arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!,
-                            routeStop.routeNo!!, routeStop.routeSequence!!, routeStop.stopId!!, routeStop.sequence!!)
-                }
                 val data = Data.Builder()
                         .putInt(C.EXTRA.WIDGET_UPDATE, widgetId)
                         .putInt(C.EXTRA.NOTIFICATION_ID, notificationId)
@@ -114,7 +121,7 @@ class EtaService : LifecycleService() {
                 }
 
                 if (workerRequest != null) {
-                    WorkManager.getInstance().enqueue(workerRequest)
+                    workerRequestList.add(workerRequest)
                     WorkManager.getInstance().getWorkInfoByIdLiveData(workerRequest.id)
                             .observe(this, Observer { workInfo ->
                                 if (workInfo?.state == WorkInfo.State.FAILED) {
@@ -129,6 +136,11 @@ class EtaService : LifecycleService() {
                 notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId)
             }
         }
+
+        if (workerRequestList.size > 0) {
+            WorkManager.getInstance().enqueue(workerRequestList)
+        }
+
         return super.onStartCommand(intent, flags, startId)
     }
 

@@ -35,6 +35,9 @@ interface RouteStopDao {
     @Query("SELECT * FROM route_stops WHERE company_code = :companyCode AND route_no = :routeNo ORDER BY route_sequence + 0 ASC, route_service_type + 0 ASC, sequence + 0 ASC, last_update ASC")
     fun get(companyCode: String, routeNo: String): MutableList<RouteStop>
 
+    @Query("SELECT * FROM route_stops WHERE company_code = :companyCode AND route_no = :routeNo AND route_sequence = :routeSequence AND route_service_type = :routeServiceType ORDER BY route_sequence + 0 ASC, route_service_type + 0 ASC, sequence + 0 ASC, last_update ASC")
+    fun get(companyCode: String, routeNo: String, routeSequence: String, routeServiceType: String): MutableList<RouteStop>
+
     @Query("SELECT * FROM route_stops WHERE company_code = :companyCode AND route_no = :routeNo AND route_sequence = :routeSequence AND route_service_type = :routeServiceType AND stop_id = :stopId AND sequence = :stopsSequence ORDER BY route_sequence + 0 ASC, route_service_type + 0 ASC, sequence + 0 ASC, last_update ASC")
     fun get(companyCode: String, routeNo: String, routeSequence: String, routeServiceType: String, stopId: String, stopsSequence: String): MutableList<RouteStop>
 

@@ -48,7 +48,7 @@ class AESBusEtaWorker(private val context : Context, params : WorkerParameters)
 
         val key = HashUtil.md5("mtrMobile_" + SimpleDateFormat("yyyyMMddHHmm", Locale.ENGLISH).format(Date()))
         if (key.isEmpty()) {
-            arrivalTimeDatabase.arrivalTimeDao().clear(companyCode, routeNo)
+            arrivalTimeDatabase.arrivalTimeDao().clear(companyCode, routeNo, timeNow)
             routeStopList.forEach { routeStop ->
                 val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
                 arrivalTime.text = context.getString(R.string.message_fail_to_request)
@@ -60,7 +60,7 @@ class AESBusEtaWorker(private val context : Context, params : WorkerParameters)
         
         val response = aesService.busStopsDetail(AESEtaBusStopsRequest(routeNo, "2", "zh", key)).execute()
         if (!response.isSuccessful) {
-            arrivalTimeDatabase.arrivalTimeDao().clear(companyCode, routeNo)
+            arrivalTimeDatabase.arrivalTimeDao().clear(companyCode, routeNo, timeNow)
             routeStopList.forEach { routeStop ->
                 val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
                 arrivalTime.text = context.getString(R.string.message_fail_to_request)
@@ -83,7 +83,6 @@ class AESBusEtaWorker(private val context : Context, params : WorkerParameters)
             }
             val etas = res.busStops
             if (etas != null && etas.isNotEmpty()) {
-                arrivalTimeDatabase.arrivalTimeDao().clear(companyCode, routeNo)
                 routeStopList.forEach { routeStop ->
                     var isAvailable = false
                     arrivalTimeList.clear()
@@ -153,6 +152,7 @@ class AESBusEtaWorker(private val context : Context, params : WorkerParameters)
                         arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
                     }
                 }
+                arrivalTimeDatabase.arrivalTimeDao().clear(companyCode, routeNo, timeNow)
             }
         }
 

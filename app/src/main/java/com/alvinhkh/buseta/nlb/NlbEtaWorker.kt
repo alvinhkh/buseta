@@ -48,57 +48,71 @@ class NlbEtaWorker(private val context : Context, params : WorkerParameters)
             return Result.failure(outputData)
         }
         val routeStop = routeStopList[0]
-        
-        val response = nlbService.eta(NlbEtaRequest(routeStop.routeSequence, routeStop.stopId, "zh")).execute()
-        if (!response.isSuccessful) {
-            val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
-            arrivalTime.text = context.getString(R.string.message_fail_to_request)
-            arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
-            return Result.failure(outputData)
-        }
 
         val arrivalTimeList = arrayListOf<ArrivalTime>()
         val timeNow = System.currentTimeMillis()
 
-        val res = response.body()
-        if (res?.estimatedArrivalTime == null || res.estimatedArrivalTime.html.isNullOrEmpty()) {
-            val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
-            arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
-            return Result.failure(outputData)
-        }
-
-        val doc = Jsoup.parse(res.estimatedArrivalTime.html)
-        val divs = doc.body().getElementsByTag("div")
-        if (divs != null && divs.size > 0) {
-            var s = divs.size
-            if (s > 1) {
-                s -= 1
+        try {
+            val response = nlbService.eta(NlbEtaRequest(routeStop.routeSequence, routeStop.stopId, "zh")).execute()
+            if (!response.isSuccessful) {
+                if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
+                        && !routeStop.sequence.isNullOrEmpty()) {
+                    arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!, routeStop.routeNo!!,
+                            routeStop.routeSequence!!, routeStop.stopId!!, routeStop.sequence!!, timeNow)
+                }
+                val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
+                arrivalTime.text = context.getString(R.string.message_fail_to_request)
+                arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
+                return Result.failure(outputData)
             }
-            for (i in 0 until s) {
-                val arrivalTime = ArrivalTime.emptyInstance(context, routeStop)
-                arrivalTime.companyCode = C.PROVIDER.NLB
-                val text = divs[i].text()
-                arrivalTime.text = Jsoup.parse(text).text().replace("　".toRegex(), " ")
-                        .replace(" ?預計時間".toRegex(), "")
-                        .replace(" ?Estimated time".toRegex(), "")
-                        .replace(" ?預定班次".toRegex(), "")
-                        .replace(" ?Scheduled".toRegex(), "")
-                        .replace("此路線於未來([0-9]+)分鐘沒有班次途經本站".toRegex(), "$1分鐘+")
-                        .replace("This route has no departure via this stop in next ([0-9]+) mins".toRegex(), "$1 mins+")
-                        .replace("此路線的巴士預計抵站時間查詢服務將於稍後推出".toRegex(), "此路線未有預計抵站時間服務")
-                arrivalTime.isSchedule = text.isNotEmpty() && (text.contains("預定班次") || text.contains("Scheduled"))
-                arrivalTime.hasWheelchair = divs[i].getElementsByAttributeValueContaining("alt", "Wheelchair").size > 0 || divs[i].getElementsByAttributeValueContaining("alt", "輪椅").size > 0
 
-                arrivalTime.order = i.toString()
-                arrivalTime.routeNo = routeStop.routeNo?:""
-                arrivalTime.routeSeq = routeStop.routeSequence?:""
-                arrivalTime.stopId = routeStop.stopId?:""
-                arrivalTime.stopSeq = routeStop.sequence?:""
-                
-                arrivalTimeList.add(arrivalTime)
+            val res = response.body()
+            if (res?.estimatedArrivalTime == null || res.estimatedArrivalTime.html.isNullOrEmpty()) {
+                if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
+                        && !routeStop.sequence.isNullOrEmpty()) {
+                    arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!, routeStop.routeNo!!,
+                            routeStop.routeSequence!!, routeStop.stopId!!, routeStop.sequence!!, timeNow)
+                }
+                val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
+                arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
+                return Result.failure(outputData)
             }
-            arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTimeList)
-            return Result.success(outputData)
+
+            val doc = Jsoup.parse(res.estimatedArrivalTime.html)
+            val divs = doc.body().getElementsByTag("div")
+            if (divs != null && divs.size > 0) {
+                var s = divs.size
+                if (s > 1) {
+                    s -= 1
+                }
+                for (i in 0 until s) {
+                    val arrivalTime = ArrivalTime.emptyInstance(context, routeStop)
+                    arrivalTime.companyCode = C.PROVIDER.NLB
+                    val text = divs[i].text()
+                    arrivalTime.text = Jsoup.parse(text).text().replace("　".toRegex(), " ")
+                            .replace(" ?預計時間".toRegex(), "")
+                            .replace(" ?Estimated time".toRegex(), "")
+                            .replace(" ?預定班次".toRegex(), "")
+                            .replace(" ?Scheduled".toRegex(), "")
+                            .replace("此路線於未來([0-9]+)分鐘沒有班次途經本站".toRegex(), "$1分鐘+")
+                            .replace("This route has no departure via this stop in next ([0-9]+) mins".toRegex(), "$1 mins+")
+                            .replace("此路線的巴士預計抵站時間查詢服務將於稍後推出".toRegex(), "此路線未有預計抵站時間服務")
+                    arrivalTime.isSchedule = text.isNotEmpty() && (text.contains("預定班次") || text.contains("Scheduled"))
+                    arrivalTime.hasWheelchair = divs[i].getElementsByAttributeValueContaining("alt", "Wheelchair").size > 0 || divs[i].getElementsByAttributeValueContaining("alt", "輪椅").size > 0
+
+                    arrivalTime.order = i.toString()
+                    arrivalTime.routeNo = routeStop.routeNo?:""
+                    arrivalTime.routeSeq = routeStop.routeSequence?:""
+                    arrivalTime.stopId = routeStop.stopId?:""
+                    arrivalTime.stopSeq = routeStop.sequence?:""
+
+                    arrivalTimeList.add(arrivalTime)
+                }
+                arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTimeList)
+                return Result.success(outputData)
+            }
+        } catch (ignored: Throwable) {
+
         }
 
         return Result.failure(outputData)

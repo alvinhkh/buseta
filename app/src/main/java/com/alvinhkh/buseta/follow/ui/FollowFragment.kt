@@ -128,7 +128,7 @@ class FollowFragment: Fragment() {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         val id = item!!.itemId
         if (id == R.id.action_refresh) {
-            viewAdapter.notifyDataSetChanged()
+            fetchEtaHandler.postDelayed(fetchEtaRunnable, 100)
             return true
         }
         return super.onOptionsItemSelected(item)
