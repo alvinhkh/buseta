@@ -25,12 +25,9 @@ import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
 import com.alvinhkh.buseta.route.model.RouteStop;
 import com.alvinhkh.buseta.utils.NotificationUtil;
-import com.firebase.jobdispatcher.FirebaseJobDispatcher;
-import com.firebase.jobdispatcher.GooglePlayDriver;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableObserver;
@@ -122,8 +119,6 @@ public class NotificationService extends Service {
         int notificationId = extras.getInt(C.EXTRA.NOTIFICATION_ID);
         int widgetId = extras.getInt(C.EXTRA.WIDGET_UPDATE);
         if (action != null && action.equals(C.ACTION.CANCEL)) {
-            FirebaseJobDispatcher dispatcher = new FirebaseJobDispatcher(new GooglePlayDriver(this));
-            dispatcher.cancel(String.format(Locale.ENGLISH, "eta-notification-%d", notificationId));
             notificationManager.cancel(notificationId);
             routeStops.delete(notificationId);
             if (routeStops.size() < 1) {
