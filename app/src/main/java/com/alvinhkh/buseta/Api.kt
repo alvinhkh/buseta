@@ -15,7 +15,7 @@ import retrofit2.http.Url
 interface Api {
 
     @GET
-    operator fun get(@Url url: String): Observable<ResponseBody>
+    fun get(@Url url: String): Call<ResponseBody>
 
     @GET("/release.json")
     fun appUpdate(): Call<List<AppUpdate>>
@@ -29,7 +29,6 @@ interface Api {
         val raw = Retrofit.Builder()
                 .client(App.httpClient)
                 .baseUrl("https://buseta.alvinhkh.com")
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build()
 
         val retrofit = Retrofit.Builder()
