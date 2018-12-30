@@ -140,7 +140,7 @@ public class MtrLineStationsAdapter
                     route.setServiceType(object.getRouteServiceType());
                     route.setSequence(object.getRouteSequence());
                     try {
-                        BottomSheetDialogFragment bottomSheetDialogFragment = RouteStopFragment.newInstance(route, object);
+                        BottomSheetDialogFragment bottomSheetDialogFragment = RouteStopFragment.Companion.newInstance(route, object);
                         bottomSheetDialogFragment.show(fragmentManager, bottomSheetDialogFragment.getTag());
                     } catch (IllegalStateException ignored) {}
                     return true;

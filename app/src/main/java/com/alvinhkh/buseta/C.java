@@ -9,8 +9,6 @@ public class C {
 
         String ETA_UPDATE = "com.alvinhkh.buseta.ETA_UPDATE";
 
-        String FOLLOW_UPDATE = "com.alvinhkh.buseta.FOLLOW_UPDATE";
-
         String WIDGET_UPDATE = "com.alvinhkh.buseta.WIDGET_UPDATE";
 
         String NOTIFICATION_UPDATE = "com.alvinhkh.buseta.NOTIFICATION_ID";
