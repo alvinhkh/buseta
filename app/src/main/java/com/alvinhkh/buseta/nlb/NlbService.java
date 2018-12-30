@@ -42,14 +42,11 @@ public interface NlbService {
     @GET("app.php?action=getDatabase")
     Call<NlbDatabase> database();
 
-    @GET("app.php?action=getDatabase")
-    Observable<NlbDatabase> getDatabase();
-
     @GET("app.php?action=getDatabaseVersion")
-    Observable<NlbDatabaseVersion> getDatabaseVersion();
+    Call<NlbDatabaseVersion> databaseVersion();
 
     @GET("route.php?action=getDetail")
-    Observable<ResponseBody> getTimetable(@Query("routeId") String routeId);
+    Call<ResponseBody> detail(@Query("routeId") String routeId);
 
     @POST("news.php?action=list")
     Observable<NlbNewsList> getNewList(@Body NlbNewsListRequest body);

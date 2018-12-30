@@ -1,6 +1,6 @@
 package com.alvinhkh.buseta.mtr.model
 
-import com.alvinhkh.buseta.model.EmptyElementConverter
+import com.alvinhkh.buseta.mtr.dao.EmptyElementConverter
 
 import org.simpleframework.xml.Element
 import org.simpleframework.xml.convert.Convert

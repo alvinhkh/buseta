@@ -113,12 +113,12 @@ public class NlbNewsAdapter
         public void bindItem(NlbNewsAdapter adapter, Item item, int position) {
             final NlbNews news = (NlbNews) item.getObject();
             assert news != null;
-            titleTextView.setText(news.title);
+            titleTextView.setText(news.getTitle());
             iconImageView.setImageResource(R.drawable.ic_outline_event_note_24dp);
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
                 SimpleDateFormat displaySdf = new SimpleDateFormat("dd/MM", Locale.ENGLISH);
-                Date date = sdf.parse(news.publishDate);
+                Date date = sdf.parse(news.getPublishDate());
                 iconImageView.setVisibility(View.GONE);
                 iconTextView.setVisibility(View.VISIBLE);
                 iconTextView.setText(displaySdf.format(date));
@@ -128,7 +128,7 @@ public class NlbNewsAdapter
             }
             view.setOnClickListener(v -> {
                 NlbService nlbService = NlbService.api.create(NlbService.class);
-                nlbService.getNew(new NlbNewsRequest(news.newsId, "zh"))
+                nlbService.getNew(new NlbNewsRequest(news.getNewsId(), "zh"))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribeWith(newsObserver());
@@ -140,10 +140,10 @@ public class NlbNewsAdapter
                 @Override
                 public void onNext(NlbNewsRes res) {
                     if (context == null) return;
-                    if (res == null || res.news == null || TextUtils.isEmpty(res.news.content)) return;
+                    if (res == null || res.getNews() == null || TextUtils.isEmpty(res.getNews().getContent())) return;
                     Intent intent = new Intent(context, WebViewActivity.class);
-                    intent.putExtra(WebViewActivity.TITLE, res.news.title);
-                    intent.putExtra(WebViewActivity.HTML, res.news.content);
+                    intent.putExtra(WebViewActivity.TITLE, res.getNews().getTitle());
+                    intent.putExtra(WebViewActivity.HTML, res.getNews().getContent());
                     context.startActivity(intent);
                 }
 

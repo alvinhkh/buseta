@@ -53,7 +53,7 @@ class NlbEtaWorker(private val context : Context, params : WorkerParameters)
         val timeNow = System.currentTimeMillis()
 
         try {
-            val response = nlbService.eta(NlbEtaRequest(routeStop.routeSequence, routeStop.stopId, "zh")).execute()
+            val response = nlbService.eta(NlbEtaRequest(routeStop.routeSequence?:"", routeStop.stopId?:"", "zh")).execute()
             if (!response.isSuccessful) {
                 if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
                         && !routeStop.sequence.isNullOrEmpty()) {

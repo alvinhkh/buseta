@@ -148,8 +148,8 @@ public class NlbNewsFragment extends Fragment
                     swipeRefreshLayout.setRefreshing(true);
                 }
                 if (adapter != null) {
-                    if (list != null && list.newses != null) {
-                        for (NlbNews news : list.newses) {
+                    if (list != null) {
+                        for (NlbNews news : list.getNewses()) {
                             adapter.add(new Item(Item.TYPE_DATA, news));
                         }
                     }
