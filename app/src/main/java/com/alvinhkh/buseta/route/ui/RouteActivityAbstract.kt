@@ -54,7 +54,6 @@ import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.model.Suggestion
 import com.alvinhkh.buseta.service.EtaService
 import com.alvinhkh.buseta.ui.BaseActivity
-import com.alvinhkh.buseta.ui.route.RouteSelectDialogFragment
 import com.alvinhkh.buseta.utils.AdViewUtil
 import com.alvinhkh.buseta.utils.ConnectivityUtil
 import com.alvinhkh.buseta.utils.PreferenceUtil
@@ -67,6 +66,7 @@ import com.google.firebase.appindexing.FirebaseUserActions
 import com.google.maps.android.ui.IconGenerator
 
 import timber.log.Timber
+import java.lang.ref.WeakReference
 import java.util.HashMap
 import java.util.UUID
 
@@ -184,8 +184,10 @@ abstract class RouteActivityAbstract : BaseActivity(),
         tabLayout.tabMode = TabLayout.MODE_SCROLLABLE
         tabLayout.addOnTabSelectedListener(object : TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
             override fun onTabReselected(tab: TabLayout.Tab?) {
-                val fragment = RouteSelectDialogFragment.newInstance(ArrayList(pagerAdapter.routeList), viewPager)
-                fragment.show(supportFragmentManager, "route_select_dialog_fragment")
+                if (!companyCode.isNullOrEmpty() && !routeNo.isNullOrEmpty()) {
+                    val fragment = RouteSelectDialogFragment.newInstance(companyCode?:"", routeNo?:"", WeakReference(viewPager))
+                    fragment.show(supportFragmentManager, "route_select_dialog_fragment")
+                }
             }
         })
         viewPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {

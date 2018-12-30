@@ -43,8 +43,6 @@ public class C {
 
         String ROUTE_NO = "com.alvinhkh.buseta.ROUTE_NO";
 
-        String ROUTE_LIST = "com.alvinhkh.buseta.ROUTE_LIST";
-
         String ROUTE_OBJECT = "com.alvinhkh.buseta.ROUTE_OBJECT";
 
         String ROUTE_SEQUENCE = "com.alvinhkh.buseta.ROUTE_SEQUENCE";
