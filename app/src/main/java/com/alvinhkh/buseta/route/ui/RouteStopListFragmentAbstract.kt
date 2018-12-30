@@ -34,7 +34,6 @@ import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.follow.model.Follow
 import com.alvinhkh.buseta.kmb.KmbStopListWorker
 import com.alvinhkh.buseta.lwb.LwbStopListWorker
-import com.alvinhkh.buseta.mtr.ui.AESBusStopListFragment
 import com.alvinhkh.buseta.nwst.NwstStopListWorker
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.model.RouteStop
@@ -49,13 +48,13 @@ import com.google.android.gms.location.LocationServices
 import com.alvinhkh.buseta.utils.ConnectivityUtil
 import com.alvinhkh.buseta.utils.PreferenceUtil
 import com.google.android.gms.maps.model.Marker
-import timber.log.Timber
 import java.util.UUID
 
 
 // TODO: better way to find nearest stop
 // TODO: keep (nearest) stop on top
 // TODO: auto refresh eta for follow stop and nearby stop
+// TODO: better way to query route stops, arrival time, folloe count
 abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.OnRefreshListener,
         SharedPreferences.OnSharedPreferenceChangeListener {
 

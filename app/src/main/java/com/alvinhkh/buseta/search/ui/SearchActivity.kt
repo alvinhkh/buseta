@@ -25,11 +25,11 @@ import com.alvinhkh.buseta.mtr.ui.AESBusActivity
 import com.alvinhkh.buseta.mtr.ui.MtrActivity
 import com.alvinhkh.buseta.nlb.ui.NlbActivity
 import com.alvinhkh.buseta.nwst.ui.NwstActivity
+import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.model.Suggestion
 import com.alvinhkh.buseta.ui.PinnedHeaderItemDecoration
 import com.alvinhkh.buseta.utils.PreferenceUtil
-import com.alvinhkh.buseta.utils.RouteUtil
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_suggestion.*
 
@@ -136,7 +136,7 @@ class SearchActivity : AppCompatActivity() {
                             if (lastCompanyCode.isNotBlank() && routeNo.isNotBlank()) {
                                 viewAdapter.addButton(Suggestion(0, lastCompanyCode, routeNo, 0, Suggestion.TYPE_DEFAULT))
                             }
-                            val companyName = RouteUtil.getCompanyName(applicationContext, it.companyCode, it.route)
+                            val companyName = Route.companyName(applicationContext, it.companyCode, it.route)
                             viewAdapter.addSection(companyName)
                             shownCompanyCode.add(it.companyCode)
                         }
@@ -148,7 +148,7 @@ class SearchActivity : AppCompatActivity() {
             if (routeNo.isNotBlank()) {
                 listOf(C.PROVIDER.CTB, C.PROVIDER.KMB, C.PROVIDER.NLB, C.PROVIDER.NWFB).forEach {
                     if (!shownCompanyCode.contains(it)) {
-                        val companyName = RouteUtil.getCompanyName(applicationContext, it, route.replace(Regex("[^a-zA-Z0-9]"), ""))
+                        val companyName = Route.companyName(applicationContext, it, route.replace(Regex("[^a-zA-Z0-9]"), ""))
                         viewAdapter.addSection(companyName)
                         viewAdapter.addSection(getString(R.string.no_search_result))
                         viewAdapter.addButton(Suggestion(0, it, route.replace(Regex("[^a-zA-Z0-9]"), ""), 0, Suggestion.TYPE_DEFAULT))

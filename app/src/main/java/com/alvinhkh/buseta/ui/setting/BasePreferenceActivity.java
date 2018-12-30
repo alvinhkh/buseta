@@ -32,7 +32,7 @@ abstract public class BasePreferenceActivity extends AppCompatPreferenceActivity
         setSupportActionBar(findViewById(R.id.toolbar));
 
         adViewContainer = findViewById(R.id.adView_container);
-        adView = AdViewUtil.banner(adViewContainer, adView, true);
+        adView = AdViewUtil.INSTANCE.banner(adViewContainer, adView, true);
 
         PreferenceManager.getDefaultSharedPreferences(this)
                 .registerOnSharedPreferenceChangeListener(this);
@@ -41,7 +41,7 @@ abstract public class BasePreferenceActivity extends AppCompatPreferenceActivity
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        adView = AdViewUtil.banner(adViewContainer, adView, true);
+        adView = AdViewUtil.INSTANCE.banner(adViewContainer, adView, true);
     }
 
     @Override

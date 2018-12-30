@@ -21,7 +21,6 @@ import com.alvinhkh.buseta.nlb.NlbEtaWorker
 import com.alvinhkh.buseta.nwst.NwstEtaWorker
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.utils.ConnectivityUtil
-import com.alvinhkh.buseta.utils.RouteStopUtil
 
 
 class EtaService : LifecycleService() {
@@ -68,7 +67,7 @@ class EtaService : LifecycleService() {
         if (extras.getBoolean(C.EXTRA.FOLLOW)) {
             val followList = followDatabase.followDao().getList()
             for (follow in followList) {
-                routeStopList.add(RouteStopUtil.fromFollow(follow))
+                routeStopList.add(follow.toRouteStop())
             }
         }
 

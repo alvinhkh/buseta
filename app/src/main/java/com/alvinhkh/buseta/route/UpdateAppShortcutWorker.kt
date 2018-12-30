@@ -13,7 +13,6 @@ import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.ui.SearchActivity
-import com.alvinhkh.buseta.utils.RouteStopUtil
 import com.google.gson.Gson
 import java.util.ArrayList
 
@@ -37,7 +36,7 @@ class UpdateAppShortcutWorker(context : Context, params : WorkerParameters)
                 var i = 0
                 while (i < maxShortcutCount - 1 && i < followList.size) {
                     val follow = followList[i]
-                    val routeStop = RouteStopUtil.fromFollow(follow)
+                    val routeStop = follow.toRouteStop()
                     val intent = Intent(Intent.ACTION_VIEW)
                     intent.setClass(applicationContext, SearchActivity::class.java)
                     intent.putExtra(C.EXTRA.STOP_OBJECT_STRING, Gson().toJson(routeStop))

@@ -228,7 +228,7 @@ public class SettingActivity extends BasePreferenceActivity {
                     return true;
                 }
                 case "share_app": {
-                    startActivity(Intent.createChooser(PreferenceUtil.shareAppIntent(getContext()), getString(R.string.message_share_text)));
+                    startActivity(Intent.createChooser(PreferenceUtil.INSTANCE.shareAppIntent(getContext()), getString(R.string.message_share_text)));
                     return true;
                 }
                 case "check_app_update": {

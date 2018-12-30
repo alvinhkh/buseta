@@ -1,8 +1,11 @@
 package com.alvinhkh.buseta.route.model
 
 import android.arch.persistence.room.*
+import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
+import com.alvinhkh.buseta.C
+import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.route.model.Route.CREATOR.TABLE_NAME
 
 @Entity(tableName = TABLE_NAME, indices = [(Index(value = arrayOf(Route.COLUMN_COMPANY_CODE,
@@ -108,5 +111,32 @@ data class Route(
         const val COLUMN_LAST_UPDATE = "last_update"
         const val COLUMN_MAP_COORDINATES = "map_coordinates"
 
+        @JvmStatic
+        fun companyName(context: Context,
+                        companyCode: String,
+                        routeNo: String?): String {
+            if (companyCode.isEmpty()) return ""
+            var companyName = companyCode
+            when (companyCode) {
+                C.PROVIDER.AESBUS -> companyName = context.getString(R.string.provider_short_aes_bus)
+                C.PROVIDER.CTB -> companyName = context.getString(R.string.provider_short_ctb)
+                C.PROVIDER.KMB -> {
+                    companyName = context.getString(R.string.provider_short_kmb)
+                    if (!routeNo.isNullOrEmpty()) {
+                        if (routeNo.startsWith("NR")) {
+                            companyName = context.getString(R.string.provider_short_residents)
+                        } else if (routeNo.startsWith("A") || routeNo.startsWith("E") || routeNo.startsWith("NA")) {
+                            companyName = context.getString(R.string.provider_short_lwb)
+                        }
+                    }
+                }
+                C.PROVIDER.LRTFEEDER -> companyName = context.getString(R.string.provider_short_lrtfeeder)
+                C.PROVIDER.MTR -> companyName = context.getString(R.string.provider_short_mtr)
+                C.PROVIDER.NLB -> companyName = context.getString(R.string.provider_short_nlb)
+                C.PROVIDER.NWFB -> companyName = context.getString(R.string.provider_short_nwfb)
+                C.PROVIDER.NWST -> companyName = context.getString(R.string.provider_short_nwst)
+            }
+            return companyName
+        }
     }
 }

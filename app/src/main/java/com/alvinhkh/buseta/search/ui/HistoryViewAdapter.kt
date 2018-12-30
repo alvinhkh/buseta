@@ -14,9 +14,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
+import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.model.Suggestion
-import com.alvinhkh.buseta.utils.RouteUtil
 
 class HistoryViewAdapter(
         recyclerView: RecyclerView,
@@ -93,7 +93,7 @@ class HistoryViewAdapter(
                 }
                 itemView.setOnLongClickListener {
                     val builder = AlertDialog.Builder(itemView.context)
-                    val companyName = RouteUtil.getCompanyName(itemView.context, suggestion.companyCode, suggestion.route)
+                    val companyName = Route.companyName(itemView.context, suggestion.companyCode, suggestion.route)
                     builder.setTitle(companyName + " " + suggestion.route + "?")
                     builder.setMessage(itemView.context.getString(R.string.message_remove_from_search_history))
                     builder.setNegativeButton(R.string.action_cancel) { d, _ -> d.cancel() }

@@ -105,6 +105,24 @@ data class Follow(
         return 0
     }
 
+    fun toRouteStop(): RouteStop {
+        val routeStop = RouteStop()
+        routeStop.companyCode = companyCode
+        routeStop.routeNo = routeNo
+        routeStop.routeId = routeId
+        routeStop.routeServiceType = routeServiceType
+        routeStop.routeSequence = routeSeq
+        routeStop.stopId = stopId
+        routeStop.sequence = stopSeq
+        routeStop.routeDestination = routeDestination
+        routeStop.routeOrigin = routeOrigin
+        routeStop.name = stopName
+        routeStop.latitude = stopLatitude
+        routeStop.longitude = stopLongitude
+        routeStop.etaGet = etaGet
+        return routeStop
+    }
+
     companion object CREATOR : Parcelable.Creator<Follow> {
 
         const val TABLE_NAME = "follow"

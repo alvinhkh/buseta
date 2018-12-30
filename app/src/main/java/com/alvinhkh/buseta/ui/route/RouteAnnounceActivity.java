@@ -49,7 +49,7 @@ public class RouteAnnounceActivity extends BaseActivity {
 
         adViewContainer = findViewById(R.id.adView_container);
         if (adViewContainer != null) {
-            adView = AdViewUtil.banner(adViewContainer, adView, false);
+            adView = AdViewUtil.INSTANCE.banner(adViewContainer, adView, false);
         }
 
         fab = findViewById(R.id.fab);

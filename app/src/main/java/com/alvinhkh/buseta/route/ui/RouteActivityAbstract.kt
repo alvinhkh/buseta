@@ -21,7 +21,6 @@ import android.support.v4.content.ContextCompat
 import android.support.v4.view.ViewPager
 import android.support.v7.preference.PreferenceManager
 import android.support.v7.widget.Toolbar
-import android.text.TextUtils
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -47,7 +46,6 @@ import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.model.RouteStop
 import com.alvinhkh.buseta.mtr.ui.AESBusStopListFragment
 import com.alvinhkh.buseta.nlb.ui.NlbStopListFragment
-import com.alvinhkh.buseta.nwst.NwstRouteWorker
 import com.alvinhkh.buseta.nwst.ui.NwstStopListFragment
 import com.alvinhkh.buseta.route.UpdateAppShortcutWorker
 import com.alvinhkh.buseta.route.dao.RouteDatabase
@@ -60,7 +58,6 @@ import com.alvinhkh.buseta.ui.route.RouteSelectDialogFragment
 import com.alvinhkh.buseta.utils.AdViewUtil
 import com.alvinhkh.buseta.utils.ConnectivityUtil
 import com.alvinhkh.buseta.utils.PreferenceUtil
-import com.alvinhkh.buseta.utils.RouteUtil
 import com.crashlytics.android.answers.Answers
 import com.crashlytics.android.answers.ContentViewEvent
 import com.google.android.gms.maps.*
@@ -271,9 +268,9 @@ abstract class RouteActivityAbstract : BaseActivity(),
                         }
                     }
 
-                    val routeName = RouteUtil.getCompanyName(this, company, routeNo) + " " + routeNo
+                    val routeName = Route.companyName(this, company, routeNo) + " " + routeNo
                     supportActionBar?.title = routeName
-                    if (routes?.isNotEmpty() == true && !TextUtils.isEmpty(company)) {
+                    if (routes?.isNotEmpty() == true && !company.isEmpty()) {
                         suggestion = Suggestion.createInstance()
                         suggestion?.companyCode = company
                         suggestion?.route = routeNo?:""
@@ -390,10 +387,6 @@ abstract class RouteActivityAbstract : BaseActivity(),
                             .build()
                 }
             }
-//            C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST ->
-//                OneTimeWorkRequest.Builder(NwstRouteWorker::class.java)
-//                        .setInputData(data)
-//                        .build()
             else -> return
         }
         if (requestId != null) {
@@ -603,7 +596,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
     }
 
     private fun appIndexStart(suggestion: Suggestion) {
-        if (TextUtils.isEmpty(suggestion.route)) return
+        if (suggestion.route.isEmpty()) return
         FirebaseUserActions.getInstance().start(getIndexApiAction(suggestion))
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {
@@ -621,7 +614,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
     }
 
     private fun appIndexStop(suggestion: Suggestion) {
-        if (TextUtils.isEmpty(suggestion.route)) return
+        if (suggestion.route.isEmpty()) return
         FirebaseUserActions.getInstance().end(getIndexApiAction(suggestion))
                 .addOnCompleteListener(this) { task ->
                     if (task.isSuccessful) {

@@ -32,7 +32,7 @@ public class MtrActivity extends BaseActivity {
 
         adViewContainer = findViewById(R.id.adView_container);
         if (adViewContainer != null) {
-            adView = AdViewUtil.banner(adViewContainer, adView, false);
+            adView = AdViewUtil.INSTANCE.banner(adViewContainer, adView, false);
         }
 
         Bundle bundle = getIntent().getExtras();

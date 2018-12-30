@@ -14,7 +14,6 @@ import com.alvinhkh.buseta.R;
 
 import com.alvinhkh.buseta.route.model.Route;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter;
-import com.alvinhkh.buseta.utils.RouteUtil;
 
 public class RouteSelectAdapter extends ArrayListRecyclerViewAdapter<RouteSelectAdapter.ViewHolder> {
 
@@ -76,7 +75,7 @@ public class RouteSelectAdapter extends ArrayListRecyclerViewAdapter<RouteSelect
         public void bindItem(RouteSelectAdapter adapter, Item item, int position) {
             final Route route = (Route) item.getObject();
             assert route != null;
-            String routeName = RouteUtil.getCompanyName(context, route.getCompanyCode(), route.getName()) +
+            String routeName = Route.companyName(context, route.getCompanyCode(), route.getName()) +
                     " " + route.getName();
             routeTv.setText(routeName);
             if (!TextUtils.isEmpty(route.getDestination()) && !TextUtils.isEmpty(route.getOrigin())) {

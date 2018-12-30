@@ -25,7 +25,6 @@ import com.alvinhkh.buseta.follow.model.Follow
 import com.alvinhkh.buseta.search.ui.SearchActivity
 import com.alvinhkh.buseta.utils.PreferenceUtil
 import java.util.*
-import com.alvinhkh.buseta.utils.RouteStopUtil
 
 
 
@@ -98,7 +97,7 @@ class FollowViewAdapter(
                 itemView.setOnClickListener {
                     val intent = Intent(Intent.ACTION_VIEW)
                     intent.setClass(itemView.context, SearchActivity::class.java)
-                    intent.putExtra(C.EXTRA.STOP_OBJECT, RouteStopUtil.fromFollow(follow))
+                    intent.putExtra(C.EXTRA.STOP_OBJECT, follow.toRouteStop())
                     itemView.context.startActivity(intent)
                 }
                 itemView.setOnLongClickListener {

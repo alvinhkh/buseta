@@ -26,7 +26,6 @@ import com.alvinhkh.buseta.follow.dao.FollowDatabase;
 import com.alvinhkh.buseta.follow.model.Follow;
 import com.alvinhkh.buseta.route.model.RouteStop;
 import com.alvinhkh.buseta.search.ui.SearchActivity;
-import com.alvinhkh.buseta.utils.RouteStopUtil;
 import com.alvinhkh.buseta.utils.ConnectivityUtil;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
 
@@ -101,214 +100,205 @@ public class EtaWidgetService extends RemoteViewsService {
             if (followDatabase == null || position >= getCount()) return remoteViews;
             Follow follow = followDatabase.followDao().getList().get(position);
             if (follow == null) return remoteViews;
-            RouteStop stop = RouteStopUtil.fromFollow(follow);
-            if (stop != null) {
-                remoteViews.setTextViewText(R.id.left_line1, null);
-                remoteViews.setTextViewText(R.id.left_line2, null);
-                remoteViews.setTextViewText(R.id.left_line3, null);
-                remoteViews.setTextViewText(R.id.eta, null);
-                remoteViews.setTextViewText(R.id.eta2, null);
-                remoteViews.setTextViewText(R.id.eta3, null);
-                if (itemNoOfLines == 1) {
-                    remoteViews.setViewVisibility(R.id.left_line1, View.VISIBLE);
-                    remoteViews.setViewVisibility(R.id.left_line2, View.GONE);
-                    remoteViews.setViewVisibility(R.id.left_line3, View.GONE);
-                    remoteViews.setViewVisibility(R.id.eta, View.VISIBLE);
-                    remoteViews.setViewVisibility(R.id.eta2, View.GONE);
-                    remoteViews.setViewVisibility(R.id.eta3, View.GONE);
-                    remoteViews.setTextViewText(R.id.left_line1, stop.getRouteNo() + " " + stop.getName());
-                } else if (itemNoOfLines == 2) {
-                    remoteViews.setViewVisibility(R.id.left_line1, View.VISIBLE);
-                    remoteViews.setViewVisibility(R.id.left_line2, View.VISIBLE);
-                    remoteViews.setViewVisibility(R.id.left_line3, View.GONE);
-                    remoteViews.setViewVisibility(R.id.eta, View.VISIBLE);
-                    remoteViews.setViewVisibility(R.id.eta2, View.VISIBLE);
-                    remoteViews.setViewVisibility(R.id.eta3, View.GONE);
-                    if (!TextUtils.isEmpty(stop.getRouteDestination())) {
-                        remoteViews.setTextViewText(R.id.left_line1, stop.getRouteNo() + " " +
-                                getString(R.string.destination, stop.getRouteDestination()));
-                    } else {
-                        remoteViews.setTextViewText(R.id.left_line1, stop.getRouteNo());
-                    }
-                    remoteViews.setTextViewText(R.id.left_line2, stop.getName());
+            RouteStop stop = follow.toRouteStop();
+            remoteViews.setTextViewText(R.id.left_line1, null);
+            remoteViews.setTextViewText(R.id.left_line2, null);
+            remoteViews.setTextViewText(R.id.left_line3, null);
+            remoteViews.setTextViewText(R.id.eta, null);
+            remoteViews.setTextViewText(R.id.eta2, null);
+            remoteViews.setTextViewText(R.id.eta3, null);
+            if (itemNoOfLines == 1) {
+                remoteViews.setViewVisibility(R.id.left_line1, View.VISIBLE);
+                remoteViews.setViewVisibility(R.id.left_line2, View.GONE);
+                remoteViews.setViewVisibility(R.id.left_line3, View.GONE);
+                remoteViews.setViewVisibility(R.id.eta, View.VISIBLE);
+                remoteViews.setViewVisibility(R.id.eta2, View.GONE);
+                remoteViews.setViewVisibility(R.id.eta3, View.GONE);
+                remoteViews.setTextViewText(R.id.left_line1, stop.getRouteNo() + " " + stop.getName());
+            } else if (itemNoOfLines == 2) {
+                remoteViews.setViewVisibility(R.id.left_line1, View.VISIBLE);
+                remoteViews.setViewVisibility(R.id.left_line2, View.VISIBLE);
+                remoteViews.setViewVisibility(R.id.left_line3, View.GONE);
+                remoteViews.setViewVisibility(R.id.eta, View.VISIBLE);
+                remoteViews.setViewVisibility(R.id.eta2, View.VISIBLE);
+                remoteViews.setViewVisibility(R.id.eta3, View.GONE);
+                if (!TextUtils.isEmpty(stop.getRouteDestination())) {
+                    remoteViews.setTextViewText(R.id.left_line1, stop.getRouteNo() + " " +
+                            getString(R.string.destination, stop.getRouteDestination()));
                 } else {
-                    remoteViews.setViewVisibility(R.id.left_line1, View.VISIBLE);
-                    remoteViews.setViewVisibility(R.id.left_line2, View.VISIBLE);
-                    remoteViews.setViewVisibility(R.id.eta, View.VISIBLE);
-                    remoteViews.setViewVisibility(R.id.eta2, View.VISIBLE);
-                    remoteViews.setViewVisibility(R.id.eta3, View.VISIBLE);
-                    remoteViews.setTextViewText(R.id.left_line1, stop.getName());
-                    remoteViews.setTextViewText(R.id.left_line2, stop.getRouteNo());
-                    if (!TextUtils.isEmpty(stop.getRouteDestination())) {
-                        remoteViews.setViewVisibility(R.id.left_line3, View.VISIBLE);
-                        remoteViews.setTextViewText(R.id.left_line3, getString(R.string.destination, stop.getRouteDestination()));
-                    } else {
-                        remoteViews.setViewVisibility(R.id.left_line3, View.GONE);
-                    }
+                    remoteViews.setTextViewText(R.id.left_line1, stop.getRouteNo());
                 }
-                // ETA
-                // http://stackoverflow.com/a/20645908/2411672
-                final long token = Binder.clearCallingIdentity();
-                try {
-                    SpannableStringBuilder etaTexts = new SpannableStringBuilder();
-                    if (arrivalTimeDatabase != null) {
-                        List<ArrivalTime> arrivalTimeList = ArrivalTime.Companion.getList(arrivalTimeDatabase, stop);
-                        String direction = "";
-                        for (ArrivalTime arrivalTime: arrivalTimeList) {
-                            arrivalTime = ArrivalTime.Companion.estimate(context, arrivalTime);
-                            if (!TextUtils.isEmpty(arrivalTime.getOrder())) {
-                                SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.getText());
-                                Integer pos = Integer.parseInt(arrivalTime.getOrder());
-                                Integer colorInt = ContextCompat.getColor(context,
-                                        arrivalTime.getExpired() ? R.color.widgetTextDiminish :
-                                                (pos > 0 ? R.color.widgetTextPrimary : R.color.widgetTextHighlighted));
-                                if (arrivalTime.getCompanyCode().equals(C.PROVIDER.MTR)) {
-                                    colorInt = ContextCompat.getColor(context, arrivalTime.getExpired() ?
-                                            R.color.widgetTextDiminish : R.color.widgetTextPrimary);
+                remoteViews.setTextViewText(R.id.left_line2, stop.getName());
+            } else {
+                remoteViews.setViewVisibility(R.id.left_line1, View.VISIBLE);
+                remoteViews.setViewVisibility(R.id.left_line2, View.VISIBLE);
+                remoteViews.setViewVisibility(R.id.eta, View.VISIBLE);
+                remoteViews.setViewVisibility(R.id.eta2, View.VISIBLE);
+                remoteViews.setViewVisibility(R.id.eta3, View.VISIBLE);
+                remoteViews.setTextViewText(R.id.left_line1, stop.getName());
+                remoteViews.setTextViewText(R.id.left_line2, stop.getRouteNo());
+                if (!TextUtils.isEmpty(stop.getRouteDestination())) {
+                    remoteViews.setViewVisibility(R.id.left_line3, View.VISIBLE);
+                    remoteViews.setTextViewText(R.id.left_line3, getString(R.string.destination, stop.getRouteDestination()));
+                } else {
+                    remoteViews.setViewVisibility(R.id.left_line3, View.GONE);
+                }
+            }
+            // ETA
+            // http://stackoverflow.com/a/20645908/2411672
+            final long token = Binder.clearCallingIdentity();
+            try {
+                SpannableStringBuilder etaTexts = new SpannableStringBuilder();
+                if (arrivalTimeDatabase != null) {
+                    List<ArrivalTime> arrivalTimeList = ArrivalTime.Companion.getList(arrivalTimeDatabase, stop);
+                    String direction = "";
+                    for (ArrivalTime arrivalTime: arrivalTimeList) {
+                        arrivalTime = ArrivalTime.Companion.estimate(context, arrivalTime);
+                        if (!TextUtils.isEmpty(arrivalTime.getOrder())) {
+                            SpannableStringBuilder etaText = new SpannableStringBuilder(arrivalTime.getText());
+                            Integer pos = Integer.parseInt(arrivalTime.getOrder());
+                            Integer colorInt = ContextCompat.getColor(context,
+                                    arrivalTime.getExpired() ? R.color.widgetTextDiminish :
+                                            (pos > 0 ? R.color.widgetTextPrimary : R.color.widgetTextHighlighted));
+                            if (arrivalTime.getCompanyCode().equals(C.PROVIDER.MTR)) {
+                                colorInt = ContextCompat.getColor(context, arrivalTime.getExpired() ?
+                                        R.color.widgetTextDiminish : R.color.widgetTextPrimary);
+                            }
+                            if (!TextUtils.isEmpty(arrivalTime.getPlatform())) {
+                                etaText.insert(0, "[" + arrivalTime.getPlatform() + "] ");
+                            }
+                            if (!TextUtils.isEmpty(arrivalTime.getNote())) {
+                                etaText.append("#");
+                            }
+                            if (arrivalTime.isSchedule()) {
+                                etaText.append("*");
+                            }
+                            if (itemNoOfLines > 1 || pos == 0) {
+                                if (!TextUtils.isEmpty(arrivalTime.getEstimate())) {
+                                    etaText.append(" (").append(arrivalTime.getEstimate()).append(")");
                                 }
-                                if (!TextUtils.isEmpty(arrivalTime.getPlatform())) {
-                                    etaText.insert(0, "[" + arrivalTime.getPlatform() + "] ");
+                            }
+                            if (arrivalTime.getDistanceKM() >= 0) {
+                                etaText.append(" ").append(context.getString(R.string.km_short, arrivalTime.getDistanceKM()));
+                            }
+                            if (!TextUtils.isEmpty(arrivalTime.getPlate())) {
+                                etaText.append(" ").append(arrivalTime.getPlate());
+                            }
+                            if (arrivalTime.getCapacity() >= 0) {
+                                String capacity = "";
+                                if (arrivalTime.getCapacity() == 0) {
+                                    capacity = context.getString(R.string.capacity_empty);
+                                } else if (arrivalTime.getCapacity() > 0 && arrivalTime.getCapacity() <= 3) {
+                                    capacity = "¼";
+                                } else if (arrivalTime.getCapacity() > 3 && arrivalTime.getCapacity() <= 6) {
+                                    capacity = "½";
+                                } else if (arrivalTime.getCapacity() > 6 && arrivalTime.getCapacity() <= 9) {
+                                    capacity = "¾";
+                                } else if (arrivalTime.getCapacity() >= 10) {
+                                    capacity = context.getString(R.string.capacity_full);
                                 }
-                                if (!TextUtils.isEmpty(arrivalTime.getNote())) {
-                                    etaText.append("#");
+                                if (!TextUtils.isEmpty(capacity)) {
+                                    etaText.append(" [").append(capacity).append("]");
                                 }
-                                if (arrivalTime.isSchedule()) {
-                                    etaText.append("*");
-                                }
-                                if (itemNoOfLines > 1 || pos == 0) {
-                                    if (!TextUtils.isEmpty(arrivalTime.getEstimate())) {
-                                        etaText.append(" (").append(arrivalTime.getEstimate()).append(")");
-                                    }
-                                }
-                                if (arrivalTime.getDistanceKM() >= 0) {
-                                    etaText.append(" ").append(context.getString(R.string.km_short, arrivalTime.getDistanceKM()));
-                                }
-                                if (!TextUtils.isEmpty(arrivalTime.getPlate())) {
-                                    etaText.append(" ").append(arrivalTime.getPlate());
-                                }
-                                if (arrivalTime.getCapacity() >= 0) {
-                                    String capacity = "";
-                                    if (arrivalTime.getCapacity() == 0) {
-                                        capacity = context.getString(R.string.capacity_empty);
-                                    } else if (arrivalTime.getCapacity() > 0 && arrivalTime.getCapacity() <= 3) {
-                                        capacity = "¼";
-                                    } else if (arrivalTime.getCapacity() > 3 && arrivalTime.getCapacity() <= 6) {
-                                        capacity = "½";
-                                    } else if (arrivalTime.getCapacity() > 6 && arrivalTime.getCapacity() <= 9) {
-                                        capacity = "¾";
-                                    } else if (arrivalTime.getCapacity() >= 10) {
-                                        capacity = context.getString(R.string.capacity_full);
-                                    }
-                                    if (!TextUtils.isEmpty(capacity)) {
-                                        etaText.append(" [").append(capacity).append("]");
-                                    }
-                                }
-                                if (arrivalTime.getHasWheelchair() && PreferenceUtil.isShowWheelchairIcon(context)) {
-                                    etaText.append(" \u267F");
-                                }
-                                if (arrivalTime.getHasWifi() && PreferenceUtil.isShowWifiIcon(context)) {
-                                    etaText.append(" [W]");
-                                }
+                            }
+                            if (arrivalTime.getHasWheelchair() && PreferenceUtil.INSTANCE.isShowWheelchairIcon(context)) {
+                                etaText.append(" \u267F");
+                            }
+                            if (arrivalTime.getHasWifi() && PreferenceUtil.INSTANCE.isShowWifiIcon(context)) {
+                                etaText.append(" [W]");
+                            }
 
-                                if (etaText.length() > 0) {
-                                    etaText.setSpan(new ForegroundColorSpan(colorInt), 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-                                }
-                                if (itemNoOfLines == 1) {
-                                    if (arrivalTime.getCompanyCode().equals(C.PROVIDER.MTR)) {
-                                        if (!direction.equals(arrivalTime.getDirection())) {
-                                            if (pos == 0) {
-                                                etaTexts.append(etaText);
-                                            } else {
-                                                etaText.insert(0, "  ");
-                                                etaTexts.append(etaText);
-                                            }
-                                        }
-                                    } else {
-                                        switch (pos) {
-                                            case 0:
-                                                etaTexts.append(etaText);
-                                                break;
-                                            default:
-                                                etaText.insert(0, "  ");
-                                                etaTexts.append(etaText);
-                                                break;
-                                        }
-                                    }
-                                    remoteViews.setTextViewText(R.id.eta, etaTexts);
-                                } else if (itemNoOfLines == 2) {
-                                    if (arrivalTime.getCompanyCode().equals(C.PROVIDER.MTR)) {
-                                        if (!direction.equals(arrivalTime.getDirection())) {
-                                            if (pos == 0) {
-                                                remoteViews.setTextViewText(R.id.eta, etaText);
-                                            } else {
-                                                etaText.insert(0, "  ");
-                                                remoteViews.setTextViewText(R.id.eta2, etaText);
-                                            }
-                                        }
-                                    } else {
-                                        switch (pos) {
-                                            case 0:
-                                                remoteViews.setTextViewText(R.id.eta, etaText);
-                                                break;
-                                            case 1:
-                                                remoteViews.setTextViewText(R.id.eta2, etaText);
-                                                etaTexts.append(etaText);
-                                            case 2:
-                                                etaText.insert(0, "  ");
-                                                remoteViews.setTextViewText(R.id.eta2, etaTexts);
-                                                break;
+                            if (etaText.length() > 0) {
+                                etaText.setSpan(new ForegroundColorSpan(colorInt), 0, etaText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                            }
+                            if (itemNoOfLines == 1) {
+                                if (arrivalTime.getCompanyCode().equals(C.PROVIDER.MTR)) {
+                                    if (!direction.equals(arrivalTime.getDirection())) {
+                                        if (pos == 0) {
+                                            etaTexts.append(etaText);
+                                        } else {
+                                            etaText.insert(0, "  ");
+                                            etaTexts.append(etaText);
                                         }
                                     }
                                 } else {
-                                    if (arrivalTime.getCompanyCode().equals(C.PROVIDER.MTR)) {
-                                        if (!direction.equals(arrivalTime.getDirection())) {
-                                            if (pos == 0) {
-                                                remoteViews.setTextViewText(R.id.eta, etaText);
-                                            } else {
-                                                etaText.insert(0, "  ");
-                                                remoteViews.setTextViewText(R.id.eta2, etaText);
-                                            }
+                                    switch (pos) {
+                                        case 0:
+                                            etaTexts.append(etaText);
+                                            break;
+                                        default:
+                                            etaText.insert(0, "  ");
+                                            etaTexts.append(etaText);
+                                            break;
+                                    }
+                                }
+                                remoteViews.setTextViewText(R.id.eta, etaTexts);
+                            } else if (itemNoOfLines == 2) {
+                                if (arrivalTime.getCompanyCode().equals(C.PROVIDER.MTR)) {
+                                    if (!direction.equals(arrivalTime.getDirection())) {
+                                        if (pos == 0) {
+                                            remoteViews.setTextViewText(R.id.eta, etaText);
+                                        } else {
+                                            etaText.insert(0, "  ");
+                                            remoteViews.setTextViewText(R.id.eta2, etaText);
                                         }
-                                    } else {
-                                        switch (pos) {
-                                            case 0:
-                                                remoteViews.setTextViewText(R.id.eta, etaText);
-                                                break;
-                                            case 1:
-                                                remoteViews.setTextViewText(R.id.eta2, etaText);
-                                                break;
-                                            case 2:
-                                                remoteViews.setTextViewText(R.id.eta3, etaText);
-                                                break;
-                                            default:
-                                                // etaText.insert(0, "  ");
-                                                // etaText.insert(0, etaTexts);
-                                                // etaTexts.clear();
-                                                // etaTexts.append(etaText);
-                                                // remoteViews.setTextViewText(R.id.eta3, etaTexts);
-                                                break;
+                                    }
+                                } else {
+                                    switch (pos) {
+                                        case 0:
+                                            remoteViews.setTextViewText(R.id.eta, etaText);
+                                            break;
+                                        case 1:
+                                            remoteViews.setTextViewText(R.id.eta2, etaText);
+                                            etaTexts.append(etaText);
+                                        case 2:
+                                            etaText.insert(0, "  ");
+                                            remoteViews.setTextViewText(R.id.eta2, etaTexts);
+                                            break;
+                                    }
+                                }
+                            } else {
+                                if (arrivalTime.getCompanyCode().equals(C.PROVIDER.MTR)) {
+                                    if (!direction.equals(arrivalTime.getDirection())) {
+                                        if (pos == 0) {
+                                            remoteViews.setTextViewText(R.id.eta, etaText);
+                                        } else {
+                                            etaText.insert(0, "  ");
+                                            remoteViews.setTextViewText(R.id.eta2, etaText);
                                         }
+                                    }
+                                } else {
+                                    switch (pos) {
+                                        case 0:
+                                            remoteViews.setTextViewText(R.id.eta, etaText);
+                                            break;
+                                        case 1:
+                                            remoteViews.setTextViewText(R.id.eta2, etaText);
+                                            break;
+                                        case 2:
+                                            remoteViews.setTextViewText(R.id.eta3, etaText);
+                                            break;
+                                        default:
+                                            // etaText.insert(0, "  ");
+                                            // etaText.insert(0, etaTexts);
+                                            // etaTexts.clear();
+                                            // etaTexts.append(etaText);
+                                            // remoteViews.setTextViewText(R.id.eta3, etaTexts);
+                                            break;
                                     }
                                 }
                             }
-                            direction = arrivalTime.getDirection();
                         }
+                        direction = arrivalTime.getDirection();
                     }
-                } finally {
-                    Binder.restoreCallingIdentity(token);
                 }
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setClass(context, SearchActivity.class);
-                intent.putExtra(C.EXTRA.STOP_OBJECT, stop);
-                remoteViews.setOnClickFillInIntent(R.id.widget_item_eta, intent);
-            } else {
-                remoteViews.setTextViewText(R.id.left_line1, "");
-                remoteViews.setTextViewText(R.id.left_line2, "");
-                remoteViews.setTextViewText(R.id.left_line3, "");
-                remoteViews.setTextViewText(R.id.eta, "");
-                remoteViews.setTextViewText(R.id.eta2, "");
-                remoteViews.setTextViewText(R.id.eta3, "");
+            } finally {
+                Binder.restoreCallingIdentity(token);
             }
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setClass(context, SearchActivity.class);
+            intent.putExtra(C.EXTRA.STOP_OBJECT, stop);
+            remoteViews.setOnClickFillInIntent(R.id.widget_item_eta, intent);
             if (!ConnectivityUtil.isConnected(context)) {
                 remoteViews.setTextViewText(R.id.eta2, context.getString(R.string.message_no_internet_connection));
             }

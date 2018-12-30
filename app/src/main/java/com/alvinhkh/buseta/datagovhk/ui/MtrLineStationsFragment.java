@@ -35,8 +35,6 @@ import com.alvinhkh.buseta.service.RxBroadcastReceiver;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter.Item;
 import com.alvinhkh.buseta.utils.ColorUtil;
-import com.alvinhkh.buseta.utils.RouteStopUtil;
-import com.alvinhkh.buseta.utils.RetryWithDelay;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -259,7 +257,6 @@ public class MtrLineStationsFragment extends Fragment
         }
         codeMap.clear();
         disposables.add(dataGovHkService.getMtrLinesAndStations()
-                .retryWhen(new RetryWithDelay(5, 3000))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeWith(mtrLinesAndStationsObserver(lineCode)));
@@ -327,7 +324,21 @@ public class MtrLineStationsFragment extends Fragment
                 try {
                     List<MtrLineStation> stations = MtrLineStation.Companion.fromCSV(body.string(), lineCode);
                     for (MtrLineStation station: stations) {
-                        RouteStop routeStop = RouteStopUtil.fromMtrLineStation(station);
+                        RouteStop routeStop = new RouteStop();
+                        routeStop.setStopId(station.getStationCode());
+                        routeStop.setCompanyCode(C.PROVIDER.MTR);
+                        // routeStop.routeDestination = "";
+                        routeStop.setRouteSequence(station.getDirection());
+                        // routeStop.fareFull = "0";
+                        // routeStop.latitude = "";
+                        // routeStop.longitude = "";
+                        routeStop.setName(station.getChineseName());
+                        // routeStop.routeOrigin = "";
+                        routeStop.setRouteNo(station.getLineCode());
+                        routeStop.setRouteId(station.getLineCode());
+                        routeStop.setSequence(station.getStationID());
+                        routeStop.setEtaGet("");
+                        routeStop.setImageUrl("");
                         if (!codeMap.containsKey(station.getStationCode())) {
                             routeStop.setRouteNo(lineName);
                             adapter.add(new Item(Item.TYPE_DATA, routeStop));

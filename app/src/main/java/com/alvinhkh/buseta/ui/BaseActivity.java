@@ -38,13 +38,13 @@ import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.model.AppUpdate;
+import com.alvinhkh.buseta.route.model.Route;
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase;
 import com.alvinhkh.buseta.search.model.Suggestion;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
 import com.alvinhkh.buseta.search.ui.SearchActivity;
 import com.alvinhkh.buseta.ui.setting.SettingActivity;
 import com.alvinhkh.buseta.utils.AdViewUtil;
-import com.alvinhkh.buseta.utils.RouteUtil;
 import com.alvinhkh.buseta.utils.NightModeUtil;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
 import com.alvinhkh.buseta.search.dao.SuggestionSimpleCursorAdapter;
@@ -129,7 +129,7 @@ abstract public class BaseActivity extends AppCompatActivity
             }
             if (aColumnIndex == aCursor.getColumnIndexOrThrow(Suggestion.COLUMN_COMPANY)) {
                 TextView textView = aView.findViewById(R.id.company);
-                textView.setText(RouteUtil.getCompanyName(this, aCursor.getString(aColumnIndex),
+                textView.setText(Route.companyName(context, aCursor.getString(aColumnIndex),
                         aCursor.getString(aCursor.getColumnIndexOrThrow(Suggestion.COLUMN_TEXT))));
                 return true;
             }
@@ -201,7 +201,7 @@ abstract public class BaseActivity extends AppCompatActivity
                 break;
             }
             case R.id.action_share: {
-                startActivity(Intent.createChooser(PreferenceUtil.shareAppIntent(this),
+                startActivity(Intent.createChooser(PreferenceUtil.INSTANCE.shareAppIntent(this),
                         getString(R.string.message_share_text)));
                 break;
             }
@@ -250,12 +250,12 @@ abstract public class BaseActivity extends AppCompatActivity
             case "app_theme":
                 NightModeUtil.update(this);
                 this.recreate();
-                return;
+                break;
             case C.PREF.AD_HIDE:
                 if (adViewContainer != null) {
-                    adView = AdViewUtil.banner(adViewContainer, adView, false);
+                    adView = AdViewUtil.INSTANCE.banner(adViewContainer, adView, false);
                 }
-                return;
+                break;
         }
     }
 
@@ -263,7 +263,7 @@ abstract public class BaseActivity extends AppCompatActivity
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         if (adViewContainer != null) {
-            adView = AdViewUtil.banner(adViewContainer, adView, false);
+            adView = AdViewUtil.INSTANCE.banner(adViewContainer, adView, false);
         }
     }
 

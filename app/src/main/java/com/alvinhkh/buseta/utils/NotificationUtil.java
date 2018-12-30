@@ -108,7 +108,7 @@ public class NotificationUtil {
                         etaText.append(" [").append(capacity).append("]");
                     }
                 }
-                if (arrivalTime.getHasWheelchair() && PreferenceUtil.isShowWheelchairIcon(context)) {
+                if (arrivalTime.getHasWheelchair() && PreferenceUtil.INSTANCE.isShowWheelchairIcon(context)) {
                     etaText.append(" \u267F");
                 }
                 if (arrivalTime.getHasWifi()) {
