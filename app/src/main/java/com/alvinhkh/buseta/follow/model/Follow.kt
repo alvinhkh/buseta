@@ -5,22 +5,24 @@ import android.os.Parcel
 import android.os.Parcelable
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
+import com.alvinhkh.buseta.follow.model.Follow.CREATOR.COLUMN_GROUP_ID
 import com.alvinhkh.buseta.follow.model.Follow.CREATOR.COLUMN_COMPANY_CODE
 import com.alvinhkh.buseta.follow.model.Follow.CREATOR.COLUMN_ROUTE_NO
 import com.alvinhkh.buseta.follow.model.Follow.CREATOR.COLUMN_ROUTE_SEQ
 import com.alvinhkh.buseta.follow.model.Follow.CREATOR.COLUMN_ROUTE_SERVICE_TYPE
 import com.alvinhkh.buseta.follow.model.Follow.CREATOR.COLUMN_STOP_ID
 import com.alvinhkh.buseta.follow.model.Follow.CREATOR.COLUMN_STOP_SEQ
-import com.alvinhkh.buseta.follow.model.Follow.CREATOR.COLUMN_TYPE
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.model.RouteStop
 
-@Entity(tableName = Follow.TABLE_NAME, indices = [(Index(value = arrayOf(COLUMN_TYPE, COLUMN_COMPANY_CODE,
+@Entity(tableName = Follow.TABLE_NAME, indices = [(Index(value = arrayOf(COLUMN_GROUP_ID, COLUMN_COMPANY_CODE,
         COLUMN_ROUTE_NO, COLUMN_ROUTE_SEQ, COLUMN_ROUTE_SERVICE_TYPE, COLUMN_STOP_ID, COLUMN_STOP_SEQ), unique = true))])
 data class Follow(
         @PrimaryKey(autoGenerate = true)
         @ColumnInfo(name = Follow.COLUMN_ID, typeAffinity = ColumnInfo.INTEGER)
         var _id: Long,
+        @ColumnInfo(name = Follow.COLUMN_GROUP_ID, typeAffinity = ColumnInfo.TEXT)
+        var groupId: String,
         @ColumnInfo(name = Follow.COLUMN_TYPE, typeAffinity = ColumnInfo.TEXT)
         var type: String,
         @ColumnInfo(name = Follow.COLUMN_COMPANY_CODE, typeAffinity = ColumnInfo.TEXT)
@@ -57,12 +59,13 @@ data class Follow(
         var etas: List<ArrivalTime> = listOf()
 ) : Parcelable {
 
-    constructor() : this(0, "", "", "", "", "", "",
+    constructor() : this(0, "", "", "", "", "", "", "",
             "", "", "", "", "",
             "", "", "", 0, 0, listOf<ArrivalTime>())
 
     constructor(parcel: Parcel) : this(
             parcel.readLong(),
+            parcel.readString()?:"",
             parcel.readString()?:"",
             parcel.readString()?:"",
             parcel.readString()?:"",
@@ -83,6 +86,7 @@ data class Follow(
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeLong(_id)
+        parcel.writeString(groupId)
         parcel.writeString(type)
         parcel.writeString(companyCode)
         parcel.writeString(routeNo)
@@ -127,6 +131,7 @@ data class Follow(
 
         const val TABLE_NAME = "follow"
         const val COLUMN_ID = "_id"
+        const val COLUMN_GROUP_ID = "category_id"
         const val COLUMN_COMPANY_CODE = "company"
         const val COLUMN_DISPLAY_ORDER = "display_order"
         const val COLUMN_ROUTE_NO = "no"
@@ -148,6 +153,7 @@ data class Follow(
 
         fun createInstance(route: Route?, routeStop: RouteStop?): Follow {
             val follow = Follow()
+            follow.groupId = FollowGroup.UNCATEGORISED
             follow.type = TYPE_ROUTE_STOP
             if (route?.companyCode == C.PROVIDER.MTR) {
                 follow.type = TYPE_RAILWAY_STOP

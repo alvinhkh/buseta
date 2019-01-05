@@ -2,10 +2,19 @@ package com.alvinhkh.buseta.follow.ui
 
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
+import android.support.design.button.MaterialButton
 import android.support.design.widget.FloatingActionButton
 import android.support.design.widget.Snackbar
+import android.support.design.widget.TextInputEditText
+import android.support.design.widget.TextInputLayout
 import android.support.v4.app.Fragment
+import android.support.v4.app.FragmentManager
+import android.support.v4.content.ContextCompat
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -14,63 +23,148 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
+import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.follow.model.Follow
+import com.alvinhkh.buseta.follow.model.FollowGroup
 import com.alvinhkh.buseta.ui.OnItemDragListener
 import com.alvinhkh.buseta.ui.SimpleItemTouchHelperCallback
+import com.alvinhkh.buseta.utils.ColorUtil
+import com.skydoves.colorpickerview.ColorPickerDialog
+import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
 
 
 class EditFollowFragment: Fragment(), OnItemDragListener {
 
     private lateinit var followDatabase: FollowDatabase
     private lateinit var itemTouchHelper: ItemTouchHelper
-    private lateinit var viewModel: EditFollowViewModel
     private lateinit var viewAdapter: EditFollowViewAdapter
-    private var recyclerView: RecyclerView? = null
-    private var emptyView: View? = null
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var emptyView: View
+    private var groupId = FollowGroup.UNCATEGORISED
     private var dragItemPosition = -1
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        val rootView = inflater.inflate(R.layout.fragment_follow_edit, container, false)
+        val rootView = inflater.inflate(R.layout.fragment_follow, container, false)
         setHasOptionsMenu(true)
-
+        groupId = arguments?.getString(C.EXTRA.GROUP_ID)?:FollowGroup.UNCATEGORISED
         followDatabase = FollowDatabase.getInstance(rootView.context)!!
         emptyView = rootView.findViewById(R.id.empty_view)
         recyclerView = rootView.findViewById(R.id.recycler_view)
-        if (recyclerView != null) {
-            with(recyclerView!!) {
-                setHasFixedSize(true)
-                layoutManager = LinearLayoutManager(context)
-                viewAdapter = EditFollowViewAdapter(this, null, this@EditFollowFragment)
-                adapter = viewAdapter
-                itemTouchHelper = ItemTouchHelper(SimpleItemTouchHelperCallback(viewAdapter))
-                itemTouchHelper.attachToRecyclerView(this)
-                viewModel = ViewModelProviders.of(this@EditFollowFragment).get(EditFollowViewModel::class.java)
-                viewModel.getAsLiveData().observe(this@EditFollowFragment, Observer {
-                    viewAdapter.clear()
-                    it?.forEach { follow ->
-                        viewAdapter.addItem(follow)
+        with(recyclerView) {
+            setHasFixedSize(true)
+            layoutManager = LinearLayoutManager(context)
+            viewAdapter = EditFollowViewAdapter(this, this@EditFollowFragment)
+            adapter = viewAdapter
+            itemTouchHelper = ItemTouchHelper(SimpleItemTouchHelperCallback(viewAdapter))
+            itemTouchHelper.attachToRecyclerView(this)
+        }
+        val viewModel = ViewModelProviders.of(this).get(FollowViewModel::class.java)
+        viewModel.getAsLiveData(groupId).observe(this, Observer { list ->
+            viewAdapter.replaceItems(list?: mutableListOf())
+            emptyView.visibility = if (viewAdapter.itemCount > 0) View.GONE else View.VISIBLE
+        })
+        followDatabase.followGroupDao().liveData(groupId)
+                .observe(this, Observer { followGroup ->
+                    if (activity != null) {
+                        val actionBar = (activity as AppCompatActivity).supportActionBar
+                        val name = when {
+                            !followGroup?.name.isNullOrEmpty() -> followGroup?.name
+                            followGroup?.id == FollowGroup.UNCATEGORISED -> getString(R.string.uncategorised)
+                            else -> followGroup?.id
+                        }?:""
+                        actionBar?.title = name
+                        actionBar?.subtitle = getString(R.string.edit_follow_group)
+                        val color = if (!followGroup?.colour.isNullOrEmpty()) Color.parseColor(followGroup?.colour) else ContextCompat.getColor(context!!, R.color.colorPrimary)
+                        (activity as AppCompatActivity).supportActionBar?.setBackgroundDrawable(ColorDrawable(color))
+                        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            activity?.window?.statusBarColor = ColorUtil.darkenColor(color)
+                            activity?.window?.navigationBarColor = ColorUtil.darkenColor(color)
+                        }
                     }
-                    emptyView?.visibility = if (viewAdapter.itemCount > 0) View.GONE else View.VISIBLE
                 })
+        val buttonContainer = rootView.findViewById<View>(R.id.button_container)
+        buttonContainer.visibility = View.VISIBLE
+        val editButton = rootView.findViewById<MaterialButton>(R.id.edit_button)
+        editButton.setOnClickListener { view ->
+            val followGroup = followDatabase.followGroupDao().get(groupId)
+            val builder = AlertDialog.Builder(view.context, R.style.AppTheme_Dialog)
+            builder.setTitle(R.string.rename)
+            val layout = LinearLayout(view.context)
+            layout.setPadding(48, 0, 48, 0)
+            layout.orientation = LinearLayout.VERTICAL
+            val textInputLayout = TextInputLayout(view.context)
+            val textInputEditText = TextInputEditText(view.context)
+            textInputEditText.setText(followGroup.name)
+            textInputLayout.addView(textInputEditText)
+            layout.addView(textInputLayout)
+            builder.setView(layout)
+            builder.setNegativeButton(R.string.action_cancel) { dialogInterface, _ -> dialogInterface.cancel() }
+            builder.setPositiveButton(R.string.action_confirm) { dialogInterface, _ ->
+                val name = textInputEditText.text.toString().trim()
+                val newGroup = followGroup.copy()
+                newGroup.name = name
+                followDatabase.followGroupDao().updateAll(newGroup)
+                dialogInterface.dismiss()
             }
+            builder.create().show()
         }
-
-        if (activity != null) {
-            val fab = activity!!.findViewById<FloatingActionButton>(R.id.fab)
-            fab?.hide()
+        val colourButton = rootView.findViewById<MaterialButton>(R.id.colour_button)
+        colourButton.setOnClickListener { view ->
+            val followGroup = followDatabase.followGroupDao().get(groupId)
+            val builder = ColorPickerDialog.Builder(view.context, R.style.AppTheme_Dialog)
+            builder.setTitle(R.string.colour)
+            builder.setPositiveButton(getString(R.string.action_confirm), ColorEnvelopeListener { envelope, fromUser ->
+                val newGroup = followGroup.copy()
+                newGroup.colour = "#" + envelope.hexCode
+                followDatabase.followGroupDao().updateAll(newGroup)
+            })
+            builder.setNeutralButton(R.string.default_value) { dialogInterface, _ ->
+                val newGroup = followGroup.copy()
+                newGroup.colour = ""
+                followDatabase.followGroupDao().updateAll(newGroup)
+                dialogInterface.dismiss()
+            }
+            builder.setNegativeButton(R.string.action_cancel) { dialogInterface, _ -> dialogInterface.dismiss() }
+            builder.attachBrightnessSlideBar()
+            builder.show()
         }
-
+        val deleteButton = rootView.findViewById<MaterialButton>(R.id.delete_button)
+        deleteButton.setOnClickListener { view ->
+            val followGroup = followDatabase.followGroupDao().get(groupId)
+            val builder = AlertDialog.Builder(view.context, R.style.AppTheme_Dialog)
+            builder.setTitle(R.string.remove_group)
+            builder.setMessage(followGroup.name)
+            builder.setNegativeButton(R.string.action_cancel) { dialogInterface, _ -> dialogInterface.cancel() }
+            builder.setPositiveButton(R.string.action_confirm) { dialogInterface, _ ->
+                followDatabase.followGroupDao().delete(followGroup.id)
+                followDatabase.followDao().delete(followGroup.id)
+                dialogInterface.dismiss()
+                val fragmentManager = activity?.supportFragmentManager!!
+                fragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                val fragmentTransaction = fragmentManager.beginTransaction()
+                fragmentTransaction.replace(R.id.fragment_container, EditFollowGroupFragment.newInstance())
+                fragmentTransaction.addToBackStack("edit_follow_list")
+                fragmentTransaction.commit()
+            }
+            builder.create().show()
+        }
+        val group = followDatabase.followGroupDao().get(groupId)
+        if (group.id == FollowGroup.UNCATEGORISED) {
+            editButton.visibility = View.INVISIBLE
+            deleteButton.visibility = View.INVISIBLE
+        }
         return rootView
     }
 
     override fun onResume() {
         super.onResume()
         if (activity != null) {
-            val actionBar = (activity as AppCompatActivity).supportActionBar
-            actionBar?.setTitle(R.string.edit_follow_list)
+            val fab = activity!!.findViewById<FloatingActionButton>(R.id.fab)
+            fab?.hide()
         }
         if (view != null) {
             Snackbar.make(view!!, R.string.swipe_to_remove_follow_stop, Snackbar.LENGTH_SHORT).show()
@@ -87,19 +181,17 @@ class EditFollowFragment: Fragment(), OnItemDragListener {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onItemStartDrag(viewHolder: RecyclerView.ViewHolder?) {
-        if (viewHolder != null) {
-            itemTouchHelper.startDrag(viewHolder)
-            dragItemPosition = viewHolder.adapterPosition
-        }
+    override fun onItemStartDrag(viewHolder: RecyclerView.ViewHolder) {
+        itemTouchHelper.startDrag(viewHolder)
+        dragItemPosition = viewHolder.adapterPosition
     }
 
-    override fun onItemStopDrag(viewHolder: RecyclerView.ViewHolder?) {
-        if (dragItemPosition >= 0 && dragItemPosition != viewHolder?.adapterPosition) {
+    override fun onItemStopDrag(viewHolder: RecyclerView.ViewHolder) {
+        if (dragItemPosition >= 0 && dragItemPosition != viewHolder.adapterPosition) {
             val fromPosition = dragItemPosition
-            val toPosition = viewHolder?.adapterPosition?:0
+            val toPosition = viewHolder.adapterPosition
             val updateItems = arrayListOf<Follow>()
-            followDatabase.followDao().getList().forEachIndexed { index, follow ->
+            followDatabase.followDao().list(groupId).forEachIndexed { index, follow ->
                 var update = false
                 if (fromPosition < toPosition) {  // down
                     if (index > fromPosition - 1) {
@@ -112,12 +204,12 @@ class EditFollowFragment: Fragment(), OnItemDragListener {
                 }
                 if (update) {
                     var i = index
-                    if (index == fromPosition) {
-                        i = toPosition
-                    } else if (fromPosition < toPosition) {  // down
-                        i = index - 1
-                    } else if (fromPosition > toPosition) {  // up
-                        i = index + 1
+                    when {
+                        index == fromPosition -> i = toPosition
+                        fromPosition < toPosition -> // down
+                            i = index - 1
+                        fromPosition > toPosition -> // up
+                            i = index + 1
                     }
                     follow.order = i
                     updateItems.add(follow)
@@ -126,5 +218,16 @@ class EditFollowFragment: Fragment(), OnItemDragListener {
             followDatabase.followDao().updateAll(*updateItems.toTypedArray())
         }
         dragItemPosition = -1
+    }
+
+    companion object {
+
+        fun newInstance(groupId: String): EditFollowFragment {
+            val fragment = EditFollowFragment()
+            val args = Bundle()
+            args.putString(C.EXTRA.GROUP_ID, groupId)
+            fragment.arguments = args
+            return fragment
+        }
     }
 }

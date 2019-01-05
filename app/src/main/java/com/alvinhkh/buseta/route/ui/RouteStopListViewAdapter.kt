@@ -22,11 +22,9 @@ import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
-import com.alvinhkh.buseta.follow.model.Follow
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.model.RouteStop
 import com.alvinhkh.buseta.service.EtaService
-import com.alvinhkh.buseta.ui.route.RouteStopFragment
 import com.alvinhkh.buseta.utils.PreferenceUtil
 import java.text.DecimalFormat
 import java.util.*
@@ -173,7 +171,7 @@ class RouteStopListViewAdapter(
                 }
 
                 // Follow
-                val count = followDatabase?.followDao()?.count(if (routeStop.companyCode == C.PROVIDER.MTR) Follow.TYPE_RAILWAY_STOP else Follow.TYPE_ROUTE_STOP,
+                val count = followDatabase?.followDao()?.count(
                         routeStop.companyCode?:"", routeStop.routeNo?:"",
                         routeStop.routeSequence?:"", routeStop.routeServiceType?:"",
                         routeStop.stopId?:"", routeStop.sequence?:"")?:0

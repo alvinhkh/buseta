@@ -65,7 +65,8 @@ class EtaService : LifecycleService() {
             routeStopList.add(stop)
         }
         if (extras.getBoolean(C.EXTRA.FOLLOW)) {
-            val followList = followDatabase.followDao().getList()
+            val groupId = extras.getString(C.EXTRA.GROUP_ID)
+            val followList = if (groupId.isNullOrEmpty()) followDatabase.followDao().list() else followDatabase.followDao().list(groupId)
             for (follow in followList) {
                 routeStopList.add(follow.toRouteStop())
             }

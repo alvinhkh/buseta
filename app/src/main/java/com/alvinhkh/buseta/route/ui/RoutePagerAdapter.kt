@@ -7,11 +7,11 @@ import com.alvinhkh.buseta.route.model.Route
 
 class RoutePagerAdapter(fm: FragmentManager) : FragmentPagerAdapter(fm) {
 
-    private var fragmentList: MutableList<Fragment> = ArrayList()
+    private var fragmentList: MutableList<Fragment> = arrayListOf()
 
-    internal var routeList: MutableList<Route> = ArrayList()
+    internal var routeList: MutableList<Route> = arrayListOf()
 
-    private var pageTitleList: MutableList<String> = ArrayList()
+    private var pageTitleList: MutableList<String> = arrayListOf()
 
     override fun getItem(position: Int) = fragmentList[position]
 

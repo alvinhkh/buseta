@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.support.design.widget.FloatingActionButton
+import android.support.design.widget.Snackbar
 import android.support.v4.app.ActivityCompat
 import android.support.v4.app.Fragment
 import android.support.v4.widget.SwipeRefreshLayout
@@ -31,7 +32,6 @@ import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
-import com.alvinhkh.buseta.follow.model.Follow
 import com.alvinhkh.buseta.kmb.KmbStopListWorker
 import com.alvinhkh.buseta.lwb.LwbStopListWorker
 import com.alvinhkh.buseta.nwst.NwstStopListWorker
@@ -167,12 +167,11 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
         emptyText = rootView.findViewById(R.id.empty_text)
         emptyText.setText(R.string.message_loading)
         if (fragmentManager == null) return rootView
-        if (context != null && ActivityCompat.checkSelfPermission(context!!,
-                        Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(context!!,
-                        Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ActivityCompat.checkSelfPermission(context!!, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                || ActivityCompat.checkSelfPermission(context!!, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             LocationServices.getFusedLocationProviderClient(context!!)
                     .lastLocation
-                    .addOnSuccessListener { location -> viewAdapter.setCurrentLocation(location) }
+                    .addOnSuccessListener { location -> if (location != null) viewAdapter.setCurrentLocation(location) }
         }
 
         swipeRefreshLayout = rootView.findViewById(R.id.swipe_refresh_layout)
@@ -224,7 +223,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                                         viewAdapter.replaceItem(index + count, routeStop)
                                     }
                                 })
-                                val followCount = followDatabase.followDao().liveCount(if (routeStop.companyCode == C.PROVIDER.MTR) Follow.TYPE_RAILWAY_STOP else Follow.TYPE_ROUTE_STOP,
+                                val followCount = followDatabase.followDao().liveCount(
                                         routeStop.companyCode?:"", routeStop.routeNo?:"",
                                         routeStop.routeSequence?:"", routeStop.routeServiceType?:"",
                                         routeStop.stopId?:"", routeStop.sequence?:"")
@@ -472,10 +471,16 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
         if (swipeRefreshLayout.isRefreshing) {
             swipeRefreshLayout.isRefreshing = false
         }
-        recyclerView.visibility = View.GONE
-        emptyView.visibility = View.VISIBLE
-        progressBar.visibility = View.GONE
-        emptyText.text = s
+        if (viewAdapter.itemCount > 0) {
+            if (!s.isNullOrEmpty()) {
+                Snackbar.make(view?.rootView?.findViewById(R.id.coordinator_layout)?:view!!, s, Snackbar.LENGTH_INDEFINITE).show()
+            }
+        } else {
+            recyclerView.visibility = View.GONE
+            emptyView.visibility = View.VISIBLE
+            progressBar.visibility = View.GONE
+            emptyText.text = s
+        }
     }
 
     private fun startLocationUpdates() {

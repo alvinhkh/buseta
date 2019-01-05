@@ -30,7 +30,7 @@ class UpdateAppShortcutWorker(context : Context, params : WorkerParameters)
             val shortcutManager = applicationContext.getSystemService(ShortcutManager::class.java)
                     ?: return Result.failure()
             val shortcuts = ArrayList<ShortcutInfo>()
-            val followList = followDatabase?.followDao()?.getList()?: emptyList()
+            val followList = followDatabase?.followDao()?.list()?: emptyList()
             val maxShortcutCount = shortcutManager.maxShortcutCountPerActivity
             run {
                 var i = 0

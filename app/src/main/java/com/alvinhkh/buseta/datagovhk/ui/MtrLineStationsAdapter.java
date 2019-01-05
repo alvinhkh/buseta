@@ -18,7 +18,7 @@ import com.alvinhkh.buseta.route.model.Route;
 import com.alvinhkh.buseta.route.model.RouteStop;
 import com.alvinhkh.buseta.mtr.ui.MtrScheduleItemAdapter;
 import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter;
-import com.alvinhkh.buseta.ui.route.RouteStopFragment;
+import com.alvinhkh.buseta.route.ui.RouteStopFragment;
 
 import java.util.ArrayList;
 import java.util.List;

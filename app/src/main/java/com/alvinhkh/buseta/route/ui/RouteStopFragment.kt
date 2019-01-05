@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.ui.route
+package com.alvinhkh.buseta.route.ui
 
 import android.Manifest
 import android.app.Dialog
@@ -43,6 +43,7 @@ import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.follow.model.Follow
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
+import com.alvinhkh.buseta.follow.ui.FollowGroupDialogFragment
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.model.RouteStop
 import com.alvinhkh.buseta.service.EtaService
@@ -542,7 +543,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
             }
 
 
-            val followCount = followDatabase.followDao().liveCount(if (routeStop?.companyCode == C.PROVIDER.MTR) Follow.TYPE_RAILWAY_STOP else Follow.TYPE_ROUTE_STOP,
+            val followCount = followDatabase.followDao().liveCount(
                     routeStop?.companyCode?:"", routeStop?.routeNo?:"",
                     routeStop?.routeSequence?:"", routeStop?.routeServiceType?:"",
                     routeStop?.stopId?:"", routeStop?.sequence?:"")
@@ -550,16 +551,11 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
             followCount.observe(this, Observer { count ->
                 vh?.followButton?.removeCallbacks {  }
                 if (count != null) {
-                    vh?.followButton?.setText(if (count > 0) R.string.action_unfollow else R.string.follow)
                     vh?.followButton?.setIconResource(if (count > 0) R.drawable.ic_outline_bookmark_36dp else R.drawable.ic_outline_bookmark_border_36dp)
                     vh?.followButton?.setOnClickListener {
-                        // TODO: follow categories
                         val follow = Follow.createInstance(route, routeStop)
-                        if (count > 0) {
-                            followDatabase.followDao().delete(follow.type, follow.companyCode, follow.routeNo, follow.routeSeq, follow.routeServiceType, follow.stopId, follow.stopSeq)
-                        } else {
-                            followDatabase.followDao().insert(follow)
-                        }
+                        val fragment = FollowGroupDialogFragment.newInstance(follow)
+                        fragment.show(childFragmentManager, "follow_group_dialog_fragment")
                     }
                 }
             })

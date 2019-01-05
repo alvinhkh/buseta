@@ -14,11 +14,11 @@ class FollowViewModel(application: Application) : AndroidViewModel(application) 
 
     init {
         if (followDatabase != null) {
-            list = followDatabase.followDao().getLiveData()
+            list = followDatabase.followDao().liveData()
         }
     }
 
-    fun getAsLiveData(): LiveData<MutableList<Follow>>{
-        return list
+    fun getAsLiveData(groupId: String): LiveData<MutableList<Follow>>{
+        return followDatabase?.followDao()?.liveData(groupId)?:list
     }
 }

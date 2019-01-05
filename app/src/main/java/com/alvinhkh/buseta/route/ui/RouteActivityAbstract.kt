@@ -145,7 +145,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
         // set action bar
         setToolbar()
         val actionBar = supportActionBar
-        actionBar?.setTitle(R.string.app_name)
+        actionBar?.title = getString(R.string.app_name)
         actionBar?.subtitle = null
         actionBar?.setDisplayHomeAsUpEnabled(true)
 

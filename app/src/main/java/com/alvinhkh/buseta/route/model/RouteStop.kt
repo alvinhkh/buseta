@@ -157,27 +157,5 @@ data class RouteStop(
         const val COLUMN_SEQUENCE = "sequence"
         const val COLUMN_STOP_ID = "stop_id"
         const val COLUMN_LAST_UPDATE = "last_update"
-
-        fun toFollow(routeStop: RouteStop): Follow {
-            val follow = Follow()
-            follow.type = Follow.TYPE_ROUTE_STOP
-            follow.companyCode = routeStop.companyCode?:""
-            if (follow.companyCode == C.PROVIDER.MTR) {
-                follow.type = Follow.TYPE_RAILWAY_STOP
-            }
-            follow.routeId = routeStop.routeId?:""
-            follow.routeNo = routeStop.routeNo?:""
-            follow.routeSeq = routeStop.routeSequence?:""
-            follow.routeServiceType = routeStop.routeServiceType?:""
-            follow.routeDestination = routeStop.routeDestination?:""
-            follow.routeOrigin = routeStop.routeOrigin?:""
-            follow.stopId = routeStop.stopId?:""
-            follow.stopSeq = routeStop.sequence?:""
-            follow.stopName = routeStop.name?:""
-            follow.stopLatitude = routeStop.latitude?:""
-            follow.stopLongitude = routeStop.longitude?:""
-            follow.etaGet = routeStop.etaGet?:""
-            return follow
-        }
     }
 }

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tool="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:foreground="?android:attr/selectableItemBackground"
+    android:background="@color/background"
+    android:paddingEnd="@dimen/card_item_horizontal_padding"
+    android:paddingRight="@dimen/card_item_horizontal_padding"
+    android:minHeight="@dimen/card_item_height_singleline">
+
+    <ImageView
+        android:id="@+id/icon"
+        android:layout_width="@dimen/card_item_icon_touch_target_dense"
+        android:layout_height="@dimen/card_item_icon_touch_target_dense"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_centerInParent="true"
+        android:gravity="center"
+        android:layout_marginLeft="@dimen/card_horizontal_margin"
+        android:layout_marginRight="@dimen/card_horizontal_margin"
+        android:contentDescription="@string/content_description_icon"
+        android:src="@drawable/ic_outline_directions_bus_24dp"
+        android:tint="@color/icons"/>
+
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_centerInParent="true"
+        android:layout_marginStart="@dimen/card_item_text_margin_start"
+        android:layout_marginLeft="@dimen/card_item_text_margin_start"
+        android:gravity="center_vertical"
+        android:textColor="@color/textPrimary"
+        tool:text="ROUTE" />
+
+    <TextView
+        android:id="@+id/color"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_centerInParent="true"
+        android:layout_alignEnd="@android:id/text1"
+        android:layout_alignRight="@android:id/text1"
+        android:gravity="center_vertical"
+        android:textColor="@color/textPrimary"
+        tool:text="COMPANY" />
+
+</RelativeLayout>

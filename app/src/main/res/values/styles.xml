@@ -74,4 +74,12 @@
 
     <style name="AppTheme.PopupOverlay.Dark" parent="ThemeOverlay.MaterialComponents.Dark"/>
 
+    <style name="AppTheme.Dialog" parent="Theme.AppCompat.DayNight.Dialog.Alert">
+        <item name="android:background">@color/background</item>
+        <item name="android:textColorPrimary">@color/textPrimary</item>
+        <item name="buttonBarStyle">@style/Widget.AppCompat.ButtonBar</item>
+        <item name="buttonBarButtonStyle">@style/Widget.MaterialComponents.Button.TextButton.Dialog</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
 </resources>

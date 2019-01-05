@@ -98,7 +98,7 @@ public class EtaWidgetService extends RemoteViewsService {
             RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.widget_item_eta);
             // Get the data for this position from the content provider
             if (followDatabase == null || position >= getCount()) return remoteViews;
-            Follow follow = followDatabase.followDao().getList().get(position);
+            Follow follow = followDatabase.followDao().list().get(position);
             if (follow == null) return remoteViews;
             RouteStop stop = follow.toRouteStop();
             remoteViews.setTextViewText(R.id.left_line1, null);

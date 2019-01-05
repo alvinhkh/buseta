@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta.ui;
 
-import android.app.ActivityManager;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
@@ -8,11 +7,8 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.Snackbar;
@@ -85,8 +81,6 @@ abstract public class BaseActivity extends AppCompatActivity
         context = this;
 
         suggestionDatabase = SuggestionDatabase.Companion.getInstance(this);
-
-        setTaskDescription(getString(R.string.app_name));
 
         PreferenceManager.getDefaultSharedPreferences(this)
                 .registerOnSharedPreferenceChangeListener(this);
@@ -196,6 +190,10 @@ abstract public class BaseActivity extends AppCompatActivity
                 onBackPressed();
                 return true;
             }
+            case R.id.action_search_open: {
+                startActivity(new Intent(this, SearchActivity.class));
+                break;
+            }
             case R.id.action_settings: {
                 startActivity(new Intent(this, SettingActivity.class));
                 break;
@@ -264,17 +262,6 @@ abstract public class BaseActivity extends AppCompatActivity
         super.onConfigurationChanged(newConfig);
         if (adViewContainer != null) {
             adView = AdViewUtil.INSTANCE.banner(adViewContainer, adView, false);
-        }
-    }
-
-    protected void setTaskDescription(String title) {
-        if (Build.VERSION.SDK_INT >= 28) {
-            setTaskDescription(new ActivityManager.TaskDescription(title, R.mipmap.ic_launcher,
-                    ContextCompat.getColor(this, R.color.colorPrimary600)));
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Bitmap bm = BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher);
-            setTaskDescription(new ActivityManager.TaskDescription(title, bm,
-                    ContextCompat.getColor(this, R.color.colorPrimary600)));
         }
     }
 

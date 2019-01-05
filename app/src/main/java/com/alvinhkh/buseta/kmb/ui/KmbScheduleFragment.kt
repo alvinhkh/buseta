@@ -27,7 +27,7 @@ class KmbScheduleFragment: Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        val rootView = inflater.inflate(R.layout.fragment_follow_edit, container, false)
+        val rootView = inflater.inflate(R.layout.fragment_follow, container, false)
         route = arguments!!.getParcelable(C.EXTRA.ROUTE_OBJECT)?:Route()
         val routeNo: String = route.name?:""
         val routeBound: String = route.sequence?:""

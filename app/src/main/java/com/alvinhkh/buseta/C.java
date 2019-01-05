@@ -25,6 +25,8 @@ public class C {
 
         String FOLLOW = "com.alvinhkh.buseta.FOLLOW";
 
+        String GROUP_ID = "com.alvinhkh.buseta.GROUP_ID";
+
         String LINE_CODE = "com.alvinhkh.buseta.LINE_CODE";
 
         String LINE_COLOUR = "com.alvinhkh.buseta.LINE_COLOUR";

@@ -2,6 +2,7 @@ package com.alvinhkh.buseta.search.ui
 
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.Intent
 import android.os.Bundle
 import android.support.design.widget.FloatingActionButton
 import android.support.v4.app.Fragment
@@ -25,6 +26,7 @@ class HistoryFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
     private lateinit var recyclerView: RecyclerView
     private lateinit var emptyView: View
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private lateinit var fab: FloatingActionButton
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -38,6 +40,10 @@ class HistoryFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
         swipeRefreshLayout.setOnRefreshListener(this)
         swipeRefreshLayout.isRefreshing = false
         swipeRefreshLayout.isEnabled = false
+        fab = rootView.findViewById(R.id.fab)
+        fab.setOnClickListener {
+            startActivity(Intent(context, SearchActivity::class.java))
+        }
         with(recyclerView) {
             setHasFixedSize(true)
             layoutManager = GridLayoutManager(context, 2)
@@ -60,10 +66,10 @@ class HistoryFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
         super.onResume()
         if (activity != null) {
             val actionBar = (activity as AppCompatActivity).supportActionBar
-            actionBar?.setTitle(R.string.app_name)
-            val fab = activity!!.findViewById<FloatingActionButton>(R.id.fab)
-            fab?.show()
+            actionBar?.title = getString(R.string.app_name)
+            actionBar?.subtitle = null
         }
+        fab.show()
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {

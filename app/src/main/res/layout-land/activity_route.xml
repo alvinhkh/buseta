@@ -71,7 +71,7 @@
                 android:layout_height="wrap_content"
                 android:background="@color/colorPrimary"
                 style="@style/Widget.MaterialComponents.TabLayout.Colored"
-                app:tabBackground="@color/colorPrimary" />
+                app:tabBackground="@color/transparent" />
 
         </android.support.design.widget.AppBarLayout>
 

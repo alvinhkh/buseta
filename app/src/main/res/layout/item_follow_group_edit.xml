@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tool="http://schemas.android.com/tools"
+    android:id="@+id/card_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground"
+    app:cardCornerRadius="0dp"
+    app:cardElevation="@dimen/card_elevation">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/card_item_vertical_padding"
+        android:layout_marginEnd="@dimen/card_item_horizontal_padding"
+        android:layout_marginLeft="@dimen/card_item_horizontal_padding"
+        android:layout_marginRight="@dimen/card_item_horizontal_padding"
+        android:layout_marginStart="@dimen/card_item_horizontal_padding"
+        android:layout_marginTop="@dimen/card_item_vertical_padding">
+
+        <ImageView
+            android:id="@+id/colour"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_centerInParent="true"
+            android:src="@drawable/square_24dp" />
+
+        <TextView
+            android:id="@+id/name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_centerInParent="true"
+            android:layout_marginLeft="@dimen/card_follow_text_margin_start"
+            android:layout_marginStart="@dimen/card_follow_text_margin_start"
+            android:gravity="center_vertical"
+            android:orientation="vertical"
+            android:textColor="@color/textPrimary"
+            tool:text="@string/group" />
+
+        <ImageView
+            android:id="@+id/edit"
+            android:layout_width="@dimen/card_item_icon"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_centerInParent="true"
+            android:layout_marginRight="@dimen/card_follow_text_margin_start"
+            android:layout_marginEnd="@dimen/card_follow_text_margin_start"
+            android:contentDescription="@string/content_description_icon"
+            android:tint="@color/icons"
+            android:src="@drawable/ic_outline_edit_24dp" />
+
+        <ImageView
+            android:id="@+id/drag_handle"
+            android:layout_width="@dimen/card_item_icon"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_centerInParent="true"
+            android:contentDescription="@string/content_description_icon"
+            android:tint="@color/icons"
+            android:src="@drawable/ic_outline_drag_indicator_24dp" />
+
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>

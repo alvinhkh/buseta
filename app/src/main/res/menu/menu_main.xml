@@ -4,20 +4,29 @@
     tools:context=".MainActivity">
 
     <item
+        android:visible="false"
         android:id="@+id/action_search"
         android:title="@string/action_search"
         android:orderInCategory="100"
         android:iconifiedByDefault="true"
         android:icon="@drawable/ic_outline_search_24dp"
         app:iconTint="@color/white"
-        app:showAsAction="ifRoom|collapseActionView"
+        app:showAsAction="never|collapseActionView"
         app:actionViewClass="android.support.v7.widget.SearchView" />
+
+    <item
+        android:id="@+id/action_search_open"
+        android:title="@string/action_search"
+        android:icon="@drawable/ic_outline_search_24dp"
+        android:orderInCategory="101"
+        app:iconTint="@color/white"
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/action_refresh"
         android:title="@string/action_refresh"
         android:icon="@drawable/ic_outline_refresh_24dp"
-        android:orderInCategory="101"
+        android:orderInCategory="102"
         app:iconTint="@color/white"
         app:showAsAction="never" />
 

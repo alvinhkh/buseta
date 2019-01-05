@@ -16,12 +16,15 @@
     <string name="action_share">分享</string>
     <string name="action_refresh">重新載入</string>
     <string name="follow">追蹤</string>
-    <string name="action_unfollow">停止追蹤</string>
+    <string name="unfollow">停止追蹤</string>
     <string name="action_confirm">確認</string>
     <string name="action_cancel">取消</string>
     <string name="action_update">更新</string>
     <string name="action_notification">顯示通知</string>
 
+    <string name="add_new_group">新增組合</string>
+    <string name="colour">顏色</string>
+    <string name="default_value">預設</string>
     <string name="dest">往</string>
     <string name="destination">往%s</string>
     <string name="disabled">禁用</string>
@@ -32,6 +35,7 @@
     <string name="eta_short">ETA</string>
     <string name="everyday">每天</string>
     <string name="hint_enter_route">輸入路線&#8230;</string>
+    <string name="group">組合</string>
     <string name="interpunct" translatable="false">\u00A0&#183;\u00A0</string>
     <string name="minute">分鐘</string>
     <string name="minutes">%1$s分鐘</string>
@@ -39,15 +43,19 @@
     <string name="monday_to_saturday">星期一至六</string>
     <string name="now">現在</string>
     <string name="open_source_license">開放原始碼授權</string>
-    <string name="undo">復原</string>
     <string name="orig">從</string>
     <string name="origin">從%s</string>
+    <string name="remove">移除</string>
+    <string name="remove_group">移除組合</string>
+    <string name="rename">改名</string>
     <string name="saturday">星期六</string>
     <string name="search_route">搜尋路線</string>
     <string name="start_search_route">按右下角按鈕，開始搜尋路線</string>
     <string name="stop_name">站名</string>
     <string name="sunday_and_holiday">星期日及公眾假期</string>
     <string name="timetable">時間表</string>
+    <string name="uncategorised">未分類</string>
+    <string name="undo">復原</string>
 
     <string name="label_last_updated">數據最後更新：</string>
     <string name="label_server_time">獲取數據（伺服器時間）：</string>
@@ -102,7 +110,7 @@
     <string name="message_share_text">快啲下載 BusETA 巴士到站時間預報 App :)\nhttps://buseta.alvinhkh.com</string>
     <string name="message_shown_as_notification">已顯示在通知欄</string>
     <string name="message_total_routes">(共 %s 條路線)</string>
-    <string name="no_follow_stops">沒有追蹤車站</string>
+    <string name="no_follow_stop">未有追蹤車站</string>
     <string name="removed_from_follow_list">「%1$s」已從追蹤名單中移除</string>
     <string name="removed_from_search_history">「%1$s」已從搜尋記錄中移除</string>
     <string name="swipe_to_remove_follow_stop">向左右掃即可移除追蹤車站</string>
@@ -116,7 +124,7 @@
     <string name="clear_history">清除搜尋記錄</string>
     <string name="clear_follow">清除追蹤名單</string>
     <string name="display">顯示</string>
-    <string name="edit_follow_list">編輯追蹤名單</string>
+    <string name="edit_follow_group">編輯追蹤組合</string>
     <string name="hide">隱藏</string>
     <string name="missing_input">Missing Input</string>
     <string name="map">地圖</string>
