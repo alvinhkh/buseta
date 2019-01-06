@@ -243,8 +243,8 @@ public class MtrLineStationsFragment extends Fragment
                 Integer colorInt = Color.parseColor(lineColour);
                 ((AppCompatActivity) getActivity()).getSupportActionBar().setBackgroundDrawable(new ColorDrawable(colorInt));
                 if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    getActivity().getWindow().setStatusBarColor(ColorUtil.Companion.darkenColor(colorInt));
-                    getActivity().getWindow().setNavigationBarColor(ColorUtil.Companion.darkenColor((colorInt)));
+                    getActivity().getWindow().setStatusBarColor(ColorUtil.darkenColor(colorInt));
+                    getActivity().getWindow().setNavigationBarColor(ColorUtil.darkenColor((colorInt)));
                 }
             }
         }

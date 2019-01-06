@@ -14,8 +14,6 @@ class KmbScheduleViewModel(application: Application) : AndroidViewModel(applicat
 
     private val kmbService = KmbService.webSearchCoroutine.create(KmbService::class.java)
 
-    lateinit var list: MutableLiveData<List<KmbSchedule>>
-
     init {}
 
     @UiThread
