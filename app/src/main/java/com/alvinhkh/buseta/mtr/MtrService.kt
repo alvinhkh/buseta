@@ -6,13 +6,15 @@ import com.alvinhkh.buseta.mtr.model.AESEtaBusStopsRequest
 import com.alvinhkh.buseta.mtr.model.MtrLineStatusRes
 import com.alvinhkh.buseta.mtr.model.MtrMobileVersionCheck
 import com.alvinhkh.buseta.mtr.model.MtrScheduleRes
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 
-import io.reactivex.Observable
+import kotlinx.coroutines.Deferred
 import okhttp3.ResponseBody
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.Retrofit
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.simplexml.SimpleXmlConverterFactory
 import retrofit2.http.Body
@@ -37,7 +39,7 @@ interface MtrService {
     fun busStopsDetail(@Body request: AESEtaBusStopsRequest): Call<AESEtaBusRes>
 
     @GET("alert/ryg_line_status.xml")
-    fun lineStatus(): Observable<MtrLineStatusRes>
+    fun lineStatus(): Deferred<Response<MtrLineStatusRes>>
 
     @GET("https://www.mtr.com.hk/mob/mtrmobile_versioncheck_v12_10_2.xml")
     fun zipResources(): Call<MtrMobileVersionCheck>
@@ -48,31 +50,30 @@ interface MtrService {
 
     companion object {
 
-        val gson = GsonBuilder()
+        val gson: Gson = GsonBuilder()
                 .serializeNulls()
                 .create()
 
-        val api = Retrofit.Builder()
+        val api: Retrofit = Retrofit.Builder()
                 .client(App.httpClient)
                 .baseUrl("https://mavmapp1044.azurewebsites.net/")
                 .addConverterFactory(GsonConverterFactory.create(gson))
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .build()
 
-        val aes = Retrofit.Builder()
+        val aes: Retrofit = Retrofit.Builder()
                 .client(App.httpClient)
                 .baseUrl("https://mavmwfs1004.azurewebsites.net/AES/AESService.svc/")
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build()
 
-        val tnews = Retrofit.Builder()
+        val tnews: Retrofit = Retrofit.Builder()
                 .client(App.httpClient)
                 .baseUrl("https://tnews.mtr.com.hk/")
                 .addConverterFactory(SimpleXmlConverterFactory.create())
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                .addCallAdapterFactory(CoroutineCallAdapterFactory.invoke())
                 .build()
 
-        val mob = Retrofit.Builder()
+        val mob: Retrofit = Retrofit.Builder()
                 .client(App.httpClient)
                 .baseUrl("https://www.mtr.com.hk/")
                 .addConverterFactory(SimpleXmlConverterFactory.create())

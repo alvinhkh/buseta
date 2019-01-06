@@ -38,7 +38,7 @@ class MainActivity : BaseActivity() {
 
         val followGroupFragment = FollowGroupFragment()
         val historyFragment = HistoryFragment()
-        val mtrLineStatusFragment = MtrLineStatusFragment.newInstance()
+        val mtrLineStatusFragment = MtrLineStatusFragment()
 
         adViewContainer = findViewById(R.id.adView_container)
         if (adViewContainer != null) {
@@ -135,12 +135,10 @@ class MainActivity : BaseActivity() {
     }
 
     override fun onBackPressed() {
-        if (supportFragmentManager.backStackEntryCount < 2) {
-            finish()
-        } else if (supportFragmentManager.backStackEntryCount > 0) {
-            supportFragmentManager.popBackStack()
-        } else {
-            super.onBackPressed()
+        when {
+            supportFragmentManager.backStackEntryCount < 2 -> finish()
+            supportFragmentManager.backStackEntryCount > 0 -> supportFragmentManager.popBackStack()
+            else -> super.onBackPressed()
         }
     }
 }

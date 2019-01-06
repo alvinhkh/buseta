@@ -27,6 +27,9 @@ interface RouteDao {
     @Query("SELECT * FROM routes WHERE company_code = :companyCode AND name = :routeNo ORDER BY company_code ASC, name ASC, sequence + 0 ASC, service_type + 0 ASC")
     fun liveData(companyCode: String, routeNo: String): LiveData<MutableList<Route>>
 
+    @Query("SELECT * FROM routes WHERE company_code = :companyCode AND code = :routeCode")
+    fun get(companyCode: String, routeCode: String): Route
+
     @Query("SELECT * FROM routes WHERE company_code = :companyCode AND name = :routeNo AND sequence = :sequence AND service_type = :serviceType AND info_key = :infoKey")
     fun get(companyCode: String, routeNo: String, sequence: String, serviceType: String, infoKey: String): Route
 
