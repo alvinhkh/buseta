@@ -16,6 +16,7 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.follow.model.FollowGroup
@@ -69,6 +70,7 @@ class EditFollowGroupFragment: Fragment(), OnItemDragListener {
                 activity?.window?.statusBarColor = ColorUtil.darkenColor(color)
                 activity?.window?.navigationBarColor = ColorUtil.darkenColor(color)
             }
+            activity?.findViewById<FrameLayout>(R.id.adView_container)?.setBackgroundColor(color)
             val fab = activity!!.findViewById<FloatingActionButton>(R.id.fab)
             fab?.hide()
         }

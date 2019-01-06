@@ -251,7 +251,7 @@ abstract public class BaseActivity extends AppCompatActivity
                 break;
             case C.PREF.AD_HIDE:
                 if (adViewContainer != null) {
-                    adView = AdViewUtil.INSTANCE.banner(adViewContainer, adView, false);
+                    adView = AdViewUtil.banner(adViewContainer, adView, false);
                 }
                 break;
         }
@@ -261,7 +261,7 @@ abstract public class BaseActivity extends AppCompatActivity
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         if (adViewContainer != null) {
-            adView = AdViewUtil.INSTANCE.banner(adViewContainer, adView, false);
+            adView = AdViewUtil.banner(adViewContainer, adView, false);
         }
     }
 

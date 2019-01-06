@@ -151,7 +151,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
 
         adViewContainer = findViewById(R.id.adView_container)
         with(adViewContainer) {
-            adView = AdViewUtil.banner(this, adView, false)
+            adView = AdViewUtil.banner(this)
         }
         fab = findViewById(R.id.fab)
 
@@ -181,7 +181,6 @@ abstract class RouteActivityAbstract : BaseActivity(),
         viewPager.adapter = pagerAdapter
         val tabLayout = findViewById<TabLayout>(R.id.tabs)
         tabLayout.setupWithViewPager(viewPager)
-        tabLayout.tabMode = TabLayout.MODE_SCROLLABLE
         tabLayout.addOnTabSelectedListener(object : TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
             override fun onTabReselected(tab: TabLayout.Tab?) {
                 if (!companyCode.isNullOrEmpty() && !routeNo.isNullOrEmpty()) {
@@ -211,6 +210,11 @@ abstract class RouteActivityAbstract : BaseActivity(),
                 super.onChanged()
                 if (pagerAdapter.count > 0) {
                     emptyView.visibility = View.GONE
+                    if (pagerAdapter.count > 3) {
+                        tabLayout.tabMode = TabLayout.MODE_SCROLLABLE
+                    } else {
+                        tabLayout.tabMode = TabLayout.MODE_FIXED
+                    }
                 }
             }
         })

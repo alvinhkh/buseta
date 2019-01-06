@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
+import android.support.annotation.ColorInt
 import android.support.design.widget.BottomNavigationView
 import android.support.v4.app.FragmentManager
 import android.support.v4.app.FragmentTransaction
@@ -25,29 +26,21 @@ class MainActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContentView(R.layout.activity_follow)
-
         setToolbar()
-        val actionBar = supportActionBar
-        actionBar?.run {
+        supportActionBar?.run {
             setTitle(R.string.app_name)
             subtitle = null
             setDisplayHomeAsUpEnabled(false)
         }
-
+        adViewContainer = findViewById(R.id.adView_container)
+        adView = AdViewUtil.banner(adViewContainer)
         val followGroupFragment = FollowGroupFragment()
         val historyFragment = HistoryFragment()
         val mtrLineStatusFragment = MtrLineStatusFragment()
-
-        adViewContainer = findViewById(R.id.adView_container)
-        if (adViewContainer != null) {
-            adView = AdViewUtil.banner(adViewContainer, adView, false)
-        }
-
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNavigationView.setOnNavigationItemSelectedListener { item ->
-            var colorInt = 0
+            @ColorInt var colorRes = 0
             var title = getString(R.string.app_name)
             val fm = supportFragmentManager ?: return@setOnNavigationItemSelectedListener false
             fm.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
@@ -55,7 +48,7 @@ class MainActivity : BaseActivity() {
                 R.id.action_follow -> {
                     if (fm.findFragmentByTag("follow_list") == null) {
                         title = getString(R.string.app_name)
-                        colorInt = ContextCompat.getColor(this, R.color.colorPrimary)
+                        colorRes = ContextCompat.getColor(this, R.color.colorPrimary)
                         val ft = fm.beginTransaction()
                         ft.replace(R.id.fragment_container, followGroupFragment)
                         ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
@@ -66,7 +59,7 @@ class MainActivity : BaseActivity() {
                 R.id.action_search_history -> {
                     if (fm.findFragmentByTag("search_history") == null) {
                         title = getString(R.string.app_name)
-                        colorInt = ContextCompat.getColor(this, R.color.colorPrimary)
+                        colorRes = ContextCompat.getColor(this, R.color.colorPrimary)
                         val ft = fm.beginTransaction()
                         ft.replace(R.id.fragment_container, historyFragment)
                         ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
@@ -77,7 +70,7 @@ class MainActivity : BaseActivity() {
                 R.id.action_railway -> {
                     if (fm.findFragmentByTag("railway") == null) {
                         title = getString(R.string.provider_mtr)
-                        colorInt = ContextCompat.getColor(this, R.color.provider_mtr)
+                        colorRes = ContextCompat.getColor(this, R.color.provider_mtr)
                         val ft = fm.beginTransaction()
                         ft.replace(R.id.fragment_container, mtrLineStatusFragment)
                         ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
@@ -89,12 +82,15 @@ class MainActivity : BaseActivity() {
             }
             supportActionBar?.title = title
             supportActionBar?.subtitle = null
-            if (colorInt != 0) {
-                supportActionBar?.setBackgroundDrawable(ColorDrawable(colorInt))
+            if (colorRes != 0) {
+                val darkenColor = ColorUtil.darkenColor(colorRes)
+                supportActionBar?.setBackgroundDrawable(ColorDrawable(colorRes))
                 if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && window != null) {
-                    window.statusBarColor = ColorUtil.darkenColor(colorInt)
-                    window.navigationBarColor = ColorUtil.darkenColor(colorInt)
+                    window.statusBarColor = darkenColor
+                    window.navigationBarColor = darkenColor
                 }
+                adViewContainer.setBackgroundColor(colorRes)
+                adView = AdViewUtil.banner(adViewContainer, adView, false)
             }
             if (Build.VERSION.SDK_INT >= 28) {
                 setTaskDescription(ActivityManager.TaskDescription(title, R.mipmap.ic_launcher,
@@ -116,7 +112,6 @@ class MainActivity : BaseActivity() {
                     "MtrLineStatusFragment" -> bottomNavigationView.selectedItemId = R.id.action_railway
                 }
             }
-
         }
         if (bottomNavigationView != null) {
             val followDatabase = FollowDatabase.getInstance(applicationContext)
@@ -126,12 +121,10 @@ class MainActivity : BaseActivity() {
                 bottomNavigationView.selectedItemId = R.id.action_search_history
             }
         }
-
         try {
             startService(Intent(this, ProviderUpdateService::class.java))
         } catch (ignored: Throwable) {
         }
-
     }
 
     override fun onBackPressed() {

@@ -15,6 +15,7 @@ import android.support.v4.content.ContextCompat
 import android.support.v4.view.ViewPager
 import android.support.v7.app.AppCompatActivity
 import android.view.*
+import android.widget.FrameLayout
 import com.alvinhkh.buseta.C
 
 import com.alvinhkh.buseta.R
@@ -148,6 +149,7 @@ class FollowGroupFragment : Fragment() {
             activity?.window?.statusBarColor = ColorUtil.darkenColor(color)
             activity?.window?.navigationBarColor = ColorUtil.darkenColor(color)
         }
-        (activity as MainActivity).findViewById<TabLayout>(R.id.tabs).background = ColorDrawable(color)
+        activity?.findViewById<FrameLayout>(R.id.adView_container)?.setBackgroundColor(color)
+        activity?.findViewById<TabLayout>(R.id.tabs)?.background = ColorDrawable(color)
     }
 }

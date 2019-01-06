@@ -23,6 +23,7 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
@@ -84,6 +85,7 @@ class EditFollowFragment: Fragment(), OnItemDragListener {
                             activity?.window?.statusBarColor = ColorUtil.darkenColor(color)
                             activity?.window?.navigationBarColor = ColorUtil.darkenColor(color)
                         }
+                        activity?.findViewById<FrameLayout>(R.id.adView_container)?.setBackgroundColor(color)
                     }
                 })
         val buttonContainer = rootView.findViewById<View>(R.id.button_container)

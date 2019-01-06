@@ -1,5 +1,6 @@
 package com.alvinhkh.buseta.utils
 
+import android.support.v4.content.ContextCompat
 import android.support.v7.preference.PreferenceManager
 import android.view.View
 import android.widget.FrameLayout
@@ -13,9 +14,10 @@ import com.google.android.gms.ads.AdView
 
 object AdViewUtil {
 
+    @JvmStatic
     fun banner(adViewContainer: FrameLayout,
-               _adView: AdView?,
-               isForce: Boolean?): AdView? {
+               _adView: AdView? = null,
+               isForce: Boolean = false): AdView? {
         var adView = _adView
         val context = adViewContainer.context ?: return adView
         if (adView != null) {
@@ -28,8 +30,9 @@ object AdViewUtil {
             return adView
         }
         val hideAdView = preferences.getBoolean(C.PREF.AD_HIDE, false)
-        if (!hideAdView || isForce!!) {
+        if (!hideAdView || isForce) {
             adView = AdView(context)
+            adView.setBackgroundColor(ContextCompat.getColor(adViewContainer.context, R.color.transparent))
             adView.adUnitId = context.getString(R.string.AD_BANNER_UNIT_ID)
             adView.adSize = AdSize.SMART_BANNER
             adView.adListener = object : AdListener() {
