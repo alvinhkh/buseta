@@ -113,7 +113,7 @@ public class MtrLineStationsAdapter
                     List<Item> items = new ArrayList<>();
                     // ETA
                     if (database != null) {
-                        List<ArrivalTime> arrivalTimeList = ArrivalTime.Companion.getList(database, object);
+                        List<ArrivalTime> arrivalTimeList = ArrivalTime.getList(database, object);
                         for (ArrivalTime arrivalTime : arrivalTimeList) {
                             if (arrivalTime == null) continue;
                             arrivalTime = ArrivalTime.Companion.estimate(itemView.getContext(), arrivalTime);

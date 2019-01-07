@@ -132,7 +132,7 @@ public class NotificationService extends Service {
             notificationId = NotificationUtil.getNotificationId(routeStop);
             List<ArrivalTime> arrivalTimeList = new ArrayList<>();
             if (arrivalTimeDatabase != null) {
-                arrivalTimeList = ArrivalTime.Companion.getList(arrivalTimeDatabase, routeStop);
+                arrivalTimeList = ArrivalTime.getList(arrivalTimeDatabase, routeStop);
             }
             NotificationCompat.Builder builder = NotificationUtil.showArrivalTime(this, routeStop, arrivalTimeList);
             notificationManager.notify(notificationId, builder.build());
@@ -199,7 +199,7 @@ public class NotificationService extends Service {
                     Timber.d("notification: %s UPDATE", notificationId);
                     List<ArrivalTime> arrivalTimeList = new ArrayList<>();
                     if (arrivalTimeDatabase != null) {
-                        arrivalTimeList = ArrivalTime.Companion.getList(arrivalTimeDatabase, routeStop);
+                        arrivalTimeList = ArrivalTime.getList(arrivalTimeDatabase, routeStop);
                     }
                     NotificationCompat.Builder builder = NotificationUtil.showArrivalTime(getApplicationContext(), routeStop, arrivalTimeList);
                     NotificationManagerCompat notificationManager = NotificationManagerCompat.from(getApplicationContext());

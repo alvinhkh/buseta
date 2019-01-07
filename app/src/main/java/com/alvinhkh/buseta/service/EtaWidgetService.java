@@ -3,10 +3,8 @@ package com.alvinhkh.buseta.service;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Binder;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.preference.PreferenceManager;
@@ -31,10 +29,6 @@ import com.alvinhkh.buseta.utils.PreferenceUtil;
 
 import java.util.List;
 
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.observers.DisposableObserver;
-import timber.log.Timber;
-
 /**
  * This is the service that provides the factory to be bound to the collection service.
  */
@@ -49,8 +43,6 @@ public class EtaWidgetService extends RemoteViewsService {
      * This is the factory that will provide data to the collection widget.
      */
     private class StackRemoteViewsFactory implements RemoteViewsFactory {
-
-        private final CompositeDisposable disposables = new CompositeDisposable();
 
         private ArrivalTimeDatabase arrivalTimeDatabase;
 
@@ -83,7 +75,6 @@ public class EtaWidgetService extends RemoteViewsService {
         }
 
         public void onDestroy() {
-            disposables.clear();
         }
 
         @Override
@@ -150,7 +141,7 @@ public class EtaWidgetService extends RemoteViewsService {
             try {
                 SpannableStringBuilder etaTexts = new SpannableStringBuilder();
                 if (arrivalTimeDatabase != null) {
-                    List<ArrivalTime> arrivalTimeList = ArrivalTime.Companion.getList(arrivalTimeDatabase, stop);
+                    List<ArrivalTime> arrivalTimeList = ArrivalTime.getList(arrivalTimeDatabase, stop);
                     String direction = "";
                     for (ArrivalTime arrivalTime: arrivalTimeList) {
                         arrivalTime = ArrivalTime.Companion.estimate(context, arrivalTime);
@@ -327,10 +318,6 @@ public class EtaWidgetService extends RemoteViewsService {
 
         @Override
         public void onDataSetChanged() {
-            disposables.clear();
-            disposables.add(RxBroadcastReceiver.create(context, new IntentFilter(C.ACTION.ETA_UPDATE))
-                    .share()
-                    .subscribeWith(etaObserver()));
             if (getApplicationContext() != null) {
                 SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                 if (preferences != null) {
@@ -346,31 +333,6 @@ public class EtaWidgetService extends RemoteViewsService {
             } finally {
                 Binder.restoreCallingIdentity(token);
             }
-        }
-
-
-        DisposableObserver<Intent> etaObserver() {
-            return new DisposableObserver<Intent>() {
-                @Override
-                public void onNext(Intent intent) {
-                    Bundle bundle = intent.getExtras();
-                    if (bundle == null) return;
-                    if (bundle.getBoolean(C.EXTRA.COMPLETE) &&
-                            bundle.getInt(C.EXTRA.WIDGET_UPDATE, -1) == appWidgetId) {
-                        AppWidgetManager mgr = AppWidgetManager.getInstance(context);
-                        mgr.notifyAppWidgetViewDataChanged(appWidgetId, R.id.list_view);
-                    }
-                }
-
-                @Override
-                public void onError(Throwable e) {
-                    Timber.d(e);
-                }
-
-                @Override
-                public void onComplete() {
-                }
-            };
         }
     }
 }

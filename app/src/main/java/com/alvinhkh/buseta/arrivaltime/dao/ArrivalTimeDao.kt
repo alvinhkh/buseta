@@ -31,6 +31,9 @@ interface ArrivalTimeDao {
     fun getList(companyCode: String, routeNo: String, routeSeq: String, stopId: String,
                 stopSeq: String, updatedAt: Long, expireAt: String): List<ArrivalTime>
 
+    @Query("SELECT * FROM eta ORDER BY route_seq + 0 ASC, eta_id ASC")
+    fun getLiveData(): LiveData<MutableList<ArrivalTime>>
+
     @Query("SELECT * FROM eta WHERE company = :companyCode AND route_no = :routeNo AND route_seq = :routeSeq ORDER BY route_seq + 0 ASC, eta_id ASC")
     fun getLiveData(companyCode: String, routeNo: String, routeSeq: String): LiveData<MutableList<ArrivalTime>>
 

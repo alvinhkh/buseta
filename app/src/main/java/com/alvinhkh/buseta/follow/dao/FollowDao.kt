@@ -44,13 +44,13 @@ interface FollowDao {
     @Update
     fun updateAll(vararg entity: Follow)
 
-    @Query("SELECT * FROM follow ORDER BY display_order ASC, date DESC")
+    @Query("SELECT * FROM follow ORDER BY category_id ASC, display_order ASC, date DESC")
     fun list(): List<Follow>
 
     @Query("SELECT * FROM follow WHERE `category_id` = :groupId ORDER BY display_order ASC, date DESC")
     fun list(groupId: String): List<Follow>
 
-    @Query("SELECT * FROM follow ORDER BY display_order ASC, date DESC")
+    @Query("SELECT * FROM follow ORDER BY category_id ASC, display_order ASC, date DESC")
     fun liveData(): LiveData<MutableList<Follow>>
 
     @Query("SELECT * FROM follow WHERE `category_id` = :groupId ORDER BY display_order ASC, date DESC")

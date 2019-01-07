@@ -190,9 +190,6 @@
                 <action android:name="android.appwidget.action.APPWIDGET_DISABLED" />
             </intent-filter>
             <intent-filter>
-                <action android:name="com.alvinhkh.buseta.ETA_UPDATE" />
-            </intent-filter>
-            <intent-filter>
                 <action android:name="com.alvinhkh.buseta.WIDGET_UPDATE" />
             </intent-filter>
 

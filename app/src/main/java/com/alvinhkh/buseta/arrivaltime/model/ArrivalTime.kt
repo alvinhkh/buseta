@@ -138,6 +138,7 @@ data class ArrivalTime (
             return arrivalTime
         }
 
+        @JvmStatic
         fun getList(database: ArrivalTimeDatabase, stop: RouteStop): List<ArrivalTime> {
             return database.arrivalTimeDao().getList(stop.companyCode?:"",
                     stop.routeNo?:"",
