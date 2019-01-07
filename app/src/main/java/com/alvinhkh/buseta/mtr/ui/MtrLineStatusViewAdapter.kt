@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta.mtr.ui
 
-import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
@@ -84,10 +83,8 @@ class MtrLineStatusViewAdapter(
             itemView.setOnClickListener { v ->
                 val intent = Intent(Intent.ACTION_VIEW)
                 intent.setClass(v.context, SearchActivity::class.java)
-                intent.putExtra(C.EXTRA.TYPE, C.TYPE.RAILWAY)
-                intent.putExtra(C.EXTRA.LINE_CODE, status.lineCode)
-                intent.putExtra(C.EXTRA.LINE_COLOUR, status.lineColour)
-                intent.putExtra(C.EXTRA.LINE_NAME, status.lineName)
+                intent.putExtra(C.EXTRA.COMPANY_CODE, C.PROVIDER.MTR)
+                intent.putExtra(C.EXTRA.ROUTE_NO, status.lineName)
                 itemView.context.startActivity(intent)
             }
         }

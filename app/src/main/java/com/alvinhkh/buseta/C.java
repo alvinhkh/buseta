@@ -63,8 +63,6 @@ public class C {
 
         String STOP_SEQUENCE = "com.alvinhkh.buseta.STOP_SEQUENCE";
 
-        String TYPE = "com.alvinhkh.buseta.TYPE";
-
         String WIDGET_UPDATE = "com.alvinhkh.buseta.WIDGET_UPDATE";
 
         String NOTIFICATION_ID = "com.alvinhkh.buseta.NOTIFICATION_ID";

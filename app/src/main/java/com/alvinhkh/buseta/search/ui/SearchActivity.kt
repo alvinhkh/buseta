@@ -10,19 +10,18 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.text.Editable
-import android.text.TextUtils
 import android.text.TextWatcher
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
-import com.alvinhkh.buseta.datagovhk.ui.MtrBusActivity
+import com.alvinhkh.buseta.mtr.ui.MtrBusActivity
 import com.alvinhkh.buseta.kmb.ui.KmbActivity
 import com.alvinhkh.buseta.lwb.ui.LwbActivity
 import com.alvinhkh.buseta.route.model.RouteStop
 import com.alvinhkh.buseta.mtr.ui.AESBusActivity
-import com.alvinhkh.buseta.mtr.ui.MtrActivity
+import com.alvinhkh.buseta.mtr.ui.MtrStationActivity
 import com.alvinhkh.buseta.nlb.ui.NlbActivity
 import com.alvinhkh.buseta.nwst.ui.NwstActivity
 import com.alvinhkh.buseta.route.model.Route
@@ -82,7 +81,7 @@ class SearchActivity : AppCompatActivity() {
         }
         with(search_et) {
             val action = intent.action
-            if (Intent.ACTION_SEARCH == action) {
+            if (Intent.ACTION_SEARCH == action && !query.isNullOrEmpty()) {
                 text.clear()
                 text.insert(0, query)
             }
@@ -158,16 +157,13 @@ class SearchActivity : AppCompatActivity() {
         })
     }
 
-    private fun getBusIntent(companyCode: String): Intent {
-        var code = companyCode
+    private fun providerIntent(companyCode: String): Intent {
         var intent: Intent
-        if (TextUtils.isEmpty(code)) {
-            code = C.PROVIDER.KMB
-        }
-        when (code) {
+        when (companyCode) {
             C.PROVIDER.AESBUS -> intent = Intent(applicationContext, AESBusActivity::class.java)
             C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> intent = Intent(applicationContext, NwstActivity::class.java)
             C.PROVIDER.LRTFEEDER -> intent = Intent(applicationContext, MtrBusActivity::class.java)
+            C.PROVIDER.MTR -> intent = Intent(applicationContext, MtrStationActivity::class.java)
             C.PROVIDER.NLB -> intent = Intent(applicationContext, NlbActivity::class.java)
             C.PROVIDER.KMB -> {
                 intent = Intent(applicationContext, LwbActivity::class.java)
@@ -189,19 +185,13 @@ class SearchActivity : AppCompatActivity() {
     private fun handleIntent(intent: Intent): Intent {
         val action = intent.action
         val data = intent.dataString
-        val type = intent.getStringExtra(C.EXTRA.TYPE)
 
         if (Intent.ACTION_SEARCH == action) {
             val query = intent.getStringExtra(SearchManager.QUERY)
-            if (!TextUtils.isEmpty(type) && type == C.TYPE.RAILWAY) {
-                val lineCode = intent.getStringExtra(C.EXTRA.LINE_CODE)
-                val i = Intent(applicationContext, MtrActivity::class.java)
-                i.putExtra(C.EXTRA.LINE_CODE, if (TextUtils.isEmpty(lineCode)) query else lineCode)
-                return i
-            } else if (!query.isNullOrEmpty()) {
+            if (!query.isNullOrEmpty()) {
                 val company = intent.getStringExtra(C.EXTRA.COMPANY_CODE)
                 if (!company.isNullOrEmpty()) {
-                    val i = getBusIntent(company)
+                    val i = providerIntent(company)
                     i.putExtra(C.EXTRA.ROUTE_NO, query)
                     return i
                 }
@@ -209,52 +199,35 @@ class SearchActivity : AppCompatActivity() {
         }
 
         if (Intent.ACTION_VIEW == action) {
-            if (!TextUtils.isEmpty(type) && type == C.TYPE.RAILWAY) {
-                val lineCode = intent.getStringExtra(C.EXTRA.LINE_CODE)
-                val lineColour = intent.getStringExtra(C.EXTRA.LINE_COLOUR)
-                val lineName = intent.getStringExtra(C.EXTRA.LINE_NAME)
-                val i = Intent(applicationContext, MtrActivity::class.java)
-                i.putExtra(C.EXTRA.LINE_CODE, lineCode)
-                i.putExtra(C.EXTRA.LINE_COLOUR, lineColour)
-                i.putExtra(C.EXTRA.LINE_NAME, lineName)
+            var routeStop: RouteStop? = intent.getParcelableExtra(C.EXTRA.STOP_OBJECT)
+            val stopText = intent.getStringExtra(C.EXTRA.STOP_OBJECT_STRING)
+            val company = intent.getStringExtra(C.EXTRA.COMPANY_CODE)
+            val routeNo = intent.getStringExtra(C.EXTRA.ROUTE_NO)
+            if (routeStop == null && !stopText.isNullOrEmpty()) {
+                routeStop = Gson().fromJson(stopText, RouteStop::class.java)
+            }
+            if (routeStop != null) {
+                val i = providerIntent(routeStop.companyCode!!)
+                i.putExtra(C.EXTRA.ROUTE_NO, routeStop.routeNo)
+                i.putExtra(C.EXTRA.STOP_OBJECT, routeStop)
                 return i
-            } else {
-                var routeStop: RouteStop? = intent.getParcelableExtra(C.EXTRA.STOP_OBJECT)
-                val stopText = intent.getStringExtra(C.EXTRA.STOP_OBJECT_STRING)
-                val company = intent.getStringExtra(C.EXTRA.COMPANY_CODE)
-                val routeNo = intent.getStringExtra(C.EXTRA.ROUTE_NO)
-                if (routeStop == null && !TextUtils.isEmpty(stopText)) {
-                    routeStop = Gson().fromJson(stopText, RouteStop::class.java)
+            } else if (!routeNo.isNullOrEmpty() && !company.isNullOrEmpty()) {
+                val i = providerIntent(company)
+                i.putExtra(C.EXTRA.ROUTE_NO, routeNo)
+                return i
+            } else if (!data.isNullOrEmpty()) {
+                val lastQuery: String?
+                val regex = "/route/(.*)/?"
+                val regexPattern = Pattern.compile(regex)
+                val match = regexPattern.matcher(data)
+                if (match.find()) {
+                    lastQuery = match.group(1)
+                } else {
+                    lastQuery = data.substring(data.lastIndexOf("/") + 1)
                 }
-                if (routeStop != null) {
-                    if (routeStop.companyCode!! == C.PROVIDER.MTR) {
-                        val i = Intent(applicationContext, MtrActivity::class.java)
-                        i.putExtra(C.EXTRA.LINE_CODE, routeStop.routeId)
-                        i.putExtra(C.EXTRA.LINE_NAME, routeStop.routeNo)
-                        return i
-                    }
-                    val i = getBusIntent(routeStop.companyCode!!)
-                    i.putExtra(C.EXTRA.ROUTE_NO, routeStop.routeNo)
-                    i.putExtra(C.EXTRA.STOP_OBJECT, routeStop)
-                    return i
-                } else if (!TextUtils.isEmpty(routeNo) && !TextUtils.isEmpty(company)) {
-                    val i = getBusIntent(company)
-                    i.putExtra(C.EXTRA.ROUTE_NO, routeNo)
-                    return i
-                } else if (!TextUtils.isEmpty(data)) {
-                    val lastQuery: String?
-                    val regex = "/route/(.*)/?"
-                    val regexPattern = Pattern.compile(regex)
-                    val match = regexPattern.matcher(data!!)
-                    if (match.find()) {
-                        lastQuery = match.group(1)
-                    } else {
-                        lastQuery = data.substring(data.lastIndexOf("/") + 1)
-                    }
-                    val i = getBusIntent("")
-                    i.putExtra(C.EXTRA.ROUTE_NO, lastQuery)
-                    return i
-                }
+                val i = providerIntent("")
+                i.putExtra(C.EXTRA.ROUTE_NO, lastQuery)
+                return i
             }
         }
         return Intent()

@@ -1,5 +1,6 @@
 package com.alvinhkh.buseta.arrivaltime.model
 
+import android.arch.lifecycle.LiveData
 import android.arch.persistence.room.*
 import android.content.Context
 import android.text.TextUtils
@@ -147,6 +148,14 @@ data class ArrivalTime (
                     stop.sequence?:"",
                     System.currentTimeMillis() - 600000,
                     System.currentTimeMillis().toString())
+        }
+
+        fun liveData(database: ArrivalTimeDatabase, stop: RouteStop): LiveData<MutableList<ArrivalTime>> {
+            return database.arrivalTimeDao().getLiveData(stop.companyCode?:"",
+                    stop.routeNo?:"",
+                    stop.routeSequence?:"",
+                    stop.stopId?:"",
+                    stop.sequence?:"")
         }
     }
 }

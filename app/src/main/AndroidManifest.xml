@@ -130,7 +130,7 @@
             android:label="@string/provider_nwst"
             android:hardwareAccelerated="true" />
         <activity
-            android:name=".datagovhk.ui.MtrBusActivity"
+            android:name=".mtr.ui.MtrBusActivity"
             android:label="@string/provider_lrtfeeder"
             android:hardwareAccelerated="true" />
         <activity
@@ -138,7 +138,7 @@
             android:label="@string/provider_mtr"
             android:hardwareAccelerated="true" />
         <activity
-            android:name=".mtr.ui.MtrActivity"
+            android:name=".mtr.ui.MtrStationActivity"
             android:label="@string/provider_mtr"
             android:hardwareAccelerated="true" />
 

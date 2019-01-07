@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.location.Location
 import android.net.Uri
@@ -30,6 +31,7 @@ import android.text.style.ForegroundColorSpan
 import android.text.style.ImageSpan
 import android.view.View
 import android.widget.ImageView
+import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
@@ -449,6 +451,10 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
 
         vh = ViewHolder()
         vh?.contentView = contentView
+        vh?.headerLayout = contentView.findViewById(R.id.header_layout)
+        if (!route?.colour.isNullOrEmpty()) {
+            vh?.headerLayout?.setBackgroundColor(Color.parseColor(route?.colour))
+        }
         vh?.stopImageButton = contentView.findViewById(R.id.show_image_button)
         vh?.stopImageButton?.visibility = View.GONE
         vh?.stopImage = contentView.findViewById(R.id.stop_image)
@@ -841,6 +847,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
 
     private class ViewHolder {
         internal var contentView: View? = null
+        internal var headerLayout: RelativeLayout? = null
 
         internal var stopImage: ImageView? = null
         internal var stopImageButton: MaterialButton? = null

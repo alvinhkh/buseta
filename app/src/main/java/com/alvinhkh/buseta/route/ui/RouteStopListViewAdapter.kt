@@ -7,6 +7,7 @@ import android.location.Location
 import android.support.v4.app.FragmentActivity
 import android.support.v4.content.ContextCompat
 import android.support.v4.graphics.drawable.DrawableCompat
+import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.text.Spannable
 import android.text.SpannableStringBuilder
@@ -22,6 +23,7 @@ import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
+import com.alvinhkh.buseta.mtr.ui.MtrScheduleViewAdapter
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.model.RouteStop
 import com.alvinhkh.buseta.service.EtaService
@@ -47,9 +49,10 @@ class RouteStopListViewAdapter(
     ) {
         companion object {
             const val TYPE_SECTION = 0
-            const val TYPE_ROUTE_STOP = 1
-            const val TYPE_HEADER = 2
-            const val TYPE_FOOTER = 3
+            const val TYPE_HEADER = 1
+            const val TYPE_FOOTER = 2
+            const val TYPE_ROUTE_STOP = 3
+            const val TYPE_RAILWAY_STATION = 4
         }
     }
 
@@ -65,6 +68,7 @@ class RouteStopListViewAdapter(
         return Holder(LayoutInflater.from(context).inflate(when(viewType) {
             Data.TYPE_HEADER, Data.TYPE_FOOTER -> R.layout.item_note
             Data.TYPE_ROUTE_STOP -> R.layout.item_route_stop
+            Data.TYPE_RAILWAY_STATION -> R.layout.item_railway_station
             else -> R.layout.item_note
         }, parent, false))
     }
@@ -80,37 +84,36 @@ class RouteStopListViewAdapter(
         notifyItemInserted(0)
     }
 
-    fun addItem(t: RouteStop): Int {
-        data.add(Data(Data.TYPE_ROUTE_STOP, t))
+    fun add(o: RouteStop, dataType: Int = Data.TYPE_ROUTE_STOP): Int {
+        data.add(Data(dataType, o))
         val index = data.size
         notifyItemInserted(index)
         return index - 1
     }
 
-    fun addItems(list: List<RouteStop>, isClear: Boolean) {
-        if (isClear) {
-            data.clear()
-        }
+    fun addAll(list: List<RouteStop>, dataType: Int = Data.TYPE_ROUTE_STOP) {
         list.forEach {
-            data.add(Data(Data.TYPE_ROUTE_STOP, it))
+            data.add(Data(dataType, it))
         }
         notifyDataSetChanged()
     }
 
-    fun replaceItem(index: Int, t: RouteStop) {
-        if (index < data.size && index >= 0) {
-            data[index] = Data(Data.TYPE_ROUTE_STOP, t)
-            notifyItemChanged(index)
+    fun clear(notify: Boolean = false) {
+        data.clear()
+        if (notify) {
+            notifyDataSetChanged()
         }
     }
 
-    fun getItem(index: Int): Data? {
+    fun get(index: Int): Data? {
         return data[index]
     }
 
-    fun clear() {
-        data.clear()
-        notifyDataSetChanged()
+    fun replace(index: Int, t: RouteStop, dataType: Int = Data.TYPE_ROUTE_STOP) {
+        if (index < data.size && index >= 0) {
+            data[index] = Data(dataType, t)
+            notifyItemChanged(index)
+        }
     }
 
     class Holder(itemView: View?): RecyclerView.ViewHolder(itemView!!) {
@@ -328,6 +331,32 @@ class RouteStopListViewAdapter(
                         }
                     }
                     direction = arrivalTime.direction
+                }
+            } else if (data.type == Data.TYPE_RAILWAY_STATION) {
+                val routeStop = data.obj as RouteStop
+                itemView.findViewById<TextView>(R.id.name).text = routeStop.name
+                val scheduleList = itemView.findViewById<RecyclerView>(R.id.schedule_list)
+                val viewAdapter = MtrScheduleViewAdapter()
+                scheduleList.run {
+                    layoutManager = LinearLayoutManager(itemView.context)
+                    setHasFixedSize(true)
+                    isNestedScrollingEnabled = false
+                    adapter = viewAdapter
+                    visibility = View.VISIBLE
+                }
+                viewAdapter.addAll(routeStop.etas)
+                itemView.setOnClickListener {
+                    val intent = Intent(itemView.context, EtaService::class.java)
+                    intent.putExtra(C.EXTRA.STOP_OBJECT, routeStop)
+                    itemView.context.startService(intent)
+                }
+                itemView.setOnLongClickListener {
+                    try {
+                        val bottomSheetDialogFragment = RouteStopFragment.newInstance(route, routeStop)
+                        bottomSheetDialogFragment.show(activity?.supportFragmentManager, bottomSheetDialogFragment.tag)
+                    } catch (ignored: IllegalStateException) {
+                    }
+                    return@setOnLongClickListener false
                 }
             } else if (data.type == Data.TYPE_HEADER || data.type == Data.TYPE_FOOTER) {
                 itemView.findViewById<TextView>(R.id.note).text = data.obj as String

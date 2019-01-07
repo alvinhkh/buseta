@@ -37,7 +37,7 @@ class FollowGroupDialogFragment : BottomSheetDialogFragment() {
                 .observe(this, Observer<MutableList<FollowGroup>> { categories ->
                     viewAdapter.replaceItems(categories?: mutableListOf())
                     if (categories?.size?:0 > 0) {
-                        // viewAdapter.addItem(0, FollowGroup("____clear", getString(R.string.action_unfollow)))
+                        // viewAdapter.add(0, FollowGroup("____clear", getString(R.string.action_unfollow)))
                     }
                     viewAdapter.addItem(viewAdapter.itemCount, FollowGroup("____add_new", getString(R.string.add_new_group)))
                 })

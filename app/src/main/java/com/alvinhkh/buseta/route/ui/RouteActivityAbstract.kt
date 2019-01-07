@@ -7,7 +7,10 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.database.DataSetObserver
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.support.constraint.Guideline
@@ -37,7 +40,7 @@ import androidx.work.WorkManager
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
-import com.alvinhkh.buseta.datagovhk.ui.MtrBusStopListFragment
+import com.alvinhkh.buseta.mtr.ui.MtrBusStopListFragment
 import com.alvinhkh.buseta.kmb.KmbRouteWorker
 import com.alvinhkh.buseta.kmb.ui.KmbStopListFragment
 import com.alvinhkh.buseta.lwb.LwbRouteWorker
@@ -45,6 +48,7 @@ import com.alvinhkh.buseta.lwb.ui.LwbStopListFragment
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.model.RouteStop
 import com.alvinhkh.buseta.mtr.ui.AESBusStopListFragment
+import com.alvinhkh.buseta.mtr.ui.MtrStationListFragment
 import com.alvinhkh.buseta.nlb.ui.NlbStopListFragment
 import com.alvinhkh.buseta.nwst.ui.NwstStopListFragment
 import com.alvinhkh.buseta.route.UpdateAppShortcutWorker
@@ -55,6 +59,7 @@ import com.alvinhkh.buseta.search.model.Suggestion
 import com.alvinhkh.buseta.service.EtaService
 import com.alvinhkh.buseta.ui.BaseActivity
 import com.alvinhkh.buseta.utils.AdViewUtil
+import com.alvinhkh.buseta.utils.ColorUtil
 import com.alvinhkh.buseta.utils.ConnectivityUtil
 import com.alvinhkh.buseta.utils.PreferenceUtil
 import com.crashlytics.android.answers.Answers
@@ -240,19 +245,21 @@ abstract class RouteActivityAbstract : BaseActivity(),
                     pagerAdapter.clear()
                     var company = ""
                     var isScrollToPage = false
+                    var hasDestination = false
                     routes?.forEach { route ->
                         company = route.companyCode?:companyCode?:""
                         val routeStop = stopFromIntent?: RouteStop()
                         val fragment: Fragment = when (company) {
                             C.PROVIDER.AESBUS -> AESBusStopListFragment.newInstance(route, routeStop)
                             C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> NwstStopListFragment.newInstance(route, routeStop)
-                            C.PROVIDER.LRTFEEDER -> MtrBusStopListFragment.newInstance(route, routeStop)
-                            C.PROVIDER.NLB -> NlbStopListFragment.newInstance(route, routeStop)
                             C.PROVIDER.KMB -> if (PreferenceUtil.isUsingNewKmbApi(applicationContext)) {
                                 KmbStopListFragment.newInstance(route, routeStop)
                             } else {
                                 LwbStopListFragment.newInstance(route, routeStop)
                             }
+                            C.PROVIDER.LRTFEEDER -> MtrBusStopListFragment.newInstance(route, routeStop)
+                            C.PROVIDER.MTR -> MtrStationListFragment.newInstance(route, routeStop)
+                            C.PROVIDER.NLB -> NlbStopListFragment.newInstance(route, routeStop)
                             else -> return@forEach
                         }
                         val pageTitle = if (!route.origin.isNullOrEmpty()) {
@@ -261,6 +268,9 @@ abstract class RouteActivityAbstract : BaseActivity(),
                                      + if (route.isSpecial!!) "#" else "")
                         } else {
                             route.name?:getString(R.string.route)
+                        }
+                        if (pageTitle != route.name && pageTitle != getString(R.string.route)) {
+                            hasDestination = true
                         }
                         pagerAdapter.addFragment(fragment, pageTitle, route)
                         val fragmentCount = pagerAdapter.count
@@ -271,6 +281,11 @@ abstract class RouteActivityAbstract : BaseActivity(),
                                 && route.serviceType == stopFromIntent?.routeServiceType) {
                             fragNo = fragmentCount - 1
                             isScrollToPage = true
+                        }
+                        if (!route.colour.isNullOrEmpty()) {
+                            when (company) {
+                                C.PROVIDER.MTR -> activityColor(Color.parseColor(route.colour))
+                            }
                         }
                     }
 
@@ -286,6 +301,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
                             appIndexStart(suggestion!!)
                         }
                     }
+                    tabLayout.visibility = if (hasDestination) View.VISIBLE else View.GONE
 
                     if (isScrollToPage && isScrolledToPage == false) {
                         viewPager.setCurrentItem(fragNo, false)
@@ -352,14 +368,14 @@ abstract class RouteActivityAbstract : BaseActivity(),
         super.onDestroy()
     }
 
-    protected fun showEmptyView() {
+    private fun showEmptyView() {
         emptyView.visibility = View.VISIBLE
         progressBar.visibility = View.GONE
         emptyText.setText(R.string.message_fail_to_request)
         fab.hide()
     }
 
-    protected fun showLoadingView() {
+    private fun showLoadingView() {
         emptyView.visibility = View.VISIBLE
         progressBar.visibility = View.VISIBLE
         emptyText.setText(R.string.message_loading)
@@ -372,7 +388,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
             return
         }
         when (companyCode) {
-            C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER, C.PROVIDER.NLB -> return
+            C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER, C.PROVIDER.MTR, C.PROVIDER.NLB -> return
             C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> return
         }
         showLoadingView()
@@ -420,7 +436,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
 
     private fun showMapFragment() {
         when (companyCode) {
-            C.PROVIDER.LRTFEEDER -> {
+            C.PROVIDER.LRTFEEDER, C.PROVIDER.MTR -> {
                 showMapMenuItem?.isVisible = false
                 isShowMap = false
             }
@@ -518,7 +534,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
         return false
     }
 
-    public open fun mapCamera(latitude: Double?, longitude: Double?) {
+    open fun mapCamera(latitude: Double?, longitude: Double?) {
         if (isShowMap && latitude?.isFinite() == true && longitude?.isFinite() == true) {
             map?.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(latitude, longitude), 18f))
         }
@@ -629,5 +645,15 @@ abstract class RouteActivityAbstract : BaseActivity(),
                         Timber.d("App Indexing: fail")
                     }
                 }
+    }
+
+    private fun activityColor(color: Int) {
+        supportActionBar?.setBackgroundDrawable(ColorDrawable(color))
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window?.statusBarColor = ColorUtil.darkenColor(color)
+            window?.navigationBarColor = ColorUtil.darkenColor(color)
+        }
+        findViewById<FrameLayout>(R.id.adView_container)?.setBackgroundColor(color)
+        findViewById<TabLayout>(R.id.tabs)?.background = ColorDrawable(color)
     }
 }

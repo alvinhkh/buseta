@@ -37,6 +37,7 @@ import com.alvinhkh.buseta.lwb.LwbStopListWorker
 import com.alvinhkh.buseta.nwst.NwstStopListWorker
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.model.RouteStop
+import com.alvinhkh.buseta.route.ui.RouteStopListViewAdapter.Data.Companion.TYPE_RAILWAY_STATION
 import com.alvinhkh.buseta.route.ui.RouteStopListViewAdapter.Data.Companion.TYPE_ROUTE_STOP
 import com.alvinhkh.buseta.service.EtaService
 import com.alvinhkh.buseta.ui.route.RouteAnnounceActivity
@@ -69,7 +70,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
 
     private lateinit var followDatabase: FollowDatabase
 
-    protected lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     protected lateinit var recyclerView: RecyclerView
 
@@ -77,7 +78,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
 
     protected lateinit var progressBar: ProgressBar
 
-    protected lateinit var emptyText: TextView
+    private lateinit var emptyText: TextView
 
     private lateinit var viewModel: RouteStopListViewModel
 
@@ -199,10 +200,12 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
             viewModel.getAsLiveData(route?.companyCode?:"", route?.name?:"", route?.sequence?:"", route?.serviceType?:"")
                     .observe(this@RouteStopListFragmentAbstract, Observer<MutableList<RouteStop>> { stops ->
                         if (stops != null) {
+                            val dataType = if (route?.companyCode == C.PROVIDER.MTR) TYPE_RAILWAY_STATION else TYPE_ROUTE_STOP
                             if (!swipeRefreshLayout.isRefreshing) {
                                 swipeRefreshLayout.isRefreshing = true
                             }
-                            viewAdapter.addItems(stops, true)
+                            viewAdapter.clear(false)
+                            viewAdapter.addAll(stops, dataType)
                             var count = 0
                             if (route?.description?.isEmpty() == false) {
                                 viewAdapter.addHeader(route?.description?:"")
@@ -220,7 +223,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                                                 routeStop.etas += eta
                                             }
                                         }
-                                        viewAdapter.replaceItem(index + count, routeStop)
+                                        viewAdapter.replace(index + count, routeStop, dataType)
                                     }
                                 })
                                 val followCount = followDatabase.followDao().liveCount(
@@ -256,7 +259,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                                             && route!!.sequence == navToStop!!.routeSequence
                                             && route!!.serviceType == navToStop!!.routeServiceType) {
                                         for (i in 0 until viewAdapter.itemCount) {
-                                            val item = viewAdapter.getItem(i)?: continue
+                                            val item = viewAdapter.get(i)?: continue
                                             if (item.type != TYPE_ROUTE_STOP) continue
                                             val stop = item.obj as RouteStop
                                             if (stop.name != null &&
@@ -386,9 +389,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
     private fun loadStopList(route: Route): Boolean {
         val companyCode = route.companyCode?:""
         when (companyCode) {
-            C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER, C.PROVIDER.NLB -> {
-                return true
-            }
+            C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER, C.PROVIDER.MTR, C.PROVIDER.NLB -> return true
             "" -> return false
         }
 
@@ -450,8 +451,8 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
         if (marker.tag is RouteStop) {
             val markerStop = marker.tag as RouteStop?
             for (i in 0 until viewAdapter.itemCount) {
-                if (viewAdapter.getItem(i)?.type == TYPE_ROUTE_STOP && viewAdapter.getItem(i)?.obj is RouteStop) {
-                    val routeStop = viewAdapter.getItem(i)?.obj as RouteStop
+                if (viewAdapter.get(i)?.type == TYPE_ROUTE_STOP && viewAdapter.get(i)?.obj is RouteStop) {
+                    val routeStop = viewAdapter.get(i)?.obj as RouteStop
                     if (routeStop.sequence == markerStop?.sequence) {
                         val smoothScroller = object : LinearSmoothScroller(recyclerView.context) {
                             override fun getVerticalSnapPreference(): Int {
