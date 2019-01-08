@@ -81,6 +81,60 @@
                     android:pathPrefix="/"
                     android:scheme="buseta" />
             </intent-filter>
+            <intent-filter
+                android:label="@string/app_name">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="http" android:host="search.kmb.hk" android:pathPrefix="/KMBWebSite"/>
+                <data android:scheme="http" android:host="search.kmb.hk" android:pathPrefix="/kmbwebsite"/>
+                <data android:scheme="https" android:host="search.kmb.hk" android:pathPrefix="/KMBWebSite"/>
+                <data android:scheme="https" android:host="search.kmb.hk" android:pathPrefix="/kmbwebsite"/>
+                <data android:scheme="http" android:host="com.kmb.app1933"/>
+            </intent-filter>
+            <intent-filter
+                android:label="@string/app_name">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="app1933" android:host="routedetail"/>
+            </intent-filter>
+            <intent-filter
+                android:label="@string/app_name">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="nwst"/>
+                <data android:host="mobile.nwstbus.com.hk"/>
+                <data android:path="/nwp3/share.php"/>
+            </intent-filter>
+            <intent-filter
+                android:label="@string/app_name">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="http"/>
+                <data android:host="mobile.nwstbus.com.hk"/>
+                <data android:path="/nwp3/share.php"/>
+            </intent-filter>
+            <intent-filter
+                android:label="@string/app_name">
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="http" android:host="mobile.nwstbus.com.hk" android:path="/nwp3/"/>
+                <data android:scheme="https" android:host="mobile.nwstbus.com.hk" android:path="/nwp3/"/>
+            </intent-filter>
 
             <meta-data
                 android:name="android.app.searchable"

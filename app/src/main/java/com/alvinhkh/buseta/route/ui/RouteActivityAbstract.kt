@@ -119,6 +119,8 @@ abstract class RouteActivityAbstract : BaseActivity(),
 
     private var stopFromIntent: RouteStop? = null
 
+    private var stopIdFromIntent: String? = null
+
     private var requestId: UUID? = null
 
     private var isShowMap: Boolean = false
@@ -135,6 +137,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
             companyCode = bundle.getString(C.EXTRA.COMPANY_CODE)
             routeNo = bundle.getString(C.EXTRA.ROUTE_NO)
             stopFromIntent = bundle.getParcelable(C.EXTRA.STOP_OBJECT)
+            stopIdFromIntent = bundle.getString(C.EXTRA.STOP_ID)
         }
         if (routeNo.isNullOrEmpty() && stopFromIntent != null) {
             companyCode = stopFromIntent?.companyCode
@@ -248,7 +251,15 @@ abstract class RouteActivityAbstract : BaseActivity(),
                     var hasDestination = false
                     routes?.forEach { route ->
                         company = route.companyCode?:companyCode?:""
-                        val routeStop = stopFromIntent?: RouteStop()
+                        var routeStop = stopFromIntent
+                        if (routeStop == null) {
+                            routeStop = RouteStop()
+                            routeStop.companyCode = route.companyCode
+                            routeStop.routeNo = route.name
+                            routeStop.routeSequence = route.sequence
+                            routeStop.routeServiceType = route.serviceType
+                            routeStop.stopId = stopIdFromIntent
+                        }
                         val fragment: Fragment = when (company) {
                             C.PROVIDER.AESBUS -> AESBusStopListFragment.newInstance(route, routeStop)
                             C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> NwstStopListFragment.newInstance(route, routeStop)

@@ -61,9 +61,9 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
 
     protected var route: Route? = null
 
-    protected var navToStop: RouteStop? = null
+    private var navToStop: RouteStop? = null
 
-    protected var scrollToPos: Int? = 0
+    private var scrollToPos: Int? = 0
 
 
     private lateinit var arrivalTimeDatabase: ArrivalTimeDatabase
@@ -180,7 +180,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
         swipeRefreshLayout.setOnRefreshListener(this)
 
         if (arguments != null) {
-            navToStop = arguments!!.getParcelable(C.EXTRA.STOP_OBJECT)
+            navToStop = arguments?.getParcelable(C.EXTRA.STOP_OBJECT)
         }
         swipeRefreshLayout.visibility = View.VISIBLE
         swipeRefreshLayout.isRefreshing = false
@@ -249,25 +249,35 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                                 var scrollToPosition: Int? = 0
                                 refreshHandler.post(refreshRunnable)
                                 if (viewAdapter.itemCount > 0) {
-                                    if (route != null && navToStop != null
-                                            && route!!.companyCode != null && route!!.name != null
-                                            && route!!.sequence != null && route!!.serviceType != null
-                                            && navToStop!!.companyCode != null && navToStop!!.name != null
-                                            && navToStop!!.sequence != null && navToStop!!.routeServiceType != null
-                                            && route!!.companyCode == navToStop!!.companyCode
-                                            && route!!.name == navToStop!!.routeNo
-                                            && route!!.sequence == navToStop!!.routeSequence
-                                            && route!!.serviceType == navToStop!!.routeServiceType) {
+                                    if ((route != null
+                                                    && route?.companyCode != null && route?.companyCode == navToStop?.companyCode
+                                                    && route?.name != null && route?.name == navToStop?.routeNo
+                                                    && route?.sequence != null && route?.sequence == navToStop?.routeSequence
+                                                    && route?.serviceType != null && route?.serviceType == navToStop?.routeServiceType
+
+                                                    && navToStop != null
+                                                    && navToStop?.companyCode != null && navToStop?.name != null
+                                                    && navToStop?.routeServiceType != null
+                                                    && (navToStop?.sequence != null || navToStop?.stopId != null))
+                                    ) {
                                         for (i in 0 until viewAdapter.itemCount) {
                                             val item = viewAdapter.get(i)?: continue
                                             if (item.type != TYPE_ROUTE_STOP) continue
                                             val stop = item.obj as RouteStop
-                                            if (stop.name != null &&
-                                                    stop.sequence != null &&
-                                                    stop.name == navToStop!!.name &&
-                                                    stop.sequence == navToStop!!.sequence) {
+                                            if ((stop.name != null
+                                                            && stop.name == navToStop?.name
+                                                            && stop.sequence != null
+                                                            && stop.sequence == navToStop?.sequence)
+                                                    || (stop.stopId != null && (stop.stopId == navToStop?.stopId
+                                                            || stop.stopId?.replaceFirst(Regex("^0*"), "") == navToStop?.stopId))) {
                                                 scrollToPosition = i
                                                 isScrollToPosition = true
+                                                try {
+                                                    val intent = Intent(context, EtaService::class.java)
+                                                    intent.putExtra(C.EXTRA.STOP_OBJECT, stop)
+                                                    context.startService(intent)
+                                                } catch (ignored: Throwable) {}
+                                                break
                                             }
                                         }
                                     }

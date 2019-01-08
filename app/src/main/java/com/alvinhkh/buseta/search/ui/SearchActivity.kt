@@ -6,16 +6,19 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Base64
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
+import com.alvinhkh.buseta.kmb.model.KmbAppIntentData
 import com.alvinhkh.buseta.mtr.ui.MtrBusActivity
 import com.alvinhkh.buseta.kmb.ui.KmbActivity
 import com.alvinhkh.buseta.lwb.ui.LwbActivity
@@ -47,12 +50,6 @@ class SearchActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        try {
-            startActivity(handleIntent(intent))
-            finish()
-            return
-        } catch (ignored: ActivityNotFoundException) { }
-
         suggestionDatabase = SuggestionDatabase.getInstance(this)!!
         setContentView(R.layout.activity_suggestion)
 
@@ -70,15 +67,27 @@ class SearchActivity : AppCompatActivity() {
             override fun onLongClick(suggestion: Suggestion?) {
             }
         }
-        val query = intent.getStringExtra(SearchManager.QUERY)
+        viewModel = ViewModelProviders.of(this).get(SuggestionViewModel::class.java)
         with(recycler_view) {
             addItemDecoration(PinnedHeaderItemDecoration())
             layoutManager = LinearLayoutManager(context)
             viewAdapter = SuggestionViewAdapter(context, null, listener)
             adapter = viewAdapter
-            viewModel = ViewModelProviders.of(this@SearchActivity).get(SuggestionViewModel::class.java)
-            loadSearchResult(query?:"", true)
         }
+
+        val newIntent = handleIntent(intent)
+        if (!newIntent.hasExtra(SearchManager.QUERY)) {
+            try {
+                startActivity(newIntent)
+                finish()
+                return
+            } catch (ignored: ActivityNotFoundException) { }
+        } else {
+            intent.putExtra(SearchManager.QUERY, newIntent.getStringExtra(SearchManager.QUERY))
+        }
+
+        val query = intent.getStringExtra(SearchManager.QUERY)
+        loadSearchResult(query?:"", true)
         with(search_et) {
             val action = intent.action
             if (Intent.ACTION_SEARCH == action && !query.isNullOrEmpty()) {
@@ -110,37 +119,43 @@ class SearchActivity : AppCompatActivity() {
 
     public override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        startActivity(handleIntent(intent))
-        finish()
+        try {
+            startActivity(handleIntent(intent))
+            finish()
+            return
+        } catch (ignored: ActivityNotFoundException) {}
+        if (intent.action == Intent.ACTION_SEARCH) {
+            loadSearchResult(intent.getStringExtra(SearchManager.QUERY)?:"", true)
+        }
     }
 
     private fun loadSearchResult(route: String, singleWillOpen: Boolean) {
         var lastCompanyCode = ""
-        viewModel.getAsLiveData(route).observe(this@SearchActivity, Observer {
+        viewModel.getAsLiveData(route).observe(this@SearchActivity, Observer { list ->
             viewAdapter.clear()
             val routeNo = route.replace(Regex("[^a-zA-Z0-9 ]"), "")
             val shownCompanyCode = arrayListOf<String>()
-            if (it?.size?:0 > 0) {
-                if (it?.size?:0 == 1 && !it?.get(0)?.companyCode.isNullOrEmpty() && singleWillOpen && !isOpened) {
+            if (list?.size?:0 > 0) {
+                if (list?.size?:0 == 1 && !list?.get(0)?.companyCode.isNullOrEmpty() && singleWillOpen && !isOpened) {
                     isOpened = true
                     val intent = Intent(Intent.ACTION_VIEW)
                     intent.setClass(applicationContext, SearchActivity::class.java)
                     intent.putExtra(C.EXTRA.ROUTE_NO, routeNo)
-                    intent.putExtra(C.EXTRA.COMPANY_CODE, it?.get(0)?.companyCode?:"")
+                    intent.putExtra(C.EXTRA.COMPANY_CODE, list?.get(0)?.companyCode?:"")
                     startActivity(intent)
                     finish()
                 } else {
-                    it?.forEach {
-                        if (lastCompanyCode != it.companyCode) {
+                    list?.forEach { suggestion ->
+                        if (lastCompanyCode != suggestion.companyCode) {
                             if (lastCompanyCode.isNotBlank() && routeNo.isNotBlank()) {
                                 viewAdapter.addButton(Suggestion(0, lastCompanyCode, routeNo, 0, Suggestion.TYPE_DEFAULT))
                             }
-                            val companyName = Route.companyName(applicationContext, it.companyCode, it.route)
+                            val companyName = Route.companyName(applicationContext, suggestion.companyCode, suggestion.route)
                             viewAdapter.addSection(companyName)
-                            shownCompanyCode.add(it.companyCode)
+                            shownCompanyCode.add(suggestion.companyCode)
                         }
-                        viewAdapter.addItem(it)
-                        lastCompanyCode = it.companyCode
+                        viewAdapter.addItem(suggestion)
+                        lastCompanyCode = suggestion.companyCode
                     }
                 }
             }
@@ -215,6 +230,67 @@ class SearchActivity : AppCompatActivity() {
                 val i = providerIntent(company)
                 i.putExtra(C.EXTRA.ROUTE_NO, routeNo)
                 return i
+            } else if (intent.data?.scheme == "app1933") {
+                if (!data.isNullOrEmpty()) {
+                    val decodedStr = String(Base64.decode(intent.data?.pathSegments?.get(0), Base64.DEFAULT))
+                    val gson = Gson()
+                    val intentData = gson.fromJson(decodedStr, KmbAppIntentData::class.java)
+                    if (intentData != null) {
+                        val i = providerIntent(C.PROVIDER.KMB)
+                        i.putExtra(C.EXTRA.ROUTE_NO, intentData.route)
+                        i.putExtra(C.EXTRA.ROUTE_SEQUENCE, intentData.bound)
+                        i.putExtra(C.EXTRA.ROUTE_SERVICE_TYPE, intentData.serviceType)
+                        i.putExtra(C.EXTRA.STOP_ID, intentData.stopCode)
+                        val stopObject = RouteStop()
+                        stopObject.companyCode = C.PROVIDER.KMB
+                        stopObject.routeNo = intentData.route
+                        stopObject.routeSequence = intentData.bound
+                        stopObject.routeServiceType = intentData.serviceType
+                        stopObject.stopId = intentData.stopCode
+                        i.putExtra(C.EXTRA.STOP_OBJECT, stopObject)
+                        return i
+                    }
+                }
+                if (intent.resolveActivity(packageManager) != null) {
+                    return intent
+                }
+            } else if (intent.data?.host == "search.kmb.hk") {
+                if (intent.data?.getQueryParameter("action") == "routesearch") {
+                    val i = providerIntent(C.PROVIDER.KMB)
+                    i.putExtra(C.EXTRA.ROUTE_NO, intent.data?.getQueryParameter("route"))
+                    return i
+                }
+                // let browser handle unknown urls
+                val uri = Uri.parse("googlechrome://navigate?url=${intent.dataString}")
+                val i = Intent(Intent.ACTION_VIEW, uri)
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                return i
+            } else if (intent.data?.host == "mobile.nwstbus.com.hk") {
+                if (intent.data?.getQueryParameter("action") == "ETA") {
+                    val companyCode = intent.data?.getQueryParameter("compcode")?:C.PROVIDER.NWST
+                    val serviceNo = intent.data?.getQueryParameter("serviceno")?:""
+                    val stopId = intent.data?.getQueryParameter("stopid")?:""
+                    if (serviceNo.isNotEmpty()) {
+                        val i = providerIntent(companyCode)
+                        i.putExtra(C.EXTRA.ROUTE_NO, serviceNo)
+                        i.putExtra(C.EXTRA.STOP_ID, stopId)
+                        return i
+                    }
+                }
+                if (!intent.data?.getQueryParameter("ds").isNullOrEmpty()) {
+                    val i = Intent(Intent.ACTION_SEARCH)
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    i.setClass(this, SearchActivity::class.java)
+                    i.putExtra(SearchManager.QUERY, intent.data?.getQueryParameter("ds")?:"")
+                    return i
+                }
+                if (intent.data?.host?.startsWith("http") == true) {
+                    // let browser handle unknown urls
+                    val uri = Uri.parse("googlechrome://navigate?url=${intent.dataString}")
+                    val i = Intent(Intent.ACTION_VIEW, uri)
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    return i
+                }
             } else if (!data.isNullOrEmpty()) {
                 val lastQuery: String?
                 val regex = "/route/(.*)/?"
