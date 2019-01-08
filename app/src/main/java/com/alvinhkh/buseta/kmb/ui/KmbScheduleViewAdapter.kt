@@ -103,7 +103,7 @@ class KmbScheduleViewAdapter(
                 if (!timeRangeText.isNullOrEmpty()) {
                     try {
                         val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
-                        val timeStr = timeRangeText!!.split("-")
+                        val timeStr = timeRangeText.split("-")
                         if (timeStr.size == 2) {
                             val timeStart = Calendar.getInstance()
                             timeStart.time = sdf.parse(timeStr[0])

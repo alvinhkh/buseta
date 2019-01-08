@@ -86,7 +86,7 @@ class FollowFragment: Fragment() {
 
     override fun onResume() {
         super.onResume()
-        refreshHandler.postDelayed(refreshRunnable, 5000)
+        refreshHandler.postDelayed(refreshRunnable, 500)
     }
 
     override fun onPause() {

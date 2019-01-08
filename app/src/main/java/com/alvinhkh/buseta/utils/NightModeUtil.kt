@@ -32,7 +32,7 @@ object NightModeUtil {
                 }
             }
         }
-        return isRecreate!!
+        return isRecreate
     }
 
 }

@@ -69,7 +69,7 @@ class ImageFragment : Fragment() {
         photoView = view.findViewById(R.id.image_view)
         photoView.maximumScale = 4f
         val mTextView = view.findViewById<TextView>(android.R.id.text1)
-        mTextView.setOnClickListener { _ -> photoView?.scale = 1f }
+        mTextView.setOnClickListener { photoView.scale = 1f }
         if (!imageTitle.isNullOrEmpty()) {
             mTextView.text = imageTitle
             mTextView.visibility = View.VISIBLE

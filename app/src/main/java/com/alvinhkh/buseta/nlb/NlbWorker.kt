@@ -46,8 +46,6 @@ class NlbWorker(context : Context, params : WorkerParameters)
         val database = response.body()
 
         for (nlbRoute in database?.routes?: emptyList()) {
-            if (nlbRoute == null) continue
-
             val route = Route()
             route.companyCode = companyCode
             val location = nlbRoute.route_name_c.split(" > ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()

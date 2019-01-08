@@ -291,7 +291,8 @@ abstract class RouteActivityAbstract : BaseActivity(),
 
                     val routeName = Route.companyName(this, company, routeNo) + " " + routeNo
                     supportActionBar?.title = routeName
-                    if (routes?.isNotEmpty() == true && !company.isEmpty()) {
+                    tabLayout.visibility = if (hasDestination) View.VISIBLE else View.GONE
+                    if (routes?.isNotEmpty() == true && !company.isEmpty() && company != C.PROVIDER.MTR) {
                         suggestion = Suggestion.createInstance()
                         suggestion?.companyCode = company
                         suggestion?.route = routeNo?:""
@@ -301,7 +302,6 @@ abstract class RouteActivityAbstract : BaseActivity(),
                             appIndexStart(suggestion!!)
                         }
                     }
-                    tabLayout.visibility = if (hasDestination) View.VISIBLE else View.GONE
 
                     if (isScrollToPage && isScrolledToPage == false) {
                         viewPager.setCurrentItem(fragNo, false)

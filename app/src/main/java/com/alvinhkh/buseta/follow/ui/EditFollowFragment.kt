@@ -119,7 +119,7 @@ class EditFollowFragment: Fragment(), OnItemDragListener {
             val followGroup = followDatabase.followGroupDao().get(groupId)
             val builder = ColorPickerDialog.Builder(view.context, R.style.AppTheme_Dialog)
             builder.setTitle(R.string.colour)
-            builder.setPositiveButton(getString(R.string.action_confirm), ColorEnvelopeListener { envelope, fromUser ->
+            builder.setPositiveButton(getString(R.string.action_confirm), ColorEnvelopeListener { envelope, _ ->
                 val newGroup = followGroup.copy()
                 newGroup.colour = "#" + envelope.hexCode
                 followDatabase.followGroupDao().updateAll(newGroup)
