@@ -31,6 +31,7 @@ class KmbScheduleFragment: Fragment() {
         route = arguments!!.getParcelable(C.EXTRA.ROUTE_OBJECT)?:Route()
         val routeNo: String = route.name?:""
         val routeBound: String = route.sequence?:""
+        val routeServiceType: String = route.serviceType?:""
         if (routeNo.isEmpty() || routeBound.isEmpty()) {
             return rootView
         }
@@ -49,27 +50,29 @@ class KmbScheduleFragment: Fragment() {
                     var lastDayType = ""
                     var lastServiceType = ""
                     list?.forEach { item ->
-                        if (lastServiceType != item.serviceTypeTc && !item.serviceTypeTc.isNullOrEmpty()) {
-                            viewAdapter.addSection(item.serviceTypeTc?:"")
-                            lastServiceType = item.serviceTypeTc?:""
-                        }
-                        if (lastDayType != item.dayType) {
-                            var dayTypeText = ""
-                            when ((item.dayType?:"").trim().toUpperCase()) {
-                                "W" -> dayTypeText = getString(R.string.monday_to_friday)
-                                "MF" -> dayTypeText = getString(R.string.monday_to_friday)
-                                "S" -> dayTypeText = getString(R.string.saturday)
-                                "H" -> dayTypeText = getString(R.string.sunday_and_holiday)
-                                "MS" -> dayTypeText = getString(R.string.monday_to_saturday)
-                                "D" -> dayTypeText = getString(R.string.everyday)
-                                "X" -> dayTypeText = " "
+                        if (routeServiceType.isEmpty() || item.serviceType?.trim() == routeServiceType) {
+                            if (lastServiceType != item.serviceTypeTc && !item.serviceTypeTc.isNullOrEmpty()) {
+                                viewAdapter.addSection(item.serviceTypeTc?:"")
+                                lastServiceType = item.serviceTypeTc?:""
                             }
-                            viewAdapter.addSection(dayTypeText)
-                            lastDayType = item.dayType?:""
-                        }
-                        if ((routeBound.replace("0", "") == "1" && (item.boundText1?:"").isNotEmpty())
-                            || routeBound.replace("0", "") == "2" && (item.boundText2?:"").isNotEmpty()) {
-                            viewAdapter.addItem(item)
+                            if (lastDayType != item.dayType) {
+                                var dayTypeText = ""
+                                when ((item.dayType?:"").trim().toUpperCase()) {
+                                    "W" -> dayTypeText = getString(R.string.monday_to_friday)
+                                    "MF" -> dayTypeText = getString(R.string.monday_to_friday)
+                                    "S" -> dayTypeText = getString(R.string.saturday)
+                                    "H" -> dayTypeText = getString(R.string.sunday_and_holiday)
+                                    "MS" -> dayTypeText = getString(R.string.monday_to_saturday)
+                                    "D" -> dayTypeText = getString(R.string.everyday)
+                                    "X" -> dayTypeText = " "
+                                }
+                                viewAdapter.addSection(dayTypeText)
+                                lastDayType = item.dayType?:""
+                            }
+                            if ((routeBound.replace("0", "") == "1" && (item.boundText1?:"").isNotEmpty())
+                                    || routeBound.replace("0", "") == "2" && (item.boundText2?:"").isNotEmpty()) {
+                                viewAdapter.addItem(item)
+                            }
                         }
                     }
                     val actionBar = (activity as AppCompatActivity).supportActionBar
