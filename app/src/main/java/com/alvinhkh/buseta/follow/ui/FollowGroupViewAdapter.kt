@@ -35,7 +35,7 @@ class FollowGroupViewAdapter(
 
     override fun getItemCount(): Int = data.size
 
-    fun addItem(i: Int, f: FollowGroup) {
+    fun add(i: Int, f: FollowGroup) {
         data.add(i, f)
         notifyItemInserted(i)
     }
@@ -45,7 +45,7 @@ class FollowGroupViewAdapter(
         notifyDataSetChanged()
     }
 
-    fun replaceItems(l: MutableList<FollowGroup>) {
+    fun replace(l: MutableList<FollowGroup>) {
         data.clear()
         data.addAll(l)
         notifyDataSetChanged()
@@ -77,18 +77,26 @@ class FollowGroupViewAdapter(
                 followGroup.id == "____add_new" -> {
                     val builder = AlertDialog.Builder(view.context, R.style.AppTheme_Dialog)
                     builder.setTitle(R.string.add_new_group)
-                    val layout = LinearLayout(view.context)
+                    val layout = LinearLayout(builder.context)
                     layout.setPadding(48, 0, 48, 0)
                     layout.orientation = LinearLayout.VERTICAL
-                    val textInputLayout = TextInputLayout(view.context)
-                    val textInputEditText = TextInputEditText(view.context)
+                    val textInputLayout = TextInputLayout(builder.context)
+                    val textInputEditText = TextInputEditText(builder.context)
+                    textInputEditText.setText("")
                     textInputLayout.addView(textInputEditText)
                     layout.addView(textInputLayout)
                     builder.setView(layout)
                     builder.setNegativeButton(R.string.action_cancel) { dialogInterface, _ -> dialogInterface.cancel() }
                     builder.setPositiveButton(R.string.action_confirm) { dialogInterface, _ ->
                         val name = textInputEditText.text.toString().trim()
-                        followDatabase.followGroupDao().insert(FollowGroup(name, name, ""))
+                        if (name.isNotEmpty()) {
+                            followDatabase.followGroupDao().insert(FollowGroup(name, name, ""))
+                            follow.groupId = name
+                            val inserted = followDatabase.followDao().insert(follow)
+                            if (inserted > 0) {
+                                itemView.findViewById<ImageView>(R.id.icon).setImageResource(R.drawable.ic_outline_check_box_24dp)
+                            }
+                        }
                         dialogInterface.dismiss()
                     }
                     builder.create().show()
@@ -109,21 +117,6 @@ class FollowGroupViewAdapter(
                             itemView.findViewById<ImageView>(R.id.icon).setImageResource(R.drawable.ic_outline_check_box_24dp)
                         }
                     }
-                }
-            }}
-            itemView.setOnLongClickListener { view -> when {
-                followGroup.id == "____clear" || followGroup.id == "____add_new" || followGroup.id == FollowGroup.UNCATEGORISED -> false
-                else -> {
-                    val builder = AlertDialog.Builder(view.context, R.style.AppTheme_Dialog)
-                    builder.setTitle(R.string.remove_group)
-                    builder.setNegativeButton(R.string.action_cancel) { dialogInterface, _ -> dialogInterface.cancel() }
-                    builder.setPositiveButton(R.string.action_confirm) { dialogInterface, _ ->
-                        followDatabase.followGroupDao().delete(followGroup.id)
-                        followDatabase.followDao().delete(followGroup.id)
-                        dialogInterface.dismiss()
-                    }
-                    builder.create().show()
-                    true
                 }
             }}
         }

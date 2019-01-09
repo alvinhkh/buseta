@@ -95,11 +95,11 @@ class EditFollowFragment: Fragment(), OnItemDragListener {
             val followGroup = followDatabase.followGroupDao().get(groupId)
             val builder = AlertDialog.Builder(view.context, R.style.AppTheme_Dialog)
             builder.setTitle(R.string.rename)
-            val layout = LinearLayout(view.context)
+            val layout = LinearLayout(builder.context)
             layout.setPadding(48, 0, 48, 0)
             layout.orientation = LinearLayout.VERTICAL
-            val textInputLayout = TextInputLayout(view.context)
-            val textInputEditText = TextInputEditText(view.context)
+            val textInputLayout = TextInputLayout(builder.context)
+            val textInputEditText = TextInputEditText(builder.context)
             textInputEditText.setText(followGroup.name)
             textInputLayout.addView(textInputEditText)
             layout.addView(textInputLayout)
@@ -107,9 +107,11 @@ class EditFollowFragment: Fragment(), OnItemDragListener {
             builder.setNegativeButton(R.string.action_cancel) { dialogInterface, _ -> dialogInterface.cancel() }
             builder.setPositiveButton(R.string.action_confirm) { dialogInterface, _ ->
                 val name = textInputEditText.text.toString().trim()
-                val newGroup = followGroup.copy()
-                newGroup.name = name
-                followDatabase.followGroupDao().updateAll(newGroup)
+                if (name.isNotEmpty()) {
+                    val newGroup = followGroup.copy()
+                    newGroup.name = name
+                    followDatabase.followGroupDao().updateAll(newGroup)
+                }
                 dialogInterface.dismiss()
             }
             builder.create().show()

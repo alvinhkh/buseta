@@ -35,11 +35,11 @@ class FollowGroupDialogFragment : BottomSheetDialogFragment() {
         val viewModel = ViewModelProviders.of(this).get(FollowGroupViewModel::class.java)
         viewModel.getAsLiveData()
                 .observe(this, Observer<MutableList<FollowGroup>> { categories ->
-                    viewAdapter.replaceItems(categories?: mutableListOf())
-                    if (categories?.size?:0 > 0) {
-                        // viewAdapter.add(0, FollowGroup("____clear", getString(R.string.action_unfollow)))
-                    }
-                    viewAdapter.addItem(viewAdapter.itemCount, FollowGroup("____add_new", getString(R.string.add_new_group)))
+                    viewAdapter.replace(categories?: mutableListOf())
+//                    if (categories?.size?:0 > 0) {
+//                         viewAdapter.add(0, FollowGroup("____clear", getString(R.string.unfollow)))
+//                    }
+                    viewAdapter.add(viewAdapter.itemCount, FollowGroup("____add_new", getString(R.string.add_new_group)))
                 })
         return itemView
 
