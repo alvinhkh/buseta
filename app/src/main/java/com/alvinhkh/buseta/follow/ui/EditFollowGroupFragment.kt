@@ -47,7 +47,7 @@ class EditFollowGroupFragment: Fragment(), OnItemDragListener {
             layoutManager = LinearLayoutManager(context)
             viewAdapter = EditFollowGroupViewAdapter(WeakReference(activity!!.supportFragmentManager), this@EditFollowGroupFragment)
             adapter = viewAdapter
-            itemTouchHelper = ItemTouchHelper(SimpleItemTouchHelperCallback(viewAdapter))
+            itemTouchHelper = ItemTouchHelper(SimpleItemTouchHelperCallback(viewAdapter, false))
             itemTouchHelper.attachToRecyclerView(this)
         }
         val viewModel = ViewModelProviders.of(this).get(FollowGroupViewModel::class.java)

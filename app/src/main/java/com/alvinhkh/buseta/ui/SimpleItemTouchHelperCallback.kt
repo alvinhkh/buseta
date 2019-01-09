@@ -32,14 +32,14 @@ import timber.log.Timber
  *
  * @author Paul Burke (ipaulpro)
  */
-class SimpleItemTouchHelperCallback(private val mAdapter: ItemTouchHelperAdapter?) : ItemTouchHelper.Callback() {
+class SimpleItemTouchHelperCallback(private val mAdapter: ItemTouchHelperAdapter?, var isItemViewSwipeEnable: Boolean = true) : ItemTouchHelper.Callback() {
 
     override fun isLongPressDragEnabled(): Boolean {
         return mAdapter != null
     }
 
     override fun isItemViewSwipeEnabled(): Boolean {
-        return mAdapter != null
+        return mAdapter != null && isItemViewSwipeEnable
     }
 
     override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
