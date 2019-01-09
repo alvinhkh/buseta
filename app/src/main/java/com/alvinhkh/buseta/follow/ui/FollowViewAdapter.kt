@@ -3,10 +3,9 @@ package com.alvinhkh.buseta.follow.ui
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.drawable.Drawable
-import android.support.design.widget.Snackbar
+import android.support.v4.app.FragmentActivity
 import android.support.v4.content.ContextCompat
 import android.support.v4.graphics.drawable.DrawableCompat
-import android.support.v7.app.AlertDialog
 import android.support.v7.widget.RecyclerView
 import android.text.Spannable
 import android.text.SpannableStringBuilder
@@ -20,21 +19,20 @@ import android.widget.TextView
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
-import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.follow.model.Follow
+import com.alvinhkh.buseta.route.ui.RouteStopFragment
 import com.alvinhkh.buseta.search.ui.SearchActivity
 import com.alvinhkh.buseta.utils.PreferenceUtil
-import java.util.*
-
+import java.lang.ref.WeakReference
 
 
 class FollowViewAdapter(
-        private var followDatabase: FollowDatabase,
+        private var activityRef: WeakReference<FragmentActivity>,
         private var data: MutableList<Follow> = mutableListOf()
 ): RecyclerView.Adapter<FollowViewAdapter.Holder>() {
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
-        holder.bindItems(data[position], followDatabase)
+        holder.bindItems(data[position], activityRef)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
@@ -71,7 +69,7 @@ class FollowViewAdapter(
     class Holder(itemView: View?): RecyclerView.ViewHolder(itemView!!) {
 
         @SuppressLint("ClickableViewAccessibility")
-        fun bindItems(follow: Follow, followDatabase: FollowDatabase?) {
+        fun bindItems(follow: Follow, activityRef: WeakReference<FragmentActivity>) {
             itemView.findViewById<TextView>(R.id.name).text = follow.stopName
             itemView.findViewById<TextView>(R.id.route_no).text = follow.routeNo
             itemView.findViewById<TextView>(R.id.route_location_end).text = follow.routeDestination
@@ -83,34 +81,11 @@ class FollowViewAdapter(
                 itemView.context.startActivity(intent)
             }
             itemView.setOnLongClickListener {
-                val builder = AlertDialog.Builder(itemView.context)
-                builder.setTitle(follow.routeNo + "?")
-                builder.setMessage(itemView.context.getString(R.string.message_remove_from_follow_list))
-                builder.setNegativeButton(R.string.action_cancel) { d, _ -> d.cancel() }
-                builder.setPositiveButton(R.string.action_confirm) { _, _ ->
-                    val rowDeleted = followDatabase?.followDao()?.delete(follow.groupId,
-                            follow.companyCode, follow.routeNo, follow.routeSeq,
-                            follow.routeServiceType, follow.stopId, follow.stopSeq)
-                    if (rowDeleted != null && rowDeleted > 0) {
-                        Snackbar.make(itemView.rootView.findViewById(R.id.coordinator_layout)?:itemView.rootView,
-                                itemView.context.getString(R.string.removed_from_follow_list,
-                                String.format(Locale.ENGLISH, "%s %s", follow.routeNo, follow.stopName)),
-                                Snackbar.LENGTH_LONG)
-                                .addCallback(object : Snackbar.Callback() {
-                                    override fun onDismissed(snackbar: Snackbar?, event: Int) {
-                                        when (event) {
-                                            Snackbar.Callback.DISMISS_EVENT_ACTION -> {
-                                                followDatabase.followDao().insert(follow)
-                                            }
-                                        }
-                                    }
-                                })
-                                .setAction(R.string.undo) {
-                                    // do nothing
-                                }.show()
-                    }
+                try {
+                    val bottomSheetDialogFragment = RouteStopFragment.newInstance(follow.toRouteStop())
+                    bottomSheetDialogFragment.show(activityRef.get()?.supportFragmentManager, bottomSheetDialogFragment.tag)
+                } catch (ignored: Throwable) {
                 }
-                builder.show()
                 true
             }
 

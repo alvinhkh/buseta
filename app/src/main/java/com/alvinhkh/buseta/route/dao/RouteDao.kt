@@ -28,10 +28,10 @@ interface RouteDao {
     fun liveData(companyCode: String, routeNo: String): LiveData<MutableList<Route>>
 
     @Query("SELECT * FROM routes WHERE company_code = :companyCode AND code = :routeCode")
-    fun get(companyCode: String, routeCode: String): Route
+    fun get(companyCode: String, routeCode: String): Route?
 
     @Query("SELECT * FROM routes WHERE company_code = :companyCode AND name = :routeNo AND sequence = :sequence AND service_type = :serviceType AND info_key = :infoKey")
-    fun get(companyCode: String, routeNo: String, sequence: String, serviceType: String, infoKey: String): Route
+    fun get(companyCode: String, routeNo: String, sequence: String, serviceType: String, infoKey: String): Route?
 
     @Query("UPDATE routes SET map_coordinates = '[]' WHERE company_code = :companyCode AND name = :routeNo AND sequence = :sequence AND service_type = :serviceType AND info_key = :infoKey")
     fun deleteCoordinates(companyCode: String, routeNo: String, sequence: String, serviceType: String, infoKey: String): Int

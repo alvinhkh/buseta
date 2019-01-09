@@ -16,6 +16,7 @@ import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.follow.model.Follow
 import com.alvinhkh.buseta.follow.model.FollowGroup
 import com.alvinhkh.buseta.utils.ConnectivityUtil
+import java.lang.ref.WeakReference
 
 
 class FollowFragment: Fragment() {
@@ -53,7 +54,7 @@ class FollowFragment: Fragment() {
         emptyView = rootView.findViewById(R.id.empty_view)
         emptyView.visibility = View.VISIBLE
         recyclerView = rootView.findViewById(R.id.recycler_view)
-        viewAdapter = FollowViewAdapter(followDatabase)
+        viewAdapter = FollowViewAdapter(WeakReference(activity!!))
         with(recyclerView) {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)

@@ -46,6 +46,7 @@ import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.follow.model.Follow
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
 import com.alvinhkh.buseta.follow.ui.FollowGroupDialogFragment
+import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.model.RouteStop
 import com.alvinhkh.buseta.service.EtaService
@@ -81,6 +82,8 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
 
     private lateinit var followDatabase: FollowDatabase
 
+    private lateinit var routeDatabase: RouteDatabase
+
     private var mGeofencingClient: GeofencingClient? = null
 
     private var mGeofenceList: ArrayList<Geofence>? = null
@@ -91,11 +94,9 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
 
     private var currentLocation: Location? = null
 
-    private var route: Route? = null
-
     private var routeStop: RouteStop? = null
 
-    private var vh: ViewHolder? = null
+    private val vh = ViewHolder()
 
     private var refreshInterval: Int? = 30
 
@@ -199,6 +200,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
 
         arrivalTimeDatabase = ArrivalTimeDatabase.getInstance(context!!)!!
         followDatabase = FollowDatabase.getInstance(context!!)!!
+        routeDatabase = RouteDatabase.getInstance(context!!)!!
 
         mGeofenceList = ArrayList()
         mGeofencePendingIntent = null
@@ -238,10 +240,6 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
         refreshHandler.removeCallbacksAndMessages(refreshRunnable)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-    }
-
     /**
      * Runs when the result of calling [.addGeofences] and/or [.removeGeofences]
      * is available.
@@ -260,12 +258,10 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
         } else {
             Timber.w(task.exception)
         }
-        if (vh != null && vh?.arrivalAlertButton != null) {
-            vh?.arrivalAlertButton!!.setIconResource(if (isThisGeofencesAdded)
-                R.drawable.ic_outline_alarm_on_36dp
-            else
-                R.drawable.ic_outline_alarm_add_36dp)
-        }
+        vh.arrivalAlertButton?.setIconResource(if (isThisGeofencesAdded)
+            R.drawable.ic_outline_alarm_on_36dp
+        else
+            R.drawable.ic_outline_alarm_add_36dp)
         mPendingGeofenceTask = PendingGeofenceTask.NONE
     }
 
@@ -275,8 +271,8 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
      * @param text The Snackbar text.
      */
     private fun showSnackbar(text: String) {
-        if (vh?.coordinatorLayout == null) return
-        Snackbar.make(vh?.coordinatorLayout!!, text, Snackbar.LENGTH_LONG).show()
+        if (vh.coordinatorLayout == null) return
+        Snackbar.make(vh.coordinatorLayout!!, text, Snackbar.LENGTH_LONG).show()
     }
 
     /**
@@ -287,9 +283,9 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
      * @param listener         The listener associated with the Snackbar action.
      */
     private fun showSnackbar(mainTextStringId: Int, actionStringId: Int, listener: (Any) -> Unit) {
-        if (vh?.coordinatorLayout == null) return
+        if (vh.coordinatorLayout == null) return
         Snackbar.make(
-                vh?.coordinatorLayout!!,
+                vh.coordinatorLayout!!,
                 getString(mainTextStringId),
                 Snackbar.LENGTH_INDEFINITE)
                 .setAction(getString(actionStringId), listener).show()
@@ -442,45 +438,44 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
             dialog.cancel()
             return
         }
-        route = bundle.getParcelable(C.EXTRA.ROUTE_OBJECT)
         routeStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT)
-        if (route == null || routeStop == null) {
+        if (routeStop == null) {
             dialog.cancel()
             return
         }
+        val route = routeDatabase.routeDao().get(routeStop?.companyCode?:"", routeStop?.routeNo?:"", routeStop?.routeSequence?:"", routeStop?.routeServiceType?:"", "")
 
-        vh = ViewHolder()
-        vh?.contentView = contentView
-        vh?.headerLayout = contentView.findViewById(R.id.header_layout)
+        vh.contentView = contentView
+        vh.headerLayout = contentView.findViewById(R.id.header_layout)
         if (!route?.colour.isNullOrEmpty()) {
-            vh?.headerLayout?.setBackgroundColor(Color.parseColor(route?.colour))
+            vh.headerLayout?.setBackgroundColor(Color.parseColor(route?.colour))
         }
-        vh?.stopImageButton = contentView.findViewById(R.id.show_image_button)
-        vh?.stopImageButton?.visibility = View.GONE
-        vh?.stopImage = contentView.findViewById(R.id.stop_image)
-        vh?.stopImage?.visibility = View.GONE
+        vh.stopImageButton = contentView.findViewById(R.id.show_image_button)
+        vh.stopImageButton?.visibility = View.GONE
+        vh.stopImage = contentView.findViewById(R.id.stop_image)
+        vh.stopImage?.visibility = View.GONE
 
-        vh?.coordinatorLayout = contentView.findViewById(R.id.coordinator_layout)
-        vh?.followButton = contentView.findViewById(R.id.follow_button)
-        vh?.mapButton = contentView.findViewById(R.id.open_map_button)
-        vh?.notificationButton = contentView.findViewById(R.id.notification_button)
-        vh?.streetviewButton = contentView.findViewById(R.id.open_streetview_button)
-        vh?.arrivalAlertButton = contentView.findViewById(R.id.arrival_alert_button)
-        vh?.arrivalAlertButton?.visibility = if (BuildConfig.DEBUG) View.VISIBLE else View.GONE
+        vh.coordinatorLayout = contentView.findViewById(R.id.coordinator_layout)
+        vh.followButton = contentView.findViewById(R.id.follow_button)
+        vh.mapButton = contentView.findViewById(R.id.open_map_button)
+        vh.notificationButton = contentView.findViewById(R.id.notification_button)
+        vh.streetviewButton = contentView.findViewById(R.id.open_streetview_button)
+        vh.arrivalAlertButton = contentView.findViewById(R.id.arrival_alert_button)
+        vh.arrivalAlertButton?.visibility = if (BuildConfig.DEBUG) View.VISIBLE else View.GONE
 
-        vh?.nameText = contentView.findViewById(R.id.stop_name)
-        vh?.routeNoText = contentView.findViewById(R.id.route_no)
-        vh?.routeLocationText = contentView.findViewById(R.id.route_location)
-        vh?.stopLocationText = contentView.findViewById(R.id.stop_location)
-        vh?.fareText = contentView.findViewById(R.id.fare)
-        vh?.distanceText = contentView.findViewById(R.id.distance)
-        vh?.etaView = contentView.findViewById(R.id.eta_container)
-        vh?.etaText = contentView.findViewById(R.id.eta_text)
-        vh?.etaText?.text = "\n\n\n"
-        vh?.etaServerTimeText = contentView.findViewById(R.id.eta_server_time)
-        vh?.etaLastUpdateText = contentView.findViewById(R.id.eta_last_update)
+        vh.nameText = contentView.findViewById(R.id.stop_name)
+        vh.routeNoText = contentView.findViewById(R.id.route_no)
+        vh.routeLocationText = contentView.findViewById(R.id.route_location)
+        vh.stopLocationText = contentView.findViewById(R.id.stop_location)
+        vh.fareText = contentView.findViewById(R.id.fare)
+        vh.distanceText = contentView.findViewById(R.id.distance)
+        vh.etaView = contentView.findViewById(R.id.eta_container)
+        vh.etaText = contentView.findViewById(R.id.eta_text)
+        vh.etaText?.text = "\n\n\n"
+        vh.etaServerTimeText = contentView.findViewById(R.id.eta_server_time)
+        vh.etaLastUpdateText = contentView.findViewById(R.id.eta_last_update)
 
-        vh?.mapView = contentView.findViewById(R.id.map)
+        vh.mapView = contentView.findViewById(R.id.map)
 
         if (context != null && ActivityCompat.checkSelfPermission(context!!,
                         Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(context!!,
@@ -511,41 +506,41 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
 
 
         val preferences = PreferenceManager.getDefaultSharedPreferences(context!!)
-        vh?.followButton?.setOnClickListener(null)
-        vh?.mapButton?.setOnClickListener(null)
-        vh?.notificationButton?.setOnClickListener(null)
-        vh?.stopImageButton?.setOnClickListener(null)
-        vh?.streetviewButton?.setOnClickListener(null)
-        vh?.mapButton?.visibility = View.GONE
-        vh?.streetviewButton?.visibility = View.GONE
-        vh?.arrivalAlertButton?.visibility = View.GONE
+        vh.followButton?.setOnClickListener(null)
+        vh.mapButton?.setOnClickListener(null)
+        vh.notificationButton?.setOnClickListener(null)
+        vh.stopImageButton?.setOnClickListener(null)
+        vh.streetviewButton?.setOnClickListener(null)
+        vh.mapButton?.visibility = View.GONE
+        vh.streetviewButton?.visibility = View.GONE
+        vh.arrivalAlertButton?.visibility = View.GONE
 
         if (routeStop != null) {
             if (!routeStop?.latitude.isNullOrEmpty() && !routeStop?.longitude.isNullOrEmpty()) {
-                vh?.mapView?.visibility = View.VISIBLE
-                vh?.mapView?.setTileSource(TileSourceFactory.MAPNIK)
-                vh?.mapView?.setBuiltInZoomControls(false)
-                vh?.mapView?.setMultiTouchControls(false)
-                vh?.mapView?.isTilesScaledToDpi = true
-                vh?.mapView?.maxZoomLevel = 20.0
-                vh?.mapView?.minZoomLevel = 14.0
-                val mapController = vh?.mapView?.controller
+                vh.mapView?.visibility = View.VISIBLE
+                vh.mapView?.setTileSource(TileSourceFactory.MAPNIK)
+                vh.mapView?.setBuiltInZoomControls(false)
+                vh.mapView?.setMultiTouchControls(false)
+                vh.mapView?.isTilesScaledToDpi = true
+                vh.mapView?.maxZoomLevel = 20.0
+                vh.mapView?.minZoomLevel = 14.0
+                val mapController = vh.mapView?.controller
                 mapController?.setZoom(18.0)
                 val startPoint = GeoPoint(routeStop?.latitude?.toDouble()?:0.0, routeStop?.longitude?.toDouble()?:0.0)
                 mapController?.setCenter(startPoint)
 
-                val startMarker1 = Marker(vh?.mapView)
+                val startMarker1 = Marker(vh.mapView)
                 startMarker1.position = startPoint
                 startMarker1.title = routeStop?.name
-                vh?.mapView?.overlays?.add(startMarker1)
+                vh.mapView?.overlays?.add(startMarker1)
 
                 val mCompassOverlay = CompassOverlay(context!!,
                         InternalCompassOrientationProvider(context!!),
-                        vh?.mapView)
+                        vh.mapView)
                 mCompassOverlay.enableCompass()
-                vh?.mapView?.overlays?.add(mCompassOverlay)
+                vh.mapView?.overlays?.add(mCompassOverlay)
             } else {
-                vh?.mapView?.visibility = View.GONE
+                vh.mapView?.visibility = View.GONE
             }
 
 
@@ -555,10 +550,10 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                     routeStop?.stopId?:"", routeStop?.sequence?:"")
             followCount.removeObservers(this)
             followCount.observe(this, Observer { count ->
-                vh?.followButton?.removeCallbacks {  }
+                vh.followButton?.removeCallbacks {  }
                 if (count != null) {
-                    vh?.followButton?.setIconResource(if (count > 0) R.drawable.ic_outline_bookmark_36dp else R.drawable.ic_outline_bookmark_border_36dp)
-                    vh?.followButton?.setOnClickListener {
+                    vh.followButton?.setIconResource(if (count > 0) R.drawable.ic_outline_bookmark_36dp else R.drawable.ic_outline_bookmark_border_36dp)
+                    vh.followButton?.setOnClickListener {
                         val follow = Follow.createInstance(route, routeStop)
                         val fragment = FollowGroupDialogFragment.newInstance(follow)
                         fragment.show(childFragmentManager, "follow_group_dialog_fragment")
@@ -567,9 +562,9 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
             })
 
             if (!routeStop?.latitude.isNullOrEmpty() && !routeStop?.longitude.isNullOrEmpty()) {
-                vh?.mapButton?.visibility = View.VISIBLE
-                vh?.streetviewButton?.visibility = View.VISIBLE
-                vh?.mapButton?.setOnClickListener { v ->
+                vh.mapButton?.visibility = View.VISIBLE
+                vh.streetviewButton?.visibility = View.VISIBLE
+                vh.mapButton?.setOnClickListener { v ->
                     val uri = Uri.Builder().scheme("geo")
                             .appendPath(routeStop?.latitude + "," + routeStop?.longitude)
                             .appendQueryParameter("q", routeStop?.latitude + "," + routeStop?.longitude + "(" + routeStop?.name + ")")
@@ -581,7 +576,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                         showSnackbar(getString(R.string.message_no_geo_app))
                     }
                 }
-                vh?.streetviewButton?.setOnClickListener { v ->
+                vh.streetviewButton?.setOnClickListener { v ->
                     val gmmIntentUri = Uri.parse("google.streetview:cbll=" + routeStop?.latitude + "," + routeStop?.longitude + "&cbp=1,0,,-90,1")
                     val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
                     mapIntent.setPackage("com.google.android.apps.maps")
@@ -591,9 +586,9 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                         showSnackbar(getString(R.string.message_no_geo_app))
                     }
                 }
-                vh?.arrivalAlertButton?.visibility = if (BuildConfig.DEBUG) View.VISIBLE else View.GONE
-                vh?.arrivalAlertButton?.setIconResource(if (isThisGeofencesAdded) R.drawable.ic_outline_alarm_on_36dp else R.drawable.ic_outline_alarm_add_36dp)
-                vh?.arrivalAlertButton?.setOnClickListener {
+                vh.arrivalAlertButton?.visibility = if (BuildConfig.DEBUG) View.VISIBLE else View.GONE
+                vh.arrivalAlertButton?.setIconResource(if (isThisGeofencesAdded) R.drawable.ic_outline_alarm_on_36dp else R.drawable.ic_outline_alarm_add_36dp)
+                vh.arrivalAlertButton?.setOnClickListener {
                     Timber.d("isThisGeofencesAdded: %s", isThisGeofencesAdded)
                     if (isThisGeofencesAdded) {
                         Timber.d("removeGeofencesButtonHandler")
@@ -609,7 +604,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                     }
                 }
             }
-            vh?.notificationButton?.setOnClickListener { v ->
+            vh.notificationButton?.setOnClickListener { v ->
                 val notificationManager = NotificationManagerCompat.from(v.context)
                 if (!notificationManager.areNotificationsEnabled()) {
                     showSnackbar("Notification disabled in system settings.")
@@ -621,12 +616,12 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                 showSnackbar(getString(R.string.message_shown_as_notification))
             }
 
-            vh?.nameText?.text = if (routeStop?.name.isNullOrEmpty()) "" else routeStop?.name?.trim { it <= ' ' }
-            vh?.routeNoText?.text = if (routeStop?.routeNo.isNullOrEmpty()) "" else routeStop?.routeNo?.trim { it <= ' ' }
+            vh.nameText?.text = if (routeStop?.name.isNullOrEmpty()) "" else routeStop?.name?.trim { it <= ' ' }
+            vh.routeNoText?.text = if (routeStop?.routeNo.isNullOrEmpty()) "" else routeStop?.routeNo?.trim { it <= ' ' }
             if (!routeStop?.routeOrigin.isNullOrEmpty() && !routeStop?.routeDestination.isNullOrEmpty()) {
-                vh?.routeLocationText?.text = getString(R.string.destination, routeStop?.routeDestination)
+                vh.routeLocationText?.text = getString(R.string.destination, routeStop?.routeDestination)
             }
-            vh?.stopLocationText?.text = if (routeStop?.location.isNullOrEmpty()) "" else routeStop?.location?.trim { it <= ' ' }
+            vh.stopLocationText?.text = if (routeStop?.location.isNullOrEmpty()) "" else routeStop?.location?.trim { it <= ' ' }
             val fareText = StringBuilder()
             if (!routeStop?.fareFull.isNullOrEmpty()) {
                 fareText.append(String.format(Locale.ENGLISH, "$%1$,.1f", routeStop?.fareFull?.toFloat()))
@@ -640,24 +635,24 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
             if (!routeStop?.fareSenior.isNullOrEmpty()) {
                 fareText.append(String.format(Locale.ENGLISH, "/$%1$,.1f", routeStop?.fareSenior?.toFloat()))
             }
-            vh?.fareText?.text = fareText
+            vh.fareText?.text = fareText
             updateDistanceDisplay()
 
             // ETA
-            vh?.etaView?.visibility = View.INVISIBLE
+            vh.etaView?.visibility = View.INVISIBLE
             val intent = Intent(context, EtaService::class.java)
             intent.putExtra(C.EXTRA.STOP_OBJECT, routeStop)
             context!!.startService(intent)
             val arrivalTimeLiveData = arrivalTimeDatabase.arrivalTimeDao().getLiveData(routeStop?.companyCode?:"", routeStop?.routeNo?:"", routeStop?.routeSequence?:"", routeStop?.stopId?:"", routeStop?.sequence?:"")
             arrivalTimeLiveData.removeObservers(this)
             arrivalTimeLiveData.observe(this, Observer { list ->
-                vh?.etaText?.text = ""
+                vh.etaText?.text = ""
                 if (list?.size?:0 < 1) {
-                    vh?.etaView?.visibility = View.GONE
+                    vh.etaView?.visibility = View.GONE
                 }
                 list?.forEach {
                     val arrivalTime = ArrivalTime.estimate(context!!, it)
-                    if (!arrivalTime.order.isEmpty()) {
+                    if (arrivalTime.updatedAt > System.currentTimeMillis() - 600000 && !arrivalTime.order.isEmpty()) {
                         val etaText = SpannableStringBuilder(arrivalTime.text)
                         val pos = Integer.parseInt(arrivalTime.order)
                         val colorInt: Int = ContextCompat.getColor(context!!,
@@ -683,7 +678,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                             etaText.append(" (").append(arrivalTime.estimate).append(")")
                         }
                         if (arrivalTime.distanceKM >= 0) {
-                            etaText.append(" ").append(context!!.getString(R.string.km, arrivalTime.distanceKM))
+                            etaText.append(" ").append(getString(R.string.km, arrivalTime.distanceKM))
                         }
                         if (!arrivalTime.plate.isEmpty()) {
                             etaText.append(" ").append(arrivalTime.plate)
@@ -728,9 +723,9 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                             }
                             if (drawable != null) {
                                 drawable = DrawableCompat.wrap(drawable)
-                                drawable!!.setBounds(0, 0, vh?.etaText?.lineHeight?:0, vh?.etaText?.lineHeight?:0)
+                                drawable?.setBounds(0, 0, vh.etaText?.lineHeight?:0, vh.etaText?.lineHeight?:0)
                                 DrawableCompat.setTint(drawable.mutate(), colorInt)
-                                val imageSpan = ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM)
+                                val imageSpan = ImageSpan(drawable!!, ImageSpan.ALIGN_BOTTOM)
                                 etaText.append(" ")
                                 if (etaText.isNotEmpty()) {
                                     etaText.setSpan(imageSpan, etaText.length - 1, etaText.length, Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
@@ -743,9 +738,9 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                         if (arrivalTime.hasWheelchair) {
                             var drawable = ContextCompat.getDrawable(context!!, R.drawable.ic_outline_accessible_18dp)
                             drawable = DrawableCompat.wrap(drawable!!)
-                            drawable!!.setBounds(0, 0, vh?.etaText?.lineHeight?:0, vh?.etaText?.lineHeight?:0)
+                            drawable?.setBounds(0, 0, vh.etaText?.lineHeight?:0, vh.etaText?.lineHeight?:0)
                             DrawableCompat.setTint(drawable.mutate(), colorInt)
-                            val imageSpan = ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM)
+                            val imageSpan = ImageSpan(drawable!!, ImageSpan.ALIGN_BOTTOM)
                             etaText.append(" ")
                             if (etaText.isNotEmpty()) {
                                 etaText.setSpan(imageSpan, etaText.length - 1, etaText.length, Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
@@ -755,9 +750,9 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                             var drawable = ContextCompat.getDrawable(context!!, R.drawable.ic_outline_wifi_18dp)
                             if (drawable != null) {
                                 drawable = DrawableCompat.wrap(drawable)
-                                drawable!!.setBounds(0, 0, vh?.etaText?.lineHeight?:0, vh?.etaText?.lineHeight?:0)
+                                drawable?.setBounds(0, 0, vh.etaText?.lineHeight?:0, vh.etaText?.lineHeight?:0)
                                 DrawableCompat.setTint(drawable.mutate(), colorInt)
-                                val imageSpan = ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM)
+                                val imageSpan = ImageSpan(drawable!!, ImageSpan.ALIGN_BOTTOM)
                                 etaText.append(" ")
                                 if (etaText.isNotEmpty()) {
                                     etaText.setSpan(imageSpan, etaText.length - 1, etaText.length, Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
@@ -770,35 +765,35 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                         if (etaText.isNotEmpty()) {
                             etaText.setSpan(ForegroundColorSpan(colorInt), 0, etaText.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                         }
-                        if (vh?.etaText?.text?.isEmpty() == true) {
-                            vh?.etaText?.text = etaText
+                        if (vh.etaText?.text?.isEmpty() == true) {
+                            vh.etaText?.text = etaText
                         } else {
                             etaText.insert(0, "\n")
-                            etaText.insert(0, vh?.etaText?.text)
-                            vh?.etaText?.text = etaText
+                            etaText.insert(0, vh.etaText?.text)
+                            vh.etaText?.text = etaText
                         }
 
                         val dateFormat = SimpleDateFormat("HH:mm:ss dd/MM", Locale.ENGLISH)
                         if (arrivalTime.generatedAt > 0) {
                             val date = Date(arrivalTime.generatedAt)
-                            vh?.etaServerTimeText?.text = dateFormat.format(date)
+                            vh.etaServerTimeText?.text = dateFormat.format(date)
                         }
                         if (arrivalTime.updatedAt > 0) {
                             val date = Date(arrivalTime.updatedAt)
-                            vh?.etaLastUpdateText!!.text = dateFormat.format(date)
+                            vh.etaLastUpdateText?.text = dateFormat.format(date)
                         }
-                        if (vh?.etaServerTimeText?.text == vh?.etaLastUpdateText?.text) {
-                            vh?.etaServerTimeText?.text = null
+                        if (vh.etaServerTimeText?.text == vh.etaLastUpdateText?.text) {
+                            vh.etaServerTimeText?.text = null
                         }
 
-                        vh?.etaView?.visibility = View.VISIBLE
+                        vh.etaView?.visibility = View.VISIBLE
                     }
                 }
             })
 
             // Stop raw
-            vh?.stopImage?.visibility = View.GONE
-            vh?.stopImageButton?.visibility = View.GONE
+            vh.stopImage?.visibility = View.GONE
+            vh.stopImageButton?.visibility = View.GONE
             if (!routeStop?.imageUrl.isNullOrEmpty()) {
                 val request = OneTimeWorkRequest.Builder(ImageDownloadWorker::class.java)
                         .setInputData(Data.Builder().putString("url", routeStop?.imageUrl).build())
@@ -806,26 +801,26 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                 if (preferences != null && preferences.getBoolean("load_stop_image", false)) {
                     WorkManager.getInstance().enqueue(request)
                 } else {
-                    vh?.stopImageButton?.visibility = View.VISIBLE
-                    vh?.stopImageButton?.setOnClickListener {
+                    vh.stopImageButton?.visibility = View.VISIBLE
+                    vh.stopImageButton?.setOnClickListener {
                         WorkManager.getInstance().enqueue(request)
                     }
                 }
                 WorkManager.getInstance().getWorkInfoByIdLiveData(request.id).observe(this,
                         Observer { workInfo ->
-                            if (vh?.stopImage != null) {
+                            if (vh.stopImage != null) {
                                 if (workInfo?.state == WorkInfo.State.FAILED) {
-                                    vh?.stopImage?.visibility = View.GONE
+                                    vh.stopImage?.visibility = View.GONE
                                     showSnackbar(getString(R.string.message_fail_to_request))
                                 }
                                 if (workInfo?.state == WorkInfo.State.SUCCEEDED) {
                                     try {
-                                        vh?.stopImage?.setImageBitmap(BitmapFactory.decodeFile(workInfo.outputData.getString("filepath")))
-                                        vh?.stopImage?.visibility = View.VISIBLE
-                                        vh?.stopImageButton?.visibility = View.GONE
+                                        vh.stopImage?.setImageBitmap(BitmapFactory.decodeFile(workInfo.outputData.getString("filepath")))
+                                        vh.stopImage?.visibility = View.VISIBLE
+                                        vh.stopImageButton?.visibility = View.GONE
                                     } catch (e: Throwable) {
                                         Timber.e(e)
-                                        vh?.stopImage?.visibility = View.GONE
+                                        vh.stopImage?.visibility = View.GONE
                                     }
                                 }
                             }
@@ -841,7 +836,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
         location.longitude = routeStop?.longitude?.toDouble()?:0.0
         if (currentLocation != null) {
             val distance = currentLocation!!.distanceTo(location)
-            vh?.distanceText!!.text = DecimalFormat("~#.##km").format((distance / 1000).toDouble())
+            vh.distanceText?.text = DecimalFormat("~#.##km").format((distance / 1000).toDouble())
         }
     }
 
@@ -885,6 +880,14 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
             val fragment = RouteStopFragment()
             val args = Bundle()
             args.putParcelable(C.EXTRA.ROUTE_OBJECT, route)
+            args.putParcelable(C.EXTRA.STOP_OBJECT, routeStop)
+            fragment.arguments = args
+            return fragment
+        }
+
+        fun newInstance(routeStop: RouteStop): RouteStopFragment {
+            val fragment = RouteStopFragment()
+            val args = Bundle()
             args.putParcelable(C.EXTRA.STOP_OBJECT, routeStop)
             fragment.arguments = args
             return fragment
