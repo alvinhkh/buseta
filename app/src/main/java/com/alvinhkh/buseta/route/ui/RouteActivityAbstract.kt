@@ -7,8 +7,11 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.database.DataSetObserver
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -531,6 +534,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
             Timber.d(e)
         }
         if (marker.tag is RouteStop) {
+            marker.showInfoWindow()
             val routeStop = marker.tag as RouteStop? ?: return false
             map?.animateCamera(CameraUpdateFactory.newLatLngZoom(
                     LatLng(routeStop.latitude?.toDouble()?:0.0, routeStop.longitude?.toDouble()?:0.0), 16f))
@@ -551,6 +555,15 @@ abstract class RouteActivityAbstract : BaseActivity(),
         }
     }
 
+    private fun markerIconFromDrawable(drawable: Drawable): BitmapDescriptor {
+        val canvas = Canvas()
+        val bitmap = Bitmap.createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
+        canvas.setBitmap(bitmap)
+        drawable.setBounds(0, 0, drawable.intrinsicWidth, drawable.intrinsicHeight)
+        drawable.draw(canvas)
+        return BitmapDescriptorFactory.fromBitmap(bitmap)
+    }
+
     private fun loadMapMarkers(route: Route) {
         val routeStopLiveData = routeDatabase.routeStopDao().liveData(route.companyCode?:"", route.name?:"", route.sequence?:"", route.serviceType?:"")
         routeStopLiveData.removeObservers(this)
@@ -568,13 +581,15 @@ abstract class RouteActivityAbstract : BaseActivity(),
                     if (!hasMapCoordinates && lat != 0.0 && lng != 0.0) {
                         mapCoordinates.add(LatLong(lat, lng))
                     }
-                    val iconFactory = IconGenerator(this)
-                    val bmp = iconFactory.makeIcon(routeStop.sequence + ": " + routeStop.name)
-                    map?.addMarker(MarkerOptions()
+                    val drawable = ContextCompat.getDrawable(applicationContext, R.drawable.ic_twotone_directions_bus_18dp)
+                    val marker = map?.addMarker(MarkerOptions()
                             .position(LatLng(lat, lng))
-                            .icon(BitmapDescriptorFactory.fromBitmap(bmp)))?.tag = routeStop
+                            .title(routeStop.sequence + ": " + routeStop.name)
+                            .icon(markerIconFromDrawable(drawable!!))
+                    )
+                    marker?.tag = routeStop
                     if (index == 0) {
-                        map?.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lng), 16f))
+                        map?.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lng), 14f))
                     }
                 }
             }
