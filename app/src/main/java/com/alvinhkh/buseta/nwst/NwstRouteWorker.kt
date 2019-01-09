@@ -3,7 +3,6 @@ package com.alvinhkh.buseta.nwst
 import android.content.Context
 import android.content.Intent
 import android.support.v7.preference.PreferenceManager
-import android.text.TextUtils
 import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
@@ -73,7 +72,7 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
             val routeArray = res?.string()?.split("\\|\\*\\|".toRegex())?.toTypedArray()
             for (rt in routeArray?: emptyArray()) {
                 val text = rt.replace("<br>", "").trim { it <= ' ' }
-                if (TextUtils.isEmpty(text)) continue
+                if (text.isEmpty()) continue
                 val nwstRoute = NwstRoute.fromString(text)
                 if (nwstRoute != null && nwstRoute.routeNo.isNotBlank()) {
                     val response2 = nwstService.variantList(nwstRoute.rdv, LANGUAGE_TC,
@@ -103,7 +102,7 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
                             route.stopsStartSequence = variant.startSequence
                             route.infoKey = variant.routeInfo
                             route.description = variant.remark
-                            route.isSpecial = !TextUtils.isEmpty(variant.remark) && variant.remark != "正常路線"
+                            route.isSpecial = !variant.remark.isEmpty() && variant.remark != "正常路線"
                         }
 
                         route.lastUpdate = timeNow

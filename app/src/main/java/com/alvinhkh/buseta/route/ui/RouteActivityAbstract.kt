@@ -53,6 +53,7 @@ import com.alvinhkh.buseta.route.model.RouteStop
 import com.alvinhkh.buseta.mtr.ui.AESBusStopListFragment
 import com.alvinhkh.buseta.mtr.ui.MtrStationListFragment
 import com.alvinhkh.buseta.nlb.ui.NlbStopListFragment
+import com.alvinhkh.buseta.nwst.NwstRouteWorker
 import com.alvinhkh.buseta.nwst.ui.NwstStopListFragment
 import com.alvinhkh.buseta.route.UpdateAppShortcutWorker
 import com.alvinhkh.buseta.route.dao.RouteDatabase
@@ -403,7 +404,10 @@ abstract class RouteActivityAbstract : BaseActivity(),
         }
         when (companyCode) {
             C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER, C.PROVIDER.MTR, C.PROVIDER.NLB -> return
-            C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> return
+            C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> {
+                val route = routeDatabase.routeDao().get(companyCode, routeNo)
+                if (route != null && route != Route()) return
+            }
         }
         showLoadingView()
 
@@ -412,6 +416,10 @@ abstract class RouteActivityAbstract : BaseActivity(),
                 .putString(C.EXTRA.ROUTE_NO, routeNo)
                 .build()
         val request = when (companyCode) {
+            C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST ->
+                OneTimeWorkRequest.Builder(NwstRouteWorker::class.java)
+                        .setInputData(data)
+                        .build()
             C.PROVIDER.KMB -> {
                 if (PreferenceUtil.isUsingNewKmbApi(applicationContext)) {
                     OneTimeWorkRequest.Builder(KmbRouteWorker::class.java)
