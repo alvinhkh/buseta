@@ -115,28 +115,31 @@ data class Route(
         fun companyName(context: Context,
                         companyCode: String,
                         routeNo: String?): String {
-            if (companyCode.isEmpty()) return ""
-            var companyName = companyCode
-            when (companyCode) {
-                C.PROVIDER.AESBUS -> companyName = context.getString(R.string.provider_short_aes_bus)
-                C.PROVIDER.CTB -> companyName = context.getString(R.string.provider_short_ctb)
+            return when (companyCode) {
+                C.PROVIDER.AESBUS -> context.getString(R.string.provider_short_aes_bus)
+                C.PROVIDER.CTB -> context.getString(R.string.provider_short_ctb)
                 C.PROVIDER.KMB -> {
-                    companyName = context.getString(R.string.provider_short_kmb)
-                    if (!routeNo.isNullOrEmpty()) {
-                        if (routeNo.startsWith("NR")) {
-                            companyName = context.getString(R.string.provider_short_residents)
-                        } else if (routeNo.startsWith("A") || routeNo.startsWith("E") || routeNo.startsWith("NA")) {
-                            companyName = context.getString(R.string.provider_short_lwb)
-                        }
+                    val lwb = listOf("N30", "N30P", "N30S", "N31", "N42", "N42A", "N42P", "N64", "R8", "R33", "R42", "X1", "X33", "X34", "X41")
+                    if (!routeNo.isNullOrEmpty() && routeNo.startsWith("NR")) {
+                            context.getString(R.string.provider_short_residents)
+                    } else if (!routeNo.isNullOrEmpty() && (routeNo.startsWith("A")
+                                    || routeNo.startsWith("E")
+                                    || routeNo.startsWith("NA")
+                                    || routeNo.startsWith("S"))) {
+                        context.getString(R.string.provider_short_lwb)
+                    } else if (!routeNo.isNullOrEmpty() && (lwb.indexOf(routeNo) >= 0)) {
+                        context.getString(R.string.provider_short_lwb)
+                    } else {
+                        context.getString(R.string.provider_short_kmb)
                     }
                 }
-                C.PROVIDER.LRTFEEDER -> companyName = context.getString(R.string.provider_short_lrtfeeder)
-                C.PROVIDER.MTR -> companyName = context.getString(R.string.provider_short_mtr)
-                C.PROVIDER.NLB -> companyName = context.getString(R.string.provider_short_nlb)
-                C.PROVIDER.NWFB -> companyName = context.getString(R.string.provider_short_nwfb)
-                C.PROVIDER.NWST -> companyName = context.getString(R.string.provider_short_nwst)
+                C.PROVIDER.LRTFEEDER -> context.getString(R.string.provider_short_lrtfeeder)
+                C.PROVIDER.MTR -> context.getString(R.string.provider_short_mtr)
+                C.PROVIDER.NLB -> context.getString(R.string.provider_short_nlb)
+                C.PROVIDER.NWFB -> context.getString(R.string.provider_short_nwfb)
+                C.PROVIDER.NWST -> context.getString(R.string.provider_short_nwst)
+                else -> companyCode
             }
-            return companyName
         }
     }
 }
