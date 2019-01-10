@@ -30,10 +30,10 @@ interface RouteDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(data: List<Route>): List<Long>
 
-    @Query("SELECT * FROM routes ORDER BY company_code ASC, name ASC, sequence + 0 ASC, is_special ASC, service_type + 0 ASC")
+    @Query("SELECT * FROM routes ORDER BY company_code ASC, name ASC, is_special ASC, sequence + 0 ASC, service_type + 0 ASC")
     fun liveData(): LiveData<MutableList<Route>>
 
-    @Query("SELECT * FROM routes WHERE company_code = :companyCode AND name = :routeNo ORDER BY company_code ASC, name ASC, sequence + 0 ASC, is_special ASC, service_type + 0 ASC")
+    @Query("SELECT * FROM routes WHERE company_code = :companyCode AND name = :routeNo ORDER BY company_code ASC, name ASC, is_special ASC, sequence + 0 ASC, service_type + 0 ASC")
     fun liveData(companyCode: String, routeNo: String): LiveData<MutableList<Route>>
 
     @Query("UPDATE routes SET map_coordinates = '[]' WHERE company_code = :companyCode AND name = :routeNo AND sequence = :sequence AND service_type = :serviceType AND info_key = :infoKey")

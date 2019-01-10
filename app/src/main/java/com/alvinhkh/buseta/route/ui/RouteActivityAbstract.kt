@@ -222,7 +222,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
                 super.onChanged()
                 if (pagerAdapter.count > 0) {
                     emptyView.visibility = View.GONE
-                    if (pagerAdapter.count > 3) {
+                    if (pagerAdapter.count > 2) {
                         tabLayout.tabMode = TabLayout.MODE_SCROLLABLE
                     } else {
                         tabLayout.tabMode = TabLayout.MODE_FIXED
