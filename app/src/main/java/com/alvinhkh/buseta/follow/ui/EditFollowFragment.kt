@@ -19,6 +19,8 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -33,8 +35,7 @@ import com.alvinhkh.buseta.follow.model.FollowGroup
 import com.alvinhkh.buseta.ui.OnItemDragListener
 import com.alvinhkh.buseta.ui.SimpleItemTouchHelperCallback
 import com.alvinhkh.buseta.utils.ColorUtil
-import com.skydoves.colorpickerview.ColorPickerDialog
-import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
+import com.jaredrummler.android.colorpicker.ColorPickerView
 
 
 class EditFollowFragment: Fragment(), OnItemDragListener {
@@ -119,13 +120,43 @@ class EditFollowFragment: Fragment(), OnItemDragListener {
         val colourButton = rootView.findViewById<MaterialButton>(R.id.colour_button)
         colourButton.setOnClickListener { view ->
             val followGroup = followDatabase.followGroupDao().get(groupId)
-            val builder = ColorPickerDialog.Builder(view.context, R.style.AppTheme_Dialog)
+            val builder = AlertDialog.Builder(view.context, R.style.AppTheme_Dialog)
             builder.setTitle(R.string.colour)
-            builder.setPositiveButton(getString(R.string.action_confirm), ColorEnvelopeListener { envelope, _ ->
-                val newGroup = followGroup.copy()
-                newGroup.colour = "#" + envelope.hexCode
-                followDatabase.followGroupDao().updateAll(newGroup)
+            val layout = LinearLayout(builder.context)
+            layout.setPadding(48, 0, 48, 0)
+            layout.orientation = LinearLayout.VERTICAL
+            val colorPickerView = ColorPickerView(builder.context)
+            colorPickerView.setAlphaSliderVisible(false)
+            colorPickerView.color = if (!followGroup.colour.isEmpty())
+                Color.parseColor(followGroup.colour)
+            else
+                ContextCompat.getColor(builder.context, R.color.colorPrimary)
+            layout.addView(colorPickerView)
+            val textInputLayout = TextInputLayout(builder.context)
+            val textInputEditText = TextInputEditText(builder.context)
+            textInputEditText.maxLines = 1
+            textInputEditText.setText(String.format("%06X", 0xFFFFFF and colorPickerView.color))
+            textInputEditText.addTextChangedListener(object : TextWatcher {
+                override fun afterTextChanged(s: Editable) {}
+                override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
+                override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
+                    try {
+                        colorPickerView.color = Color.parseColor("#" + s.toString())
+                    } catch (ignored: Throwable) {}
+                }
             })
+            textInputLayout.addView(textInputEditText)
+            layout.addView(textInputLayout)
+            colorPickerView.setOnColorChangedListener { color ->
+                textInputEditText.setText(String.format("%06X", 0xFFFFFF and color))
+            }
+            builder.setView(layout)
+            builder.setPositiveButton(getString(R.string.action_confirm)) { dialogInterface, _ ->
+                val newGroup = followGroup.copy()
+                newGroup.colour = String.format("#%06X", 0xFFFFFF and colorPickerView.color)
+                followDatabase.followGroupDao().updateAll(newGroup)
+                dialogInterface.dismiss()
+            }
             builder.setNeutralButton(R.string.default_value) { dialogInterface, _ ->
                 val newGroup = followGroup.copy()
                 newGroup.colour = ""
@@ -133,7 +164,6 @@ class EditFollowFragment: Fragment(), OnItemDragListener {
                 dialogInterface.dismiss()
             }
             builder.setNegativeButton(R.string.action_cancel) { dialogInterface, _ -> dialogInterface.dismiss() }
-            builder.attachBrightnessSlideBar()
             builder.show()
         }
         val deleteButton = rootView.findViewById<MaterialButton>(R.id.delete_button)
