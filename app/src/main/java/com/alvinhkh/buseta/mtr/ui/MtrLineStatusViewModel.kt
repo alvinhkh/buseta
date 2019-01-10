@@ -32,7 +32,7 @@ class MtrLineStatusViewModel(application: Application) : AndroidViewModel(applic
                 if (response.isSuccessful) {
                     val statusList = mutableListOf<MtrLineStatus>()
                     response.body()?.lines?.forEach { status ->
-                        val route = routeDatabase?.routeDao()?.get(C.PROVIDER.MTR, status.lineCode)
+                        val route = routeDatabase?.routeDao()?.getByCode(C.PROVIDER.MTR, status.lineCode)
                         status.lineName = route?.name?:status.lineCode
                         status.lineColour = route?.colour?:""
                         if (route != null) {

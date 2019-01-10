@@ -103,13 +103,12 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
                             route.infoKey = variant.routeInfo
                             route.description = variant.remark
                             route.isSpecial = !variant.remark.isEmpty() && variant.remark != "正常路線"
+                            route.code = variant.routeInfo
                         }
-
                         route.lastUpdate = timeNow
                         routeList.add(route)
-
-                        suggestionList.add(Suggestion(0, nwstRoute.companyCode, nwstRoute.routeNo, 0, Suggestion.TYPE_DEFAULT))
                     }
+                    suggestionList.add(Suggestion(0, nwstRoute.companyCode, nwstRoute.routeNo, 0, Suggestion.TYPE_DEFAULT))
                 }
             }
         } catch (e: Exception) {

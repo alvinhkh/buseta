@@ -405,8 +405,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
         when (companyCode) {
             C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER, C.PROVIDER.MTR, C.PROVIDER.NLB -> return
             C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> {
-                val route = routeDatabase.routeDao().get(companyCode, routeNo)
-                if (route != null && route != Route()) return
+                if (routeDatabase.routeDao().count(companyCode, routeNo) > 0) return
             }
         }
         showLoadingView()
