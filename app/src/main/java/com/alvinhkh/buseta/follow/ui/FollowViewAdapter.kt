@@ -9,7 +9,6 @@ import android.support.v4.graphics.drawable.DrawableCompat
 import android.support.v7.widget.RecyclerView
 import android.text.Spannable
 import android.text.SpannableStringBuilder
-import android.text.TextUtils
 import android.text.style.ForegroundColorSpan
 import android.text.style.ImageSpan
 import android.view.LayoutInflater
@@ -96,7 +95,7 @@ class FollowViewAdapter(
             }
             follow.etas.forEachIndexed { _, obj ->
                 val arrivalTime = ArrivalTime.estimate(itemView.context, obj)
-                if (!TextUtils.isEmpty(arrivalTime.order)) {
+                if (!arrivalTime.order.isEmpty()) {
                     val etaText = SpannableStringBuilder(arrivalTime.text)
                     val pos = Integer.parseInt(arrivalTime.order)
                     var colorInt: Int? = ContextCompat.getColor(itemView.context,
@@ -111,22 +110,22 @@ class FollowViewAdapter(
                         else
                             R.color.textPrimary)
                     }
-                    if (!TextUtils.isEmpty(arrivalTime.platform)) {
+                    if (!arrivalTime.platform.isEmpty()) {
                         etaText.insert(0, "[" + arrivalTime.platform + "] ")
                     }
-                    if (!TextUtils.isEmpty(arrivalTime.note)) {
+                    if (!arrivalTime.note.isEmpty()) {
                         etaText.append("#")
                     }
                     if (arrivalTime.isSchedule) {
                         etaText.append("*")
                     }
-                    if (!TextUtils.isEmpty(arrivalTime.estimate)) {
+                    if (!arrivalTime.estimate.isEmpty()) {
                         etaText.append(" (").append(arrivalTime.estimate).append(")")
                     }
                     if (arrivalTime.distanceKM >= 0) {
                         etaText.append(" ").append(itemView.context.getString(R.string.km_short, arrivalTime.distanceKM))
                     }
-                    if (!TextUtils.isEmpty(arrivalTime.plate)) {
+                    if (!arrivalTime.plate.isEmpty()) {
                         etaText.append(" ").append(arrivalTime.plate)
                     }
                     if (arrivalTime.capacity >= 0) {

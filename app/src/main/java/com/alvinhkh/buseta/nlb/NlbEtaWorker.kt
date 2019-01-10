@@ -1,7 +1,6 @@
 package com.alvinhkh.buseta.nlb
 
 import android.content.Context
-import android.text.TextUtils
 import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
@@ -112,7 +111,6 @@ class NlbEtaWorker(private val context : Context, params : WorkerParameters)
                 return Result.success(outputData)
             }
         } catch (ignored: Throwable) {
-
         }
 
         return Result.failure(outputData)

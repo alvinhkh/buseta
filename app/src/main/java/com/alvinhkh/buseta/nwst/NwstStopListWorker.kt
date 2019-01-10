@@ -1,9 +1,6 @@
 package com.alvinhkh.buseta.nwst
 
 import android.content.Context
-import android.support.v4.util.Pair
-import android.support.v7.preference.PreferenceManager
-import android.text.TextUtils
 import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
@@ -65,7 +62,7 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
             var i = route.stopsStartSequence!!
             for (routeStr in routeStrArray) {
                 val text = routeStr.replace("<br>", "").trim { it <= ' ' }
-                if (TextUtils.isEmpty(text)) continue
+                if (text.isEmpty()) continue
                 val nwstStop = NwstStop.fromString(text)
                 if (nwstStop != null) {
                     val routeStop = RouteStop()

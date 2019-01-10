@@ -3,7 +3,6 @@ package com.alvinhkh.buseta.arrivaltime.model
 import android.arch.lifecycle.LiveData
 import android.arch.persistence.room.*
 import android.content.Context
-import android.text.TextUtils
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
@@ -127,7 +126,7 @@ data class ArrivalTime (
         }
 
         fun estimate(context: Context, arrivalTime: ArrivalTime): ArrivalTime {
-            if (!TextUtils.isEmpty(arrivalTime.companyCode)) {
+            if (!arrivalTime.companyCode.isEmpty()) {
                 when (arrivalTime.companyCode) {
                     C.PROVIDER.AESBUS -> return AESEtaBus.estimate(context, arrivalTime)
                     C.PROVIDER.KMB -> return KmbEtaUtil.estimate(context, arrivalTime)

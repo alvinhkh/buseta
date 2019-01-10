@@ -17,7 +17,6 @@ import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.model.Suggestion
 import org.jsoup.parser.Parser
 import timber.log.Timber
-import java.io.IOException
 
 class LrtFeederWorker(context : Context, params : WorkerParameters)
     : Worker(context, params) {
@@ -71,7 +70,7 @@ class LrtFeederWorker(context : Context, params : WorkerParameters)
 
                 suggestionList.add(Suggestion(0, companyCode, mtrBusRoute.routeId!!, 0, Suggestion.TYPE_DEFAULT))
             }
-        } catch (e: IOException) {
+        } catch (e: Throwable) {
             return Result.failure(outputData)
         }
 
@@ -99,7 +98,7 @@ class LrtFeederWorker(context : Context, params : WorkerParameters)
                 if (mtrBusFare.routeId.isNullOrEmpty()) continue
                 mtrBusFareMap[mtrBusFare.routeId!!] = mtrBusFare
             }
-        } catch (e: IOException) {
+        } catch (e: Throwable) {
             Timber.d(e)
             return Result.failure(outputData)
         }
@@ -147,7 +146,7 @@ class LrtFeederWorker(context : Context, params : WorkerParameters)
             if (insertedStopList?.size?:0 > 0) {
                 routeDatabase?.routeStopDao()?.delete(companyCode, timeNow)
             }
-        } catch (e: IOException) {
+        } catch (e: Throwable) {
             Timber.d(e)
             return Result.failure(outputData)
         }

@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta.nwst.model
 
-import android.text.TextUtils
 import org.jsoup.Jsoup
 
 
@@ -57,7 +56,7 @@ data class NwstEta(
                 }
                 obj.subtitle = tmp4[0]
             }
-            if (!TextUtils.isEmpty(obj.companyCode)) {
+            if (!obj.companyCode.isEmpty()) {
                 if (obj.companyCode.contains("DISABLED")) {
                     obj.title = data[12]
                 } else if (obj.companyCode.contains("HTML")) {

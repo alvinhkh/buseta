@@ -1,7 +1,6 @@
 package com.alvinhkh.buseta.kmb
 
 import android.content.Context
-import android.text.TextUtils
 import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
@@ -9,10 +8,8 @@ import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
-import com.alvinhkh.buseta.kmb.model.KmbEta
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import org.jsoup.Jsoup
-import timber.log.Timber
 
 class KmbEtaWorker(private val context : Context, params : WorkerParameters)
     : Worker(context, params) {

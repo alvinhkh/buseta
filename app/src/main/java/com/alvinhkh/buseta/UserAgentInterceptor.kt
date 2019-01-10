@@ -2,11 +2,10 @@ package com.alvinhkh.buseta
 
 import okhttp3.Interceptor
 import okhttp3.Response
-import java.io.IOException
 
 
 class UserAgentInterceptor(private val userAgent: String = System.getProperty("http.agent")?:"") : Interceptor {
-    @Throws(IOException::class)
+    @Throws(Throwable::class)
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
         val requestWithUserAgent = originalRequest.newBuilder()

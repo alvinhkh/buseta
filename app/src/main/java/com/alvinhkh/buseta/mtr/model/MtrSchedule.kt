@@ -1,7 +1,6 @@
 package com.alvinhkh.buseta.mtr.model
 
 import android.content.Context
-import android.text.TextUtils
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
@@ -53,7 +52,7 @@ data class MtrSchedule(
                         // likely calculation error
                         estimateMinutes = ""
                     }
-                    if (!TextUtils.isEmpty(estimateMinutes)) {
+                    if (!estimateMinutes.isEmpty()) {
                         if (estimateMinutes == "0") {
                             arrivalTime.estimate = context.getString(R.string.now)
                         } else {
@@ -72,7 +71,7 @@ data class MtrSchedule(
             }
 
             // given timeText
-            if (!TextUtils.isEmpty(arrivalTime.text) &&
+            if (!arrivalTime.text.isEmpty() &&
                     arrivalTime.text.matches(".*\\d.*".toRegex()) &&
                     !arrivalTime.text.contains("unexpected")) {
                 // if text has digit
@@ -107,7 +106,7 @@ data class MtrSchedule(
                     Timber.d(ep)
                 }
 
-                if (!TextUtils.isEmpty(estimateMinutes))
+                if (!estimateMinutes.isEmpty())
                 {
                     if (estimateMinutes == "0")
                     {

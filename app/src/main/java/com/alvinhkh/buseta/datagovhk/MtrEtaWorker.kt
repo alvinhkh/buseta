@@ -14,9 +14,7 @@ import com.alvinhkh.buseta.mtr.model.MtrSchedule
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.utils.HashUtil
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
-import org.jsoup.Jsoup
 import timber.log.Timber
-import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -113,7 +111,6 @@ class MtrEtaWorker(private val context : Context, params : WorkerParameters)
 
             val response = mtrService.getSchedule(key!!, routeStop.routeId!!, routeStop.stopId!!, lang).execute()
             val res = response.body() ?: return Result.failure(outputData)
-            Timber.d("%s", res)
             if (res.status == 0) {
                 if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
                         && !routeStop.sequence.isNullOrEmpty()) {
@@ -170,7 +167,7 @@ class MtrEtaWorker(private val context : Context, params : WorkerParameters)
                     return Result.success(outputData)
                 }
             }
-        } catch (e: IOException) {
+        } catch (e: Throwable) {
             Timber.d(e)
         }
 

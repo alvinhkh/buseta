@@ -2,7 +2,6 @@ package com.alvinhkh.buseta.mtr
 
 import android.content.Context
 import android.location.Location
-import android.text.TextUtils
 import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
@@ -145,9 +144,7 @@ class AESBusEtaWorker(private val context : Context, params : WorkerParameters)
                     }
                     if (!isAvailable) {
                         val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
-                        if (!TextUtils.isEmpty(res.routeStatusRemarkTitle)) {
-                            arrivalTime.text = res.routeStatusRemarkTitle?:""
-                        }
+                        arrivalTime.text = res.routeStatusRemarkTitle?:""
                         arrivalTime.generatedAt = System.currentTimeMillis()
                         arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
                     }

@@ -1,7 +1,6 @@
 package com.alvinhkh.buseta.mtr
 
 import android.content.Context
-import android.database.sqlite.SQLiteDatabase.deleteDatabase
 import android.net.Uri
 import androidx.work.Data
 import androidx.work.Worker
@@ -13,7 +12,6 @@ import timber.log.Timber
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileOutputStream
-import java.io.IOException
 
 class MtrResourceWorker(context : Context, params : WorkerParameters)
     : Worker(context, params) {
@@ -53,7 +51,7 @@ class MtrResourceWorker(context : Context, params : WorkerParameters)
         return Result.success(outputData)
     }
 
-    @Throws(IOException::class)
+    @Throws(Throwable::class)
     private fun downloadFile(body: ResponseBody, fileName: String): File {
         val data = ByteArray(1024 * 4)
         val fileSize = body.contentLength()

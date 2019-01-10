@@ -11,7 +11,6 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.text.Spannable
 import android.text.SpannableStringBuilder
-import android.text.TextUtils
 import android.text.style.ForegroundColorSpan
 import android.text.style.ImageSpan
 import android.view.LayoutInflater
@@ -186,7 +185,7 @@ class RouteStopListViewAdapter(
                 var direction = ""
                 routeStop.etas.forEach { obj ->
                     val arrivalTime = ArrivalTime.estimate(itemView.context, obj)
-                    if (!TextUtils.isEmpty(arrivalTime.order)) {
+                    if (!arrivalTime.order.isEmpty()) {
                         val etaText = SpannableStringBuilder(arrivalTime.text)
                         val pos = arrivalTime.order.toInt()
                         var colorInt: Int? = ContextCompat.getColor(itemView.context,

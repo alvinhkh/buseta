@@ -1,7 +1,6 @@
 package com.alvinhkh.buseta.mtr.model
 
 import android.content.Context
-import android.text.TextUtils
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
 import com.google.gson.annotations.SerializedName
@@ -34,7 +33,7 @@ data class AESEtaBus(
             val etaDateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.ENGLISH)
             val generatedDate = Date(arrivalTime.generatedAt)
             // given timeText
-            if (!TextUtils.isEmpty(arrivalTime.text) && arrivalTime.text.matches(".*\\d.*".toRegex()) && !arrivalTime.text.contains("unexpected")) {
+            if (!arrivalTime.text.isEmpty() && arrivalTime.text.matches(".*\\d.*".toRegex()) && !arrivalTime.text.contains("unexpected")) {
                 // if text has digit
                 var estimateMinutes = ""
                 val differences = Date().time - generatedDate.time // get device timeText and compare to server timeText
@@ -74,7 +73,7 @@ data class AESEtaBus(
                     Timber.d(ep)
                 }
 
-                if (!TextUtils.isEmpty(estimateMinutes))
+                if (!estimateMinutes.isEmpty())
                 {
                     if (estimateMinutes == "0")
                     {
