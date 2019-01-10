@@ -25,17 +25,15 @@ public class C {
 
         String FOLLOW = "com.alvinhkh.buseta.FOLLOW";
 
+        String FOLLOW_OBJECT = "com.alvinhkh.buseta.FOLLOW_OBJECT";
+
         String GROUP_ID = "com.alvinhkh.buseta.GROUP_ID";
-
-        String LINE_CODE = "com.alvinhkh.buseta.LINE_CODE";
-
-        String LINE_COLOUR = "com.alvinhkh.buseta.LINE_COLOUR";
-
-        String LINE_NAME = "com.alvinhkh.buseta.LINE_NAME";
 
         String UPDATED = "com.alvinhkh.buseta.UPDATED";
 
         String UPDATING = "com.alvinhkh.buseta.UPDATING";
+
+        String LOAD_STOP = "com.alvinhkh.buseta.LOAD_STOP";
 
         String LOCATION_OBJECT = "com.alvinhkh.buseta.LOCATION_OBJECT";
 

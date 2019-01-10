@@ -29,13 +29,18 @@ import android.view.View;
 import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
+import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
+import com.alvinhkh.buseta.follow.FollowRouteWorker;
 import com.alvinhkh.buseta.follow.dao.FollowDatabase;
 import com.alvinhkh.buseta.model.AppUpdate;
+import com.alvinhkh.buseta.route.dao.RouteDatabase;
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase;
 import com.alvinhkh.buseta.service.ProviderUpdateService;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
 
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableObserver;
 import timber.log.Timber;
@@ -46,9 +51,13 @@ public class SettingActivity extends BasePreferenceActivity {
 
     private final CompositeDisposable disposables = new CompositeDisposable();
 
-    private static SuggestionDatabase suggestionDatabase = null;
+    private static ArrivalTimeDatabase arrivalTimeDatabase = null;
 
     private static FollowDatabase followDatabase = null;
+
+    private static RouteDatabase routeDatabase = null;
+
+    private static SuggestionDatabase suggestionDatabase = null;
 
     private Context context;
 
@@ -56,8 +65,10 @@ public class SettingActivity extends BasePreferenceActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.context = this;
-        suggestionDatabase = SuggestionDatabase.Companion.getInstance(this);
+        arrivalTimeDatabase = ArrivalTimeDatabase.Companion.getInstance(this);
         followDatabase = FollowDatabase.Companion.getInstance(this);
+        routeDatabase = RouteDatabase.Companion.getInstance(this);
+        suggestionDatabase = SuggestionDatabase.Companion.getInstance(this);
         // Display the fragment as the main content.
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, new SettingsFragment())
@@ -99,6 +110,9 @@ public class SettingActivity extends BasePreferenceActivity {
             // Clear Follow / Clear All Route Data
             Preference clearFollow = getPreferenceScreen().findPreference("clear_follow");
             clearFollow.setOnPreferenceClickListener(this);
+            // Clear route data
+            Preference clearCached = getPreferenceScreen().findPreference("clear_cached_route");
+            clearCached.setOnPreferenceClickListener(this);
             // Permission - Location
             locationPermission = (SwitchPreferenceCompat) getPreferenceScreen().findPreference("location_permission");
             if (locationPermission != null) {
@@ -203,6 +217,32 @@ public class SettingActivity extends BasePreferenceActivity {
                                             rowDeleted > 0
                                                     ? R.string.message_clear_success_search_history
                                                     : R.string.message_clear_fail_search_history,
+                                            Snackbar.LENGTH_SHORT);
+                                    snackbar.show();
+                                }
+                            })
+                            .show();
+                    return true;
+                }
+                case "clear_cached_route": {
+                    new AlertDialog.Builder(mActivity)
+                            .setTitle(mActivity.getString(R.string.message_confirm_clear_route))
+                            .setNegativeButton(R.string.action_cancel, (dialoginterface, i) -> dialoginterface.cancel())
+                            .setPositiveButton(R.string.action_confirm, (dialoginterface, i) -> {
+                                if (mActivity != null) {
+                                    int rowDeleted = 0;
+                                    if (arrivalTimeDatabase != null) {
+                                        arrivalTimeDatabase.arrivalTimeDao().clear();
+                                    }
+                                    if (routeDatabase != null) {
+                                        rowDeleted = routeDatabase.routeDao().clear();
+                                        rowDeleted += routeDatabase.routeStopDao().clear();
+                                        WorkManager.getInstance().enqueue(new OneTimeWorkRequest.Builder(FollowRouteWorker.class).build());
+                                    }
+                                    Snackbar snackbar = Snackbar.make(mActivity.findViewById(android.R.id.content),
+                                            rowDeleted > 0
+                                                    ? R.string.message_clear_success_route
+                                                    : R.string.message_clear_fail_route,
                                             Snackbar.LENGTH_SHORT);
                                     snackbar.show();
                                 }
@@ -340,7 +380,8 @@ public class SettingActivity extends BasePreferenceActivity {
                     message.append("\n");
                     message.append(appUpdate.content);
                     Timber.d("AppVersion:%s DB:%s APK:%s ", appUpdate.version_code, oVersionCode, BuildConfig.VERSION_CODE);
-                    if (isManual || appUpdate.notify && (appUpdate.version_code > oVersionCode
+                    if ((isManual && appUpdate.version_code >= BuildConfig.VERSION_CODE)
+                            || appUpdate.notify && (appUpdate.version_code > oVersionCode
                             || (appUpdate.force && appUpdate.version_code > BuildConfig.VERSION_CODE))) {
                         Boolean isInstalled = appUpdate.version_code <= BuildConfig.VERSION_CODE;
                         AlertDialog.Builder alertDialog = new AlertDialog.Builder(context)

@@ -8,6 +8,9 @@ import com.alvinhkh.buseta.route.model.RouteStop
 @Dao
 interface RouteStopDao {
 
+    @Query("DELETE FROM route_stops")
+    fun clear(): Int
+
     @Query("DELETE FROM route_stops WHERE company_code = :companyCode AND last_update < :lastUpdate")
     fun delete(companyCode: String, lastUpdate: Long): Int
 

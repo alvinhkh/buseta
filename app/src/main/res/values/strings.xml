@@ -63,7 +63,7 @@
     <string name="title_settings">設定</string>
     <string name="title_app_theme">主題</string>
     <string name="category_about">關於</string>
-    <string name="title_app_name" translatable="false">%s \u00A9 2018</string>
+    <string name="title_app_name" translatable="false">%s \u00A9 2015-2019</string>
     <string name="title_app_version">版本</string>
     <string name="summary_app_version" translatable="false">%1$s (%2$s)</string>
     <string name="title_developer">開發者</string>
@@ -84,10 +84,13 @@
 
     <string name="message_app_update">新版本：%s</string>
     <string name="message_confirm_clear_follow">你確定要清除追蹤名單？</string>
+    <string name="message_confirm_clear_route">你確定要清除緩存路線？</string>
     <string name="message_confirm_clear_search_history">你確定要清除搜尋記錄？</string>
     <string name="message_clear_fail_follow">沒有清除任何記錄</string>
+    <string name="message_clear_fail_route">沒有清除任何記錄</string>
     <string name="message_clear_fail_search_history">沒有清除任何記錄</string>
     <string name="message_clear_success_follow">成功清除追蹤名單</string>
+    <string name="message_clear_success_route">成功清除緩存路線</string>
     <string name="message_clear_success_search_history">成功清除搜尋記錄</string>
     <string name="message_database_updating">數據庫更新中</string>
     <string name="message_database_updated">數據庫經已更新</string>
@@ -121,8 +124,9 @@
 
     <string name="content_description_icon">Icon</string>
 
-    <string name="clear_history">清除搜尋記錄</string>
+    <string name="clear_cached_route">清除緩存路線</string>
     <string name="clear_follow">清除追蹤名單</string>
+    <string name="clear_history">清除搜尋記錄</string>
     <string name="display">顯示</string>
     <string name="edit_follow_group">編輯追蹤組合</string>
     <string name="hide">隱藏</string>

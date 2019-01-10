@@ -439,11 +439,18 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
             return
         }
         routeStop = bundle.getParcelable(C.EXTRA.STOP_OBJECT)
+        var follow: Follow? = bundle.getParcelable(C.EXTRA.FOLLOW_OBJECT)
+        if (follow != null && routeStop == null) {
+            routeStop = follow.toRouteStop()
+        }
         if (routeStop == null) {
             dialog.cancel()
             return
         }
         val route = routeDatabase.routeDao().get(routeStop?.companyCode?:"", routeStop?.routeNo?:"", routeStop?.routeSequence?:"", routeStop?.routeServiceType?:"", "")
+        if (follow == null) {
+            follow = Follow.createInstance(route, routeStop)
+        }
 
         vh.contentView = contentView
         vh.headerLayout = contentView.findViewById(R.id.header_layout)
@@ -554,7 +561,6 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                 if (count != null) {
                     vh.followButton?.setIconResource(if (count > 0) R.drawable.ic_outline_bookmark_36dp else R.drawable.ic_outline_bookmark_border_36dp)
                     vh.followButton?.setOnClickListener {
-                        val follow = Follow.createInstance(route, routeStop)
                         val fragment = FollowGroupDialogFragment.newInstance(follow)
                         fragment.show(childFragmentManager, "follow_group_dialog_fragment")
                     }
@@ -885,10 +891,10 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
             return fragment
         }
 
-        fun newInstance(routeStop: RouteStop): RouteStopFragment {
+        fun newInstance(follow: Follow): RouteStopFragment {
             val fragment = RouteStopFragment()
             val args = Bundle()
-            args.putParcelable(C.EXTRA.STOP_OBJECT, routeStop)
+            args.putParcelable(C.EXTRA.FOLLOW_OBJECT, follow)
             fragment.arguments = args
             return fragment
         }

@@ -3,9 +3,7 @@ package com.alvinhkh.buseta.nwst
 import android.content.Context
 import android.content.Intent
 import android.support.v7.preference.PreferenceManager
-import androidx.work.Data
-import androidx.work.Worker
-import androidx.work.WorkerParameters
+import androidx.work.*
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.route.model.Route
@@ -16,7 +14,6 @@ import com.alvinhkh.buseta.nwst.util.NwstRequestUtil
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.model.Suggestion
-import com.alvinhkh.buseta.utils.HashUtil
 import timber.log.Timber
 
 class NwstRouteWorker(context : Context, params : WorkerParameters)
@@ -28,16 +25,18 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
 
     private val suggestionDatabase = SuggestionDatabase.getInstance(context)
 
-    private val preferences = PreferenceManager.getDefaultSharedPreferences(context)
+//    private val preferences = PreferenceManager.getDefaultSharedPreferences(context)
 
     override fun doWork(): Result {
         val manualUpdate = inputData.getBoolean(C.EXTRA.MANUAL, false)
         val companyCode = inputData.getString(C.EXTRA.COMPANY_CODE)?:C.PROVIDER.NWST
         val routeNo = inputData.getString(C.EXTRA.ROUTE_NO)?:""
+        val loadStop = inputData.getBoolean(C.EXTRA.LOAD_STOP, false)
         val outputData = Data.Builder()
                 .putBoolean(C.EXTRA.MANUAL, manualUpdate)
                 .putString(C.EXTRA.COMPANY_CODE, companyCode)
                 .putString(C.EXTRA.ROUTE_NO, routeNo)
+                .putBoolean(C.EXTRA.LOAD_STOP, loadStop)
                 .build()
 
         val suggestionList = arrayListOf<Suggestion>()
@@ -140,6 +139,21 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
                 routeDatabase?.routeDao()?.delete(C.PROVIDER.CTB, timeNow)
                 routeDatabase?.routeDao()?.delete(C.PROVIDER.NWFB, timeNow)
             }
+        }
+
+        if (loadStop) {
+            val requests = arrayListOf<OneTimeWorkRequest>()
+            routeList.forEach { route ->
+                val data = Data.Builder()
+                        .putString(C.EXTRA.COMPANY_CODE, route.companyCode)
+                        .putString(C.EXTRA.ROUTE_NO, route.name)
+                        .putString(C.EXTRA.ROUTE_SEQUENCE, route.sequence)
+                        .putString(C.EXTRA.ROUTE_SERVICE_TYPE, route.serviceType)
+                        .putString(C.EXTRA.ROUTE_INFO_KEY, route.infoKey)
+                        .build()
+                requests.add(OneTimeWorkRequest.Builder(NwstStopListWorker::class.java).setInputData(data).build())
+            }
+            WorkManager.getInstance().enqueue(requests)
         }
 
         return Result.success(outputData)

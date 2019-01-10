@@ -12,6 +12,7 @@ import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.datagovhk.LrtFeederWorker
 import com.alvinhkh.buseta.datagovhk.MtrLineWorker
+import com.alvinhkh.buseta.follow.FollowRouteWorker
 import com.alvinhkh.buseta.kmb.KmbEtaRouteWorker
 import com.alvinhkh.buseta.mtr.AESBusWorker
 import com.alvinhkh.buseta.mtr.MtrResourceWorker
@@ -48,7 +49,7 @@ class ProviderUpdateService: IntentService(TAG) {
 
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val timeNow = System.currentTimeMillis() / 1000
-        val savedTime = sharedPreferences.getLong("last_update_suggestions", timeNow)
+        val savedTime = sharedPreferences.getLong("last_update_suggestions", 0)
         if (!manualUpdate && timeNow < savedTime + 21600) {
             Timber.d("recently updated and not manual update")
             return
@@ -70,7 +71,6 @@ class ProviderUpdateService: IntentService(TAG) {
                 }
             }
         } catch (ignored: Throwable) {
-
         }
 
         val dataAesBus = Data.Builder()
@@ -123,6 +123,8 @@ class ProviderUpdateService: IntentService(TAG) {
         WorkManager.getInstance()
                 .enqueue(OneTimeWorkRequest.Builder(NwstRouteWorker::class.java).addTag(TAG)
                         .setInputData(dataNwst).build())
+        
+        WorkManager.getInstance().enqueue(OneTimeWorkRequest.Builder(FollowRouteWorker::class.java).build())
     }
 
     companion object {

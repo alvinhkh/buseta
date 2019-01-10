@@ -9,6 +9,9 @@ import com.alvinhkh.buseta.route.model.Route
 @Dao
 interface RouteDao {
 
+    @Query("DELETE FROM routes")
+    fun clear(): Int
+
     @Query("SELECT COUNT(*) FROM routes WHERE company_code = :companyCode AND name = :routeNo")
     fun count(companyCode: String, routeNo: String): Int
 

@@ -23,6 +23,7 @@ import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
+import com.alvinhkh.buseta.follow.model.Follow
 import com.alvinhkh.buseta.mtr.ui.MtrScheduleViewAdapter
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.model.RouteStop
@@ -149,8 +150,9 @@ class RouteStopListViewAdapter(
                 }
                 itemView.setOnLongClickListener {
                     try {
-                        val bottomSheetDialogFragment = RouteStopFragment.newInstance(routeStop)
+                        val bottomSheetDialogFragment = RouteStopFragment.newInstance(Follow.createInstance(route, routeStop))
                         bottomSheetDialogFragment.show(activity?.supportFragmentManager, bottomSheetDialogFragment.tag)
+                        return@setOnLongClickListener true
                     } catch (ignored: IllegalStateException) {
                     }
                     return@setOnLongClickListener false
@@ -352,8 +354,9 @@ class RouteStopListViewAdapter(
                 }
                 itemView.setOnLongClickListener {
                     try {
-                        val bottomSheetDialogFragment = RouteStopFragment.newInstance(routeStop)
+                        val bottomSheetDialogFragment = RouteStopFragment.newInstance(Follow.createInstance(route, routeStop))
                         bottomSheetDialogFragment.show(activity?.supportFragmentManager, bottomSheetDialogFragment.tag)
+                        return@setOnLongClickListener true
                     } catch (ignored: IllegalStateException) {
                     }
                     return@setOnLongClickListener false

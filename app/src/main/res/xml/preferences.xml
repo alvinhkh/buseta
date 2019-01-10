@@ -24,6 +24,11 @@
             android:title="@string/clear_history"
             android:persistent="false" />
 
+        <Preference
+            android:key="clear_cached_route"
+            android:title="@string/clear_cached_route"
+            android:persistent="false" />
+
     </PreferenceCategory>
 
     <PreferenceCategory
