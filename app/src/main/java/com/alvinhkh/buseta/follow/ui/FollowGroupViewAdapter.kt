@@ -90,8 +90,9 @@ class FollowGroupViewAdapter(
                     builder.setPositiveButton(R.string.action_confirm) { dialogInterface, _ ->
                         val name = textInputEditText.text.toString().trim()
                         if (name.isNotEmpty()) {
-                            followDatabase.followGroupDao().insert(FollowGroup(name, name, ""))
-                            follow.groupId = name
+                            val groupId = name + (System.currentTimeMillis() / 1000).toInt().toString()
+                            followDatabase.followGroupDao().insert(FollowGroup(groupId, name, ""))
+                            follow.groupId = groupId
                             val inserted = followDatabase.followDao().insert(follow)
                             if (inserted > 0) {
                                 itemView.findViewById<ImageView>(R.id.icon).setImageResource(R.drawable.ic_outline_check_box_24dp)
