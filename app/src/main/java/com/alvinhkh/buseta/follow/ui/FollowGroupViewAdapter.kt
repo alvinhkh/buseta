@@ -92,8 +92,11 @@ class FollowGroupViewAdapter(
                         if (name.isNotEmpty()) {
                             val groupId = name + (System.currentTimeMillis() / 1000).toInt().toString()
                             followDatabase.followGroupDao().insert(FollowGroup(groupId, name, ""))
-                            follow.groupId = groupId
-                            val inserted = followDatabase.followDao().insert(follow)
+                            val f = follow.copy()
+                            f._id = 0
+                            f.groupId = groupId
+                            f.updatedAt = System.currentTimeMillis()
+                            val inserted = followDatabase.followDao().insert(f)
                             if (inserted > 0) {
                                 itemView.findViewById<ImageView>(R.id.icon).setImageResource(R.drawable.ic_outline_check_box_24dp)
                             }
@@ -103,17 +106,20 @@ class FollowGroupViewAdapter(
                     builder.create().show()
                 }
                 else -> {
-                    follow.groupId = followGroup.id
-                    val count = followDatabase.followDao().count(follow.groupId, follow.companyCode,
+                    val count = followDatabase.followDao().count(followGroup.id, follow.companyCode,
                             follow.routeNo, follow.routeSeq, follow.routeServiceType, follow.stopId, follow.stopSeq)
                     if (count > 0) {
-                        val rowDeleted = followDatabase.followDao().delete(follow.groupId, follow.companyCode, follow.routeNo,
+                        val rowDeleted = followDatabase.followDao().delete(followGroup.id, follow.companyCode, follow.routeNo,
                                 follow.routeSeq, follow.routeServiceType, follow.stopId, follow.stopSeq)
                         if (rowDeleted > 0) {
                             itemView.findViewById<ImageView>(R.id.icon).setImageResource(R.drawable.ic_outline_check_box_outline_blank_24dp)
                         }
                     } else {
-                        val inserted = followDatabase.followDao().insert(follow)
+                        val f = follow.copy()
+                        f._id = 0
+                        f.groupId = followGroup.id
+                        f.updatedAt = System.currentTimeMillis()
+                        val inserted = followDatabase.followDao().insert(f)
                         if (inserted > 0) {
                             itemView.findViewById<ImageView>(R.id.icon).setImageResource(R.drawable.ic_outline_check_box_24dp)
                         }
