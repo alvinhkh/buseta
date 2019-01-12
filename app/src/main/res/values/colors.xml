@@ -35,5 +35,12 @@
     <color name="bottomNavigationBackground">#FFFFFF</color>
     <color name="bottomNavigationIcon">#80000000</color>
 
+    <color name="provider_aes_bus">#fc0ec0</color>
+    <color name="provider_ctb">#0080FF</color>
+    <color name="provider_lwb">#ff5000</color>
+    <color name="provider_lrtfeeder">#0e0080</color>
+    <color name="provider_kmb">#e42026</color>
     <color name="provider_mtr">#07234d</color>
+    <color name="provider_nlb">#02897b</color>
+    <color name="provider_nwfb">#7000CC</color>
 </resources>

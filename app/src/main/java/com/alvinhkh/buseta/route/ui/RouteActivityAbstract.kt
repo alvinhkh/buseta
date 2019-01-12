@@ -301,6 +301,8 @@ abstract class RouteActivityAbstract : BaseActivity(),
                             when (company) {
                                 C.PROVIDER.MTR -> activityColor(Color.parseColor(route.colour))
                             }
+                        } else {
+                            activityColor(route.companyColour(applicationContext))
                         }
                     }
 

@@ -461,6 +461,8 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
         vh.headerLayout = contentView.findViewById(R.id.header_layout)
         if (!route?.colour.isNullOrEmpty()) {
             vh.headerLayout?.setBackgroundColor(Color.parseColor(route?.colour))
+        } else if (route != null) {
+            vh.headerLayout?.setBackgroundColor(route.companyColour(context!!))
         }
         vh.stopImageButton = contentView.findViewById(R.id.show_image_button)
         vh.stopImageButton?.visibility = View.GONE

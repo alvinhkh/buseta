@@ -3,6 +3,8 @@ package com.alvinhkh.buseta.search.ui
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.os.Build
 import android.support.design.widget.Snackbar
 import android.support.v7.app.AlertDialog
@@ -82,6 +84,9 @@ class HistoryViewAdapter(
                     itemView.findViewById<ImageView>(R.id.icon).setImageResource(R.drawable.ic_outline_directions_railway_24dp)
                 } else {
                     itemView.findViewById<ImageView>(R.id.icon).setImageResource(R.drawable.ic_outline_directions_bus_24dp)
+                }
+                Route.companyColour(itemView.context, suggestion.companyCode, suggestion.route)?.run {
+                    itemView.findViewById<ImageView>(R.id.icon).colorFilter = PorterDuffColorFilter(this, PorterDuff.Mode.SRC_IN)
                 }
 
                 itemView.setOnClickListener {

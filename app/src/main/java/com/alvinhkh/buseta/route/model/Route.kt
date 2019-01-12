@@ -4,6 +4,7 @@ import android.arch.persistence.room.*
 import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
+import android.support.v4.content.ContextCompat
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.route.model.Route.CREATOR.TABLE_NAME
@@ -84,6 +85,15 @@ data class Route(
         return 0
     }
 
+    fun companyColour(context: Context): Int {
+        return Route.companyColour(context, companyCode?:"", name)
+                ?:ContextCompat.getColor(context, R.color.colorPrimary)
+    }
+
+    fun companyName(context: Context): String {
+        return Route.companyName(context, companyCode?:"", name)
+    }
+
     companion object CREATOR : Parcelable.Creator<Route> {
         override fun createFromParcel(parcel: Parcel): Route {
             return Route(parcel)
@@ -112,9 +122,7 @@ data class Route(
         const val COLUMN_MAP_COORDINATES = "map_coordinates"
 
         @JvmStatic
-        fun companyName(context: Context,
-                        companyCode: String,
-                        routeNo: String?): String {
+        fun companyName(context: Context, companyCode: String, routeNo: String?): String {
             return when (companyCode) {
                 C.PROVIDER.AESBUS -> context.getString(R.string.provider_short_aes_bus)
                 C.PROVIDER.CTB -> context.getString(R.string.provider_short_ctb)
@@ -139,6 +147,34 @@ data class Route(
                 C.PROVIDER.NWFB -> context.getString(R.string.provider_short_nwfb)
                 C.PROVIDER.NWST -> context.getString(R.string.provider_short_nwst)
                 else -> companyCode
+            }
+        }
+
+        @JvmStatic
+        fun companyColour(context: Context, companyCode: String, routeNo: String?): Int? {
+            return when (companyCode) {
+                C.PROVIDER.AESBUS -> ContextCompat.getColor(context, R.color.provider_aes_bus)
+                C.PROVIDER.CTB -> ContextCompat.getColor(context, R.color.provider_ctb)
+                C.PROVIDER.KMB -> {
+                    val lwb = listOf("N30", "N30P", "N30S", "N31", "N42", "N42A", "N42P", "N64", "R8", "R33", "R42", "X1", "X33", "X34", "X41")
+                    if (!routeNo.isNullOrEmpty() && routeNo.startsWith("NR")) {
+                        ContextCompat.getColor(context, R.color.colorPrimary)
+                    } else if (!routeNo.isNullOrEmpty() && (routeNo.startsWith("A")
+                                    || routeNo.startsWith("E")
+                                    || routeNo.startsWith("NA")
+                                    || routeNo.startsWith("S"))) {
+                        ContextCompat.getColor(context, R.color.provider_lwb)
+                    } else if (!routeNo.isNullOrEmpty() && (lwb.indexOf(routeNo) >= 0)) {
+                        ContextCompat.getColor(context, R.color.provider_lwb)
+                    } else {
+                        ContextCompat.getColor(context, R.color.provider_kmb)
+                    }
+                }
+                C.PROVIDER.LRTFEEDER -> ContextCompat.getColor(context, R.color.provider_lrtfeeder)
+                C.PROVIDER.MTR -> ContextCompat.getColor(context, R.color.provider_mtr)
+                C.PROVIDER.NLB -> ContextCompat.getColor(context, R.color.provider_nlb)
+                C.PROVIDER.NWFB -> ContextCompat.getColor(context, R.color.provider_nwfb)
+                else -> null
             }
         }
     }

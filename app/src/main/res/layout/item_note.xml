@@ -11,7 +11,7 @@
     android:paddingRight="@dimen/card_section_horizontal_padding"
     android:paddingTop="@dimen/card_section_vertical_padding"
     android:paddingBottom="@dimen/card_section_vertical_padding"
-    android:background="@color/colorPrimary">
+    android:background="@color/background">
 
     <TextView
         android:id="@+id/note"
@@ -19,7 +19,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-        android:textColor="@color/white"
+        android:textColor="@color/textDiminish"
         tool:text="NOTE" />
 
 </FrameLayout>

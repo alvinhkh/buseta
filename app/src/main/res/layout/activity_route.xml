@@ -27,6 +27,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="260dp"
                 android:layout_marginTop="?attr/actionBarSize"
+                android:background="@color/background"
                 android:visibility="gone"
                 app:layout_collapseMode="parallax" />
 
@@ -34,7 +35,7 @@
                 android:id="@+id/toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                android:background="?attr/colorPrimary"
+                android:background="@color/colorPrimary"
                 app:layout_collapseMode="pin" />
 
         </android.support.design.widget.CollapsingToolbarLayout>
@@ -44,13 +45,13 @@
             android:id="@+id/adView_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?attr/colorPrimary" />
+            android:background="@color/background" />
 
         <android.support.design.widget.TabLayout
             android:id="@+id/tabs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?attr/colorPrimary"
+            android:background="@color/background"
             style="@style/Widget.MaterialComponents.TabLayout.Colored"
             app:tabBackground="@color/transparent"
             app:tabGravity="fill"
@@ -96,8 +97,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/fab_margin"
-        android:tint="@color/white"
         android:src="@drawable/ic_outline_refresh_24dp"
+        android:tint="@color/bottomNavigationIcon"
+        app:backgroundTint="@color/bottomNavigationBackground"
         app:fabSize="normal"
         app:layout_anchor="@id/viewPager"
         app:layout_anchorGravity="bottom|center" />
