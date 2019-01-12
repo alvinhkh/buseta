@@ -366,6 +366,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                 startActivity(intent)
                 return true
             }
+            R.id.action_refresh -> return loadStopList(route?:Route())
         }
         return super.onOptionsItemSelected(item)
     }

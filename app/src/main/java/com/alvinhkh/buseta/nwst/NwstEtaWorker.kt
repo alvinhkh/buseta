@@ -50,11 +50,8 @@ class NwstEtaWorker(private val context : Context, params : WorkerParameters)
                 .putString(C.EXTRA.STOP_SEQUENCE, stopSequence)
                 .build()
 
-        val routeStopList = routeDatabase.routeStopDao().get(companyCode, routeNo, routeSequence, routeServiceType, stopId, stopSequence)
-        if (routeStopList.size < 1) {
-            return Result.failure(outputData)
-        }
-        val routeStop = routeStopList[0]
+        val routeStop = routeDatabase.routeStopDao().get(companyCode, routeNo, routeSequence, routeServiceType, stopId, stopSequence)
+                ?: return Result.failure(outputData)
         
         try {
 //            val randomHex64 = HashUtil.randomHexString(64)
