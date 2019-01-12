@@ -197,7 +197,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
             viewAdapter = RouteStopListViewAdapter(activity!!, this, route?:Route())
             adapter = viewAdapter
             viewModel = ViewModelProviders.of(this@RouteStopListFragmentAbstract).get(RouteStopListViewModel::class.java)
-            viewModel.getAsLiveData(route?.companyCode?:"", route?.name?:"", route?.sequence?:"", route?.serviceType?:"")
+            viewModel.getAsLiveData(route?.companyCode?:"", route?.code?:"", route?.name?:"", route?.sequence?:"", route?.serviceType?:"")
                     .observe(this@RouteStopListFragmentAbstract, Observer<MutableList<RouteStop>> { stops ->
                         if (stops != null) {
                             val dataType = if (route?.companyCode == C.PROVIDER.MTR) TYPE_RAILWAY_STATION else TYPE_ROUTE_STOP
@@ -387,6 +387,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                 val intent = Intent(context, EtaService::class.java)
                 intent.putExtra(C.EXTRA.STOP_LIST, true)
                 intent.putExtra(C.EXTRA.COMPANY_CODE, route?.companyCode)
+                intent.putExtra(C.EXTRA.ROUTE_ID, route?.code)
                 intent.putExtra(C.EXTRA.ROUTE_NO, route?.name)
                 intent.putExtra(C.EXTRA.ROUTE_SEQUENCE, route?.sequence)
                 intent.putExtra(C.EXTRA.ROUTE_SERVICE_TYPE, route?.serviceType)
@@ -406,10 +407,10 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
 
         val data = Data.Builder()
                 .putString(C.EXTRA.COMPANY_CODE, companyCode)
+                .putString(C.EXTRA.ROUTE_ID, route.code?:"")
                 .putString(C.EXTRA.ROUTE_NO, route.name?:"")
                 .putString(C.EXTRA.ROUTE_SEQUENCE, route.sequence?:"")
                 .putString(C.EXTRA.ROUTE_SERVICE_TYPE, route.serviceType?:"")
-                .putString(C.EXTRA.ROUTE_INFO_KEY, route.infoKey?:"")
                 .build()
         val request = when (companyCode) {
             C.PROVIDER.KMB -> {

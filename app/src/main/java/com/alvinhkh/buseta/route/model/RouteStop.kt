@@ -8,6 +8,7 @@ import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
 import com.alvinhkh.buseta.follow.model.Follow
 import com.alvinhkh.buseta.route.model.RouteStop.CREATOR.TABLE_NAME
 import com.alvinhkh.buseta.route.model.RouteStop.CREATOR.COLUMN_COMPANY_CODE
+import com.alvinhkh.buseta.route.model.RouteStop.CREATOR.COLUMN_ROUTE_ID
 import com.alvinhkh.buseta.route.model.RouteStop.CREATOR.COLUMN_ROUTE_NO
 import com.alvinhkh.buseta.route.model.RouteStop.CREATOR.COLUMN_ROUTE_SEQUENCE
 import com.alvinhkh.buseta.route.model.RouteStop.CREATOR.COLUMN_ROUTE_SERVICE_TYPE
@@ -15,7 +16,7 @@ import com.alvinhkh.buseta.route.model.RouteStop.CREATOR.COLUMN_SEQUENCE
 import com.alvinhkh.buseta.route.model.RouteStop.CREATOR.COLUMN_STOP_ID
 
 @Entity(tableName = TABLE_NAME, indices = [(Index(value = arrayOf(COLUMN_COMPANY_CODE, COLUMN_ROUTE_NO,
-        COLUMN_ROUTE_SEQUENCE, COLUMN_ROUTE_SERVICE_TYPE, COLUMN_STOP_ID, COLUMN_SEQUENCE), unique = true))])
+        COLUMN_ROUTE_ID, COLUMN_ROUTE_SEQUENCE, COLUMN_ROUTE_SERVICE_TYPE, COLUMN_STOP_ID, COLUMN_SEQUENCE), unique = true))])
 data class RouteStop(
         @PrimaryKey(autoGenerate = true)
         @ColumnInfo(name = COLUMN_ID, typeAffinity = ColumnInfo.INTEGER)

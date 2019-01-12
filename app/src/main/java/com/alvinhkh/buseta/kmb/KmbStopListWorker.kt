@@ -29,6 +29,7 @@ class KmbStopListWorker(context : Context, params : WorkerParameters)
 
     override fun doWork(): Result {
         val companyCode = inputData.getString(C.EXTRA.COMPANY_CODE)?:C.PROVIDER.KMB
+        val routeId = inputData.getString(C.EXTRA.ROUTE_ID)?:""
         val routeNo = inputData.getString(C.EXTRA.ROUTE_NO)?:return Result.failure()
         val routeSequence = inputData.getString(C.EXTRA.ROUTE_SEQUENCE)?:return Result.failure()
         val routeServiceType = inputData.getString(C.EXTRA.ROUTE_SERVICE_TYPE)?:return Result.failure()
@@ -44,7 +45,7 @@ class KmbStopListWorker(context : Context, params : WorkerParameters)
 
             val res = response.body()
             var i = 0
-            val route = routeDatabase?.routeDao()?.get(companyCode, routeNo, routeSequence, routeServiceType, "")?: Route()
+            val route = routeDatabase?.routeDao()?.get(companyCode, routeId, routeNo, routeSequence, routeServiceType)?: Route()
             for (kmbRouteStop in res?.data?.routeStops?: emptyList<KmbRouteStop>()) {
                 val isLastStop = i >= (res?.data?.routeStops?.size?:0) - 1
                 val routeStop = RouteStop()
@@ -76,7 +77,7 @@ class KmbStopListWorker(context : Context, params : WorkerParameters)
 
             val insertedList = routeDatabase?.routeStopDao()?.insert(stopList)
             if (insertedList?.size?:0 > 0) {
-                routeDatabase?.routeStopDao()?.delete(companyCode, routeNo, routeSequence, routeServiceType, timeNow)
+                routeDatabase?.routeStopDao()?.delete(companyCode, routeId, routeNo, routeSequence, routeServiceType, timeNow)
             }
 
             var hasCoordinates = false
@@ -102,9 +103,9 @@ class KmbStopListWorker(context : Context, params : WorkerParameters)
                 }
             }
             if (hasCoordinates) {
-                routeDatabase?.routeDao()?.updateCoordinates(companyCode, routeNo, routeSequence, routeServiceType, "", mapCoordinates)
+                routeDatabase?.routeDao()?.updateCoordinates(companyCode, routeId, routeNo, routeSequence, routeServiceType, mapCoordinates)
             } else {
-                routeDatabase?.routeDao()?.deleteCoordinates(companyCode, routeNo, routeSequence, routeServiceType, "")
+                routeDatabase?.routeDao()?.deleteCoordinates(companyCode, routeId, routeNo, routeSequence, routeServiceType)
             }
         } catch (e: Exception) {
             Timber.d(e)

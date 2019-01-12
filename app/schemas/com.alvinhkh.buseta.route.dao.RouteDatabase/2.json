@@ -1,0 +1,285 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "d4b1a7086518fcb7fadcbed2b87d1b49",
+    "entities": [
+      {
+        "tableName": "routes",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `code` TEXT, `colour` TEXT, `company_code` TEXT, `origin` TEXT, `destination` TEXT, `name` TEXT, `sequence` TEXT, `service_type` TEXT, `description` TEXT, `is_special` INTEGER, `stops_start_sequence` INTEGER, `last_update` INTEGER, `map_coordinates` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "code",
+            "columnName": "code",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "colour",
+            "columnName": "colour",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "companyCode",
+            "columnName": "company_code",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "origin",
+            "columnName": "origin",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "destination",
+            "columnName": "destination",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "sequence",
+            "columnName": "sequence",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "serviceType",
+            "columnName": "service_type",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "isSpecial",
+            "columnName": "is_special",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "stopsStartSequence",
+            "columnName": "stops_start_sequence",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "lastUpdate",
+            "columnName": "last_update",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "mapCoordinates",
+            "columnName": "map_coordinates",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "_id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [
+          {
+            "name": "index_routes_company_code_name_code_sequence_service_type",
+            "unique": true,
+            "columnNames": [
+              "company_code",
+              "name",
+              "code",
+              "sequence",
+              "service_type"
+            ],
+            "createSql": "CREATE UNIQUE INDEX `index_routes_company_code_name_code_sequence_service_type` ON `${TABLE_NAME}` (`company_code`, `name`, `code`, `sequence`, `service_type`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "route_stops",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `company_code` TEXT, `description` TEXT, `eta_get` TEXT, `fare_child` TEXT, `fare_full` TEXT, `fare_holiday` TEXT, `fare_senior` TEXT, `image_url` TEXT, `last_update` INTEGER, `latitude` TEXT, `location` TEXT, `longitude` TEXT, `name` TEXT, `route_destination` TEXT, `route_id` TEXT, `route_no` TEXT, `route_origin` TEXT, `route_sequence` TEXT, `route_service_type` TEXT, `sequence` TEXT, `stop_id` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "companyCode",
+            "columnName": "company_code",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "etaGet",
+            "columnName": "eta_get",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "fareChild",
+            "columnName": "fare_child",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "fareFull",
+            "columnName": "fare_full",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "fareHoliday",
+            "columnName": "fare_holiday",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "fareSenior",
+            "columnName": "fare_senior",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "imageUrl",
+            "columnName": "image_url",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "lastUpdate",
+            "columnName": "last_update",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "latitude",
+            "columnName": "latitude",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "location",
+            "columnName": "location",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "longitude",
+            "columnName": "longitude",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "routeDestination",
+            "columnName": "route_destination",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "routeId",
+            "columnName": "route_id",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "routeNo",
+            "columnName": "route_no",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "routeOrigin",
+            "columnName": "route_origin",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "routeSequence",
+            "columnName": "route_sequence",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "routeServiceType",
+            "columnName": "route_service_type",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "sequence",
+            "columnName": "sequence",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "stopId",
+            "columnName": "stop_id",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "_id"
+          ],
+          "autoGenerate": true
+        },
+        "indices": [
+          {
+            "name": "index_route_stops_company_code_route_no_route_id_route_sequence_route_service_type_stop_id_sequence",
+            "unique": true,
+            "columnNames": [
+              "company_code",
+              "route_no",
+              "route_id",
+              "route_sequence",
+              "route_service_type",
+              "stop_id",
+              "sequence"
+            ],
+            "createSql": "CREATE UNIQUE INDEX `index_route_stops_company_code_route_no_route_id_route_sequence_route_service_type_stop_id_sequence` ON `${TABLE_NAME}` (`company_code`, `route_no`, `route_id`, `route_sequence`, `route_service_type`, `stop_id`, `sequence`)"
+          }
+        ],
+        "foreignKeys": []
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"d4b1a7086518fcb7fadcbed2b87d1b49\")"
+    ]
+  }
+}

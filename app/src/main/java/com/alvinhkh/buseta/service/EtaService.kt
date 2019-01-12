@@ -51,6 +51,7 @@ class EtaService : LifecycleService() {
         if (extras.getBoolean(C.EXTRA.STOP_LIST)) {
             val companyCode = extras.getString(C.EXTRA.COMPANY_CODE, "")
             routeStopList.addAll(routeDatabase.routeStopDao().get(companyCode,
+                    extras.getString(C.EXTRA.ROUTE_ID, ""),
                     extras.getString(C.EXTRA.ROUTE_NO, ""),
                     extras.getString(C.EXTRA.ROUTE_SEQUENCE, ""),
                     extras.getString(C.EXTRA.ROUTE_SERVICE_TYPE, "")))

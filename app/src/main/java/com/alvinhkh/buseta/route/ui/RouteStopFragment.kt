@@ -447,7 +447,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
             dialog.cancel()
             return
         }
-        val route = routeDatabase.routeDao().get(routeStop?.companyCode?:"", routeStop?.routeNo?:"", routeStop?.routeSequence?:"", routeStop?.routeServiceType?:"", "")
+        val route = routeDatabase.routeDao().get(routeStop?.companyCode?:"", routeStop?.routeId?:"", routeStop?.routeNo?:"", routeStop?.routeSequence?:"", routeStop?.routeServiceType?:"")
         routeStop = routeDatabase.routeStopDao().get(routeStop?.companyCode?:"", routeStop?.routeNo?:"", routeStop?.routeSequence?:"", routeStop?.routeServiceType?:"", routeStop?.stopId?:"", routeStop?.sequence?:"")
         if (routeStop == null) {
             dialog.cancel()

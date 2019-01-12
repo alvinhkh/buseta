@@ -57,6 +57,7 @@ class KmbRouteWorker(context : Context, params : WorkerParameters)
                     route.companyCode = C.PROVIDER.KMB
                     route.origin = kmbRoute.originTc
                     route.destination = kmbRoute.destinationTc
+                    route.code = kmbRoute.route
                     route.name = kmbRoute.route
                     route.sequence = kmbRoute.bound
                     route.serviceType = if (kmbRoute.serviceType.isNullOrEmpty()) kmbRoute.serviceType else kmbRoute.serviceType.trim { it <= ' ' }
@@ -78,10 +79,10 @@ class KmbRouteWorker(context : Context, params : WorkerParameters)
                 routeList.forEach { route ->
                     val data = Data.Builder()
                             .putString(C.EXTRA.COMPANY_CODE, route.companyCode)
+                            .putString(C.EXTRA.ROUTE_ID, route.code)
                             .putString(C.EXTRA.ROUTE_NO, route.name)
                             .putString(C.EXTRA.ROUTE_SEQUENCE, route.sequence)
                             .putString(C.EXTRA.ROUTE_SERVICE_TYPE, route.serviceType)
-                            .putString(C.EXTRA.ROUTE_INFO_KEY, route.infoKey)
                             .build()
                     requests.add(OneTimeWorkRequest.Builder(KmbStopListWorker::class.java).setInputData(data).build())
                 }

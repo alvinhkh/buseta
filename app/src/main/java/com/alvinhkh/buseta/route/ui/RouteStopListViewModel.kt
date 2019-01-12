@@ -22,9 +22,9 @@ class RouteStopListViewModel(application: Application) : AndroidViewModel(applic
         return list
     }
 
-    fun getAsLiveData(companyCode: String, routeNo: String, routeSequence: String, routeServiceType: String): LiveData<MutableList<RouteStop>> {
+    fun getAsLiveData(companyCode: String, routeId: String, routeNo: String, routeSequence: String, routeServiceType: String): LiveData<MutableList<RouteStop>> {
         if (routeDatabase != null) {
-            return routeDatabase.routeStopDao().liveData(companyCode, routeNo, routeSequence, routeServiceType)
+            return routeDatabase.routeStopDao().liveData(companyCode, routeId, routeNo, routeSequence, routeServiceType)
         }
         return list
     }

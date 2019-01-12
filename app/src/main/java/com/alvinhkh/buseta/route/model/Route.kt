@@ -37,10 +37,6 @@ data class Route(
         var isSpecial: Boolean? = false,
         @ColumnInfo(name = COLUMN_STOPS_START_SEQUENCE, typeAffinity = ColumnInfo.INTEGER)
         var stopsStartSequence: Int? = 0,
-        @ColumnInfo(name = COLUMN_INFO_KEY, typeAffinity = ColumnInfo.TEXT)
-        var infoKey: String? = "",
-        @ColumnInfo(name = COLUMN_RDV, typeAffinity = ColumnInfo.TEXT)
-        var rdv: String? = "",
         @ColumnInfo(name = COLUMN_LAST_UPDATE, typeAffinity = ColumnInfo.INTEGER)
         var lastUpdate: Long? = 0,
         @ColumnInfo(name = COLUMN_MAP_COORDINATES)
@@ -59,8 +55,6 @@ data class Route(
             parcel.readString(),
             parcel.readValue(Boolean::class.java.classLoader) as? Boolean,
             parcel.readInt(),
-            parcel.readString(),
-            parcel.readString(),
             parcel.readLong())
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -76,8 +70,6 @@ data class Route(
         parcel.writeString(description)
         parcel.writeValue(isSpecial)
         parcel.writeInt(stopsStartSequence?:0)
-        parcel.writeString(infoKey)
-        parcel.writeString(rdv)
         parcel.writeLong(lastUpdate?:0)
     }
 
@@ -116,8 +108,6 @@ data class Route(
         const val COLUMN_DESCRIPTION = "description"
         const val COLUMN_IS_SPECIAL = "is_special"
         const val COLUMN_STOPS_START_SEQUENCE = "stops_start_sequence"
-        const val COLUMN_INFO_KEY = "info_key"
-        const val COLUMN_RDV = "rdv"
         const val COLUMN_LAST_UPDATE = "last_update"
         const val COLUMN_MAP_COORDINATES = "map_coordinates"
 

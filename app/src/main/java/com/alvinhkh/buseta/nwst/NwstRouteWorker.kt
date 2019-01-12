@@ -95,11 +95,9 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
                         route.destination = nwstRoute.placeTo
                         route.name = nwstRoute.routeNo
                         route.serviceType = nwstRoute.routeType
-                        route.rdv = nwstRoute.rdv
                         route.sequence = nwstRoute.bound
                         if (variant != null) {
                             route.stopsStartSequence = variant.startSequence
-                            route.infoKey = variant.routeInfo
                             route.description = variant.remark
                             route.isSpecial = !variant.remark.isEmpty() && variant.remark != "正常路線"
                             route.code = variant.routeInfo
@@ -146,10 +144,10 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
             routeList.forEach { route ->
                 val data = Data.Builder()
                         .putString(C.EXTRA.COMPANY_CODE, route.companyCode)
+                        .putString(C.EXTRA.ROUTE_ID, route.code)
                         .putString(C.EXTRA.ROUTE_NO, route.name)
                         .putString(C.EXTRA.ROUTE_SEQUENCE, route.sequence)
                         .putString(C.EXTRA.ROUTE_SERVICE_TYPE, route.serviceType)
-                        .putString(C.EXTRA.ROUTE_INFO_KEY, route.infoKey)
                         .build()
                 requests.add(OneTimeWorkRequest.Builder(NwstStopListWorker::class.java).setInputData(data).build())
             }

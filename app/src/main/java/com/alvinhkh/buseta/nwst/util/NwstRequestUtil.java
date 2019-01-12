@@ -15,7 +15,7 @@ public class NwstRequestUtil {
         if (route == null) {
             return null;
         }
-        String routeInfo = route.getInfoKey();
+        String routeInfo = route.getCode();
         if (TextUtils.isEmpty(routeInfo)) {
             return null;
         }

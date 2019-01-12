@@ -98,7 +98,7 @@ class AESBusWorker(context : Context, params : WorkerParameters)
                     routeStop.routeSequence = route.sequence
                     routeStop.routeOrigin = route.origin
                     routeStop.routeNo = route.name
-                    routeStop.routeId = route.name
+                    routeStop.routeId = route.code
                     routeStop.routeServiceType = route.serviceType
 
                     routeStop.sequence = i.toString()

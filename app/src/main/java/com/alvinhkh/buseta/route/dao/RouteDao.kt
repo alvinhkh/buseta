@@ -12,6 +12,9 @@ interface RouteDao {
     @Query("DELETE FROM routes")
     fun clear(): Int
 
+    @Query("SELECT COUNT(*) FROM routes")
+    fun count(): Int
+
     @Query("SELECT COUNT(*) FROM routes WHERE company_code = :companyCode AND name = :routeNo")
     fun count(companyCode: String, routeNo: String): Int
 
@@ -21,8 +24,8 @@ interface RouteDao {
     @Query("DELETE FROM routes WHERE company_code = :companyCode AND name = :routeNo AND last_update < :lastUpdate")
     fun delete(companyCode: String, routeNo: String, lastUpdate: Long): Int
 
-    @Query("SELECT * FROM routes WHERE company_code = :companyCode AND name = :routeNo AND sequence = :sequence AND service_type = :serviceType AND info_key = :infoKey")
-    fun get(companyCode: String, routeNo: String, sequence: String, serviceType: String, infoKey: String): Route?
+    @Query("SELECT * FROM routes WHERE company_code = :companyCode AND code = :routeId AND name = :routeNo AND sequence = :sequence AND service_type = :serviceType")
+    fun get(companyCode: String, routeId: String, routeNo: String, sequence: String, serviceType: String): Route?
 
     @Query("SELECT * FROM routes WHERE company_code = :companyCode AND code = :routeCode")
     fun getByCode(companyCode: String, routeCode: String): Route?
@@ -39,10 +42,10 @@ interface RouteDao {
     @Query("SELECT * FROM routes WHERE company_code = :companyCode AND name = :routeNo ORDER BY company_code ASC, name ASC, is_special ASC, sequence + 0 ASC, service_type + 0 ASC")
     fun liveData(companyCode: String, routeNo: String): LiveData<MutableList<Route>>
 
-    @Query("UPDATE routes SET map_coordinates = '[]' WHERE company_code = :companyCode AND name = :routeNo AND sequence = :sequence AND service_type = :serviceType AND info_key = :infoKey")
-    fun deleteCoordinates(companyCode: String, routeNo: String, sequence: String, serviceType: String, infoKey: String): Int
+    @Query("UPDATE routes SET map_coordinates = '[]' WHERE company_code = :companyCode AND code = :routeId AND name = :routeNo AND sequence = :sequence AND service_type = :serviceType")
+    fun deleteCoordinates(companyCode: String, routeId: String, routeNo: String, sequence: String, serviceType: String): Int
 
-    @Query("UPDATE routes SET map_coordinates = :coordinates WHERE company_code = :companyCode AND name = :routeNo AND sequence = :sequence AND service_type = :serviceType AND info_key = :infoKey")
-    fun updateCoordinates(companyCode: String, routeNo: String, sequence: String, serviceType: String, infoKey: String, coordinates: List<LatLong>): Int
+    @Query("UPDATE routes SET map_coordinates = :coordinates WHERE company_code = :companyCode AND code = :routeId AND name = :routeNo AND sequence = :sequence AND service_type = :serviceType")
+    fun updateCoordinates(companyCode: String, routeId: String, routeNo: String, sequence: String, serviceType: String, coordinates: List<LatLong>): Int
 
 }

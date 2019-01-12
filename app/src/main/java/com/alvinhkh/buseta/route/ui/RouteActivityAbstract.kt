@@ -574,7 +574,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
     }
 
     private fun loadMapMarkers(route: Route) {
-        val routeStopLiveData = routeDatabase.routeStopDao().liveData(route.companyCode?:"", route.name?:"", route.sequence?:"", route.serviceType?:"")
+        val routeStopLiveData = routeDatabase.routeStopDao().liveData(route.companyCode?:"", route.code?:"", route.name?:"", route.sequence?:"", route.serviceType?:"")
         routeStopLiveData.removeObservers(this)
         routeStopLiveData.observe(this, Observer { list ->
             map?.clear()

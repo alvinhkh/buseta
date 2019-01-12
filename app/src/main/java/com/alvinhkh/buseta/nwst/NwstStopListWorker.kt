@@ -26,16 +26,16 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
 
     override fun doWork(): Result {
         val companyCode = inputData.getString(C.EXTRA.COMPANY_CODE)?:C.PROVIDER.NWST
+        val routeId = inputData.getString(C.EXTRA.ROUTE_ID)?:return Result.failure()
         val routeNo = inputData.getString(C.EXTRA.ROUTE_NO)?:return Result.failure()
         val routeSequence = inputData.getString(C.EXTRA.ROUTE_SEQUENCE)?:return Result.failure()
         val routeServiceType = inputData.getString(C.EXTRA.ROUTE_SERVICE_TYPE)?:""
-        val routeInfoKey = inputData.getString(C.EXTRA.ROUTE_INFO_KEY)?:return Result.failure()
         var outputData: Data
 
 //        val preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
 //        val tk = preferences.getString("nwst_tk", "")
 //        val syscode3 = preferences.getString("nwst_syscode3", "")
-        val qInfo = paramInfo(companyCode, routeSequence, routeInfoKey)
+        val qInfo = paramInfo(companyCode, routeSequence, routeId)
         if (qInfo.isNullOrEmpty()) {
             return Result.failure()
         }
@@ -52,8 +52,7 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
             val timeNow = System.currentTimeMillis() / 1000
 
             val res = response.body()
-            val route = routeDatabase?.routeDao()?.get(companyCode, routeNo, routeSequence,
-                    routeServiceType, routeInfoKey)?: Route()
+            val route = routeDatabase?.routeDao()?.get(companyCode, routeId, routeNo, routeSequence, routeServiceType)?: Route()
             if (route.stopsStartSequence == null) {
                 return Result.failure()
             }
@@ -79,7 +78,7 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
                         nwstStop.stopName.split(",".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0]
                     routeStop.routeOrigin = route.origin
                     routeStop.routeNo = route.name
-                    routeStop.routeId = nwstStop.rdv
+                    routeStop.routeId = route.code
                     routeStop.routeServiceType = route.serviceType
                     routeStop.sequence = nwstStop.sequence.toString()
                     routeStop.etaGet = nwstStop.isEta.toString()
@@ -97,15 +96,15 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
 
             val insertedList = routeDatabase?.routeStopDao()?.insert(stopList)
             if (insertedList?.size?:0 > 0) {
-                routeDatabase?.routeStopDao()?.delete(companyCode, routeNo, routeSequence, routeServiceType, timeNow)
+                routeDatabase?.routeStopDao()?.delete(companyCode, routeId, routeNo, routeSequence, routeServiceType, timeNow)
             }
 
             outputData = Data.Builder()
                     .putString(C.EXTRA.COMPANY_CODE, companyCode)
+                    .putString(C.EXTRA.ROUTE_ID, routeId)
                     .putString(C.EXTRA.ROUTE_NO, routeNo)
                     .putString(C.EXTRA.ROUTE_SEQUENCE, routeSequence)
                     .putString(C.EXTRA.ROUTE_SERVICE_TYPE, routeServiceType)
-                    .putString(C.EXTRA.ROUTE_INFO_KEY, routeInfoKey)
                     .build()
         } catch (e: Exception) {
             Timber.d(e)
@@ -116,7 +115,7 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
             var hasCoordinates = false
             val mapCoordinates: MutableList<LatLong> = arrayListOf()
 
-            val variant = NwstVariant.parseInfo(routeInfoKey)
+            val variant = NwstVariant.parseInfo(routeId)
             val syscode = NwstRequestUtil.syscode()
             val syscode2 = NwstRequestUtil.syscode2()
             val response = nwstService.lineMulti2(variant?.rdv, LANGUAGE_TC,
@@ -138,17 +137,17 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
             }
 
             if (hasCoordinates) {
-                routeDatabase?.routeDao()?.updateCoordinates(companyCode, routeNo, routeSequence, routeServiceType, routeInfoKey, mapCoordinates)
+                routeDatabase?.routeDao()?.updateCoordinates(companyCode, routeId, routeNo, routeSequence, routeServiceType, mapCoordinates)
             } else {
-                routeDatabase?.routeDao()?.deleteCoordinates(companyCode, routeNo, routeSequence, routeServiceType, routeInfoKey)
+                routeDatabase?.routeDao()?.deleteCoordinates(companyCode, routeId, routeNo, routeSequence, routeServiceType)
             }
         } catch (e: Exception) {
             Timber.d(e)
         }
 
         try {
-            if (!routeInfoKey.isEmpty()) {
-                val temp = routeInfoKey.substring(1).split("\\*{3}".toRegex()).
+            if (!routeId.isEmpty()) {
+                val temp = routeId.substring(1).split("\\*{3}".toRegex()).
                         dropLastWhile { it.isEmpty() }.toTypedArray()
                 if (temp.size >= 4) {
                     val rdv = temp[0] + "||" + temp[1] + "||" + temp[2] + "||" + temp[3]
@@ -161,10 +160,10 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
 
                     outputData = Data.Builder()
                             .putString(C.EXTRA.COMPANY_CODE, companyCode)
+                            .putString(C.EXTRA.ROUTE_ID, routeId)
                             .putString(C.EXTRA.ROUTE_NO, routeNo)
                             .putString(C.EXTRA.ROUTE_SEQUENCE, routeSequence)
                             .putString(C.EXTRA.ROUTE_SERVICE_TYPE, routeServiceType)
-                            .putString(C.EXTRA.ROUTE_INFO_KEY, routeInfoKey)
                             .putString(C.EXTRA.ROUTE_TIMETABLE_HTML, timetableHtml)
                             .build()
                 }

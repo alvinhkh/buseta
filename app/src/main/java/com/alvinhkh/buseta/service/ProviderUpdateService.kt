@@ -18,6 +18,7 @@ import com.alvinhkh.buseta.mtr.AESBusWorker
 import com.alvinhkh.buseta.mtr.MtrResourceWorker
 import com.alvinhkh.buseta.nlb.NlbWorker
 import com.alvinhkh.buseta.nwst.NwstRouteWorker
+import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.utils.ConnectivityUtil
 import timber.log.Timber
@@ -26,11 +27,14 @@ class ProviderUpdateService: IntentService(TAG) {
 
     private lateinit var suggestionDatabase: SuggestionDatabase
 
+    private lateinit var routeDatabase: RouteDatabase
+
     private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreate() {
         super.onCreate()
         suggestionDatabase = SuggestionDatabase.getInstance(this)!!
+        routeDatabase = RouteDatabase.getInstance(this)!!
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
     }
 
@@ -47,10 +51,11 @@ class ProviderUpdateService: IntentService(TAG) {
         }
         WorkManager.getInstance().cancelAllWorkByTag(TAG)
 
+        val routeCount = routeDatabase.routeDao().count()
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val timeNow = System.currentTimeMillis() / 1000
         val savedTime = sharedPreferences.getLong("last_update_suggestions", 0)
-        if (!manualUpdate && timeNow < savedTime + 21600) {
+        if (!manualUpdate && routeCount > 0 && timeNow < savedTime + 21600) {
             Timber.d("recently updated and not manual update")
             return
         }

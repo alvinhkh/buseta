@@ -52,6 +52,7 @@ class LrtFeederWorker(context : Context, params : WorkerParameters)
                 if (mtrBusRoute.routeId.isNullOrEmpty()) continue
                 val route = Route()
                 route.companyCode = C.PROVIDER.LRTFEEDER
+                route.code = mtrBusRoute.routeId
                 route.name = mtrBusRoute.routeId
                 if (!mtrBusRoute.routeNameChi.isNullOrEmpty()) {
                     mtrBusRoute.routeNameChi = Parser.unescapeEntities(mtrBusRoute.routeNameChi!!, false)
@@ -129,7 +130,7 @@ class LrtFeederWorker(context : Context, params : WorkerParameters)
                 }
                 routeStop.routeOrigin = route?.origin?:""
                 routeStop.routeNo = route?.name?:mtrBusStop.routeId
-                routeStop.routeId = mtrBusStop.routeId
+                routeStop.routeId = route?.code?:mtrBusStop.routeId
                 routeStop.routeServiceType = route?.serviceType?:""
                 routeStop.sequence = mtrBusStop.stationSequenceNo.toString()
                 routeStop.etaGet = ""

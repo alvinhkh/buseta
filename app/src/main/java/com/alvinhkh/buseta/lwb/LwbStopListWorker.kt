@@ -21,6 +21,7 @@ class LwbStopListWorker(context : Context, params : WorkerParameters)
 
     override fun doWork(): Result {
         val companyCode = inputData.getString(C.EXTRA.COMPANY_CODE)?:C.PROVIDER.KMB
+        val routeId = inputData.getString(C.EXTRA.ROUTE_ID)?:""
         val routeNo = inputData.getString(C.EXTRA.ROUTE_NO)?:return Result.failure()
         val routeSequence = inputData.getString(C.EXTRA.ROUTE_SEQUENCE)?:return Result.failure()
         val routeServiceType = inputData.getString(C.EXTRA.ROUTE_SERVICE_TYPE)?:return Result.failure()
@@ -36,8 +37,8 @@ class LwbStopListWorker(context : Context, params : WorkerParameters)
 
             val lwbRouteStopList = response.body()
             var i = 0
-            val route = routeDatabase?.routeDao()?.get(companyCode, routeNo, routeSequence, routeServiceType, "")?: Route()
-            for (lwbRouteStop in lwbRouteStopList?: emptyList<LwbRouteStop>()) {
+            val route = routeDatabase?.routeDao()?.get(companyCode, routeId, routeNo, routeSequence, routeServiceType)?: Route()
+            for (lwbRouteStop in lwbRouteStopList?: emptyList()) {
                 val isLastStop = i >= (lwbRouteStopList?.size?:0) - 1
                 val routeStop = RouteStop()
                 routeStop.companyCode = C.PROVIDER.KMB
@@ -67,10 +68,10 @@ class LwbStopListWorker(context : Context, params : WorkerParameters)
 
             val insertedList = routeDatabase?.routeStopDao()?.insert(stopList)
             if (insertedList?.size?:0 > 0) {
-                routeDatabase?.routeStopDao()?.delete(companyCode, routeNo, routeSequence, routeServiceType, timeNow)
+                routeDatabase?.routeStopDao()?.delete(companyCode, routeId, routeNo, routeSequence, routeServiceType, timeNow)
             }
 
-            routeDatabase?.routeDao()?.deleteCoordinates(companyCode, routeNo, routeSequence, routeServiceType, "")
+            routeDatabase?.routeDao()?.deleteCoordinates(companyCode, routeId, routeNo, routeSequence, routeServiceType)
         } catch (e: Exception) {
             Timber.d(e)
             return Result.failure()

@@ -47,8 +47,6 @@ public class C {
 
         String ROUTE_SERVICE_TYPE = "com.alvinhkh.buseta.ROUTE_SERVICE_TYPE";
 
-        String ROUTE_INFO_KEY = "com.alvinhkh.buseta.ROUTE_INFO_KEY";
-
         String ROUTE_TIMETABLE_HTML = "com.alvinhkh.buseta.ROUTE_TIMETABLE_HTML";
 
         String STOP_ID = "com.alvinhkh.buseta.STOP_ID";

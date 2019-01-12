@@ -9,7 +9,7 @@ import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.model.RouteStop
 
 
-@Database(entities = [(Route::class), (RouteStop::class)], version = 1)
+@Database(entities = [(Route::class), (RouteStop::class)], version = 2)
 @TypeConverters(LatLngListConverter::class)
 abstract class RouteDatabase : RoomDatabase() {
 
