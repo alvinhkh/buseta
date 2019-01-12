@@ -17,12 +17,14 @@ import com.alvinhkh.buseta.ui.webview.WebViewActivity
 
 class NwstStopListFragment : RouteStopListFragmentAbstract() {
 
+    private var timetableItem: MenuItem? = null
+
     private var timetableHtml = ""
 
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
         super.onCreateOptionsMenu(menu, inflater)
-        val timetableItem = menu!!.findItem(R.id.action_timetable)
-        timetableItem.isVisible = true
+        timetableItem = menu!!.findItem(R.id.action_timetable)
+        timetableItem?.isVisible = !timetableHtml.isEmpty()
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
@@ -44,6 +46,7 @@ class NwstStopListFragment : RouteStopListFragmentAbstract() {
     }
 
     override fun onWorkerSucceeded(workerOutputData: Data) {
+        timetableItem?.isVisible = true
         timetableHtml = workerOutputData.getString(C.EXTRA.ROUTE_TIMETABLE_HTML)?:""
     }
 
