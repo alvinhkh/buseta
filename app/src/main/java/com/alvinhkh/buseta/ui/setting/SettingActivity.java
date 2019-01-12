@@ -30,6 +30,7 @@ import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
+import com.alvinhkh.buseta.datagovhk.MtrLineWorker;
 import com.alvinhkh.buseta.follow.FollowRouteWorker;
 import com.alvinhkh.buseta.follow.dao.FollowDatabase;
 import com.alvinhkh.buseta.model.AppUpdate;
@@ -238,6 +239,7 @@ public class SettingActivity extends BasePreferenceActivity {
                                         rowDeleted = routeDatabase.routeDao().clear();
                                         rowDeleted += routeDatabase.routeStopDao().clear();
                                         WorkManager.getInstance().enqueue(new OneTimeWorkRequest.Builder(FollowRouteWorker.class).build());
+                                        WorkManager.getInstance().enqueue(new OneTimeWorkRequest.Builder(MtrLineWorker.class).build());
                                     }
                                     Snackbar snackbar = Snackbar.make(mActivity.findViewById(android.R.id.content),
                                             rowDeleted > 0

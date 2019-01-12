@@ -14,13 +14,15 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkManager
 import com.alvinhkh.buseta.R
+import com.alvinhkh.buseta.datagovhk.MtrLineWorker
 import com.alvinhkh.buseta.utils.ConnectivityUtil
 
 
 class MtrLineStatusFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
 
-    private lateinit var viewModel: MtrLineStatusViewModel
     private lateinit var viewAdapter: MtrLineStatusViewAdapter
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var recyclerView: RecyclerView
@@ -48,7 +50,22 @@ class MtrLineStatusFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
             layoutManager = LinearLayoutManager(context)
             adapter = viewAdapter
         }
-        viewModel = ViewModelProviders.of(this).get(MtrLineStatusViewModel::class.java)
+        val viewModel = ViewModelProviders.of(this).get(MtrLineStatusViewModel::class.java)
+        viewModel.getAsLiveData().observe(this, Observer { list ->
+            if (ConnectivityUtil.isConnected(context)) {
+                snackbar.dismiss()
+            } else {
+                snackbar.show()
+            }
+            if (!swipeRefreshLayout.isRefreshing) {
+                swipeRefreshLayout.isRefreshing = true
+            }
+            viewAdapter.replace(list?: listOf())
+            emptyView.visibility = if (viewAdapter.itemCount > 0) View.GONE else View.VISIBLE
+            if (swipeRefreshLayout.isRefreshing) {
+                swipeRefreshLayout.isRefreshing = false
+            }
+        })
         onRefresh()
         return rootView
     }
@@ -73,21 +90,6 @@ class MtrLineStatusFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
         } else {
             snackbar.show()
         }
-        viewModel.getAsLiveData().removeObservers(this)
-        viewModel.getAsLiveData().observe(this, Observer { list ->
-            if (ConnectivityUtil.isConnected(context)) {
-                snackbar.dismiss()
-            } else {
-                snackbar.show()
-            }
-            if (!swipeRefreshLayout.isRefreshing) {
-                swipeRefreshLayout.isRefreshing = true
-            }
-            viewAdapter.replace(list?: listOf())
-            emptyView.visibility = if (viewAdapter.itemCount > 0) View.GONE else View.VISIBLE
-            if (swipeRefreshLayout.isRefreshing) {
-                swipeRefreshLayout.isRefreshing = false
-            }
-        })
+        WorkManager.getInstance().enqueue(OneTimeWorkRequest.Builder(MtrLineWorker::class.java).build())
     }
 }
