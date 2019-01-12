@@ -82,7 +82,6 @@ class FollowGroupFragment : Fragment() {
             startActivity(Intent(context, SearchActivity::class.java))
         }
         val viewModel = ViewModelProviders.of(this).get(FollowGroupViewModel::class.java)
-        viewModel.getAsLiveData().removeObservers(this)
         viewModel.getAsLiveData().observe(this, Observer<MutableList<FollowGroup>> { list ->
             val groupList = mutableListOf<FollowGroup>()
             list?.forEach { item ->
