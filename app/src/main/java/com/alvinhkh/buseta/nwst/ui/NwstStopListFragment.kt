@@ -1,18 +1,24 @@
 package com.alvinhkh.buseta.nwst.ui
 
+import android.arch.lifecycle.Observer
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import androidx.work.Data
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
+import com.alvinhkh.buseta.nwst.NwstStopTimetableWorker
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.model.RouteStop
 import com.alvinhkh.buseta.route.ui.RouteStopListFragmentAbstract
 import com.alvinhkh.buseta.ui.webview.WebViewActivity
+import java.io.File
 
 
 class NwstStopListFragment : RouteStopListFragmentAbstract() {
@@ -45,9 +51,34 @@ class NwstStopListFragment : RouteStopListFragmentAbstract() {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onWorkerSucceeded(workerOutputData: Data) {
-        timetableItem?.isVisible = true
-        timetableHtml = workerOutputData.getString(C.EXTRA.ROUTE_TIMETABLE_HTML)?:""
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val request = OneTimeWorkRequest.Builder(NwstStopTimetableWorker::class.java)
+                .setInputData(Data.Builder()
+                        .putString(C.EXTRA.COMPANY_CODE, route?.companyCode)
+                        .putString(C.EXTRA.ROUTE_ID, route?.code)
+                        .putString(C.EXTRA.ROUTE_NO, route?.name)
+                        .putString(C.EXTRA.ROUTE_SEQUENCE, route?.sequence)
+                        .putString(C.EXTRA.ROUTE_SERVICE_TYPE, route?.serviceType)
+                        .build())
+                .build()
+        WorkManager.getInstance().enqueue(request)
+        WorkManager.getInstance().getWorkInfoByIdLiveData(request.id)
+                .observe(this, Observer { workInfo ->
+                    if (workInfo?.state == WorkInfo.State.FAILED) {
+                        timetableItem?.isVisible = false
+                    }
+                    if (workInfo?.state == WorkInfo.State.SUCCEEDED) {
+                        try {
+                            val filePath = workInfo.outputData.getString(C.EXTRA.ROUTE_TIMETABLE_FILE)?:""
+                            timetableHtml = File(filePath).inputStream().readBytes().toString(Charsets.UTF_8)
+                            timetableItem?.isVisible = true
+                        } catch (e: Exception) {
+                            timetableHtml = ""
+                            timetableItem?.isVisible = false
+                        }
+                    }
+                })
     }
 
     companion object {

@@ -145,33 +145,6 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
             Timber.d(e)
         }
 
-        try {
-            if (!routeId.isEmpty()) {
-                val temp = routeId.substring(1).split("\\*{3}".toRegex()).
-                        dropLastWhile { it.isEmpty() }.toTypedArray()
-                if (temp.size >= 4) {
-                    val rdv = temp[0] + "||" + temp[1] + "||" + temp[2] + "||" + temp[3]
-                    val syscode = NwstRequestUtil.syscode()
-                    val syscode2 = NwstRequestUtil.syscode2()
-                    val response = nwstService.timetable(rdv, routeSequence,
-                            LANGUAGE_TC, syscode, PLATFORM, APP_VERSION, syscode2).execute()
-                    val res = response.body()
-                    val timetableHtml = res?.string()?:""
-
-                    outputData = Data.Builder()
-                            .putString(C.EXTRA.COMPANY_CODE, companyCode)
-                            .putString(C.EXTRA.ROUTE_ID, routeId)
-                            .putString(C.EXTRA.ROUTE_NO, routeNo)
-                            .putString(C.EXTRA.ROUTE_SEQUENCE, routeSequence)
-                            .putString(C.EXTRA.ROUTE_SERVICE_TYPE, routeServiceType)
-                            .putString(C.EXTRA.ROUTE_TIMETABLE_HTML, timetableHtml)
-                            .build()
-                }
-            }
-        } catch (e: Exception) {
-            Timber.d(e)
-        }
-
         return Result.success(outputData)
     }
 
