@@ -221,8 +221,8 @@ public interface NwstService {
             @Query(QUERY_SYSCODE) String sysCode,
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
-            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
-//            @Query(QUERY_TK) String tk,
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
+            @Query(QUERY_TK) String tk
 //            @Query(QUERY_SYSCODE3) String sysCode3
     );
 

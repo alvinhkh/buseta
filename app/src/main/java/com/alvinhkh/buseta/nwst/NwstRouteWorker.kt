@@ -2,7 +2,6 @@ package com.alvinhkh.buseta.nwst
 
 import android.content.Context
 import android.content.Intent
-import android.support.v7.preference.PreferenceManager
 import androidx.work.*
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
@@ -25,8 +24,6 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
 
     private val suggestionDatabase = SuggestionDatabase.getInstance(context)
 
-//    private val preferences = PreferenceManager.getDefaultSharedPreferences(context)
-
     override fun doWork(): Result {
         val manualUpdate = inputData.getBoolean(C.EXTRA.MANUAL, false)
         val companyCode = inputData.getString(C.EXTRA.COMPANY_CODE)?:C.PROVIDER.NWST
@@ -44,22 +41,6 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
         val timeNow = System.currentTimeMillis() / 1000
 
         try {
-//            val randomHex64 = HashUtil.randomHexString(64)
-//            val tk = randomHex64
-//            val syscode3 = preferences.getString("nwst_syscode3", "")
-//            nwstService.pushTokenEnable(tk, tk, NwstService.LANGUAGE_TC, "Y", NwstService.DEVICETYPE,
-//                    NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
-//                    NwstRequestUtil.syscode2()).execute()
-//            nwstService.pushToken(tk, tk, NwstService.LANGUAGE_TC, "R", NwstService.DEVICETYPE,
-//                    NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
-//                    NwstRequestUtil.syscode2()).execute()
-//            nwstService.adv(NwstService.LANGUAGE_TC, NwstService.DEVICETYPE,
-//                    NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
-//                    NwstRequestUtil.syscode2()).execute()
-//            val editor = preferences.edit()
-//            editor.putString("nwst_tk", tk)
-//            editor.apply()
-
             val response = nwstService.routeList(routeNo, TYPE_ALL_ROUTES,
                     LANGUAGE_TC, NwstRequestUtil.syscode(), PLATFORM, APP_VERSION,
                     NwstRequestUtil.syscode2()).execute()

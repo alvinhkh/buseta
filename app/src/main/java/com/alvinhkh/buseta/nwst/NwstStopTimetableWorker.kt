@@ -1,9 +1,8 @@
 package com.alvinhkh.buseta.nwst
 
 import android.content.Context
-import androidx.work.Data
-import androidx.work.Worker
-import androidx.work.WorkerParameters
+import android.support.v7.preference.PreferenceManager
+import androidx.work.*
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.nwst.NwstService.*
 import com.alvinhkh.buseta.nwst.util.NwstRequestUtil
@@ -16,6 +15,8 @@ class NwstStopTimetableWorker(private val context : Context, params : WorkerPara
     : Worker(context, params) {
 
     private val nwstService = NwstService.api.create(NwstService::class.java)
+
+    private val preferences = PreferenceManager.getDefaultSharedPreferences(context)
 
     override fun doWork(): Result {
         val companyCode = inputData.getString(C.EXTRA.COMPANY_CODE)?:C.PROVIDER.NWST
@@ -31,6 +32,10 @@ class NwstStopTimetableWorker(private val context : Context, params : WorkerPara
 
         try {
             if (!routeId.isEmpty()) {
+                val tokenRequest = OneTimeWorkRequest.Builder(NwstTokenWorker::class.java).build()
+                WorkManager.getInstance().enqueue(tokenRequest)
+                val tk = preferences.getString("nwst_tk", "")
+
                 val temp = routeId.substring(1).split("\\*{3}".toRegex()).
                         dropLastWhile { it.isEmpty() }.toTypedArray()
                 if (temp.size >= 4) {
@@ -38,7 +43,7 @@ class NwstStopTimetableWorker(private val context : Context, params : WorkerPara
                     val syscode = NwstRequestUtil.syscode()
                     val syscode2 = NwstRequestUtil.syscode2()
                     val response = nwstService.timetable(rdv, routeSequence,
-                            LANGUAGE_TC, syscode, PLATFORM, APP_VERSION, syscode2).execute()
+                            LANGUAGE_TC, syscode, PLATFORM, APP_VERSION, syscode2, tk).execute()
                     val res = response.body()
                     val timetableHtml = res?.string()?:""
 
