@@ -54,7 +54,9 @@ class FollowRouteWorker(context : Context, params : WorkerParameters)
                 C.PROVIDER.NLB -> requests.add(OneTimeWorkRequest.Builder(NlbWorker::class.java).addTag(TAG).setInputData(data).build())
             }
         }
-        WorkManager.getInstance().enqueue(requests)
+        if (requests.size > 0) {
+            WorkManager.getInstance().enqueue(requests)
+        }
 
         return Result.success(outputData)
     }
