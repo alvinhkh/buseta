@@ -113,7 +113,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
 
     private var suggestion: Suggestion? = null
 
-    private var isScrolledToPage: Boolean? = false
+    private var isScrolledToPage = false
 
     private var fragNo: Int = 0
 
@@ -255,26 +255,26 @@ abstract class RouteActivityAbstract : BaseActivity(),
                     var hasDestination = false
                     routes?.forEach { route ->
                         company = route.companyCode?:companyCode?:""
-                        var routeStop = stopFromIntent
-                        if (routeStop == null) {
-                            routeStop = RouteStop()
-                            routeStop.companyCode = route.companyCode
-                            routeStop.routeNo = route.name
-                            routeStop.routeSequence = route.sequence
-                            routeStop.routeServiceType = route.serviceType
-                            routeStop.stopId = stopIdFromIntent
+                        var navStop = stopFromIntent
+                        if (navStop == null && !stopIdFromIntent.isNullOrEmpty()) {
+                            navStop = RouteStop()
+                            navStop.companyCode = route.companyCode
+                            navStop.routeNo = route.name
+                            navStop.routeSequence = route.sequence
+                            navStop.routeServiceType = route.serviceType
+                            navStop.stopId = stopIdFromIntent
                         }
                         val fragment: Fragment = when (company) {
-                            C.PROVIDER.AESBUS -> AESBusStopListFragment.newInstance(route, routeStop)
-                            C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> NwstStopListFragment.newInstance(route, routeStop)
+                            C.PROVIDER.AESBUS -> AESBusStopListFragment.newInstance(route, navStop)
+                            C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> NwstStopListFragment.newInstance(route, navStop)
                             C.PROVIDER.KMB -> if (PreferenceUtil.isUsingNewKmbApi(applicationContext)) {
-                                KmbStopListFragment.newInstance(route, routeStop)
+                                KmbStopListFragment.newInstance(route, navStop)
                             } else {
-                                LwbStopListFragment.newInstance(route, routeStop)
+                                LwbStopListFragment.newInstance(route, navStop)
                             }
-                            C.PROVIDER.LRTFEEDER -> MtrBusStopListFragment.newInstance(route, routeStop)
-                            C.PROVIDER.MTR -> MtrStationListFragment.newInstance(route, routeStop)
-                            C.PROVIDER.NLB -> NlbStopListFragment.newInstance(route, routeStop)
+                            C.PROVIDER.LRTFEEDER -> MtrBusStopListFragment.newInstance(route, navStop)
+                            C.PROVIDER.MTR -> MtrStationListFragment.newInstance(route, navStop)
+                            C.PROVIDER.NLB -> NlbStopListFragment.newInstance(route, navStop)
                             else -> return@forEach
                         }
                         val pageTitle = if (!route.origin.isNullOrEmpty()) {
@@ -289,11 +289,10 @@ abstract class RouteActivityAbstract : BaseActivity(),
                         }
                         pagerAdapter.addFragment(fragment, pageTitle, route)
                         val fragmentCount = pagerAdapter.count
-                        if (stopFromIntent != null && route.companyCode != null
-                                && route.sequence != null && route.serviceType != null
-                                && route.companyCode == stopFromIntent?.companyCode
-                                && route.sequence == stopFromIntent?.routeSequence
-                                && route.serviceType == stopFromIntent?.routeServiceType) {
+                        if (navStop != null &&
+                                route.companyCode == navStop.companyCode
+                                && route.sequence == navStop.routeSequence
+                                && route.serviceType == navStop.routeServiceType) {
                             fragNo = fragmentCount - 1
                             isScrollToPage = true
                         }
@@ -320,7 +319,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
                         }
                     }
 
-                    if (isScrollToPage && isScrolledToPage == false) {
+                    if (isScrollToPage && !isScrolledToPage) {
                         viewPager.setCurrentItem(fragNo, false)
                         isScrolledToPage = true
                         isScrollToPage = false
@@ -336,6 +335,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
 
                     if (pagerAdapter.count > 0) {
                         emptyView.visibility = View.GONE
+                        viewModel.getAsLiveData(companyCode?:"", routeNo?:"").removeObservers(this)
                     } else {
                         showEmptyView()
                     }
