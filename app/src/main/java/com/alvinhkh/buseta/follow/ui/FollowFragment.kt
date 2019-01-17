@@ -61,8 +61,9 @@ class FollowFragment: Fragment() {
             adapter = viewAdapter
         }
         val viewModel = ViewModelProviders.of(this).get(FollowViewModel::class.java)
-        viewModel.getAsLiveData(groupId).removeObservers(this)
-        viewModel.getAsLiveData(groupId).observe(this, Observer<MutableList<Follow>> { list ->
+        val liveData = viewModel.getAsLiveData(groupId)
+        liveData.removeObservers(this)
+        liveData.observe(this, Observer<MutableList<Follow>> { list ->
             viewAdapter?.replaceItems(list?: mutableListOf())
             list?.forEachIndexed { index, follow ->
                 val id = follow.companyCode + follow.routeNo + follow.routeSeq + follow.routeServiceType + follow.stopId + follow.stopSeq

@@ -247,8 +247,9 @@ abstract class RouteActivityAbstract : BaseActivity(),
 
         // load route from database
         val viewModel = ViewModelProviders.of(this).get(RouteViewModel::class.java)
-        viewModel.getAsLiveData(companyCode?:"", routeNo?:"")
-                .observe(this, Observer<MutableList<Route>> { routes ->
+        val liveData = viewModel.getAsLiveData(companyCode?:"", routeNo?:"")
+        liveData.removeObservers(this)
+        liveData.observe(this, Observer<MutableList<Route>> { routes ->
                     pagerAdapter.clear()
                     var company = ""
                     var isScrollToPage = false
@@ -335,7 +336,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
 
                     if (pagerAdapter.count > 0) {
                         emptyView.visibility = View.GONE
-                        viewModel.getAsLiveData(companyCode?:"", routeNo?:"").removeObservers(this)
+                        liveData.removeObservers(this)
                     } else {
                         showEmptyView()
                     }
