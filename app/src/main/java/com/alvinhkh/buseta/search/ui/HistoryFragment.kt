@@ -44,20 +44,21 @@ class HistoryFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
         fab.setOnClickListener {
             startActivity(Intent(context, SearchActivity::class.java))
         }
-        with(recyclerView) {
+        recyclerView.run {
             setHasFixedSize(true)
             layoutManager = GridLayoutManager(context, 2)
             viewAdapter = HistoryViewAdapter(this)
             adapter = viewAdapter
-            viewModel = ViewModelProviders.of(this@HistoryFragment).get(HistoryViewModel::class.java)
-            viewModel.getAsLiveData().observe(this@HistoryFragment, Observer<MutableList<Suggestion>> { it ->
-                viewAdapter.clear()
-                it?.forEach {
-                    viewAdapter.addItem(it)
-                }
-                emptyView.visibility = if (viewAdapter.itemCount > 0) View.GONE else View.VISIBLE
-            })
         }
+        viewModel = ViewModelProviders.of(this@HistoryFragment).get(HistoryViewModel::class.java)
+        viewModel.getAsLiveData().observe(this@HistoryFragment, Observer<MutableList<Suggestion>> { list ->
+            if (list.isNullOrEmpty()) {
+                viewAdapter.clear()
+            } else {
+                viewAdapter.replace(list)
+            }
+            emptyView.visibility = if (viewAdapter.itemCount > 0) View.GONE else View.VISIBLE
+        })
 
         return rootView
     }
