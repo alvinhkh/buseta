@@ -9,14 +9,12 @@ import com.alvinhkh.buseta.kmb.model.KmbSchedule
 import com.alvinhkh.buseta.ui.*
 import kotlinx.android.synthetic.main.item_route_schedule.view.*
 import kotlinx.android.synthetic.main.item_section.view.*
-import timber.log.Timber
-import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.*
 
 class KmbScheduleViewAdapter(
         private val routeBound: String,
-        private var data: MutableList<Data>?
+        private val data: MutableList<Data> = mutableListOf()
 ): RecyclerView.Adapter<KmbScheduleViewAdapter.Holder>(),
         PinnedHeaderItemDecoration.PinnedHeaderAdapter {
 
@@ -32,7 +30,7 @@ class KmbScheduleViewAdapter(
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
-        holder.bindItems(routeBound, data?.get(position))
+        holder.bindItems(routeBound, data[position])
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
@@ -43,33 +41,23 @@ class KmbScheduleViewAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        return data?.get(position)?.type?:0
+        return data[position].type
     }
 
-    override fun getItemCount(): Int = data?.size?:0
+    override fun getItemCount(): Int = data.size
 
     override fun isPinnedViewType(viewType: Int): Boolean {
         return viewType == Data.TYPE_SECTION
     }
 
-    fun addSection(s: String) {
-        if (data == null) {
-            data = mutableListOf()
-        }
-        data?.add(Data(Data.TYPE_SECTION, s))
-        notifyItemInserted(data?.size?:0)
-    }
-
-    fun addItem(t: KmbSchedule) {
-        if (data == null) {
-            data = mutableListOf()
-        }
-        data?.add(Data(Data.TYPE_SCHEDULE, t))
-        notifyItemInserted(data?.size?:0)
+    fun replace(list: List<Data>) {
+        data.clear()
+        data.addAll(list)
+        notifyDataSetChanged()
     }
 
     fun clear() {
-        data?.clear()
+        data.clear()
         notifyDataSetChanged()
     }
 
