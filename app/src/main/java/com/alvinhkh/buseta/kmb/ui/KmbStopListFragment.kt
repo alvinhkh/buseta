@@ -17,15 +17,20 @@ class KmbStopListFragment : RouteStopListFragmentAbstract() {
 
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
         super.onCreateOptionsMenu(menu, inflater)
-        val timetableItem = menu!!.findItem(R.id.action_timetable)
-        timetableItem.isVisible = true
+        menu?.findItem(R.id.action_timetable)?.isVisible = true
+        menu?.findItem(R.id.action_bbi)?.isVisible = true
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        val id = item!!.itemId
-        when (id) {
+        when (item?.itemId) {
             R.id.action_timetable -> if (route != null && context != null) {
                 val intent = Intent(context, KmbScheduleActivity::class.java)
+                intent.putExtra(C.EXTRA.ROUTE_OBJECT, route)
+                startActivity(intent)
+                return true
+            }
+            R.id.action_bbi -> if (route != null && context != null) {
+                val intent = Intent(context, KmbBBIActivity::class.java)
                 intent.putExtra(C.EXTRA.ROUTE_OBJECT, route)
                 startActivity(intent)
                 return true

@@ -28,4 +28,11 @@
         android:visible="false"
         app:iconTint="@color/white"
         app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/action_bbi"
+        android:title="@string/bus_to_bus_interchange_scheme"
+        android:orderInCategory="93"
+        android:visible="false"
+        app:showAsAction="ifRoom"/>
 </menu>

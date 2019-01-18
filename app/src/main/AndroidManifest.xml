@@ -176,6 +176,10 @@
             android:label="@string/timetable"
             android:hardwareAccelerated="true" />
         <activity
+            android:name=".kmb.ui.KmbBBIActivity"
+            android:label="@string/provider_kmb"
+            android:hardwareAccelerated="true" />
+        <activity
             android:name=".nlb.ui.NlbActivity"
             android:label="@string/provider_nlb"
             android:hardwareAccelerated="true" />

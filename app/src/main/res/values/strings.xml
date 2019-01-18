@@ -114,6 +114,7 @@
     <string name="message_shown_as_notification">已顯示在通知欄</string>
     <string name="message_total_routes">(共 %s 條路線)</string>
     <string name="no_follow_stop">未有追蹤車站</string>
+    <string name="no_bbi">沒有巴士轉乘計劃</string>
     <string name="removed_from_follow_list">「%1$s」已從追蹤名單中移除</string>
     <string name="removed_from_search_history">「%1$s」已從搜尋記錄中移除</string>
     <string name="swipe_to_remove_follow_stop">向左右掃即可移除追蹤車站</string>
@@ -124,6 +125,7 @@
 
     <string name="content_description_icon">Icon</string>
 
+    <string name="bus_to_bus_interchange_scheme">巴士轉乘計劃</string>
     <string name="clear_cached_route">清除暫存路線</string>
     <string name="clear_follow">清除追蹤名單</string>
     <string name="clear_history">清除搜尋記錄</string>

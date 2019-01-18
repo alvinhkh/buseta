@@ -4,6 +4,7 @@ import com.alvinhkh.buseta.App;
 import com.alvinhkh.buseta.kmb.model.KmbEtaRoutes;
 import com.alvinhkh.buseta.kmb.model.KmbRoutesInStop;
 import com.alvinhkh.buseta.kmb.model.network.KmbAnnounceRes;
+import com.alvinhkh.buseta.kmb.model.KmbBBI2;
 import com.alvinhkh.buseta.kmb.model.network.KmbEtaRes;
 import com.alvinhkh.buseta.kmb.model.network.KmbRouteBoundRes;
 import com.alvinhkh.buseta.kmb.model.network.KmbScheduleRes;
@@ -35,11 +36,23 @@ public interface KmbService {
             .serializeNulls()
             .create();
 
+    Retrofit webCoroutine = new Retrofit.Builder()
+            .client(App.httpClient)
+            .baseUrl("http://www.kmb.hk/")
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .addCallAdapterFactory(CoroutineCallAdapterFactory.create())
+            .build();
+
+    @GET("ajax/BBI/get_BBI2.php?&buscompany=null&jtSorting=sec_routeno%20ASC")
+    Deferred<Response<KmbBBI2>> bbi(@Query("routeno") String routeno, @Query("bound") String bound);
+
+    @GET("ajax/BBI/get_BBI2.php?&buscompany=null&jtSorting=sec_routeno%20ASC")
+    Deferred<Response<KmbBBI2>> bbi(@Query("routeno") String routeno, @Query("bound") String bound, @Query("interchangeType") String interchangeType);
+
     Retrofit webSearch = new Retrofit.Builder()
             .client(App.httpClient)
             .baseUrl("http://search.kmb.hk/KMBWebSite/Function/")
             .addConverterFactory(GsonConverterFactory.create(gson))
-            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build();
 
     @GET("FunctionRequest.ashx?action=getRouteBound")
@@ -51,20 +64,11 @@ public interface KmbService {
     @GET("FunctionRequest.ashx?action=getStops")
     Call<KmbStopsRes> stops(@Query("route") String route, @Query("bound") String bound, @Query("serviceType") String serviceType);
 
+    @GET("FunctionRequest.ashx?action=getRoutesInStop")
+    Call<KmbRoutesInStop> routesInStop(@Query("bsiCode") String bsiCode);
+
     @GET("FunctionRequest.ashx?action=getAnnounce")
     Observable<KmbAnnounceRes> getAnnounce(@Query("route") String route, @Query("bound") String bound);
-
-    @GET("FunctionRequest.ashx?action=getRouteBound")
-    Observable<KmbRouteBoundRes> getRouteBound(@Query("route") String route);
-
-    @GET("FunctionRequest.ashx?action=getSpecialRoute")
-    Observable<KmbSpecialRouteRes> getSpecialRoute(@Query("route") String route, @Query("bound") String bound);
-
-    @GET("FunctionRequest.ashx?action=getStops")
-    Observable<KmbStopsRes> getStops(@Query("route") String route, @Query("bound") String bound, @Query("serviceType") String serviceType);
-
-    @GET("FunctionRequest.ashx?action=getRoutesInStop")
-    Observable<KmbRoutesInStop> routesInStop(@Query("bsiCode") String bsiCode);
 
     Retrofit webSearchCoroutine = new Retrofit.Builder()
             .client(App.httpClient)
