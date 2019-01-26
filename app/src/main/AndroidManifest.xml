@@ -28,6 +28,9 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
         <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="@string/ADMOB_APP_ID"/>
+        <meta-data
             android:name="io.fabric.ApiKey"
             android:value="6032abdc0a74733a4c4cdf5c47ef72307cc54795" />
         <meta-data

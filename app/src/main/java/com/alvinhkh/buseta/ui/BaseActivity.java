@@ -45,6 +45,7 @@ import com.alvinhkh.buseta.utils.NightModeUtil;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
 import com.alvinhkh.buseta.search.dao.SuggestionSimpleCursorAdapter;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableObserver;
@@ -130,6 +131,8 @@ abstract public class BaseActivity extends AppCompatActivity
             return false;
         });
         adapter.setFilterQueryProvider(this);
+
+        MobileAds.initialize(this, getString(R.string.ADMOB_APP_ID));
     }
 
     @Override
