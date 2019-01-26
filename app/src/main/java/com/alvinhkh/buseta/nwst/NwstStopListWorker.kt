@@ -30,14 +30,17 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
         val routeNo = inputData.getString(C.EXTRA.ROUTE_NO)?:return Result.failure()
         val routeSequence = inputData.getString(C.EXTRA.ROUTE_SEQUENCE)?:return Result.failure()
         val routeServiceType = inputData.getString(C.EXTRA.ROUTE_SERVICE_TYPE)?:""
-        var outputData: Data
+        val outputData = Data.Builder()
+                .putString(C.EXTRA.COMPANY_CODE, companyCode)
+                .putString(C.EXTRA.ROUTE_ID, routeId)
+                .putString(C.EXTRA.ROUTE_NO, routeNo)
+                .putString(C.EXTRA.ROUTE_SEQUENCE, routeSequence)
+                .putString(C.EXTRA.ROUTE_SERVICE_TYPE, routeServiceType)
+                .build()
 
-//        val preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-//        val tk = preferences.getString("nwst_tk", "")
-//        val syscode3 = preferences.getString("nwst_syscode3", "")
         val qInfo = paramInfo(companyCode, routeSequence, routeId)
         if (qInfo.isNullOrEmpty()) {
-            return Result.failure()
+            return Result.failure(outputData)
         }
         try {
             val syscode = NwstRequestUtil.syscode()
@@ -45,7 +48,7 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
             val response = nwstService.ppStopList(qInfo, LANGUAGE_TC,
                     syscode, PLATFORM, APP_VERSION, syscode2).execute()
             if (!response.isSuccessful) {
-                return Result.failure()
+                return Result.failure(outputData)
             }
 
             val stopList = ArrayList<RouteStop>()
@@ -54,7 +57,7 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
             val res = response.body()
             val route = routeDatabase?.routeDao()?.get(companyCode, routeId, routeNo, routeSequence, routeServiceType)?: Route()
             if (route.stopsStartSequence == null) {
-                return Result.failure()
+                return Result.failure(outputData)
             }
 
             val routeStrArray = res?.string()?.split("<br>".toRegex())?.toTypedArray()?: emptyArray()
@@ -99,16 +102,9 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
                 routeDatabase?.routeStopDao()?.delete(companyCode, routeId, routeNo, routeSequence, routeServiceType, timeNow)
             }
 
-            outputData = Data.Builder()
-                    .putString(C.EXTRA.COMPANY_CODE, companyCode)
-                    .putString(C.EXTRA.ROUTE_ID, routeId)
-                    .putString(C.EXTRA.ROUTE_NO, routeNo)
-                    .putString(C.EXTRA.ROUTE_SEQUENCE, routeSequence)
-                    .putString(C.EXTRA.ROUTE_SERVICE_TYPE, routeServiceType)
-                    .build()
         } catch (e: Exception) {
             Timber.d(e)
-            return Result.failure()
+            return Result.failure(outputData)
         }
 
         try {

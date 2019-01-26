@@ -72,11 +72,11 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
 
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
-    protected lateinit var recyclerView: RecyclerView
+    private var recyclerView: RecyclerView? = null
 
-    protected lateinit var emptyView: View
+    private lateinit var emptyView: View
 
-    protected lateinit var progressBar: ProgressBar
+    private lateinit var progressBar: ProgressBar
 
     private lateinit var emptyText: TextView
 
@@ -191,7 +191,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
 
         // load route stops from database
         recyclerView = rootView.findViewById(R.id.recycler_view)
-        with(recyclerView) {
+        recyclerView?.run {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
             viewAdapter = RouteStopListViewAdapter(activity!!, this, route?:Route())
@@ -242,7 +242,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                                 fab?.show()
                             }
 
-                            if (emptyView.visibility == View.VISIBLE || recyclerView.visibility == View.GONE) {
+                            if (emptyView.visibility == View.VISIBLE || visibility == View.GONE) {
                                 emptyView.visibility = if (viewAdapter.itemCount > 0) View.GONE else View.VISIBLE
 
                                 var isScrollToPosition: Boolean? = false
@@ -286,9 +286,9 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                                         isScrollToPosition = true
                                         scrollToPos = 0
                                     }
-                                    recyclerView.visibility = View.VISIBLE
+                                    visibility = View.VISIBLE
                                     if (isScrollToPosition!!) {
-                                        recyclerView.scrollToPosition(scrollToPosition!!)
+                                        scrollToPosition(scrollToPosition!!)
                                     }
                                     emptyView.visibility = View.GONE
                                     progressBar.visibility = View.GONE
@@ -330,7 +330,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        val lastFirstVisiblePosition = (recyclerView.layoutManager as LinearLayoutManager)
+        val lastFirstVisiblePosition = (recyclerView?.layoutManager as LinearLayoutManager)
                 .findFirstVisibleItemPosition()
         outState.putInt(SCROLL_POSITION_STATE_KEY, lastFirstVisiblePosition)
     }
@@ -466,13 +466,13 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                 if (viewAdapter.get(i)?.type == TYPE_ROUTE_STOP && viewAdapter.get(i)?.obj is RouteStop) {
                     val routeStop = viewAdapter.get(i)?.obj as RouteStop
                     if (routeStop.sequence == markerStop?.sequence) {
-                        val smoothScroller = object : LinearSmoothScroller(recyclerView.context) {
+                        val smoothScroller = object : LinearSmoothScroller(recyclerView?.context) {
                             override fun getVerticalSnapPreference(): Int {
                                 return LinearSmoothScroller.SNAP_TO_START
                             }
                         }
                         smoothScroller.targetPosition = i
-                        recyclerView.layoutManager?.startSmoothScroll(smoothScroller)
+                        recyclerView?.layoutManager?.startSmoothScroll(smoothScroller)
                         break
                     }
                 }
@@ -489,7 +489,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                 Snackbar.make(view?.rootView?.findViewById(R.id.coordinator_layout)?:view!!, s, Snackbar.LENGTH_INDEFINITE).show()
             }
         } else {
-            recyclerView.visibility = View.GONE
+            recyclerView?.visibility = View.GONE
             emptyView.visibility = View.VISIBLE
             progressBar.visibility = View.GONE
             emptyText.text = s

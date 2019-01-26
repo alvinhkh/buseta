@@ -32,8 +32,6 @@ class NwstStopTimetableWorker(private val context : Context, params : WorkerPara
 
         try {
             if (!routeId.isEmpty()) {
-                val tokenRequest = OneTimeWorkRequest.Builder(NwstTokenWorker::class.java).build()
-                WorkManager.getInstance().enqueue(tokenRequest)
                 val tk = preferences.getString("nwst_tk", "")
 
                 val temp = routeId.substring(1).split("\\*{3}".toRegex()).

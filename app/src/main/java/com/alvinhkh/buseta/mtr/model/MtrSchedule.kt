@@ -63,10 +63,8 @@ data class MtrSchedule(
                     expired = expired or (TimeUnit.MILLISECONDS.toMinutes(Date().time - arrivalTime.updatedAt) >= 2) // maybe outdated
                     arrivalTime.expired = expired
                     return arrivalTime
-                } catch (ep: ParseException) {
-                    Timber.d(ep)
-                } catch (ep: ArrayIndexOutOfBoundsException) {
-                    Timber.d(ep)
+                } catch (e: Exception) {
+                    Timber.d(e)
                 }
             }
 
