@@ -517,6 +517,11 @@ abstract class RouteActivityAbstract : BaseActivity(),
         googleMap.isIndoorEnabled = false
         googleMap.isTrafficEnabled = false
         googleMap.setOnMarkerClickListener(this)
+        googleMap.setOnMyLocationButtonClickListener {
+            googleMap.moveCamera(CameraUpdateFactory.newLatLng(LatLng(googleMap.myLocation.latitude, googleMap.myLocation.longitude)))
+            googleMap.animateCamera(CameraUpdateFactory.zoomTo(16f))
+            true
+        }
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) ==
                 PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(this,
                         Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
