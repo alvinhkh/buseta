@@ -2,6 +2,7 @@ package com.alvinhkh.buseta.ui.route;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBar;
@@ -58,7 +59,11 @@ public class RouteAnnounceActivity extends BaseActivity {
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         switch (route.getCompanyCode()) {
             case C.PROVIDER.KMB:
-                fragmentTransaction.replace(R.id.fragment_container, KmbAnnounceFragment.newInstance(route));
+                Bundle b = new Bundle();
+                b.putParcelable(C.EXTRA.ROUTE_OBJECT, route);
+                Fragment f = new KmbAnnounceFragment();
+                f.setArguments(b);
+                fragmentTransaction.replace(R.id.fragment_container, f);
                 break;
             case C.PROVIDER.NLB:
                 fragmentTransaction.replace(R.id.fragment_container, NlbNewsFragment.newInstance());

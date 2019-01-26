@@ -16,13 +16,11 @@ import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterF
 
 import java.util.List;
 
-import io.reactivex.Observable;
 import kotlinx.coroutines.Deferred;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
@@ -67,27 +65,27 @@ public interface KmbService {
     @GET("FunctionRequest.ashx?action=getRoutesInStop")
     Call<KmbRoutesInStop> routesInStop(@Query("bsiCode") String bsiCode);
 
-    @GET("FunctionRequest.ashx?action=getAnnounce")
-    Observable<KmbAnnounceRes> getAnnounce(@Query("route") String route, @Query("bound") String bound);
-
     Retrofit webSearchCoroutine = new Retrofit.Builder()
             .client(App.httpClient)
-            .baseUrl("http://search.kmb.hk/KMBWebSite/Function/")
+            .baseUrl("http://search.kmb.hk/KMBWebSite/")
             .addConverterFactory(GsonConverterFactory.create(gson))
             .addCallAdapterFactory(CoroutineCallAdapterFactory.create())
             .build();
 
-    @GET("FunctionRequest.ashx?action=getschedule")
+    @GET("Function/FunctionRequest.ashx?action=getAnnounce")
+    Deferred<Response<KmbAnnounceRes>> announce(@Query("route") String route, @Query("bound") String bound);
+
+    @GET("Function/FunctionRequest.ashx?action=getschedule")
     Deferred<Response<KmbScheduleRes>> schedule(@Query("route") String route, @Query("bound") String bound);
 
-    Retrofit webSearchHtml = new Retrofit.Builder()
+    Retrofit webSearchHtmlCoroutine = new Retrofit.Builder()
             .client(App.httpClient)
             .baseUrl("http://search.kmb.hk/KMBWebSite/")
-            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+            .addCallAdapterFactory(CoroutineCallAdapterFactory.create())
             .build();
 
     @GET("AnnouncementPicture.ashx")
-    Observable<ResponseBody> getAnnouncementPicture(@Query("url") String url);
+    Deferred<Response<ResponseBody>> announcementPicture(@Query("url") String url);
 
     Retrofit etav3 = new Retrofit.Builder()
             .client(App.httpClient)
