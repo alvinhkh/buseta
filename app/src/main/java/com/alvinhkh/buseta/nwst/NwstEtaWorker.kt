@@ -2,9 +2,7 @@ package com.alvinhkh.buseta.nwst
 
 import android.content.Context
 import android.support.v7.preference.PreferenceManager
-import androidx.work.Data
-import androidx.work.Worker
-import androidx.work.WorkerParameters
+import androidx.work.*
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
@@ -56,26 +54,37 @@ class NwstEtaWorker(private val context : Context, params : WorkerParameters)
                 ?: return Result.failure(outputData)
         
         try {
-//            val randomHex64 = HashUtil.randomHexString(64)
-//            val tk = randomHex64 // preferences.getString("nwst_tk", randomHex64)
-//            val syscode3 = preferences.getString("nwst_syscode3", "")
-//            nwstService.pushTokenEnable(tk, tk, NwstService.LANGUAGE_TC, "Y", NwstService.DEVICETYPE,
-//                    NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
-//                    NwstRequestUtil.syscode2()).execute()
-//            nwstService.pushToken(tk, tk, NwstService.LANGUAGE_TC, "R", NwstService.DEVICETYPE,
-//                    NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
-//                    NwstRequestUtil.syscode2()).execute()
-//            nwstService.adv(NwstService.LANGUAGE_TC, NwstService.DEVICETYPE,
-//                    NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
-//                    NwstRequestUtil.syscode2()).execute()
-//            val editor = preferences.edit()
-//            editor.putString("nwst_tk", tk)
-//            editor.apply()
-
-            val response = nwstService.eta((routeStop.stopId?:"0").toInt().toString(),
+            var response = nwstService.eta((routeStop.stopId?:"0").toInt().toString(),
                     routeStop.routeNo, "Y", "60", NwstService.LANGUAGE_TC, routeStop.routeSequence,
                     routeStop.sequence, routeStop.routeId, "Y", "Y",
-                    NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2, NwstRequestUtil.syscode2()).execute()
+                    NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2).execute()
+            if (!response.isSuccessful) {
+                var tk = preferences.getString("nwst_tk", "")?:""
+                val r0 = nwstService.pushTokenEnable(tk, tk, NwstService.LANGUAGE_TC, "", "Y", NwstService.DEVICETYPE,
+                        NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
+                        NwstRequestUtil.syscode2()).execute()
+                val resText = r0.body()?.string()?:""
+                if (resText != "Already Registered") {
+                    tk = HashUtil.randomHexString(64)
+                    val r1 = nwstService.pushToken(tk, tk, NwstService.LANGUAGE_TC, "", "R", NwstService.DEVICETYPE,
+                            NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
+                            NwstRequestUtil.syscode2()).execute()
+                    val r2 = nwstService.pushTokenEnable(tk, tk, NwstService.LANGUAGE_TC, "", "Y", NwstService.DEVICETYPE,
+                            NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
+                            NwstRequestUtil.syscode2()).execute()
+                    val r3 = nwstService.adv(NwstService.LANGUAGE_TC, "640",
+                            NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
+                            NwstRequestUtil.syscode2(), tk).execute()
+                    val editor = preferences.edit()
+                    editor.putString("nwst_tk", tk)
+                    editor.apply()
+                }
+
+                response = nwstService.eta((routeStop.stopId?:"0").toInt().toString(),
+                        routeStop.routeNo, "Y", "60", NwstService.LANGUAGE_TC, routeStop.routeSequence,
+                        routeStop.sequence, routeStop.routeId, "Y", "Y",
+                        NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2, NwstRequestUtil.syscode2(), tk).execute()
+            }
             if (!response.isSuccessful) {
                 val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
                 arrivalTime.text = context.getString(R.string.message_fail_to_request)
@@ -87,7 +96,7 @@ class NwstEtaWorker(private val context : Context, params : WorkerParameters)
             val timeNow = System.currentTimeMillis()
 
             val res = response.body()
-            if (res == null || res.contentLength() < 1) {
+            if (res == null || res.contentLength() < 10) {
                 val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
                 arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
                 return Result.failure(outputData)
@@ -128,10 +137,7 @@ class NwstEtaWorker(private val context : Context, params : WorkerParameters)
                         arrivalTime.generatedAt = c.time.time
                     } catch (ignored: NumberFormatException) {
                     }
-
                 }
-                // arrivalTime = ArrivalTime.estimate(context, arrivalTime)
-                
                 arrivalTime.companyCode = routeStop.companyCode?:""
                 arrivalTime.routeNo = routeStop.routeNo?:""
                 arrivalTime.routeSeq = routeStop.routeSequence?:""
@@ -163,6 +169,7 @@ class NwstEtaWorker(private val context : Context, params : WorkerParameters)
                 .replace("往: ".toRegex(), "往")
                 .replace(" ?新巴".toRegex(), "")
                 .replace(" ?城巴".toRegex(), "")
+                .replace("^:\\($".toRegex(), context.getString(R.string.provider_no_eta))
     }
 
     private fun parseDistance(text: String): Float {

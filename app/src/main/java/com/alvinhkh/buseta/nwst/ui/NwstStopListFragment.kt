@@ -14,6 +14,7 @@ import androidx.work.WorkManager
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.nwst.NwstStopTimetableWorker
+import com.alvinhkh.buseta.nwst.NwstTokenWorker
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.model.RouteStop
 import com.alvinhkh.buseta.route.ui.RouteStopListFragmentAbstract
@@ -62,7 +63,10 @@ class NwstStopListFragment : RouteStopListFragmentAbstract() {
                         .putString(C.EXTRA.ROUTE_SERVICE_TYPE, route?.serviceType)
                         .build())
                 .build()
-        WorkManager.getInstance().enqueue(request)
+        WorkManager.getInstance()
+                .beginWith(OneTimeWorkRequest.Builder(NwstTokenWorker::class.java).build())
+                .then(request)
+                .enqueue()
         WorkManager.getInstance().getWorkInfoByIdLiveData(request.id)
                 .observe(this, Observer { workInfo ->
                     if (workInfo?.state == WorkInfo.State.FAILED) {

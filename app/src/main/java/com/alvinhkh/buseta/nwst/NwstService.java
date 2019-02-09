@@ -18,13 +18,13 @@ public interface NwstService {
 
     String APP_VERSION = "3.5.5";
 
-    String APP_VERSION2 = "49";
+    String APP_VERSION2 = "5";
 
-    String DEVICETYPE = "android";
+    String DEVICETYPE = "iphone";
 
     String LANGUAGE_TC = "0";
 
-    String PLATFORM = "Android";
+    String PLATFORM = "iphone";
 
     String QUERY_BM = "bm";
 
@@ -79,8 +79,8 @@ public interface NwstService {
     String TYPE_NIGHT_ROUTES = "1";
 
     Retrofit api = new Retrofit.Builder()
-            .client(App.httpClient)
-            .baseUrl("http://mobile.nwstbus.com.hk/")
+            .client(App.httpClient2)
+            .baseUrl("https://mobile.nwstbus.com.hk/")
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build();
 
@@ -92,8 +92,8 @@ public interface NwstService {
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
             @Query(QUERY_VERSION2) String version2,
-            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
-//            @Query(QUERY_TK) String tk,
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
+            @Query(QUERY_TK) String tk
 //            @Query(QUERY_SYSCODE3) String sysCode3
     );
 
@@ -102,6 +102,7 @@ public interface NwstService {
             @Query(QUERY_TK) String tk,
             @Query(QUERY_DEVICETOKEN) String devicetoken,
             @Query(QUERY_LANGUAGE) String language,
+            @Query(QUERY_BM) String bm,
             @Query(QUERY_MODE) String mode,
             @Query(QUERY_DEVICETYPE) String deviceType,
             @Query(QUERY_SYSCODE) String sysCode,
@@ -117,6 +118,7 @@ public interface NwstService {
             @Query(QUERY_TK) String tk,
             @Query(QUERY_DEVICETOKEN) String devicetoken,
             @Query(QUERY_LANGUAGE) String language,
+            @Query(QUERY_BM) String bm,
             @Query(QUERY_MODE) String mode,
             @Query(QUERY_DEVICETYPE) String deviceType,
             @Query(QUERY_SYSCODE) String sysCode,
@@ -195,10 +197,28 @@ public interface NwstService {
             @Query(QUERY_SYSCODE) String sysCode,
             @Query(QUERY_PLATFORM) String platform,
             @Query(QUERY_VERSION) String version,
+            @Query(QUERY_VERSION2) String version2
+    );
+
+    @GET("api6/getnextbus2.php")
+    Call<ResponseBody> eta(
+            @Query(QUERY_STOP_ID) String stopId,
+            @Query(QUERY_SERVICE_NO) String serviceNo,
+            @Query("removeRepeatedSuspend") String removeRepeatedSuspend,
+            @Query("interval") String interval,
+            @Query(QUERY_LANGUAGE) String language,
+            @Query(QUERY_BOUND) String bound,
+            @Query(QUERY_STOP_SEQ) String stopSeq,
+            @Query(QUERY_RDV) String rdv,
+            @Query("showtime") String showtime,
+            @Query("removeRepeatedSuspend") String removeRepeatedSuspend2,
+            @Query(QUERY_SYSCODE) String sysCode,
+            @Query(QUERY_PLATFORM) String platform,
+            @Query(QUERY_VERSION) String version,
             @Query(QUERY_VERSION2) String version2,
-            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2
-            // @Query(QUERY_TK) String tk,
-            // @Query(QUERY_SYSCODE3) String sysCode3
+            @Query(value = QUERY_SYSCODE2, encoded = true) String sysCode2,
+            @Query(QUERY_TK) String tk
+//            @Query(QUERY_SYSCODE3) String sysCode3
     );
 
     @GET("api6/getline_multi2.php")
