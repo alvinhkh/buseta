@@ -55,6 +55,7 @@ class EditFollowFragment: Fragment(), OnItemDragListener {
         groupId = arguments?.getString(C.EXTRA.GROUP_ID)?:FollowGroup.UNCATEGORISED
         followDatabase = FollowDatabase.getInstance(rootView.context)!!
         emptyView = rootView.findViewById(R.id.empty_view)
+        emptyView.visibility = View.GONE
         recyclerView = rootView.findViewById(R.id.recycler_view)
         with(recyclerView) {
             setHasFixedSize(true)

@@ -413,7 +413,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                 .putString(C.EXTRA.ROUTE_SERVICE_TYPE, route.serviceType?:"")
                 .build()
         val request = when (companyCode) {
-            C.PROVIDER.KMB -> {
+            C.PROVIDER.KMB, C.PROVIDER.LWB -> {
                 if (PreferenceUtil.isUsingNewKmbApi(context!!)) {
                     OneTimeWorkRequest.Builder(KmbStopListWorker::class.java)
                             .setInputData(data)

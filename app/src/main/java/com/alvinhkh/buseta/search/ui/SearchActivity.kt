@@ -43,7 +43,7 @@ class SearchActivity : AppCompatActivity() {
     private lateinit var suggestionDatabase: SuggestionDatabase
 
     private lateinit var viewModel: SuggestionViewModel
-    private lateinit var viewAdapter: SuggestionViewAdapter
+    private lateinit var viewAdapter: SearchViewAdapter
 
     private var isOpened = false
 
@@ -53,25 +53,32 @@ class SearchActivity : AppCompatActivity() {
         suggestionDatabase = SuggestionDatabase.getInstance(this)!!
         setContentView(R.layout.activity_suggestion)
 
-        val listener = object: SuggestionViewAdapter.OnItemClickListener {
-            override fun onClick(suggestion: Suggestion?) {
-                if (suggestion == null) return
+        val listener = object: SearchViewAdapter.OnItemClickListener {
+            override fun onClick(data: SearchViewAdapter.Data) {
                 val intent = Intent(Intent.ACTION_VIEW)
                 intent.setClass(applicationContext, SearchActivity::class.java)
-                intent.putExtra(C.EXTRA.ROUTE_NO, suggestion.route)
-                intent.putExtra(C.EXTRA.COMPANY_CODE, suggestion.companyCode)
+                if (data.type == SearchViewAdapter.Data.TYPE_SUGGESTION) {
+                    val suggestion = data.obj as Suggestion
+                    intent.putExtra(C.EXTRA.ROUTE_NO, suggestion.route)
+                    intent.putExtra(C.EXTRA.COMPANY_CODE, suggestion.companyCode)
+                }
+                if (data.type == SearchViewAdapter.Data.TYPE_ROUTE) {
+                    val route = data.obj as Route
+                    intent.putExtra(C.EXTRA.ROUTE_NO, route.name)
+                    intent.putExtra(C.EXTRA.COMPANY_CODE, route.companyCode)
+                }
                 startActivity(intent)
                 finish()
             }
 
-            override fun onLongClick(suggestion: Suggestion?) {
+            override fun onLongClick(data: SearchViewAdapter.Data) {
             }
         }
         viewModel = ViewModelProviders.of(this).get(SuggestionViewModel::class.java)
         with(recycler_view) {
             addItemDecoration(PinnedHeaderItemDecoration())
             layoutManager = LinearLayoutManager(context)
-            viewAdapter = SuggestionViewAdapter(context, null, listener)
+            viewAdapter = SearchViewAdapter(listener)
             adapter = viewAdapter
         }
 
@@ -131,7 +138,7 @@ class SearchActivity : AppCompatActivity() {
 
     private fun loadSearchResult(route: String, singleWillOpen: Boolean) {
         var lastCompanyCode = ""
-        viewModel.getAsLiveData(route).observe(this@SearchActivity, Observer { list ->
+        viewModel.liveData(route).observe(this@SearchActivity, Observer { list ->
             viewAdapter.clear()
             val routeNo = route.replace(Regex("[^a-zA-Z0-9 ]"), "")
             val shownCompanyCode = arrayListOf<String>()
@@ -145,22 +152,22 @@ class SearchActivity : AppCompatActivity() {
                     startActivity(intent)
                     finish()
                 } else {
-                    list?.forEach { suggestion ->
-                        if (lastCompanyCode != suggestion.companyCode) {
+                    list?.forEach { route ->
+                        if (lastCompanyCode != route.companyCode) {
                             if (lastCompanyCode.isNotBlank() && routeNo.isNotBlank()) {
                                 viewAdapter.addButton(Suggestion(0, lastCompanyCode, routeNo, 0, Suggestion.TYPE_DEFAULT))
                             }
-                            val companyName = Route.companyName(applicationContext, suggestion.companyCode, suggestion.route)
+                            val companyName = Route.companyName(applicationContext, route.companyCode?:"", route.name)
                             viewAdapter.addSection(companyName)
-                            shownCompanyCode.add(suggestion.companyCode)
+                            shownCompanyCode.add(route.companyCode?:"")
                         }
-                        viewAdapter.addItem(suggestion)
-                        lastCompanyCode = suggestion.companyCode
+                        viewAdapter.add(route)
+                        lastCompanyCode = route.companyCode?:""
                     }
                 }
             }
             if (routeNo.isNotBlank()) {
-                listOf(C.PROVIDER.CTB, C.PROVIDER.KMB, C.PROVIDER.NLB, C.PROVIDER.NWFB).forEach {
+                listOf(C.PROVIDER.CTB, C.PROVIDER.KMB, C.PROVIDER.LWB, C.PROVIDER.NLB, C.PROVIDER.NWFB).forEach {
                     if (!shownCompanyCode.contains(it)) {
                         val companyName = Route.companyName(applicationContext, it, route.replace(Regex("[^a-zA-Z0-9]"), ""))
                         viewAdapter.addSection(companyName)
@@ -180,7 +187,7 @@ class SearchActivity : AppCompatActivity() {
             C.PROVIDER.LRTFEEDER -> intent = Intent(applicationContext, MtrBusActivity::class.java)
             C.PROVIDER.MTR -> intent = Intent(applicationContext, MtrStationActivity::class.java)
             C.PROVIDER.NLB -> intent = Intent(applicationContext, NlbActivity::class.java)
-            C.PROVIDER.KMB -> {
+            C.PROVIDER.KMB, C.PROVIDER.LWB -> {
                 intent = Intent(applicationContext, LwbActivity::class.java)
                 if (PreferenceUtil.isUsingNewKmbApi(applicationContext)) {
                     intent = Intent(applicationContext, KmbActivity::class.java)

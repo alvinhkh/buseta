@@ -90,13 +90,19 @@ public class C {
 
         String CTB = "CTB";
 
+        String DATAGOVHK = "DATAGOVHK";
+
         String LRTFEEDER = "LRTFeeder";
+
+        String LWB = "LWB";
 
         String KMB = "KMB";
 
         String MTR = "MTR";
 
         String NLB = "NLB";
+
+        String NR = "NR";
 
         String NWFB = "NWFB";
 

@@ -29,7 +29,7 @@ class FollowRouteWorker(context : Context, params : WorkerParameters)
         list.forEach { follow ->
             val id = when(follow.companyCode) {
                 C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST,
-                C.PROVIDER.KMB -> follow.companyCode + follow.routeNo
+                C.PROVIDER.KMB, C.PROVIDER.LWB -> follow.companyCode + follow.routeNo
                 else -> follow.companyCode
             }
             map[id] = Pair(follow.companyCode, follow.routeNo)
@@ -48,7 +48,7 @@ class FollowRouteWorker(context : Context, params : WorkerParameters)
                     requests.add(OneTimeWorkRequest.Builder(AESBusWorker::class.java).addTag(TAG).setInputData(data).build())
                 }
                 C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> requests.add(OneTimeWorkRequest.Builder(NwstRouteWorker::class.java).addTag(TAG).setInputData(data).build())
-                C.PROVIDER.KMB -> requests.add(OneTimeWorkRequest.Builder(KmbRouteWorker::class.java).addTag(TAG).setInputData(data).build())
+                C.PROVIDER.KMB, C.PROVIDER.LWB -> requests.add(OneTimeWorkRequest.Builder(KmbRouteWorker::class.java).addTag(TAG).setInputData(data).build())
                 C.PROVIDER.LRTFEEDER -> requests.add(OneTimeWorkRequest.Builder(LrtFeederWorker::class.java).addTag(TAG).setInputData(data).build())
                 C.PROVIDER.MTR -> requests.add(OneTimeWorkRequest.Builder(MtrLineWorker::class.java).addTag(TAG).setInputData(data).build())
                 C.PROVIDER.NLB -> requests.add(OneTimeWorkRequest.Builder(NlbWorker::class.java).addTag(TAG).setInputData(data).build())

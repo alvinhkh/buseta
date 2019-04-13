@@ -12,6 +12,7 @@ import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.datagovhk.LrtFeederWorker
 import com.alvinhkh.buseta.datagovhk.MtrLineWorker
+import com.alvinhkh.buseta.datagovhk.TdWorker
 import com.alvinhkh.buseta.follow.FollowRouteWorker
 import com.alvinhkh.buseta.kmb.KmbEtaRouteWorker
 import com.alvinhkh.buseta.mtr.AESBusWorker
@@ -50,6 +51,13 @@ class ProviderUpdateService: IntentService(TAG) {
             return
         }
         WorkManager.getInstance().cancelAllWorkByTag(TAG)
+
+        val dataTd = Data.Builder()
+                .putBoolean(C.EXTRA.MANUAL, manualUpdate)
+                .build()
+        WorkManager.getInstance()
+                .enqueue(OneTimeWorkRequest.Builder(TdWorker::class.java).addTag(TAG)
+                        .setInputData(dataTd).build())
 
         val routeCount = routeDatabase.routeDao().count()
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)

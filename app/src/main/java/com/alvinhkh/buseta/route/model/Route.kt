@@ -7,39 +7,41 @@ import android.os.Parcelable
 import android.support.v4.content.ContextCompat
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
-import com.alvinhkh.buseta.route.model.Route.CREATOR.TABLE_NAME
 
-@Entity(tableName = TABLE_NAME, indices = [(Index(value = arrayOf(Route.COLUMN_COMPANY_CODE,
-        Route.COLUMN_NAME, Route.COLUMN_CODE, Route.COLUMN_SEQUENCE, Route.COLUMN_SERVICE_TYPE), unique = true))])
+@Entity(tableName = "routes", indices = [(Index(value = arrayOf("company_code", "name", "code", "sequence", "service_type", "data_source"), unique = true))])
 data class Route(
         @PrimaryKey(autoGenerate = true)
-        @ColumnInfo(name = COLUMN_ID, typeAffinity = ColumnInfo.INTEGER)
+        @ColumnInfo(name = "_id", typeAffinity = ColumnInfo.INTEGER)
         var id: Long = 0,
-        @ColumnInfo(name = COLUMN_CODE, typeAffinity = ColumnInfo.TEXT)
+        @ColumnInfo(name = "code", typeAffinity = ColumnInfo.TEXT)
         var code: String? = "",
-        @ColumnInfo(name = COLUMN_COLOUR, typeAffinity = ColumnInfo.TEXT)
+        @ColumnInfo(name = "colour", typeAffinity = ColumnInfo.TEXT)
         var colour: String? = "",
-        @ColumnInfo(name = COLUMN_COMPANY_CODE, typeAffinity = ColumnInfo.TEXT)
+        @ColumnInfo(name = "company_code", typeAffinity = ColumnInfo.TEXT)
         var companyCode: String? = "",
-        @ColumnInfo(name = COLUMN_ORIGIN, typeAffinity = ColumnInfo.TEXT)
+        @ColumnInfo(name = "origin", typeAffinity = ColumnInfo.TEXT)
         var origin: String? = "",
-        @ColumnInfo(name = COLUMN_DESTINATION, typeAffinity = ColumnInfo.TEXT)
+        @ColumnInfo(name = "destination", typeAffinity = ColumnInfo.TEXT)
         var destination: String? = "",
-        @ColumnInfo(name = COLUMN_NAME, typeAffinity = ColumnInfo.TEXT)
+        @ColumnInfo(name = "name", typeAffinity = ColumnInfo.TEXT)
         var name: String? = "",
-        @ColumnInfo(name = COLUMN_SEQUENCE, typeAffinity = ColumnInfo.TEXT)
+        @ColumnInfo(name = "sequence", typeAffinity = ColumnInfo.TEXT)
         var sequence: String? = "",
-        @ColumnInfo(name = COLUMN_SERVICE_TYPE, typeAffinity = ColumnInfo.TEXT)
+        @ColumnInfo(name = "service_type", typeAffinity = ColumnInfo.TEXT)
         var serviceType: String? = "",
-        @ColumnInfo(name = COLUMN_DESCRIPTION, typeAffinity = ColumnInfo.TEXT)
+        @ColumnInfo(name = "description", typeAffinity = ColumnInfo.TEXT)
         var description: String? = "",
-        @ColumnInfo(name = COLUMN_IS_SPECIAL, typeAffinity = ColumnInfo.INTEGER)
+        @ColumnInfo(name = "is_special", typeAffinity = ColumnInfo.INTEGER)
         var isSpecial: Boolean? = false,
-        @ColumnInfo(name = COLUMN_STOPS_START_SEQUENCE, typeAffinity = ColumnInfo.INTEGER)
+        @ColumnInfo(name = "stops_start_sequence", typeAffinity = ColumnInfo.INTEGER)
         var stopsStartSequence: Int? = 0,
-        @ColumnInfo(name = COLUMN_LAST_UPDATE, typeAffinity = ColumnInfo.INTEGER)
+        @ColumnInfo(name = "data_source", typeAffinity = ColumnInfo.TEXT)
+        var dataSource: String? = "",
+        @ColumnInfo(name = "hyperlink", typeAffinity = ColumnInfo.TEXT)
+        var hyperlink: String? = "",
+        @ColumnInfo(name = "last_update", typeAffinity = ColumnInfo.INTEGER)
         var lastUpdate: Long? = 0,
-        @ColumnInfo(name = COLUMN_MAP_COORDINATES)
+        @ColumnInfo(name = "map_coordinates")
         var mapCoordinates: MutableList<LatLong> = arrayListOf()
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
@@ -55,6 +57,8 @@ data class Route(
             parcel.readString(),
             parcel.readValue(Boolean::class.java.classLoader) as? Boolean,
             parcel.readInt(),
+            parcel.readString(),
+            parcel.readString(),
             parcel.readLong())
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -70,6 +74,8 @@ data class Route(
         parcel.writeString(description)
         parcel.writeValue(isSpecial)
         parcel.writeInt(stopsStartSequence?:0)
+        parcel.writeString(hyperlink)
+        parcel.writeString(dataSource)
         parcel.writeLong(lastUpdate?:0)
     }
 
@@ -95,22 +101,6 @@ data class Route(
             return arrayOfNulls(size)
         }
 
-        const val TABLE_NAME = "routes"
-        const val COLUMN_ID = "_id"
-        const val COLUMN_CODE = "code"
-        const val COLUMN_COLOUR = "colour"
-        const val COLUMN_COMPANY_CODE = "company_code"
-        const val COLUMN_ORIGIN = "origin"
-        const val COLUMN_DESTINATION = "destination"
-        const val COLUMN_NAME = "name"
-        const val COLUMN_SEQUENCE = "sequence"
-        const val COLUMN_SERVICE_TYPE = "service_type"
-        const val COLUMN_DESCRIPTION = "description"
-        const val COLUMN_IS_SPECIAL = "is_special"
-        const val COLUMN_STOPS_START_SEQUENCE = "stops_start_sequence"
-        const val COLUMN_LAST_UPDATE = "last_update"
-        const val COLUMN_MAP_COORDINATES = "map_coordinates"
-
         @JvmStatic
         fun companyName(context: Context, companyCode: String, routeNo: String?): String {
             return when (companyCode) {
@@ -132,8 +122,10 @@ data class Route(
                     }
                 }
                 C.PROVIDER.LRTFEEDER -> context.getString(R.string.provider_short_lrtfeeder)
+                C.PROVIDER.LWB -> context.getString(R.string.provider_short_lwb)
                 C.PROVIDER.MTR -> context.getString(R.string.provider_short_mtr)
                 C.PROVIDER.NLB -> context.getString(R.string.provider_short_nlb)
+                C.PROVIDER.NR -> context.getString(R.string.provider_short_residents)
                 C.PROVIDER.NWFB -> context.getString(R.string.provider_short_nwfb)
                 C.PROVIDER.NWST -> context.getString(R.string.provider_short_nwst)
                 else -> companyCode
@@ -161,9 +153,12 @@ data class Route(
                     }
                 }
                 C.PROVIDER.LRTFEEDER -> ContextCompat.getColor(context, R.color.provider_lrtfeeder)
+                C.PROVIDER.LWB -> ContextCompat.getColor(context, R.color.provider_lwb)
                 C.PROVIDER.MTR -> ContextCompat.getColor(context, R.color.provider_mtr)
                 C.PROVIDER.NLB -> ContextCompat.getColor(context, R.color.provider_nlb)
+                C.PROVIDER.NR -> ContextCompat.getColor(context, R.color.colorPrimary)
                 C.PROVIDER.NWFB -> ContextCompat.getColor(context, R.color.provider_nwfb)
+                C.PROVIDER.NWST -> ContextCompat.getColor(context, R.color.colorPrimary)
                 else -> null
             }
         }

@@ -5,10 +5,8 @@ import android.arch.lifecycle.AndroidViewModel
 import android.arch.lifecycle.MutableLiveData
 import android.support.annotation.UiThread
 import com.alvinhkh.buseta.C
-import com.alvinhkh.buseta.kmb.model.KmbSchedule
 import com.alvinhkh.buseta.mtr.MtrService
 import com.alvinhkh.buseta.mtr.model.MtrLineStatus
-import com.alvinhkh.buseta.mtr.model.MtrLineStatusRes
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Main

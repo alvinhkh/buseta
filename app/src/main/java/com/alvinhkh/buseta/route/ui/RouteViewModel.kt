@@ -14,7 +14,7 @@ class RouteViewModel(application: Application) : AndroidViewModel(application) {
 
     fun getAsLiveData(companyCode: String, routeNo: String): LiveData<MutableList<Route>> {
         if (routeDatabase != null) {
-            list = routeDatabase.routeDao().liveData(companyCode, routeNo)
+            list = routeDatabase.routeDao().liveData("", routeNo, companyCode)
         }
         return list
     }

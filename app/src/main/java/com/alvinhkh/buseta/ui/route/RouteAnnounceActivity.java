@@ -59,6 +59,7 @@ public class RouteAnnounceActivity extends BaseActivity {
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         switch (route.getCompanyCode()) {
             case C.PROVIDER.KMB:
+            case C.PROVIDER.LWB:
                 Bundle b = new Bundle();
                 b.putParcelable(C.EXTRA.ROUTE_OBJECT, route);
                 Fragment f = new KmbAnnounceFragment();

@@ -52,7 +52,7 @@ class FollowFragment: Fragment() {
 
         snackbar = Snackbar.make(rootView?.findViewById(R.id.coordinator_layout)?:rootView, R.string.message_no_internet_connection, Snackbar.LENGTH_INDEFINITE)
         emptyView = rootView.findViewById(R.id.empty_view)
-        emptyView.visibility = View.VISIBLE
+        emptyView.visibility = View.GONE
         recyclerView = rootView.findViewById(R.id.recycler_view)
         viewAdapter = FollowViewAdapter(WeakReference(activity!!))
         with(recyclerView) {
