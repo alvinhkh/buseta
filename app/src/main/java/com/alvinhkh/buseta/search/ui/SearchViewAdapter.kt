@@ -50,7 +50,7 @@ class SearchViewAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
         return Holder(LayoutInflater.from(parent.context).inflate(when (viewType) {
             Data.TYPE_SUGGESTION -> R.layout.item_route_history
-            Data.TYPE_ROUTE -> R.layout.item_route_select2
+            Data.TYPE_ROUTE -> R.layout.item_search_route
             else -> R.layout.item_section
         }, parent, false))
     }
@@ -123,11 +123,10 @@ class SearchViewAdapter(
                     if (!route.destination.isNullOrEmpty() && !route.origin.isNullOrEmpty()) {
                         itemView.findViewById<TextView>(R.id.location).visibility = View.VISIBLE
                         itemView.findViewById<TextView>(R.id.location).text =
-                                itemView.context.getString(R.string.route_path, route.origin, route.destination)
+                                itemView.context.getString(R.string.direction_both_ways, route.origin, route.destination)
                     } else if (!route.destination.isNullOrEmpty()) {
                         itemView.findViewById<TextView>(R.id.location).visibility = View.VISIBLE
-                        itemView.findViewById<TextView>(R.id.location).text =
-                                itemView.context.getString(R.string.destination, route.destination)
+                        itemView.findViewById<TextView>(R.id.location).text = route.destination
                     } else if (!route.origin.isNullOrEmpty()) {
                         itemView.findViewById<TextView>(R.id.location).visibility = View.VISIBLE
                         itemView.findViewById<TextView>(R.id.location).text = route.origin

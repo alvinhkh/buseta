@@ -78,7 +78,7 @@ class TdWorker(context : Context, params : WorkerParameters)
 
         val insertedList = routeDatabase?.routeDao()?.insert(routeList)
         if (insertedList?.size?:0 > 0) {
-            routeDatabase?.routeDao()?.deleteBySource(C.PROVIDER.DATAGOVHK, timeNow)
+            routeDatabase?.routeDao()?.deleteBySource(arrayListOf(C.PROVIDER.DATAGOVHK), timeNow)
         }
 
         return Result.success(outputData)

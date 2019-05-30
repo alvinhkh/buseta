@@ -36,9 +36,6 @@ interface SuggestionDao {
     @Query("SELECT * FROM suggestions WHERE type = 'default' ORDER BY company DESC, text ASC")
     fun suggestionLiveData(): LiveData<MutableList<Suggestion>>
 
-    @Query("SELECT * FROM suggestions WHERE text LIKE :text AND type = 'default' ORDER BY company DESC, text ASC")
-    fun get(text: String): LiveData<MutableList<Suggestion>>
-
     @Query("SELECT _id, * FROM suggestions WHERE text LIKE :text AND type = 'default' ORDER BY text ASC, company DESC")
     fun defaultCursor(text: String): Cursor
 

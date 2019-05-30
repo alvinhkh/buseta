@@ -20,12 +20,21 @@
             android:imeOptions="actionSearch"
             android:background="@android:color/transparent" />
 
+        <android.support.design.chip.ChipGroup
+            android:id="@+id/provider_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/search_et"
+            android:layout_margin="8dp"
+            style="@style/Widget.MaterialComponents.ChipGroup">
+
+        </android.support.design.chip.ChipGroup>
+
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/search_et"
-            android:layout_above="@id/adView_container"
+            android:layout_below="@id/provider_group"
             android:scrollbars="vertical" />
 
     </RelativeLayout>

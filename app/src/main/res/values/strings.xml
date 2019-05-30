@@ -28,6 +28,7 @@
     <string name="dest">往</string>
     <string name="destination">往%s</string>
     <string name="disabled">禁用</string>
+    <string name="direction_both_ways">%s – %s</string>
     <string name="dots" translatable="false">&#8230;</string>
     <string name="enabled">啟用</string>
     <string name="edit">編輯</string>

@@ -84,12 +84,12 @@ data class Route(
     }
 
     fun companyColour(context: Context): Int {
-        return Route.companyColour(context, companyCode?:"", name)
+        return companyColour(context, companyCode?:"", name)
                 ?:ContextCompat.getColor(context, R.color.colorPrimary)
     }
 
     fun companyName(context: Context): String {
-        return Route.companyName(context, companyCode?:"", name)
+        return companyName(context, companyCode?:"", name)
     }
 
     companion object CREATOR : Parcelable.Creator<Route> {

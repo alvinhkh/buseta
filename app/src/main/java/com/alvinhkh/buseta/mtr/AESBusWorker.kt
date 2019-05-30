@@ -50,6 +50,7 @@ class AESBusWorker(context : Context, params : WorkerParameters)
             val aesBusRoutes = database.aesBusDao().allRoutes()
             for ((busNumber, routeStr, serviceHours, _, _, _, districtID) in aesBusRoutes) {
                 val route = Route()
+                route.dataSource = C.PROVIDER.AESBUS
                 route.companyCode = companyCode
                 route.name = busNumber
                 if (districtID > 0) {

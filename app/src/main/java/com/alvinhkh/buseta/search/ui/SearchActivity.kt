@@ -8,13 +8,20 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.support.design.chip.Chip
+import android.support.v4.content.ContextCompat
+import android.support.v4.widget.CompoundButtonCompat
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.preference.PreferenceManager
 import android.support.v7.widget.LinearLayoutManager
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Base64
 import android.view.inputmethod.EditorInfo
+import android.widget.CompoundButton
 import android.widget.TextView
+import android.widget.Toast
+import androidx.core.view.setPadding
 
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
@@ -28,12 +35,13 @@ import com.alvinhkh.buseta.mtr.ui.MtrStationActivity
 import com.alvinhkh.buseta.nlb.ui.NlbActivity
 import com.alvinhkh.buseta.nwst.ui.NwstActivity
 import com.alvinhkh.buseta.route.model.Route
+import com.alvinhkh.buseta.route.ui.RouteListViewModel
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.model.Suggestion
 import com.alvinhkh.buseta.ui.PinnedHeaderItemDecoration
 import com.alvinhkh.buseta.utils.PreferenceUtil
 import com.google.gson.Gson
-import kotlinx.android.synthetic.main.activity_suggestion.*
+import kotlinx.android.synthetic.main.activity_search.*
 
 import java.util.regex.Pattern
 
@@ -42,16 +50,18 @@ class SearchActivity : AppCompatActivity() {
 
     private lateinit var suggestionDatabase: SuggestionDatabase
 
-    private lateinit var viewModel: SuggestionViewModel
+    private lateinit var viewModel: RouteListViewModel
     private lateinit var viewAdapter: SearchViewAdapter
 
     private var isOpened = false
+    private var searchQueryText = ""
+    private var checkedProviders = arrayListOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         suggestionDatabase = SuggestionDatabase.getInstance(this)!!
-        setContentView(R.layout.activity_suggestion)
+        setContentView(R.layout.activity_search)
 
         val listener = object: SearchViewAdapter.OnItemClickListener {
             override fun onClick(data: SearchViewAdapter.Data) {
@@ -74,7 +84,36 @@ class SearchActivity : AppCompatActivity() {
             override fun onLongClick(data: SearchViewAdapter.Data) {
             }
         }
-        viewModel = ViewModelProviders.of(this).get(SuggestionViewModel::class.java)
+
+        with(provider_group) {
+            val companyCodes = arrayListOf(C.PROVIDER.KMB, C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NLB, C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER)
+            val chipListener = CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
+                val companyCode = buttonView.tag as String
+                if (companyCode.isEmpty()) return@OnCheckedChangeListener
+                if (isChecked && !checkedProviders.contains(companyCode)) {
+                    checkedProviders.add(companyCode)
+                } else if (!isChecked && checkedProviders.contains(companyCode)) {
+                    checkedProviders.remove(companyCode)
+                }
+                loadSearchResult(searchQueryText, checkedProviders, false)
+            }
+            for(companyCode in companyCodes) {
+                val companyName = Route.companyName(context, companyCode, "")
+                val chip = Chip(context, null, R.style.Widget_MaterialComponents_Chip_Filter)
+                chip.tag = companyCode
+                chip.text = companyName
+                chip.chipIcon = ContextCompat.getDrawable(context, R.drawable.ic_outline_directions_bus_24dp)
+                chip.isCloseIconVisible = false
+                chip.isClickable = true
+                chip.isCheckable = true
+                chip.isChecked = true
+                chip.setOnCheckedChangeListener(chipListener)
+                this.addView(chip)
+                checkedProviders.add(companyCode)
+            }
+        }
+
+        viewModel = ViewModelProviders.of(this).get(RouteListViewModel::class.java)
         with(recycler_view) {
             addItemDecoration(PinnedHeaderItemDecoration())
             layoutManager = LinearLayoutManager(context)
@@ -93,8 +132,23 @@ class SearchActivity : AppCompatActivity() {
             intent.putExtra(SearchManager.QUERY, newIntent.getStringExtra(SearchManager.QUERY))
         }
 
-        val query = intent.getStringExtra(SearchManager.QUERY)
-        loadSearchResult(query?:"", true)
+        val query = intent.getStringExtra(SearchManager.QUERY)?.toUpperCase()
+        if (query == C.PREF.AD_KEY || query == C.PREF.AD_SHOW) {
+            val preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+            val hidden = preferences.getBoolean(C.PREF.AD_HIDE, false)
+            val editor = preferences.edit()
+            editor.putBoolean(C.PREF.AD_HIDE, query == C.PREF.AD_KEY)
+            editor.apply()
+            var stringId = R.string.message_request_hide_ad
+            if (query == C.PREF.AD_SHOW)
+                stringId = R.string.message_request_show_ad
+            if (hidden && query == C.PREF.AD_KEY)
+                stringId = R.string.message_request_hide_ad_again
+            Toast.makeText(applicationContext, stringId, Toast.LENGTH_LONG).show()
+            finish()
+            return
+        }
+        loadSearchResult(query?:"", checkedProviders, true)
         with(search_et) {
             val action = intent.action
             if (Intent.ACTION_SEARCH == action && !query.isNullOrEmpty()) {
@@ -104,7 +158,7 @@ class SearchActivity : AppCompatActivity() {
             setOnEditorActionListener(TextView.OnEditorActionListener { _, actionId, _ ->
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                     val t = text?.replace("[^a-zA-Z0-9]*".toRegex(), "")?.toUpperCase()
-                    loadSearchResult(t?:"", true)
+                    loadSearchResult(t?:"", checkedProviders, true)
                     return@OnEditorActionListener true
                 }
                 false
@@ -112,7 +166,7 @@ class SearchActivity : AppCompatActivity() {
             addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(p0: Editable?) {
                     val t = p0?.replace("[^a-zA-Z0-9]*".toRegex(), "")?.toUpperCase()
-                    loadSearchResult("$t%", false)
+                    loadSearchResult("$t%", checkedProviders, false)
                 }
 
                 override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
@@ -132,14 +186,16 @@ class SearchActivity : AppCompatActivity() {
             return
         } catch (ignored: ActivityNotFoundException) {}
         if (intent.action == Intent.ACTION_SEARCH) {
-            loadSearchResult(intent.getStringExtra(SearchManager.QUERY)?:"", true)
+            loadSearchResult(intent.getStringExtra(SearchManager.QUERY)?:"", emptyList(), true)
         }
     }
 
-    private fun loadSearchResult(route: String, singleWillOpen: Boolean) {
-        var lastCompanyCode = ""
-        viewModel.liveData(route).observe(this@SearchActivity, Observer { list ->
+    private fun loadSearchResult(route: String, companyCodes: List<String>, singleWillOpen: Boolean) {
+        searchQueryText = route
+        viewModel.liveData(route, companyCodes).observe(this@SearchActivity, Observer { list ->
             viewAdapter.clear()
+            var lastCompanyCode = ""
+            var lastRouteNo = ""
             val routeNo = route.replace(Regex("[^a-zA-Z0-9 ]"), "")
             val shownCompanyCode = arrayListOf<String>()
             if (list?.size?:0 > 0) {
@@ -160,8 +216,12 @@ class SearchActivity : AppCompatActivity() {
                             val companyName = Route.companyName(applicationContext, route.companyCode?:"", route.name)
                             viewAdapter.addSection(companyName)
                             shownCompanyCode.add(route.companyCode?:"")
+                            lastRouteNo = ""
                         }
-                        viewAdapter.add(route)
+                        if (lastRouteNo != route.name?:"") {
+                            viewAdapter.add(route)
+                        }
+                        lastRouteNo = route.name?:""
                         lastCompanyCode = route.companyCode?:""
                     }
                 }
