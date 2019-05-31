@@ -1,9 +1,11 @@
 package com.alvinhkh.buseta;
 
 import android.app.Application;
+
+import androidx.multidex.MultiDex;
 import androidx.preference.PreferenceManager;
 
-import android.os.Looper;
+import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -20,8 +22,6 @@ import org.osmdroid.config.Configuration;
 
 import java.util.concurrent.TimeUnit;
 
-import io.reactivex.android.plugins.RxAndroidPlugins;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import okhttp3.OkHttpClient;
 import timber.log.Timber;
 
@@ -84,9 +84,12 @@ public class App extends Application {
                         firebaseRemoteConfig.activateFetched();
                     }
                 });
+    }
 
-        // rxandroid async
-        RxAndroidPlugins.setInitMainThreadSchedulerHandler(callable -> AndroidSchedulers.from(Looper.getMainLooper(), true));
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        MultiDex.install(this);
     }
 
     private static class CrashlyticsTree extends Timber.Tree {
