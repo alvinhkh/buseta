@@ -51,6 +51,7 @@
     <string name="rename">改名</string>
     <string name="saturday">星期六</string>
     <string name="search_route">搜尋路線</string>
+    <string name="search_route_directly">嘗試搜尋路線 >></string>
     <string name="start_search_route">按右下角按鈕，開始搜尋路線</string>
     <string name="stop_name">站名</string>
     <string name="sunday_and_holiday">星期日及公眾假期</string>

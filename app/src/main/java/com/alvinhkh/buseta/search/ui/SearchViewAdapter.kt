@@ -144,7 +144,7 @@ class SearchViewAdapter(
                 data.type == Data.TYPE_SECTION -> itemView.section_label.text = data.obj as String
                 data.type == Data.TYPE_BUTTON -> {
                     val suggestion = data.obj as Suggestion
-                    itemView.section_label.text = ">>"
+                    itemView.section_label.text = itemView.context.getString(R.string.search_route_directly)
                     itemView.setOnClickListener {
                         val intent = Intent(Intent.ACTION_VIEW)
                         intent.setClass(it.context, SearchActivity::class.java)
