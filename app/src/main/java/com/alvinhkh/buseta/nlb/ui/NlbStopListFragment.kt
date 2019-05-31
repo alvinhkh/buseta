@@ -11,11 +11,10 @@ import android.view.MenuItem
 
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
+import com.alvinhkh.buseta.nlb.NlbService.Companion.TIMETABLE_URL
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.model.RouteStop
 import com.alvinhkh.buseta.route.ui.RouteStopListFragmentAbstract
-
-import com.alvinhkh.buseta.nlb.NlbService.TIMETABLE_URL
 
 
 class NlbStopListFragment : RouteStopListFragmentAbstract() {
