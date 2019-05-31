@@ -18,7 +18,6 @@ import androidx.appcompat.app.AppCompatActivity
 class NlbNewsFragment: Fragment() {
 
     private var viewAdapter: NlbNewsViewAdapter? = null
-    private lateinit var route: Route
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
