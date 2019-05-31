@@ -1,25 +1,17 @@
 package com.alvinhkh.buseta.nwst.util;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.text.TextUtils;
 
-import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
-import com.alvinhkh.buseta.route.model.RouteStop;
-import com.alvinhkh.buseta.nwst.model.NwstEta;
-
-import org.jsoup.Jsoup;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import timber.log.Timber;
 

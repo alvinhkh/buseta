@@ -1,6 +1,6 @@
 package com.alvinhkh.buseta.route.dao
 
-import android.arch.persistence.room.TypeConverter
+import androidx.room.TypeConverter
 import com.alvinhkh.buseta.route.model.LatLong
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken

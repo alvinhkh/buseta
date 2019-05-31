@@ -1,7 +1,7 @@
 package com.alvinhkh.buseta.service
 
-import android.arch.lifecycle.LifecycleService
-import android.arch.lifecycle.Observer
+import androidx.lifecycle.LifecycleService
+import androidx.lifecycle.Observer
 import android.content.Intent
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequest

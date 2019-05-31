@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.NestedScrollView
+<androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="@color/background">
 
-    <android.support.v7.widget.LinearLayoutCompat
+    <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -101,7 +101,7 @@
 
         </RelativeLayout>
 
-        <android.support.design.widget.CoordinatorLayout
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:id="@+id/coordinator_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -111,13 +111,13 @@
                 android:layout_height="wrap_content"
                 android:scrollbars="none">
 
-                <android.support.v7.widget.LinearLayoutCompat
+                <androidx.appcompat.widget.LinearLayoutCompat
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center|start"
                     android:orientation="horizontal">
 
-                    <android.support.design.button.MaterialButton
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/follow_button"
                         style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
                         android:layout_width="wrap_content"
@@ -127,7 +127,7 @@
                         app:icon="@drawable/ic_outline_bookmark_border_36dp"
                         app:iconTint="@color/colorAccent" />
 
-                    <android.support.design.button.MaterialButton
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/notification_button"
                         style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
                         android:layout_width="wrap_content"
@@ -137,7 +137,7 @@
                         app:icon="@drawable/ic_outline_notifications_none_36dp"
                         app:iconTint="@color/colorAccent" />
 
-                    <android.support.design.button.MaterialButton
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/open_map_button"
                         style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
                         android:layout_width="wrap_content"
@@ -147,7 +147,7 @@
                         app:icon="@drawable/ic_outline_map_36dp"
                         app:iconTint="@color/colorAccent" />
 
-                    <android.support.design.button.MaterialButton
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/open_streetview_button"
                         style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
                         android:layout_width="wrap_content"
@@ -157,7 +157,7 @@
                         app:icon="@drawable/ic_outline_streetview_36dp"
                         app:iconTint="@color/colorAccent" />
 
-                    <android.support.design.button.MaterialButton
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/arrival_alert_button"
                         style="@style/Widget.MaterialComponents.Button.TextButton.Icon"
                         android:layout_width="wrap_content"
@@ -167,11 +167,11 @@
                         app:icon="@drawable/ic_outline_alarm_add_36dp"
                         app:iconTint="@color/colorAccent" />
 
-                </android.support.v7.widget.LinearLayoutCompat>
+                </androidx.appcompat.widget.LinearLayoutCompat>
 
             </HorizontalScrollView>
 
-        </android.support.design.widget.CoordinatorLayout>
+        </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
         <LinearLayout
             android:visibility="gone"
@@ -275,7 +275,7 @@
             android:scaleType="centerCrop"
             tools:src="@mipmap/ic_launcher" />
 
-        <android.support.design.button.MaterialButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/show_image_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -283,6 +283,6 @@
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:textColor="@color/textPrimary" />
 
-    </android.support.v7.widget.LinearLayoutCompat>
+    </androidx.appcompat.widget.LinearLayoutCompat>
 
-</android.support.v4.widget.NestedScrollView>
+</androidx.core.widget.NestedScrollView>

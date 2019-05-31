@@ -3,7 +3,7 @@ package com.alvinhkh.buseta.service
 import android.app.IntentService
 import android.content.Intent
 import android.content.SharedPreferences
-import android.support.v7.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager

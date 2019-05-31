@@ -3,9 +3,9 @@ package com.alvinhkh.buseta.mtr.ui
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
-import android.support.customtabs.CustomTabsIntent
-import android.support.v4.content.ContextCompat
-import android.support.v7.widget.RecyclerView
+import androidx.browser.customtabs.CustomTabsIntent
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup

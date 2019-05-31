@@ -1,7 +1,7 @@
 package com.alvinhkh.buseta.utils
 
 import android.graphics.Color
-import android.support.annotation.ColorInt
+import androidx.annotation.ColorInt
 
 object ColorUtil {
 

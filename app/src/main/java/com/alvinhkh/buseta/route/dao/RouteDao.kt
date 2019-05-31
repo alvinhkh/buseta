@@ -1,7 +1,7 @@
 package com.alvinhkh.buseta.route.dao
 
-import android.arch.lifecycle.LiveData
-import android.arch.persistence.room.*
+import androidx.lifecycle.LiveData
+import androidx.room.*
 import com.alvinhkh.buseta.route.model.LatLong
 import com.alvinhkh.buseta.route.model.Route
 

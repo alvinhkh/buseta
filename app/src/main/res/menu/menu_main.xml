@@ -12,7 +12,7 @@
         android:icon="@drawable/ic_outline_search_24dp"
         app:iconTint="@color/white"
         app:showAsAction="never|collapseActionView"
-        app:actionViewClass="android.support.v7.widget.SearchView" />
+        app:actionViewClass="androidx.appcompat.widget.SearchView" />
 
     <item
         android:id="@+id/action_search_open"

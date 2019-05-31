@@ -4,7 +4,7 @@ import android.app.UiModeManager
 import android.content.Context
 import android.os.Build
 import android.preference.PreferenceManager
-import android.support.v7.app.AppCompatDelegate
+import androidx.appcompat.app.AppCompatDelegate
 
 object NightModeUtil {
 

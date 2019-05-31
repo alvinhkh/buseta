@@ -1,7 +1,7 @@
 package com.alvinhkh.buseta.follow.dao
 
-import android.arch.lifecycle.LiveData
-import android.arch.persistence.room.*
+import androidx.lifecycle.LiveData
+import androidx.room.*
 import com.alvinhkh.buseta.follow.model.FollowGroup
 
 

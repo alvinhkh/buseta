@@ -23,7 +23,7 @@ class UpdateAppShortcutWorker(context : Context, params : WorkerParameters)
     private val suggestionDatabase = SuggestionDatabase.getInstance(context)
 
     override fun doWork(): Result {
-        if (android.os.Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return Result.failure()
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return Result.failure()
 
         // Dynamic App Shortcut
         try {

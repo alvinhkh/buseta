@@ -1,10 +1,9 @@
 package com.alvinhkh.buseta;
 
 import android.app.Application;
-import android.content.Context;
+import androidx.preference.PreferenceManager;
+
 import android.os.Looper;
-import android.support.multidex.MultiDex;
-import android.support.v7.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -88,12 +87,6 @@ public class App extends Application {
 
         // rxandroid async
         RxAndroidPlugins.setInitMainThreadSchedulerHandler(callable -> AndroidSchedulers.from(Looper.getMainLooper(), true));
-    }
-
-    @Override
-    protected void attachBaseContext(Context base) {
-        super.attachBaseContext(base);
-        MultiDex.install(this);
     }
 
     private static class CrashlyticsTree extends Timber.Tree {

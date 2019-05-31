@@ -1,6 +1,6 @@
 package com.alvinhkh.buseta.mtr.dao
 
-import android.arch.persistence.room.TypeConverter
+import androidx.room.TypeConverter
 
 object RoomConverterNullString {
     @TypeConverter

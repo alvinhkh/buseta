@@ -1,6 +1,6 @@
 package com.alvinhkh.buseta.utils
 
-import android.arch.persistence.room.Room
+import androidx.room.Room
 import android.content.Context
 import com.alvinhkh.buseta.mtr.dao.AESBusDatabase
 import timber.log.Timber

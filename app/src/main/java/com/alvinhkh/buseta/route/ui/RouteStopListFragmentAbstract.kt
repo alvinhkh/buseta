@@ -1,28 +1,27 @@
 package com.alvinhkh.buseta.route.ui
 
 import android.Manifest
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
-import android.support.design.widget.FloatingActionButton
-import android.support.design.widget.Snackbar
-import android.support.v4.app.ActivityCompat
-import android.support.v4.app.Fragment
-import android.support.v4.widget.SwipeRefreshLayout
-import android.support.v7.preference.PreferenceManager
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.LinearSmoothScroller
-import android.support.v7.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.Snackbar
+import androidx.core.app.ActivityCompat
+import androidx.fragment.app.Fragment
+import androidx.preference.PreferenceManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkInfo
@@ -466,9 +465,9 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                 if (viewAdapter.get(i)?.type == TYPE_ROUTE_STOP && viewAdapter.get(i)?.obj is RouteStop) {
                     val routeStop = viewAdapter.get(i)?.obj as RouteStop
                     if (routeStop.sequence == markerStop?.sequence) {
-                        val smoothScroller = object : LinearSmoothScroller(recyclerView?.context) {
+                        val smoothScroller = object : androidx.recyclerview.widget.LinearSmoothScroller(recyclerView?.context) {
                             override fun getVerticalSnapPreference(): Int {
-                                return LinearSmoothScroller.SNAP_TO_START
+                                return SNAP_TO_START
                             }
                         }
                         smoothScroller.targetPosition = i

@@ -1,10 +1,10 @@
 package com.alvinhkh.buseta.route.model
 
-import android.arch.persistence.room.*
+import androidx.room.*
 import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
-import android.support.v4.content.ContextCompat
+import androidx.core.content.ContextCompat
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 

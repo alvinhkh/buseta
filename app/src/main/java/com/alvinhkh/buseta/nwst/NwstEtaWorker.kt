@@ -1,7 +1,7 @@
 package com.alvinhkh.buseta.nwst
 
 import android.content.Context
-import android.support.v7.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import androidx.work.*
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R

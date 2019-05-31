@@ -2,7 +2,7 @@ package com.alvinhkh.buseta.search.dao;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.support.v4.widget.SimpleCursorAdapter;
+import androidx.cursoradapter.widget.SimpleCursorAdapter;
 
 import com.alvinhkh.buseta.search.model.Suggestion;
 

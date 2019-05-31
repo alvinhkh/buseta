@@ -1,9 +1,9 @@
 package com.alvinhkh.buseta.route.ui
 
 import android.annotation.SuppressLint
-import android.support.design.widget.BottomSheetDialogFragment
-import android.support.v4.view.ViewPager
-import android.support.v7.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import androidx.viewpager.widget.ViewPager
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup

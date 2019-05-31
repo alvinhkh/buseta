@@ -54,20 +54,20 @@ class MtrResourceWorker(context : Context, params : WorkerParameters)
     @Throws(Throwable::class)
     private fun downloadFile(body: ResponseBody, fileName: String): File {
         val data = ByteArray(1024 * 4)
-        val fileSize = body.contentLength()
+//        val fileSize = body.contentLength()
         val bis = BufferedInputStream(body.byteStream(), 1024 * 8)
         val outputFile = File(applicationContext.cacheDir, fileName)
         val output = FileOutputStream(outputFile)
         var total: Long = 0
         val startTime = System.currentTimeMillis()
         var timeCount = 1
-        var totalFileSize = 0
+//        var totalFileSize = 0
         var count = bis.read(data)
         while (count != -1) {
             total += count.toLong()
-            totalFileSize = (fileSize / Math.pow(1024.0, 2.0)).toInt()
-            val current = Math.round(total / Math.pow(1024.0, 2.0)).toDouble()
-            val progress = (total * 100 / fileSize).toInt()
+//            totalFileSize = (fileSize / Math.pow(1024.0, 2.0)).toInt()
+//            val current = Math.round(total / Math.pow(1024.0, 2.0)).toDouble()
+//            val progress = (total * 100 / fileSize).toInt()
             val currentTime = System.currentTimeMillis() - startTime
             if (currentTime > 1000 * timeCount) {
                 timeCount++

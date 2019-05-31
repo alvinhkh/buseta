@@ -16,8 +16,8 @@
 package com.alvinhkh.buseta.ui
 
 
-import android.support.v7.widget.RecyclerView
-import android.support.v7.widget.helper.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.ItemTouchHelper
 
 /**
  * Interface to listen for a move or dismissal event from a [ItemTouchHelper.Callback].

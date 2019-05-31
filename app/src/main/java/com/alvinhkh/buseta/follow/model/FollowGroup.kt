@@ -1,6 +1,6 @@
 package com.alvinhkh.buseta.follow.model
 
-import android.arch.persistence.room.*
+import androidx.room.*
 import com.alvinhkh.buseta.follow.model.FollowGroup.Companion.COLUMN_ID
 
 @Entity(tableName = FollowGroup.TABLE_NAME, indices = [(Index(value = arrayOf(COLUMN_ID), unique = true))])

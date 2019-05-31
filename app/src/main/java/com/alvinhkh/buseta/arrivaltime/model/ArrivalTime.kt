@@ -1,7 +1,7 @@
 package com.alvinhkh.buseta.arrivaltime.model
 
-import android.arch.lifecycle.LiveData
-import android.arch.persistence.room.*
+import androidx.lifecycle.LiveData
+import androidx.room.*
 import android.content.Context
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R

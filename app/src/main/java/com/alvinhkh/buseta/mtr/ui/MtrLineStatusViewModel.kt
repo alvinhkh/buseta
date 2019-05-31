@@ -1,9 +1,9 @@
 package com.alvinhkh.buseta.mtr.ui
 
 import android.app.Application
-import android.arch.lifecycle.AndroidViewModel
-import android.arch.lifecycle.MutableLiveData
-import android.support.annotation.UiThread
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.MutableLiveData
+import androidx.annotation.UiThread
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.mtr.MtrService
 import com.alvinhkh.buseta.mtr.model.MtrLineStatus

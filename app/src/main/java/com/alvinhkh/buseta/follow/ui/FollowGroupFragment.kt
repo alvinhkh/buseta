@@ -1,19 +1,19 @@
 package com.alvinhkh.buseta.follow.ui
 
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
-import android.support.design.widget.FloatingActionButton
-import android.support.design.widget.TabLayout
-import android.support.v4.app.Fragment
-import android.support.v4.content.ContextCompat
-import android.support.v4.view.ViewPager
-import android.support.v7.app.AppCompatActivity
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.tabs.TabLayout
+import androidx.fragment.app.Fragment
+import androidx.core.content.ContextCompat
+import androidx.viewpager.widget.ViewPager
+import androidx.appcompat.app.AppCompatActivity
 import android.view.*
 import android.widget.FrameLayout
 import com.alvinhkh.buseta.C
@@ -144,7 +144,7 @@ class FollowGroupFragment : Fragment() {
         else
             ContextCompat.getColor(context!!, R.color.colorPrimary)
         (activity as AppCompatActivity).supportActionBar?.setBackgroundDrawable(ColorDrawable(color))
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             activity?.window?.statusBarColor = ColorUtil.darkenColor(color)
             activity?.window?.navigationBarColor = ColorUtil.darkenColor(color)
         }

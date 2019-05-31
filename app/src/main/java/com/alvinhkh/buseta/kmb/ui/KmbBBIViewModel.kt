@@ -1,9 +1,9 @@
 package com.alvinhkh.buseta.kmb.ui
 
 import android.app.Application
-import android.arch.lifecycle.AndroidViewModel
-import android.arch.lifecycle.MutableLiveData
-import android.support.annotation.UiThread
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.MutableLiveData
+import androidx.annotation.UiThread
 import com.alvinhkh.buseta.kmb.KmbService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Main

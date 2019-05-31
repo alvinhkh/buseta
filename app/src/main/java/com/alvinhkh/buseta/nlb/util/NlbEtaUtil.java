@@ -1,14 +1,10 @@
 package com.alvinhkh.buseta.nlb.util;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.text.TextUtils;
 
-import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Element;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;

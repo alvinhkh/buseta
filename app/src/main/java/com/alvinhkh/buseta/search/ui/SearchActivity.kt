@@ -2,18 +2,18 @@ package com.alvinhkh.buseta.search.ui
 
 
 import android.app.SearchManager
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.support.design.chip.Chip
-import android.support.v4.content.ContextCompat
-import android.support.v4.widget.CompoundButtonCompat
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.preference.PreferenceManager
-import android.support.v7.widget.LinearLayoutManager
+import com.google.android.material.chip.Chip
+import androidx.core.content.ContextCompat
+import androidx.core.widget.CompoundButtonCompat
+import androidx.appcompat.app.AppCompatActivity
+import androidx.preference.PreferenceManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Base64

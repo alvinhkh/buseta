@@ -1,8 +1,8 @@
 package com.alvinhkh.buseta.service
 
-import android.arch.lifecycle.Lifecycle
-import android.arch.lifecycle.LifecycleOwner
-import android.arch.lifecycle.LifecycleRegistry
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
 
 // https://stackoverflow.com/a/53174818
 enum class ForeverStartLifecycleOwner : LifecycleOwner {

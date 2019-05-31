@@ -6,11 +6,11 @@ import android.graphics.BitmapFactory
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
-import android.support.annotation.ColorInt
-import android.support.design.widget.BottomNavigationView
-import android.support.v4.app.FragmentManager
-import android.support.v4.app.FragmentTransaction
-import android.support.v4.content.ContextCompat
+import androidx.annotation.ColorInt
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentTransaction
+import androidx.core.content.ContextCompat
 
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
@@ -85,7 +85,7 @@ class MainActivity : BaseActivity() {
             if (colorRes != 0) {
                 val darkenColor = ColorUtil.darkenColor(colorRes)
                 supportActionBar?.setBackgroundDrawable(ColorDrawable(colorRes))
-                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && window != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && window != null) {
                     window.statusBarColor = darkenColor
                     window.navigationBarColor = darkenColor
                 }

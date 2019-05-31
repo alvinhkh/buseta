@@ -1,7 +1,7 @@
 package com.alvinhkh.buseta.kmb.ui
 
 import android.os.Bundle
-import android.support.design.widget.FloatingActionButton
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import android.widget.Toast
 import com.alvinhkh.buseta.C
 
