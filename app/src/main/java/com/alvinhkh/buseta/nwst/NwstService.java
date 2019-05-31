@@ -1,14 +1,16 @@
 package com.alvinhkh.buseta.nwst;
 
 import com.alvinhkh.buseta.App;
+import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory;
 
 import java.util.Map;
 
 import io.reactivex.Observable;
+import kotlinx.coroutines.Deferred;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
+import retrofit2.Response;
 import retrofit2.Retrofit;
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.http.GET;
 import retrofit2.http.Query;
 import retrofit2.http.QueryMap;
@@ -81,7 +83,12 @@ public interface NwstService {
     Retrofit api = new Retrofit.Builder()
             .client(App.httpClient2)
             .baseUrl("https://mobile.nwstbus.com.hk/")
-            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+            .build();
+
+    Retrofit apiCoroutine = new Retrofit.Builder()
+            .client(App.httpClient2)
+            .baseUrl("https://mobile.nwstbus.com.hk/")
+            .addCallAdapterFactory(CoroutineCallAdapterFactory.create())
             .build();
 
     @GET("api6/getadv.php")
@@ -180,7 +187,7 @@ public interface NwstService {
     );
 
     @GET("api6/get_notice_4.php")
-    Observable<ResponseBody> notice(@QueryMap Map<String, String> options);
+    Deferred<Response<ResponseBody>> noticeList(@QueryMap Map<String, String> options);
 
     @GET("api6/getnextbus2.php")
     Call<ResponseBody> eta(

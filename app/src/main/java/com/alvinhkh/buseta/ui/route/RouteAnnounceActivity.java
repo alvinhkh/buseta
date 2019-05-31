@@ -2,7 +2,9 @@ package com.alvinhkh.buseta.ui.route;
 
 import android.os.Bundle;
 
+import com.alvinhkh.buseta.kmb.ui.KmbAnnounceFragment;
 import com.alvinhkh.buseta.nlb.ui.NlbNewsFragment;
+import com.alvinhkh.buseta.nwst.ui.NwstNoticeFragment;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -13,8 +15,6 @@ import android.widget.Toast;
 
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
-import com.alvinhkh.buseta.kmb.ui.KmbAnnounceFragment;
-import com.alvinhkh.buseta.nwst.ui.NwstNoticeFragment;
 import com.alvinhkh.buseta.route.model.Route;
 import com.alvinhkh.buseta.ui.BaseActivity;
 import com.alvinhkh.buseta.utils.AdViewUtil;
@@ -58,12 +58,12 @@ public class RouteAnnounceActivity extends BaseActivity {
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        Bundle b = new Bundle();
+        b.putParcelable(C.EXTRA.ROUTE_OBJECT, route);
         switch (route.getCompanyCode()) {
             case C.PROVIDER.KMB:
             case C.PROVIDER.LWB:
             {
-                Bundle b = new Bundle();
-                b.putParcelable(C.EXTRA.ROUTE_OBJECT, route);
                 Fragment f = new KmbAnnounceFragment();
                 f.setArguments(b);
                 fragmentTransaction.replace(R.id.fragment_container, f);
@@ -75,7 +75,11 @@ public class RouteAnnounceActivity extends BaseActivity {
             case C.PROVIDER.CTB:
             case C.PROVIDER.NWFB:
             case C.PROVIDER.NWST:
-                fragmentTransaction.replace(R.id.fragment_container, NwstNoticeFragment.newInstance(route));
+            {
+                Fragment f = new NwstNoticeFragment();
+                f.setArguments(b);
+                fragmentTransaction.replace(R.id.fragment_container, f);
+            }
                 break;
             default:
                 Toast.makeText(this, "invalid company: " + route.getCompanyCode(), Toast.LENGTH_SHORT).show();
