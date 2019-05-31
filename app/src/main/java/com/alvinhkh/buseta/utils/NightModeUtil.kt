@@ -2,6 +2,7 @@ package com.alvinhkh.buseta.utils
 
 import android.app.UiModeManager
 import android.content.Context
+import android.os.Build
 import android.preference.PreferenceManager
 import android.support.v7.app.AppCompatDelegate
 
@@ -18,17 +19,19 @@ object NightModeUtil {
                 0 -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_AUTO)
                 1 -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
                 2 -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-                else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+//                else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             }
         }
-        val uiModeManager = context.getSystemService(Context.UI_MODE_SERVICE)
-        if (uiModeManager is UiModeManager) {
-            if (uiModeManager.nightMode != AppCompatDelegate.getDefaultNightMode() && uiModeManager.nightMode != nightMode) {
-                when (nightMode) {
-                    0 -> uiModeManager.nightMode = UiModeManager.MODE_NIGHT_AUTO
-                    1 -> uiModeManager.nightMode = UiModeManager.MODE_NIGHT_NO
-                    2 -> uiModeManager.nightMode = UiModeManager.MODE_NIGHT_YES
-                    else -> uiModeManager.nightMode = UiModeManager.MODE_NIGHT_NO
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+            val uiModeManager = context.getSystemService(Context.UI_MODE_SERVICE)
+            if (uiModeManager is UiModeManager) {
+                if (uiModeManager.nightMode != AppCompatDelegate.getDefaultNightMode() && uiModeManager.nightMode != nightMode) {
+                    when (nightMode) {
+                        0 -> uiModeManager.nightMode = UiModeManager.MODE_NIGHT_AUTO
+                        1 -> uiModeManager.nightMode = UiModeManager.MODE_NIGHT_NO
+                        2 -> uiModeManager.nightMode = UiModeManager.MODE_NIGHT_YES
+                        else -> uiModeManager.nightMode = UiModeManager.MODE_NIGHT_NO
+                    }
                 }
             }
         }
