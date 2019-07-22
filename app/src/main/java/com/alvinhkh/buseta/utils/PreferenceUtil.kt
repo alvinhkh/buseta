@@ -14,8 +14,9 @@ object PreferenceUtil {
     }
 
     fun isShowWifiIcon(context: Context): Boolean {
-        val mPrefs = PreferenceManager.getDefaultSharedPreferences(context)
-        return null != mPrefs && mPrefs.getBoolean("load_wifi_icon", true)
+//        val mPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+//        return null != mPrefs && mPrefs.getBoolean("load_wifi_icon", true)
+        return false
     }
 
     fun isUsingNewKmbApi(context: Context): Boolean {

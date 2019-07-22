@@ -88,9 +88,10 @@ class KmbEtaWorker(private val context : Context, params : WorkerParameters)
                         else -> kmbEta.ol?.toLong()?:-1
                     }
                     arrivalTime.expire = kmbEta.expire?:""
-                    arrivalTime.isSchedule = kmbEta.schedule.isNullOrEmpty() && kmbEta.schedule == "Y"
-                    arrivalTime.hasWheelchair = kmbEta.wheelchair.isNullOrEmpty() && kmbEta.wheelchair == "Y"
-                    arrivalTime.hasWifi = kmbEta.wifi.isNullOrEmpty() && kmbEta.wifi == "Y"
+                    arrivalTime.isSchedule = !kmbEta.schedule.isNullOrEmpty() && kmbEta.schedule == "Y"
+//                    arrivalTime.hasWheelchair = !kmbEta.wheelchair.isNullOrEmpty() && kmbEta.wheelchair == "Y"
+//                    arrivalTime.hasWifi = !kmbEta.wifi.isNullOrEmpty() && kmbEta.wifi == "Y"
+                    arrivalTime.hasWheelchair = !kmbEta.wifi.isNullOrEmpty() && kmbEta.wifi == "Y"
                     arrivalTime.text = Jsoup.parse(kmbEta.time).text().replace("　".toRegex(), " ")
                             .replace(" ?預定班次".toRegex(), "").replace(" ?時段班次".toRegex(), "")
                             .replace(" ?Scheduled".toRegex(), "")

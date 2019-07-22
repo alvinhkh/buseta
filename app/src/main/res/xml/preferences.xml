@@ -52,6 +52,7 @@
             android:defaultValue="true" />
 
         <SwitchPreferenceCompat
+            android:visible="false"
             android:key="load_wifi_icon"
             android:title="@string/title_load_wifi_icon"
             android:summaryOn="@string/display"
