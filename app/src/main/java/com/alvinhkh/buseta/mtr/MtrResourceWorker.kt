@@ -29,11 +29,35 @@ class MtrResourceWorker(context : Context, params : WorkerParameters)
 //            val response1 = mtrMobService.zipResources().execute()
 //            val mtrMobileVersionCheck = response1.body()?:return Result.failure(outputData)
 //            val aesDatabaseFileUrl = mtrMobileVersionCheck.resources?.aes?.url?:return Result.failure(outputData)
-            val aesDatabaseFileUrl = "http://mavmapp1044.azurewebsites.net/sil_data/E_AES_20180918.zip"
+            val aesDatabaseFileUrl = "http://mavmapp1044.azurewebsites.net/sil_data/E_AES_20190328.zip"
             val uri = Uri.parse(aesDatabaseFileUrl)
             applicationContext.deleteDatabase("E_AES.db")
             val fileName = uri.lastPathSegment?:return Result.failure(outputData)
             val response2 = mtrMobService.downloadFile(aesDatabaseFileUrl).execute()
+            val body = response2.body()?:return Result.failure(outputData)
+
+            val zipFile = downloadFile(body, fileName)
+            if (zipFile.exists()) {
+                if (zipFile.name.endsWith(".zip")) {
+                    ZipUtil.decompress(zipFile)
+                }
+                zipFile.deleteOnExit()
+            }
+        } catch (e: Exception) {
+            Timber.e(e)
+            return Result.failure(outputData)
+        }
+
+        try {
+            val mtrMobService = MtrService.mob.create(MtrService::class.java)
+//            val response1 = mtrMobService.zipResources().execute()
+//            val mtrMobileVersionCheck = response1.body()?:return Result.failure(outputData)
+//            val busDatabaseFileUrl = mtrMobileVersionCheck.resources?.mtrBus?.url?:return Result.failure(outputData)
+            val busDatabaseFileUrl = "http://mavmapp1044.azurewebsites.net/sil_data/E_Bus_20190319.zip"
+            val uri = Uri.parse(busDatabaseFileUrl)
+            applicationContext.deleteDatabase("E_Bus.db")
+            val fileName = uri.lastPathSegment?:return Result.failure(outputData)
+            val response2 = mtrMobService.downloadFile(busDatabaseFileUrl).execute()
             val body = response2.body()?:return Result.failure(outputData)
 
             val zipFile = downloadFile(body, fileName)

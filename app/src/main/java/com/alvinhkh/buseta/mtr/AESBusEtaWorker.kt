@@ -12,6 +12,7 @@ import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
 import com.alvinhkh.buseta.mtr.model.AESEtaBusStopsRequest
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.utils.HashUtil
+import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -19,6 +20,7 @@ class AESBusEtaWorker(private val context : Context, params : WorkerParameters)
     : Worker(context, params) {
 
     private val aesService = MtrService.aes.create(MtrService::class.java)
+    private val mtrBusService = MtrService.mtrBus.create(MtrService::class.java)
 
     private val arrivalTimeDatabase = ArrivalTimeDatabase.getInstance(context)!!
 
@@ -30,7 +32,7 @@ class AESBusEtaWorker(private val context : Context, params : WorkerParameters)
         val companyCode = inputData.getString(C.EXTRA.COMPANY_CODE)?:C.PROVIDER.AESBUS
         val routeNo = inputData.getString(C.EXTRA.ROUTE_NO)?:return Result.failure()
 
-        val outputData = Data.Builder()
+        var outputData = Data.Builder()
                 .putInt(C.EXTRA.WIDGET_UPDATE, widgetId)
                 .putInt(C.EXTRA.NOTIFICATION_ID, notificationId)
                 .putString(C.EXTRA.COMPANY_CODE, companyCode)
@@ -56,8 +58,16 @@ class AESBusEtaWorker(private val context : Context, params : WorkerParameters)
             arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTimeList)
             return Result.failure(outputData)
         }
-        
-        val response = aesService.busStopsDetail(AESEtaBusStopsRequest(routeNo, "2", "zh", key)).execute()
+
+        val lang = "zh"
+        val call =
+        if (companyCode == C.PROVIDER.AESBUS) {
+            aesService.busStopsDetail(AESEtaBusStopsRequest(routeNo, "2", lang, key))
+        } else {
+            mtrBusService.busStopsDetail(AESEtaBusStopsRequest(routeNo, "1", lang, key))
+        }
+        val response = call.execute()
+
         if (!response.isSuccessful) {
             arrivalTimeDatabase.arrivalTimeDao().clear(companyCode, routeNo, timeNow)
             routeStopList.forEach { routeStop ->
@@ -71,6 +81,28 @@ class AESBusEtaWorker(private val context : Context, params : WorkerParameters)
 
         val res = response.body()
 
+        var footerRemark = ""
+        if (res?.footerRemarks?.isNotEmpty() == true) {
+            footerRemark = res.footerRemarks?:""
+        }
+        var routeStatusRemark = ""
+        if (res?.routeStatusRemarkTitle?.isNotEmpty() == true && res.routeStatusRemarkContent?.isNotEmpty() == true) {
+            routeStatusRemark = res.routeStatusRemarkTitle?:"" + '\n' + res.routeStatusRemarkContent?:""
+        } else if (res?.routeStatusRemarkTitle?.isNotEmpty() == true) {
+            routeStatusRemark = res.routeStatusRemarkTitle?:""
+        } else if (res?.routeStatusRemarkContent?.isNotEmpty() == true) {
+            routeStatusRemark = res.routeStatusRemarkContent?:""
+        } else if (res?.routeStatusRemarkFooterRemark?.isNotEmpty() == true) {
+            routeStatusRemark = res.routeStatusRemarkFooterRemark?:""
+        }
+        outputData = Data.Builder()
+                .putInt(C.EXTRA.WIDGET_UPDATE, widgetId)
+                .putInt(C.EXTRA.NOTIFICATION_ID, notificationId)
+                .putString(C.EXTRA.COMPANY_CODE, companyCode)
+                .putString(C.EXTRA.ROUTE_NO, routeNo)
+                .putString("MESSAGE_FOOTER", footerRemark)
+                .putString("MESSAGE_SNACKBAR", routeStatusRemark)
+                .build()
         if (res?.routeName != null && res.routeName.equals(routeNo)) {
             val sdf = SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.ENGLISH)
             var statusTime = Date()
@@ -88,6 +120,7 @@ class AESBusEtaWorker(private val context : Context, params : WorkerParameters)
                     for (i in etas.indices) {
                         val (buses, _, busStopId) = etas[i]
                         if (busStopId == null) continue
+                        Timber.d("%s  %s %s %s", routeNo, busStopId, routeStop.stopId, buses?.size)
                         if (busStopId != routeStop.stopId && busStopId != "999") continue
                         if (buses != null && buses.isNotEmpty()) {
                             for (j in 0 until buses.size) {
@@ -137,6 +170,7 @@ class AESBusEtaWorker(private val context : Context, params : WorkerParameters)
                                 arrivalTime.order = j.toString()
                                 arrivalTime.generatedAt = statusTime.time
                                 arrivalTime.updatedAt = timeNow
+                                Timber.d("%s %s %s %s %s", arrivalTime.routeNo, arrivalTime.routeSeq, routeStop.stopId, arrivalTime.stopSeq, arrivalTime.order)
                                 arrivalTimeList.add(arrivalTime)
                             }
                             arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTimeList)
@@ -150,9 +184,19 @@ class AESBusEtaWorker(private val context : Context, params : WorkerParameters)
                     }
                 }
                 arrivalTimeDatabase.arrivalTimeDao().clear(companyCode, routeNo, timeNow)
+
+                return Result.success(outputData)
             }
         }
 
+        if (res?.routeStatusRemarkTitle?.isNotEmpty() == true) {
+            routeStopList.forEach { routeStop ->
+                val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
+                arrivalTime.text = res.routeStatusRemarkTitle?:""
+                arrivalTime.generatedAt = System.currentTimeMillis()
+                arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
+            }
+        }
         return Result.failure(outputData)
     }
 }

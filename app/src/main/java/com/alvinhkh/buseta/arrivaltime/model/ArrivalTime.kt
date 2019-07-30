@@ -128,7 +128,7 @@ data class ArrivalTime (
         fun estimate(context: Context, arrivalTime: ArrivalTime): ArrivalTime {
             if (!arrivalTime.companyCode.isEmpty()) {
                 when (arrivalTime.companyCode) {
-                    C.PROVIDER.AESBUS -> return AESEtaBus.estimate(context, arrivalTime)
+                    C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER -> return AESEtaBus.estimate(context, arrivalTime)
                     C.PROVIDER.KMB, C.PROVIDER.LWB -> return KmbEtaUtil.estimate(context, arrivalTime)
                     C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> return NwstEtaUtil.estimate(context, arrivalTime)
                     C.PROVIDER.NLB -> return NlbEtaUtil.estimate(context, arrivalTime)

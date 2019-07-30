@@ -10,12 +10,12 @@ import androidx.work.WorkManager
 import com.alvinhkh.buseta.Api
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
-import com.alvinhkh.buseta.datagovhk.LrtFeederWorker
 import com.alvinhkh.buseta.datagovhk.MtrLineWorker
 import com.alvinhkh.buseta.datagovhk.TdWorker
 import com.alvinhkh.buseta.follow.FollowRouteWorker
 import com.alvinhkh.buseta.kmb.KmbEtaRouteWorker
 import com.alvinhkh.buseta.mtr.AESBusWorker
+import com.alvinhkh.buseta.mtr.MtrBusWorker
 import com.alvinhkh.buseta.mtr.MtrResourceWorker
 import com.alvinhkh.buseta.nlb.NlbWorker
 import com.alvinhkh.buseta.nwst.NwstRouteWorker
@@ -105,13 +105,16 @@ class ProviderUpdateService: IntentService(TAG) {
                 .enqueue(OneTimeWorkRequest.Builder(KmbEtaRouteWorker::class.java).addTag(TAG)
                         .setInputData(dataKmb).build())
 
-        val dataLrtFeeder = Data.Builder()
+        val dataMtrBus = Data.Builder()
                 .putBoolean(C.EXTRA.MANUAL, manualUpdate)
                 .putString(C.EXTRA.COMPANY_CODE, C.PROVIDER.LRTFEEDER)
                 .build()
         WorkManager.getInstance()
-                .enqueue(OneTimeWorkRequest.Builder(LrtFeederWorker::class.java).addTag(TAG)
-                        .setInputData(dataLrtFeeder).build())
+                .beginWith(OneTimeWorkRequest.Builder(MtrResourceWorker::class.java).addTag(TAG)
+                        .setInputData(dataMtrBus).build())
+                .then(OneTimeWorkRequest.Builder(MtrBusWorker::class.java).addTag(TAG)
+                        .setInputData(dataMtrBus).build())
+                .enqueue()
 
         val dataMtrLine = Data.Builder()
                 .putBoolean(C.EXTRA.MANUAL, manualUpdate)

@@ -8,6 +8,7 @@ import com.alvinhkh.buseta.datagovhk.MtrLineWorker
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.kmb.KmbRouteWorker
 import com.alvinhkh.buseta.mtr.AESBusWorker
+import com.alvinhkh.buseta.mtr.MtrBusWorker
 import com.alvinhkh.buseta.mtr.MtrResourceWorker
 import com.alvinhkh.buseta.nlb.NlbWorker
 import com.alvinhkh.buseta.nwst.NwstRouteWorker
@@ -49,7 +50,10 @@ class FollowRouteWorker(context : Context, params : WorkerParameters)
                 }
                 C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> requests.add(OneTimeWorkRequest.Builder(NwstRouteWorker::class.java).addTag(TAG).setInputData(data).build())
                 C.PROVIDER.KMB, C.PROVIDER.LWB -> requests.add(OneTimeWorkRequest.Builder(KmbRouteWorker::class.java).addTag(TAG).setInputData(data).build())
-                C.PROVIDER.LRTFEEDER -> requests.add(OneTimeWorkRequest.Builder(LrtFeederWorker::class.java).addTag(TAG).setInputData(data).build())
+                C.PROVIDER.LRTFEEDER -> {
+                    requests.add(OneTimeWorkRequest.Builder(MtrResourceWorker::class.java).addTag(TAG).setInputData(data).build())
+                    requests.add(OneTimeWorkRequest.Builder(MtrBusWorker::class.java).addTag(TAG).setInputData(data).build())
+                }
                 C.PROVIDER.MTR -> requests.add(OneTimeWorkRequest.Builder(MtrLineWorker::class.java).addTag(TAG).setInputData(data).build())
                 C.PROVIDER.NLB -> requests.add(OneTimeWorkRequest.Builder(NlbWorker::class.java).addTag(TAG).setInputData(data).build())
             }

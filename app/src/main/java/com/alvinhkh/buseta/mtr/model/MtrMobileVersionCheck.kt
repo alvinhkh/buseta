@@ -12,10 +12,13 @@ data class MtrMobileVersionCheck(
     @Root(strict = false)
     data class ResourcesV12(
             @field:Element(name = "mtr_aes_v12")
-            var aes: MtrAESV12? = null
+            var aes: ResourcesV12Attr? = null,
+
+            @field:Element(name = "MTRBus_v12")
+            var mtrBus: ResourcesV12Attr? = null
     ) {
         @Root(strict = false)
-        data class MtrAESV12(
+        data class ResourcesV12Attr(
                 @field:Attribute(name = "url")
                 var url: String? = null,
 

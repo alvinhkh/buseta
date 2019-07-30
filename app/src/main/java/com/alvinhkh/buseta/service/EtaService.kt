@@ -9,10 +9,8 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 
 import com.alvinhkh.buseta.C
-import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
-import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
 import com.alvinhkh.buseta.datagovhk.MtrEtaWorker
 import com.alvinhkh.buseta.kmb.KmbEtaWorker
 import com.alvinhkh.buseta.mtr.AESBusEtaWorker
@@ -55,7 +53,7 @@ class EtaService : LifecycleService() {
                     extras.getString(C.EXTRA.ROUTE_NO, ""),
                     extras.getString(C.EXTRA.ROUTE_SEQUENCE, ""),
                     extras.getString(C.EXTRA.ROUTE_SERVICE_TYPE, "")))
-            if (companyCode == C.PROVIDER.AESBUS && routeStopList.size > 0) {
+            if (arrayListOf(C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER).contains(companyCode) && routeStopList.size > 0) {
                 val routeStop = routeStopList[0]
                 routeStopList.clear()
                 routeStopList.add(routeStop)
@@ -93,7 +91,7 @@ class EtaService : LifecycleService() {
                 notifyUpdate(routeStop, C.EXTRA.UPDATING, widgetId, notificationId)
                 var workerRequest: OneTimeWorkRequest? = null
                 when (routeStop.companyCode) {
-                    C.PROVIDER.AESBUS -> {
+                    C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER -> {
                         workerRequest = OneTimeWorkRequest.Builder(AESBusEtaWorker::class.java)
                                 .addTag(TAG).setInputData(data).build()
                     }
@@ -103,12 +101,6 @@ class EtaService : LifecycleService() {
                     C.PROVIDER.KMB, C.PROVIDER.LWB -> {
                         workerRequest = OneTimeWorkRequest.Builder(KmbEtaWorker::class.java)
                                 .addTag(TAG).setInputData(data).build()
-                    }
-                    C.PROVIDER.LRTFEEDER -> {
-                        val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
-                        arrivalTime.text = getString(R.string.provider_no_eta)
-                        arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
-                        notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId)
                     }
                     C.PROVIDER.MTR -> {
                         workerRequest = OneTimeWorkRequest.Builder(MtrEtaWorker::class.java)

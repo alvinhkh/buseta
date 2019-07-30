@@ -3,6 +3,7 @@ package com.alvinhkh.buseta.utils
 import androidx.room.Room
 import android.content.Context
 import com.alvinhkh.buseta.mtr.dao.AESBusDatabase
+import com.alvinhkh.buseta.mtr.dao.MtrBusDatabase
 import timber.log.Timber
 import java.io.FileOutputStream
 import java.io.File
@@ -16,6 +17,17 @@ object DatabaseUtil {
             copyDatabase(context, databaseName)
         }
         return Room.databaseBuilder(context, AESBusDatabase::class.java, databaseName)
+                .fallbackToDestructiveMigration()
+                .allowMainThreadQueries()
+                .build()
+    }
+
+    fun getMtrBusDatabase(context: Context) : MtrBusDatabase {
+        val databaseName = "E_Bus.db"
+        if (!isExist(context, databaseName)) {
+            copyDatabase(context, databaseName)
+        }
+        return Room.databaseBuilder(context, MtrBusDatabase::class.java, databaseName)
                 .fallbackToDestructiveMigration()
                 .allowMainThreadQueries()
                 .build()

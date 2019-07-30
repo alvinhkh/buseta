@@ -9,7 +9,7 @@ import com.alvinhkh.buseta.route.model.Route
 
 class RouteListViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val searchableDataSource = arrayListOf(C.PROVIDER.DATAGOVHK, C.PROVIDER.AESBUS)
+    private val searchableDataSource = arrayListOf(C.PROVIDER.DATAGOVHK, C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER)
 
     private val routeDatabase = RouteDatabase.getInstance(application)!!
 

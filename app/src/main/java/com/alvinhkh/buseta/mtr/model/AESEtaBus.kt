@@ -24,7 +24,13 @@ data class AESEtaBus(
         @SerializedName("isDelayed")
         var isDelayed: String? = null,
         @SerializedName("isScheduled")
-        var isScheduled: String? = null
+        var isScheduled: String? = null,
+        @SerializedName("departureTimeInSecond")
+        var departureTimeInSecond: String? = null,
+        @SerializedName("departureTimeInText")
+        var departureTimeInText: String? = null,
+        @SerializedName("lineRef")
+        var lineRef: String? = null
 ) {
     companion object {
 
@@ -33,7 +39,7 @@ data class AESEtaBus(
             val etaDateFormat = SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.ENGLISH)
             val generatedDate = Date(arrivalTime.generatedAt)
             // given timeText
-            if (!arrivalTime.text.isEmpty() && arrivalTime.text.matches(".*\\d.*".toRegex()) && !arrivalTime.text.contains("unexpected")) {
+            if (arrivalTime.text.isNotEmpty() && arrivalTime.text.matches(".*\\d.*".toRegex()) && !arrivalTime.text.contains("unexpected")) {
                 // if text has digit
                 var estimateMinutes = ""
                 val differences = Date().time - generatedDate.time // get device timeText and compare to server timeText

@@ -460,7 +460,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
 
     private fun showMapFragment() {
         when (companyCode) {
-            C.PROVIDER.LRTFEEDER, C.PROVIDER.MTR -> {
+            C.PROVIDER.MTR -> {
                 showMapMenuItem?.isVisible = false
                 isShowMap = false
             }

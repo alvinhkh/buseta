@@ -1,11 +1,7 @@
 package com.alvinhkh.buseta.mtr
 
 import com.alvinhkh.buseta.App
-import com.alvinhkh.buseta.mtr.model.AESEtaBusRes
-import com.alvinhkh.buseta.mtr.model.AESEtaBusStopsRequest
-import com.alvinhkh.buseta.mtr.model.MtrLineStatusRes
-import com.alvinhkh.buseta.mtr.model.MtrMobileVersionCheck
-import com.alvinhkh.buseta.mtr.model.MtrScheduleRes
+import com.alvinhkh.buseta.mtr.model.*
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
@@ -35,13 +31,17 @@ interface MtrService {
                     @Query("lang") lang: String): Call<MtrScheduleRes>
 
     @Headers("Content-Type: application/json")
+    @POST("getRouteStatusDetail")
+    fun routeStatusDetail(@Body request: MtrBusRouteStatusRequest): Call<MtrBusRouteStatusRes>
+
+    @Headers("Content-Type: application/json")
     @POST("getBusStopsDetail")
     fun busStopsDetail(@Body request: AESEtaBusStopsRequest): Call<AESEtaBusRes>
 
     @GET("alert/ryg_line_status.xml")
     fun lineStatus(): Deferred<Response<MtrLineStatusRes>>
 
-    @GET("https://www.mtr.com.hk/mob/mtrmobile_versioncheck_v12_10_2.xml")
+    @GET("https://www.mtr.com.hk/mob/mtrmobile_versioncheck_v12_16.xml")
     fun zipResources(): Call<MtrMobileVersionCheck>
 
     @GET
@@ -63,6 +63,12 @@ interface MtrService {
         val aes: Retrofit = Retrofit.Builder()
                 .client(App.httpClient)
                 .baseUrl("https://mavmwfs1004.azurewebsites.net/AES/AESService.svc/")
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build()
+
+        val mtrBus: Retrofit = Retrofit.Builder()
+                .client(App.httpClient)
+                .baseUrl("https://mavmwfs1004.azurewebsites.net/MTRBus/BusService.svc/")
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build()
 

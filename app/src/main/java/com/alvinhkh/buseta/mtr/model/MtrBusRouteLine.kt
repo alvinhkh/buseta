@@ -1,0 +1,22 @@
+package com.alvinhkh.buseta.mtr.model
+
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "busRouteLine")
+data class MtrBusRouteLine(
+        @PrimaryKey
+        @ColumnInfo(name = "routeLine_ID")
+        var routeLineId: Int,
+        @ColumnInfo(name = "route_ID")
+        var routeId: Int,
+        @ColumnInfo(name = "from_stop", typeAffinity = ColumnInfo.TEXT)
+        var fromStop: String,
+        @ColumnInfo(name = "shape", typeAffinity = ColumnInfo.TEXT)
+        var shape: String? = null,
+        @ColumnInfo(name = "station_remark_en", typeAffinity = ColumnInfo.TEXT)
+        var stationRemarkEn: String? = null,
+        @ColumnInfo(name = "station_remark_zh", typeAffinity = ColumnInfo.TEXT)
+        var stationRemarkZh: String? = null
+)
