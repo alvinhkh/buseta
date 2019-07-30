@@ -55,7 +55,7 @@ public class NotificationService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager notificationManager =
                     (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            if (notificationManager != null) {
+            if (notificationManager != null && notificationManager.getNotificationChannel(C.NOTIFICATION.CHANNEL_ETA) == null) {
                 NotificationChannel etaChannel = new NotificationChannel(C.NOTIFICATION.CHANNEL_ETA,
                         getString(R.string.channel_name_eta), NotificationManager.IMPORTANCE_DEFAULT);
                 etaChannel.setDescription(getString(R.string.channel_description_eta));
@@ -63,6 +63,8 @@ public class NotificationService extends Service {
                 etaChannel.enableVibration(false);
                 etaChannel.setImportance(NotificationManager.IMPORTANCE_DEFAULT);
                 notificationManager.createNotificationChannel(etaChannel);
+            }
+            if (notificationManager != null && notificationManager.getNotificationChannel(C.NOTIFICATION.CHANNEL_FOREGROUND) == null) {
                 NotificationChannel foregroundChannel = new NotificationChannel(C.NOTIFICATION.CHANNEL_FOREGROUND,
                         getString(R.string.channel_name_foreground, getString(R.string.app_name)), NotificationManager.IMPORTANCE_NONE);
                 foregroundChannel.setDescription(getString(R.string.channel_description_foreground));

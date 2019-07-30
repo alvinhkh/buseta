@@ -5,12 +5,10 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import android.content.Context
 import androidx.annotation.UiThread
-import com.alvinhkh.buseta.kmb.model.KmbAnnounce
 import com.alvinhkh.buseta.nwst.NwstService
 import com.alvinhkh.buseta.nwst.NwstService.*
 import com.alvinhkh.buseta.nwst.model.NwstNotice
 import com.alvinhkh.buseta.nwst.util.NwstRequestUtil
-import com.alvinhkh.buseta.ui.ArrayListRecyclerViewAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
