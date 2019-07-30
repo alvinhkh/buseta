@@ -52,14 +52,6 @@
             android:defaultValue="true" />
 
         <SwitchPreferenceCompat
-            android:visible="false"
-            android:key="load_wifi_icon"
-            android:title="@string/title_load_wifi_icon"
-            android:summaryOn="@string/display"
-            android:summaryOff="@string/hide"
-            android:defaultValue="true" />
-
-        <SwitchPreferenceCompat
             android:key="load_stop_image"
             android:title="@string/title_load_stop_image"
             android:summaryOn="@string/auto_load"
