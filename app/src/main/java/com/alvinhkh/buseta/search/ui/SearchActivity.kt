@@ -10,7 +10,6 @@ import android.net.Uri
 import android.os.Bundle
 import com.google.android.material.chip.Chip
 import androidx.core.content.ContextCompat
-import androidx.core.widget.CompoundButtonCompat
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -21,7 +20,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.CompoundButton
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.view.setPadding
+import androidx.lifecycle.LiveData
 
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
@@ -56,6 +55,7 @@ class SearchActivity : AppCompatActivity() {
     private var isOpened = false
     private var searchQueryText = ""
     private var checkedProviders = arrayListOf<String>()
+    private var queryLiveData: LiveData<MutableList<Route>>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -106,10 +106,9 @@ class SearchActivity : AppCompatActivity() {
                 chip.isCloseIconVisible = false
                 chip.isClickable = true
                 chip.isCheckable = true
-                chip.isChecked = true
+                chip.isChecked = false
                 chip.setOnCheckedChangeListener(chipListener)
                 this.addView(chip)
-                checkedProviders.add(companyCode)
             }
         }
 
@@ -191,8 +190,10 @@ class SearchActivity : AppCompatActivity() {
     }
 
     private fun loadSearchResult(route: String, companyCodes: List<String>, singleWillOpen: Boolean) {
+        queryLiveData?.removeObservers(this@SearchActivity)
         searchQueryText = route
-        viewModel.liveData(route, companyCodes).observe(this@SearchActivity, Observer { list ->
+        queryLiveData = viewModel.liveData(route, companyCodes)
+        queryLiveData?.observe(this@SearchActivity, Observer { list ->
             viewAdapter.clear()
             var lastCompanyCode = ""
             var lastRouteNo = ""
