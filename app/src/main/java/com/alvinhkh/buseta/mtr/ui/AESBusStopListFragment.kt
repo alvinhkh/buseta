@@ -1,5 +1,6 @@
 package com.alvinhkh.buseta.mtr.ui
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -29,25 +30,26 @@ class AESBusStopListFragment : RouteStopListFragmentAbstract() {
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         when (item!!.itemId) {
             R.id.action_timetable -> {
-                val link = Uri.parse(WEB_PAGE_URL)
-                if (link != null && context != null) {
-                    try {
-                        val builder = CustomTabsIntent.Builder()
-                        builder.setToolbarColor(ContextCompat.getColor(context!!, R.color.colorPrimary))
-                        val customTabsIntent = builder.build()
-                        customTabsIntent.launchUrl(context!!, link)
-                    } catch (ignored: Exception) {
-                        val intent = Intent(Intent.ACTION_VIEW, link)
-                        if (intent.resolveActivity(context!!.packageManager) != null) {
-                            startActivity(intent)
-                        }
-                    }
-
-                }
+                openLink(context!!, WEB_PAGE_URL, R.color.provider_aes_bus)
                 return true
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun openLink(context: Context, url: String, colorInt: Int) {
+        val link = Uri.parse(url)
+        try {
+            val builder = CustomTabsIntent.Builder()
+            builder.setToolbarColor(ContextCompat.getColor(context, colorInt))
+            val customTabsIntent = builder.build()
+            customTabsIntent.launchUrl(context, link)
+        } catch (ignored: Throwable) {
+            val intent = Intent(Intent.ACTION_VIEW, link)
+            if (intent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(intent)
+            }
+        }
     }
 
     companion object {

@@ -1,5 +1,6 @@
 package com.alvinhkh.buseta.nlb.ui
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -29,25 +30,26 @@ class NlbStopListFragment : RouteStopListFragmentAbstract() {
         val id = item!!.itemId
         when (id) {
             R.id.action_timetable -> if (route != null && route?.code != null) {
-                val link = Uri.parse(TIMETABLE_URL + route?.code)
-                if (link != null) {
-                    try {
-                        val builder = CustomTabsIntent.Builder()
-                        builder.setToolbarColor(ContextCompat.getColor(context!!, R.color.black))
-                        val customTabsIntent = builder.build()
-                        customTabsIntent.launchUrl(context, link)
-                    } catch (ignored: Exception) {
-                        val intent = Intent(Intent.ACTION_VIEW, link)
-                        if (intent.resolveActivity(context!!.packageManager) != null) {
-                            startActivity(intent)
-                        }
-                    }
-
-                }
+                openLink(context!!, TIMETABLE_URL + route?.code, R.color.provider_nlb)
                 return true
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    private fun openLink(context: Context, url: String, colorInt: Int) {
+        val link = Uri.parse(url)
+        try {
+            val builder = CustomTabsIntent.Builder()
+            builder.setToolbarColor(ContextCompat.getColor(context, colorInt))
+            val customTabsIntent = builder.build()
+            customTabsIntent.launchUrl(context, link)
+        } catch (ignored: Throwable) {
+            val intent = Intent(Intent.ACTION_VIEW, link)
+            if (intent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(intent)
+            }
+        }
     }
 
     companion object {

@@ -1,6 +1,7 @@
 package com.alvinhkh.buseta.nwst.ui
 
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.recyclerview.widget.RecyclerView
@@ -8,6 +9,8 @@ import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.browser.customtabs.CustomTabsIntent
+import androidx.core.content.ContextCompat
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.nwst.model.NwstNotice
 import kotlinx.android.synthetic.main.item_route_announce.view.*
@@ -68,9 +71,7 @@ class NwstNoticeViewAdapter(
                     if (nwstNotice.link.contains(".pdf")) {
                         openPdf(nwstNotice.link)
                     } else {
-                        val intent = Intent(Intent.ACTION_VIEW)
-                        intent.data = Uri.parse(nwstNotice.link)
-                        v.context.startActivity(intent)
+                        openLink(v.context, nwstNotice.link, R.color.provider_nwfb)
                     }
                 }
             }
@@ -90,6 +91,21 @@ class NwstNoticeViewAdapter(
                             "text/html")
                     itemView.context.startActivity(intent)
                 } catch (ignored: Throwable) {
+                }
+            }
+        }
+
+        private fun openLink(context: Context, url: String, colorInt: Int) {
+            val link = Uri.parse(url)
+            try {
+                val builder = CustomTabsIntent.Builder()
+                builder.setToolbarColor(ContextCompat.getColor(context, colorInt))
+                val customTabsIntent = builder.build()
+                customTabsIntent.launchUrl(context, link)
+            } catch (ignored: Throwable) {
+                val intent = Intent(Intent.ACTION_VIEW, link)
+                if (intent.resolveActivity(context.packageManager) != null) {
+                    context.startActivity(intent)
                 }
             }
         }
