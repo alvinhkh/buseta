@@ -19,6 +19,7 @@ import androidx.work.WorkManager
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.datagovhk.MtrLineWorker
 import com.alvinhkh.buseta.utils.ConnectivityUtil
+import timber.log.Timber
 
 
 class MtrLineStatusFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
@@ -50,8 +51,8 @@ class MtrLineStatusFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
             layoutManager = LinearLayoutManager(context)
             adapter = viewAdapter
         }
-        val viewModel = ViewModelProviders.of(this).get(MtrLineStatusViewModel::class.java)
-        viewModel.getAsLiveData().observe(this, Observer { list ->
+        val lineStatusViewModel = ViewModelProviders.of(this).get(MtrLineStatusViewModel::class.java)
+        lineStatusViewModel.getAsLiveData().observe(this, Observer { list ->
             if (ConnectivityUtil.isConnected(context)) {
                 snackbar.dismiss()
             } else {
@@ -65,6 +66,10 @@ class MtrLineStatusFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
             if (swipeRefreshLayout.isRefreshing) {
                 swipeRefreshLayout.isRefreshing = false
             }
+        })
+        val latestAlertViewModel = ViewModelProviders.of(this).get(MtrLatestAlertViewModel::class.java)
+        latestAlertViewModel.getAsLiveData().observe(this, Observer { list ->
+            viewAdapter.alert(list?: listOf())
         })
         onRefresh()
         return rootView

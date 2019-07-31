@@ -38,6 +38,9 @@ interface MtrService {
     @POST("getBusStopsDetail")
     fun busStopsDetail(@Body request: AESEtaBusStopsRequest): Call<AESEtaBusRes>
 
+    @GET("alert/latest_alert_data.xml")
+    fun latestAlert(): Deferred<Response<MtrLatestAlertRes>>
+
     @GET("alert/ryg_line_status.xml")
     fun lineStatus(): Deferred<Response<MtrLineStatusRes>>
 

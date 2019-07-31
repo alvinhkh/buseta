@@ -11,6 +11,7 @@ import com.alvinhkh.buseta.route.dao.RouteDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class MtrLineStatusViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -43,6 +44,7 @@ class MtrLineStatusViewModel(application: Application) : AndroidViewModel(applic
                 }
             }
             catch (e: Exception) {
+                Timber.e(e)
                 result.value = null
             }
         }
