@@ -3,7 +3,6 @@ package com.alvinhkh.buseta.follow
 import android.content.Context
 import androidx.work.*
 import com.alvinhkh.buseta.C
-import com.alvinhkh.buseta.datagovhk.LrtFeederWorker
 import com.alvinhkh.buseta.datagovhk.MtrLineWorker
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.kmb.KmbRouteWorker

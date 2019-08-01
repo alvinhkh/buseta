@@ -12,7 +12,6 @@ import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
 import com.alvinhkh.buseta.mtr.model.AESEtaBusStopsRequest
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.utils.HashUtil
-import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -87,7 +86,7 @@ class AESBusEtaWorker(private val context : Context, params : WorkerParameters)
         }
         var routeStatusRemark = ""
         if (res?.routeStatusRemarkTitle?.isNotEmpty() == true && res.routeStatusRemarkContent?.isNotEmpty() == true) {
-            routeStatusRemark = res.routeStatusRemarkTitle?:"" + '\n' + res.routeStatusRemarkContent?:""
+            routeStatusRemark = res.routeStatusRemarkTitle?:"" + '\n' + res.routeStatusRemarkContent
         } else if (res?.routeStatusRemarkTitle?.isNotEmpty() == true) {
             routeStatusRemark = res.routeStatusRemarkTitle?:""
         } else if (res?.routeStatusRemarkContent?.isNotEmpty() == true) {
@@ -120,7 +119,6 @@ class AESBusEtaWorker(private val context : Context, params : WorkerParameters)
                     for (i in etas.indices) {
                         val (buses, _, busStopId) = etas[i]
                         if (busStopId == null) continue
-                        Timber.d("%s  %s %s %s", routeNo, busStopId, routeStop.stopId, buses?.size)
                         if (busStopId != routeStop.stopId && busStopId != "999") continue
                         if (buses != null && buses.isNotEmpty()) {
                             for (j in 0 until buses.size) {
@@ -170,7 +168,6 @@ class AESBusEtaWorker(private val context : Context, params : WorkerParameters)
                                 arrivalTime.order = j.toString()
                                 arrivalTime.generatedAt = statusTime.time
                                 arrivalTime.updatedAt = timeNow
-                                Timber.d("%s %s %s %s %s", arrivalTime.routeNo, arrivalTime.routeSeq, routeStop.stopId, arrivalTime.stopSeq, arrivalTime.order)
                                 arrivalTimeList.add(arrivalTime)
                             }
                             arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTimeList)
