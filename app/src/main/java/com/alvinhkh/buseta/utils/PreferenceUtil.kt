@@ -24,6 +24,11 @@ object PreferenceUtil {
         return null != mPrefs && mPrefs.getString("kmb_api", "kmb_web") == "kmb_web"
     }
 
+    fun isUsingNwstDataGovHkApi(context: Context): Boolean {
+        val mPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+        return null != mPrefs && mPrefs.getString("nwst_api", "nwst_app") == "datagovhk_nwst"
+    }
+
     fun shareAppIntent(context: Context): Intent {
         val intent = Intent()
         intent.action = Intent.ACTION_SEND

@@ -3,6 +3,7 @@ package com.alvinhkh.buseta.follow
 import android.content.Context
 import androidx.work.*
 import com.alvinhkh.buseta.C
+import com.alvinhkh.buseta.datagovhk.NwstWorker
 import com.alvinhkh.buseta.datagovhk.MtrLineWorker
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.kmb.KmbRouteWorker
@@ -11,6 +12,7 @@ import com.alvinhkh.buseta.mtr.MtrBusWorker
 import com.alvinhkh.buseta.mtr.MtrResourceWorker
 import com.alvinhkh.buseta.nlb.NlbWorker
 import com.alvinhkh.buseta.nwst.NwstRouteWorker
+import com.alvinhkh.buseta.utils.PreferenceUtil
 
 
 // TODO: check any route in follow list updated or removed
@@ -47,7 +49,15 @@ class FollowRouteWorker(context : Context, params : WorkerParameters)
                     requests.add(OneTimeWorkRequest.Builder(MtrResourceWorker::class.java).addTag(TAG).setInputData(data).build())
                     requests.add(OneTimeWorkRequest.Builder(AESBusWorker::class.java).addTag(TAG).setInputData(data).build())
                 }
-                C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> requests.add(OneTimeWorkRequest.Builder(NwstRouteWorker::class.java).addTag(TAG).setInputData(data).build())
+                C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> {
+                    requests.add(OneTimeWorkRequest.Builder(
+                            if (PreferenceUtil.isUsingNwstDataGovHkApi(applicationContext)) {
+                                NwstWorker::class.java
+                            } else {
+                                NwstRouteWorker::class.java
+                            }
+                    ).addTag(TAG).setInputData(data).build())
+                }
                 C.PROVIDER.KMB, C.PROVIDER.LWB -> requests.add(OneTimeWorkRequest.Builder(KmbRouteWorker::class.java).addTag(TAG).setInputData(data).build())
                 C.PROVIDER.LRTFEEDER -> {
                     requests.add(OneTimeWorkRequest.Builder(MtrResourceWorker::class.java).addTag(TAG).setInputData(data).build())

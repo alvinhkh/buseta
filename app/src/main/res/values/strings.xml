@@ -80,8 +80,8 @@
     <string name="title_hide_ad">隱藏廣告</string>
     <string name="summary_on_hide_ad">除設定頁面，不顯示其他廣告</string>
     <string name="summary_off_hide_ad">@null</string>
-    <string name="title_kmb_api">九巴API</string>
-    <string name="widgets">Widgets</string>
+    <string name="data_source">資料來源</string>
+    <string name="widgets">小工具 Widgets</string>
     <string name="no_of_rows">行數</string>
 
     <string name="message_app_update">新版本：%s</string>
@@ -149,7 +149,6 @@
     <string name="permission_granted_no">還未取得</string>
     <string name="capacity_empty">空</string>
     <string name="capacity_full">滿</string>
-    <string name="debug">測試</string>
     <string name="auto_load">自動載入</string>
     <string name="manual">手動</string>
     <string name="replace">取代</string>

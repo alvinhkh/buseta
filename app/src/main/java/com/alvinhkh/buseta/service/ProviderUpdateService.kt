@@ -11,6 +11,7 @@ import com.alvinhkh.buseta.Api
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.datagovhk.MtrLineWorker
+import com.alvinhkh.buseta.datagovhk.NwstWorker
 import com.alvinhkh.buseta.datagovhk.TdWorker
 import com.alvinhkh.buseta.follow.FollowRouteWorker
 import com.alvinhkh.buseta.kmb.KmbEtaRouteWorker
@@ -22,6 +23,7 @@ import com.alvinhkh.buseta.nwst.NwstRouteWorker
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.utils.ConnectivityUtil
+import com.alvinhkh.buseta.utils.PreferenceUtil
 import timber.log.Timber
 
 class ProviderUpdateService: IntentService(TAG) {
@@ -132,13 +134,23 @@ class ProviderUpdateService: IntentService(TAG) {
                 .enqueue(OneTimeWorkRequest.Builder(NlbWorker::class.java).addTag(TAG)
                         .setInputData(dataNlb).build())
 
-        val dataNwst = Data.Builder()
-                .putBoolean(C.EXTRA.MANUAL, manualUpdate)
-                .putString(C.EXTRA.COMPANY_CODE, C.PROVIDER.NWST)
-                .build()
-        WorkManager.getInstance()
-                .enqueue(OneTimeWorkRequest.Builder(NwstRouteWorker::class.java).addTag(TAG)
-                        .setInputData(dataNwst).build())
+        if (PreferenceUtil.isUsingNwstDataGovHkApi(applicationContext)) {
+            val dataGovHkNwst = Data.Builder()
+                    .putBoolean(C.EXTRA.MANUAL, manualUpdate)
+                    .putString(C.EXTRA.COMPANY_CODE, C.PROVIDER.NWST)
+                    .build()
+            WorkManager.getInstance()
+                    .enqueue(OneTimeWorkRequest.Builder(NwstWorker::class.java).addTag(TAG)
+                            .setInputData(dataGovHkNwst).build())
+        } else {
+            val dataNwst = Data.Builder()
+                    .putBoolean(C.EXTRA.MANUAL, manualUpdate)
+                    .putString(C.EXTRA.COMPANY_CODE, C.PROVIDER.NWST)
+                    .build()
+            WorkManager.getInstance()
+                    .enqueue(OneTimeWorkRequest.Builder(NwstRouteWorker::class.java).addTag(TAG)
+                            .setInputData(dataNwst).build())
+        }
         
         WorkManager.getInstance().enqueue(OneTimeWorkRequest.Builder(FollowRouteWorker::class.java).build())
     }

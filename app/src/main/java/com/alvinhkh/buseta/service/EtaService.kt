@@ -10,6 +10,7 @@ import androidx.work.WorkManager
 
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
+import com.alvinhkh.buseta.datagovhk.GovNwstEtaWorker
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.datagovhk.MtrEtaWorker
 import com.alvinhkh.buseta.kmb.KmbEtaWorker
@@ -19,6 +20,7 @@ import com.alvinhkh.buseta.nlb.NlbEtaWorker
 import com.alvinhkh.buseta.nwst.NwstEtaWorker
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.utils.ConnectivityUtil
+import com.alvinhkh.buseta.utils.PreferenceUtil
 
 
 class EtaService : LifecycleService() {
@@ -95,9 +97,15 @@ class EtaService : LifecycleService() {
                         workerRequest = OneTimeWorkRequest.Builder(AESBusEtaWorker::class.java)
                                 .addTag(TAG).setInputData(data).build()
                     }
-                    C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST ->
-                        workerRequest = OneTimeWorkRequest.Builder(NwstEtaWorker::class.java)
-                                .addTag(TAG).setInputData(data).build()
+                    C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> {
+                        workerRequest = OneTimeWorkRequest.Builder(
+                                if (PreferenceUtil.isUsingNwstDataGovHkApi(applicationContext)) {
+                                    GovNwstEtaWorker::class.java
+                                } else {
+                                    NwstEtaWorker::class.java
+                                }
+                        ).addTag(TAG).setInputData(data).build()
+                    }
                     C.PROVIDER.KMB, C.PROVIDER.LWB -> {
                         workerRequest = OneTimeWorkRequest.Builder(KmbEtaWorker::class.java)
                                 .addTag(TAG).setInputData(data).build()

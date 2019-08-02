@@ -23,6 +23,16 @@
         <item>kmb_web</item>
     </string-array>
 
+    <string-array name="nwst_api_entries">
+        <item>官方APP</item>
+        <item>資料一線通</item>
+    </string-array>
+
+    <string-array name="nwst_api_values">
+        <item>nwst_app</item>
+        <item>datagovhk_nwst</item>
+    </string-array>
+
     <string-array name="load_eta_entries">
         <item>@string/manual</item>
         <item>30秒</item>

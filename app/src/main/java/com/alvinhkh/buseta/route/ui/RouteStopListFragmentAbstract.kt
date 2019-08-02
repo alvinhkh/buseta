@@ -401,6 +401,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
         val companyCode = route.companyCode?:""
         when (companyCode) {
             C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER, C.PROVIDER.MTR, C.PROVIDER.NLB -> return true
+            C.PROVIDER.NWST, C.PROVIDER.NWFB, C.PROVIDER.CTB -> return true
             "" -> return false
         }
 
@@ -413,20 +414,18 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                 .build()
         val request = when (companyCode) {
             C.PROVIDER.KMB, C.PROVIDER.LWB -> {
-                if (PreferenceUtil.isUsingNewKmbApi(context!!)) {
-                    OneTimeWorkRequest.Builder(KmbStopListWorker::class.java)
-                            .setInputData(data)
-                            .build()
-                } else {
-                    OneTimeWorkRequest.Builder(LwbStopListWorker::class.java)
-                            .setInputData(data)
-                            .build()
-                }
+                OneTimeWorkRequest.Builder(
+                        if (PreferenceUtil.isUsingNewKmbApi(context!!)) {
+                            KmbStopListWorker::class.java
+                        } else {
+                            LwbStopListWorker::class.java
+                        }
+                ).setInputData(data).build()
             }
-            C.PROVIDER.NWST, C.PROVIDER.NWFB, C.PROVIDER.CTB ->
-                OneTimeWorkRequest.Builder(NwstStopListWorker::class.java)
-                        .setInputData(data)
-                        .build()
+//            C.PROVIDER.NWST, C.PROVIDER.NWFB, C.PROVIDER.CTB ->
+//                OneTimeWorkRequest.Builder(NwstStopListWorker::class.java)
+//                        .setInputData(data)
+//                        .build()
             else -> return false
         }
         if (!swipeRefreshLayout.isRefreshing) {

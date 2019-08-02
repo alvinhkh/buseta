@@ -43,6 +43,7 @@ import androidx.work.WorkManager
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
+import com.alvinhkh.buseta.datagovhk.NwstWorker
 import com.alvinhkh.buseta.mtr.ui.MtrBusStopListFragment
 import com.alvinhkh.buseta.kmb.KmbRouteWorker
 import com.alvinhkh.buseta.kmb.ui.KmbStopListFragment
@@ -408,7 +409,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
         when (companyCode) {
             C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER, C.PROVIDER.MTR, C.PROVIDER.NLB -> return
             C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> {
-                if (routeDatabase.routeDao().count(companyCode, routeNo) > 0) return
+                if (routeDatabase.routeDao().count(arrayListOf("", C.PROVIDER.DATAGOVHK_NWST), companyCode, routeNo) > 0) return
             }
         }
         showLoadingView()
@@ -416,22 +417,28 @@ abstract class RouteActivityAbstract : BaseActivity(),
         val data = Data.Builder()
                 .putString(C.EXTRA.COMPANY_CODE, companyCode)
                 .putString(C.EXTRA.ROUTE_NO, routeNo)
+                .putBoolean(C.EXTRA.LOAD_STOP, true)
                 .build()
         val request = when (companyCode) {
-            C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST ->
-                OneTimeWorkRequest.Builder(NwstRouteWorker::class.java)
+            C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> {
+                OneTimeWorkRequest.Builder(
+                        if (PreferenceUtil.isUsingNwstDataGovHkApi(applicationContext)) {
+                            NwstWorker::class.java
+                        } else {
+                            NwstRouteWorker::class.java
+                        })
                         .setInputData(data)
                         .build()
+            }
             C.PROVIDER.KMB, C.PROVIDER.LWB -> {
-                if (PreferenceUtil.isUsingNewKmbApi(applicationContext)) {
-                    OneTimeWorkRequest.Builder(KmbRouteWorker::class.java)
-                            .setInputData(data)
-                            .build()
-                } else {
-                    OneTimeWorkRequest.Builder(LwbRouteWorker::class.java)
-                            .setInputData(data)
-                            .build()
-                }
+                OneTimeWorkRequest.Builder(
+                        if (PreferenceUtil.isUsingNewKmbApi(applicationContext)) {
+                            KmbRouteWorker::class.java
+                        } else {
+                            LwbRouteWorker::class.java
+                        })
+                        .setInputData(data)
+                        .build()
             }
             else -> return
         }

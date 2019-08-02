@@ -101,25 +101,26 @@
     </PreferenceCategory>
 
     <PreferenceCategory
-        android:key="category_debug"
-        android:title="@string/debug">
+        android:key="category_data_source"
+        android:title="@string/data_source">
 
         <ListPreference
             android:key="kmb_api"
-            android:title="@string/title_kmb_api"
+            android:title="@string/provider_kmb"
             android:defaultValue="kmb_web"
             android:entries="@array/kmb_api_entries"
             android:entryValues="@array/kmb_api_values"
             android:negativeButtonText="@string/action_cancel"
             android:positiveButtonText="@string/action_confirm" />
 
-        <SwitchPreferenceCompat
-            android:visible="false"
-            android:key="com.alvinhkh.buseta.AD_HIDE"
-            android:title="@string/title_hide_ad"
-            android:summaryOn="@string/summary_on_hide_ad"
-            android:summaryOff="@string/summary_off_hide_ad"
-            android:defaultValue="false" />
+        <ListPreference
+            android:key="nwst_api"
+            android:title="@string/provider_nwst"
+            android:defaultValue="nwst_app"
+            android:entries="@array/nwst_api_entries"
+            android:entryValues="@array/nwst_api_values"
+            android:negativeButtonText="@string/action_cancel"
+            android:positiveButtonText="@string/action_confirm" />
 
     </PreferenceCategory>
 
@@ -189,6 +190,14 @@
                 android:data="@string/github_issues_url" />
 
         </Preference>
+
+        <SwitchPreferenceCompat
+            android:visible="false"
+            android:key="com.alvinhkh.buseta.AD_HIDE"
+            android:title="@string/title_hide_ad"
+            android:summaryOn="@string/summary_on_hide_ad"
+            android:summaryOff="@string/summary_off_hide_ad"
+            android:defaultValue="false" />
 
     </PreferenceCategory>
 

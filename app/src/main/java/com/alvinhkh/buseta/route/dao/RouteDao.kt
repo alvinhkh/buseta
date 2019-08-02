@@ -15,8 +15,8 @@ interface RouteDao {
     @Query("SELECT COUNT(*) FROM routes")
     fun count(): Int
 
-    @Query("SELECT COUNT(*) FROM routes WHERE company_code = :companyCode AND name = :routeNo AND data_source = ''")
-    fun count(companyCode: String, routeNo: String): Int
+    @Query("SELECT COUNT(*) FROM routes WHERE data_source IN (:dataSources) AND company_code = :companyCode AND name = :routeNo")
+    fun count(dataSources: List<String>, companyCode: String, routeNo: String): Int
 
     @Query("DELETE FROM routes WHERE company_code = :companyCode AND last_update < :lastUpdate AND data_source = ''")
     fun delete(companyCode: String, lastUpdate: Long): Int

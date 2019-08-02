@@ -1,15 +1,15 @@
 package com.alvinhkh.buseta.datagovhk
 
 import com.alvinhkh.buseta.App
-import com.alvinhkh.buseta.datagovhk.model.TdCompanyCode
-import com.alvinhkh.buseta.datagovhk.model.TdRouteBus
-import com.alvinhkh.buseta.datagovhk.model.TdRouteStop
+import com.alvinhkh.buseta.datagovhk.model.*
 
 import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.simplexml.SimpleXmlConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Path
 
 
 interface DataGovHkService {
@@ -35,17 +35,41 @@ interface DataGovHkService {
     @GET("td/routes-fares-xml/RSTOP_BUS.xml")
     fun tdRouteStop(): Call<TdRouteStop>
 
+    @GET("citybus-nwfb/company/{company_id}")
+    fun nwstCompany(@Path("company_id") companyId: String): Call<TransportList<NwstCompany>>
+
+    @GET("citybus-nwfb/route/{company_id}")
+    fun nwstRouteList(@Path("company_id") companyId: String): Call<TransportList<NwstRoute>>
+
+    @GET("citybus-nwfb/route/{company_id}/{route}")
+    fun nwstRoute(@Path("company_id") companyId: String, @Path("route") route: String): Call<Transport<NwstRoute>>
+
+    @GET("citybus-nwfb/route-stop/{company_id}/{route}/{direction}")
+    fun nwstRouteStop(@Path("company_id") companyId: String, @Path("route") route: String, @Path("direction") direction: String): Call<TransportList<NwstRouteStop>>
+
+    @GET("citybus-nwfb/stop/{stop_id}")
+    fun nwstStop(@Path("stop_id") stopId: String): Call<Transport<NwstStop>>
+
+    @GET("citybus-nwfb/eta/{company_id}/{stop_id}/{route}")
+    fun nwstETA(@Path("company_id") companyId: String, @Path("stop_id") stopId: String, @Path("route") route: String): Call<TransportList<NwstEta>>
+
     companion object {
 
-        val resource = Retrofit.Builder()
+        val resource: Retrofit = Retrofit.Builder()
                 .client(App.httpClient)
                 .baseUrl("http://resource.data.one.gov.hk/")
                 .build()
 
-        val static = Retrofit.Builder()
+        val static: Retrofit = Retrofit.Builder()
                 .client(App.httpClient)
                 .baseUrl("http://static.data.gov.hk/")
                 .addConverterFactory(SimpleXmlConverterFactory.create())
+                .build()
+
+        val transport: Retrofit = Retrofit.Builder()
+                .client(App.httpClient)
+                .baseUrl("https://rt.data.gov.hk/v1/transport/")
+                .addConverterFactory(GsonConverterFactory.create())
                 .build()
     }
 }

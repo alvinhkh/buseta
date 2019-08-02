@@ -92,6 +92,8 @@ public class C {
 
         String DATAGOVHK = "DATAGOVHK";
 
+        String DATAGOVHK_NWST = "DATAGOVHK_NWST";
+
         String LRTFEEDER = "LRTFeeder";
 
         String LWB = "LWB";

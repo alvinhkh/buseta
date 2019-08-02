@@ -51,8 +51,12 @@ class TdWorker(context : Context, params : WorkerParameters)
             val res = response.body()?: TdRouteBus()
             res.routeList.forEach { tdRoute ->
                 tdRoute.companyCode.split("+").forEach { companyCode ->
-                    if (arrayOf(C.PROVIDER.CTB, C.PROVIDER.KMB, C.PROVIDER.LRTFEEDER, C.PROVIDER.LWB,
-                                    C.PROVIDER.NLB, C.PROVIDER.NWFB, C.PROVIDER.NWST).indexOf(companyCode) >= 0) {
+                    if (arrayOf(
+                                    C.PROVIDER.KMB, C.PROVIDER.LWB,
+                                    C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST,
+//                                    C.PROVIDER.LRTFEEDER,
+                                    C.PROVIDER.NLB
+                            ).indexOf(companyCode) >= 0) {
                         val route = Route()
                         route.dataSource = C.PROVIDER.DATAGOVHK
                         route.companyCode = when(companyCode) {
@@ -76,10 +80,17 @@ class TdWorker(context : Context, params : WorkerParameters)
             return Result.failure(outputData)
         }
 
+        // TODO: search view with smart input
+
         val insertedList = routeDatabase?.routeDao()?.insert(routeList)
         if (insertedList?.size?:0 > 0) {
             routeDatabase?.routeDao()?.deleteBySource(arrayListOf(C.PROVIDER.DATAGOVHK), timeNow)
         }
+
+//        val insertedStopList = routeDatabase?.routeStopDao()?.insert(stopList)
+//        if (insertedStopList?.size?:0 > 0) {
+//            routeDatabase?.routeStopDao()?.delete(companyCode, timeNow)
+//        }
 
         return Result.success(outputData)
     }
