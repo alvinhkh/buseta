@@ -1,6 +1,10 @@
 package com.alvinhkh.buseta.ui.route
 
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
+import android.widget.FrameLayout
 
 import com.alvinhkh.buseta.kmb.ui.KmbAnnounceFragment
 import com.alvinhkh.buseta.nlb.ui.NlbNewsFragment
@@ -13,6 +17,8 @@ import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.ui.BaseActivity
 import com.alvinhkh.buseta.utils.AdViewUtil
+import com.alvinhkh.buseta.utils.ColorUtil
+import com.google.android.material.tabs.TabLayout
 
 
 class RouteAnnounceActivity : BaseActivity() {
@@ -39,6 +45,11 @@ class RouteAnnounceActivity : BaseActivity() {
         supportActionBar?.setTitle(R.string.notice)
         supportActionBar?.subtitle = route.name
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        activityColor(if (!route.colour.isNullOrEmpty()) {
+            Color.parseColor(route.colour)
+        } else {
+            route.companyColour(this)
+        })
 
         adViewContainer = findViewById(R.id.adView_container)
         if (adViewContainer != null) {
@@ -75,5 +86,15 @@ class RouteAnnounceActivity : BaseActivity() {
     public override fun onResume() {
         super.onResume()
         fab?.hide()
+    }
+
+    private fun activityColor(color: Int) {
+        supportActionBar?.setBackgroundDrawable(ColorDrawable(color))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window?.statusBarColor = ColorUtil.darkenColor(color)
+            window?.navigationBarColor = ColorUtil.darkenColor(color)
+        }
+        findViewById<FrameLayout>(R.id.adView_container)?.setBackgroundColor(color)
+        findViewById<TabLayout>(R.id.tabs)?.background = ColorDrawable(color)
     }
 }
