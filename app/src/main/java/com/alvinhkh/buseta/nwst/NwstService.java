@@ -81,12 +81,12 @@ public interface NwstService {
     String TYPE_NIGHT_ROUTES = "1";
 
     Retrofit api = new Retrofit.Builder()
-            .client(App.httpClient2)
+            .client(App.Companion.getHttpClient2())
             .baseUrl("https://mobile.nwstbus.com.hk/")
             .build();
 
     Retrofit apiCoroutine = new Retrofit.Builder()
-            .client(App.httpClient2)
+            .client(App.Companion.getHttpClient2())
             .baseUrl("https://mobile.nwstbus.com.hk/")
             .addCallAdapterFactory(CoroutineCallAdapterFactory.create())
             .build();

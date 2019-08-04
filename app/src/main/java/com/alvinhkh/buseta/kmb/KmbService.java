@@ -35,7 +35,7 @@ public interface KmbService {
             .create();
 
     Retrofit webCoroutine = new Retrofit.Builder()
-            .client(App.httpClient)
+            .client(App.Companion.getHttpClient())
             .baseUrl("http://www.kmb.hk/")
             .addConverterFactory(GsonConverterFactory.create(gson))
             .addCallAdapterFactory(CoroutineCallAdapterFactory.create())
@@ -48,7 +48,7 @@ public interface KmbService {
     Deferred<Response<KmbBBI2>> bbi(@Query("routeno") String routeno, @Query("bound") String bound, @Query("interchangeType") String interchangeType);
 
     Retrofit webSearch = new Retrofit.Builder()
-            .client(App.httpClient)
+            .client(App.Companion.getHttpClient())
             .baseUrl("http://search.kmb.hk/KMBWebSite/Function/")
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build();
@@ -66,7 +66,7 @@ public interface KmbService {
     Call<KmbRoutesInStop> routesInStop(@Query("bsiCode") String bsiCode);
 
     Retrofit webSearchCoroutine = new Retrofit.Builder()
-            .client(App.httpClient)
+            .client(App.Companion.getHttpClient())
             .baseUrl("http://search.kmb.hk/KMBWebSite/")
             .addConverterFactory(GsonConverterFactory.create(gson))
             .addCallAdapterFactory(CoroutineCallAdapterFactory.create())
@@ -79,7 +79,7 @@ public interface KmbService {
     Deferred<Response<KmbScheduleRes>> schedule(@Query("route") String route, @Query("bound") String bound);
 
     Retrofit webSearchHtmlCoroutine = new Retrofit.Builder()
-            .client(App.httpClient)
+            .client(App.Companion.getHttpClient())
             .baseUrl("http://search.kmb.hk/KMBWebSite/")
             .addCallAdapterFactory(CoroutineCallAdapterFactory.create())
             .build();
@@ -88,7 +88,7 @@ public interface KmbService {
     Deferred<Response<ResponseBody>> announcementPicture(@Query("url") String url);
 
     Retrofit etav3 = new Retrofit.Builder()
-            .client(App.httpClient)
+            .client(App.Companion.getHttpClient())
             .baseUrl("http://etav3.kmb.hk")
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build();
@@ -100,7 +100,7 @@ public interface KmbService {
                         @Query("updated") String updated);
 
     Retrofit etadatafeed = new Retrofit.Builder()
-            .client(App.httpClient)
+            .client(App.Companion.getHttpClient())
             .baseUrl("http://etadatafeed.kmb.hk:1933")
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build();
