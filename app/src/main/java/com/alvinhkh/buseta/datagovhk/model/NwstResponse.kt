@@ -2,7 +2,7 @@ package com.alvinhkh.buseta.datagovhk.model
 
 import com.google.gson.annotations.SerializedName
 
-data class TransportList<T>(
+data class NwstResponse<T>(
         @SerializedName("type")
         var type: String? = null,
         @SerializedName("version")
@@ -10,7 +10,7 @@ data class TransportList<T>(
         @SerializedName("generated_timestamp")
         var generatedTimestamp: String? = null,
         @SerializedName("data")
-        var data: List<T>? = null,
+        var data: T? = null,
         @SerializedName("code")
         var code: String? = null,
         @SerializedName("message")

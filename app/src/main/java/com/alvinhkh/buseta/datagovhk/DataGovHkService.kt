@@ -36,22 +36,22 @@ interface DataGovHkService {
     fun tdRouteStop(): Call<TdRouteStop>
 
     @GET("citybus-nwfb/company/{company_id}")
-    fun nwstCompany(@Path("company_id") companyId: String): Call<TransportList<NwstCompany>>
+    fun nwstCompany(@Path("company_id") companyId: String): Call<NwstResponseList<NwstCompany>>
 
     @GET("citybus-nwfb/route/{company_id}")
-    fun nwstRouteList(@Path("company_id") companyId: String): Call<TransportList<NwstRoute>>
+    fun nwstRouteList(@Path("company_id") companyId: String): Call<NwstResponseList<NwstRoute>>
 
     @GET("citybus-nwfb/route/{company_id}/{route}")
-    fun nwstRoute(@Path("company_id") companyId: String, @Path("route") route: String): Call<Transport<NwstRoute>>
+    fun nwstRoute(@Path("company_id") companyId: String, @Path("route") route: String): Call<NwstResponse<NwstRoute>>
 
     @GET("citybus-nwfb/route-stop/{company_id}/{route}/{direction}")
-    fun nwstRouteStop(@Path("company_id") companyId: String, @Path("route") route: String, @Path("direction") direction: String): Call<TransportList<NwstRouteStop>>
+    fun nwstRouteStop(@Path("company_id") companyId: String, @Path("route") route: String, @Path("direction") direction: String): Call<NwstResponseList<NwstRouteStop>>
 
     @GET("citybus-nwfb/stop/{stop_id}")
-    fun nwstStop(@Path("stop_id") stopId: String): Call<Transport<NwstStop>>
+    fun nwstStop(@Path("stop_id") stopId: String): Call<NwstResponse<NwstStop>>
 
     @GET("citybus-nwfb/eta/{company_id}/{stop_id}/{route}")
-    fun nwstETA(@Path("company_id") companyId: String, @Path("stop_id") stopId: String, @Path("route") route: String): Call<TransportList<NwstEta>>
+    fun nwstETA(@Path("company_id") companyId: String, @Path("stop_id") stopId: String, @Path("route") route: String): Call<NwstResponseList<NwstEta>>
 
     companion object {
 

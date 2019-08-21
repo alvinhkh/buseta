@@ -14,6 +14,9 @@ interface RouteStopDao {
     @Query("DELETE FROM route_stops WHERE company_code = :companyCode AND last_update < :lastUpdate")
     fun delete(companyCode: String, lastUpdate: Long): Int
 
+    @Query("DELETE FROM route_stops WHERE company_code = :companyCode AND route_no = :routeNo AND last_update < :lastUpdate")
+    fun delete(companyCode: String, routeNo: String, lastUpdate: Long): Int
+
     @Query("DELETE FROM route_stops WHERE company_code = :companyCode AND route_id = :routeId AND route_no = :routeNo AND last_update < :lastUpdate")
     fun delete(companyCode: String, routeId: String, routeNo: String, lastUpdate: Long): Int
 

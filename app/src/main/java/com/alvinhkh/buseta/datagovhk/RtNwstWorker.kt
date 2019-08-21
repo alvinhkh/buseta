@@ -15,7 +15,7 @@ import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.model.Suggestion
 import timber.log.Timber
 
-class NwstWorker(context : Context, params : WorkerParameters)
+class RtNwstWorker(context : Context, params : WorkerParameters)
     : Worker(context, params) {
 
     private val dataGovHkService = DataGovHkService.transport.create(DataGovHkService::class.java)
@@ -131,6 +131,9 @@ class NwstWorker(context : Context, params : WorkerParameters)
                             routeStop.latitude = nwstStop.latitude.toString()
                             routeStop.longitude = nwstStop.longitude.toString()
                             routeStop.name = nwstStop.nameTc
+                            if (routeStop.name.isNullOrEmpty()) {
+                                routeStop.name = nwstStop.nameEn
+                            }
                             routeStop.routeDestination = route.destination
                             routeStop.routeId = route.code
                             routeStop.routeNo = route.name
@@ -214,9 +217,15 @@ class NwstWorker(context : Context, params : WorkerParameters)
             val insertedStopList = routeDatabase?.routeStopDao()?.insert(stopList)
             val c2 = insertedStopList?.size ?: 0
             if (c2 > 0) {
-                routeDatabase?.routeStopDao()?.delete(C.PROVIDER.NWFB, timeNow)
-                routeDatabase?.routeStopDao()?.delete(C.PROVIDER.NWST, timeNow)
-                routeDatabase?.routeStopDao()?.delete(C.PROVIDER.CTB, timeNow)
+                if (routeNo.isNotEmpty()) {
+                    routeDatabase?.routeStopDao()?.delete(C.PROVIDER.NWST, routeNo, timeNow)
+                    routeDatabase?.routeStopDao()?.delete(C.PROVIDER.CTB, routeNo, timeNow)
+                    routeDatabase?.routeStopDao()?.delete(C.PROVIDER.NWFB, routeNo, timeNow)
+                } else {
+                    routeDatabase?.routeStopDao()?.delete(C.PROVIDER.NWST, timeNow)
+                    routeDatabase?.routeStopDao()?.delete(C.PROVIDER.CTB, timeNow)
+                    routeDatabase?.routeStopDao()?.delete(C.PROVIDER.NWFB, timeNow)
+                }
             }
         }
 

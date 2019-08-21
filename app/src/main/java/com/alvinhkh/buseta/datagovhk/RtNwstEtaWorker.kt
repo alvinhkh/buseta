@@ -9,12 +9,13 @@ import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
 import com.alvinhkh.buseta.route.dao.RouteDatabase
+import com.alvinhkh.buseta.route.model.RouteStop
 import timber.log.Timber
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.*
 
-class GovNwstEtaWorker(private val context : Context, params : WorkerParameters)
+class RtNwstEtaWorker(private val context : Context, params : WorkerParameters)
     : Worker(context, params) {
 
     private val dataGovHkService = DataGovHkService.transport.create(DataGovHkService::class.java)
@@ -54,6 +55,7 @@ class GovNwstEtaWorker(private val context : Context, params : WorkerParameters)
 
         val routeStopList = routeDatabase.routeStopDao().getByRouteNoStopId(companyCode, routeNo, stopId)
         if (routeStopList.size < 1) {
+            arrivalTimeDatabase.arrivalTimeDao().clear(companyCode, routeNo, routeSequence, stopId, stopSequence, System.currentTimeMillis())
             return Result.failure(outputData)
         }
         val routeStop = routeStopList[0]
@@ -63,28 +65,14 @@ class GovNwstEtaWorker(private val context : Context, params : WorkerParameters)
 
         val response1 = dataGovHkService.nwstETA(companyCode, stopId, routeNo).execute()
         if (!response1.isSuccessful) {
-            if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
-                    && !routeStop.sequence.isNullOrEmpty()) {
-                arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!, routeStop.routeNo!!,
-                        routeStop.routeSequence!!, routeStop.stopId!!, routeStop.sequence!!, timeNow)
-            }
-            val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
-            arrivalTime.text = context.getString(R.string.message_fail_to_request)
-            arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
+            message(context.getString(R.string.message_fail_to_request), routeStop, timeNow)
             return Result.failure(outputData)
         }
 
         try {
             val body = response1.body()
             if (body == null) {
-                if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
-                        && !routeStop.sequence.isNullOrEmpty()) {
-                    arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!, routeStop.routeNo!!,
-                            routeStop.routeSequence!!, routeStop.stopId!!, routeStop.sequence!!, timeNow)
-                }
-                val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
-                arrivalTime.text = context.getString(R.string.message_fail_to_request)
-                arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
+                message(context.getString(R.string.message_fail_to_request), routeStop, timeNow)
                 return Result.failure(outputData)
             }
 
@@ -119,6 +107,11 @@ class GovNwstEtaWorker(private val context : Context, params : WorkerParameters)
             Timber.d(e)
         }
 
+        message(context.getString(R.string.message_no_data), routeStop, timeNow)
+        return Result.failure(outputData)
+    }
+
+    private fun message(text: String, routeStop: RouteStop, timeNow: Long) {
         if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
                 && !routeStop.sequence.isNullOrEmpty()) {
             arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!, routeStop.routeNo!!,
@@ -130,8 +123,7 @@ class GovNwstEtaWorker(private val context : Context, params : WorkerParameters)
         arrivalTime.stopId = routeStop.stopId?:""
         arrivalTime.stopSeq = routeStop.sequence?:""
         arrivalTime.order = "0"
-        arrivalTime.text = context.getString(R.string.message_no_data)
+        arrivalTime.text = text
         arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
-        return Result.failure(outputData)
     }
 }

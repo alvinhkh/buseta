@@ -10,7 +10,7 @@ import androidx.work.WorkManager
 
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
-import com.alvinhkh.buseta.datagovhk.GovNwstEtaWorker
+import com.alvinhkh.buseta.datagovhk.RtNwstEtaWorker
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.datagovhk.MtrEtaWorker
 import com.alvinhkh.buseta.kmb.KmbEtaWorker
@@ -100,7 +100,7 @@ class EtaService : LifecycleService() {
                     C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> {
                         workerRequest = OneTimeWorkRequest.Builder(
                                 if (PreferenceUtil.isUsingNwstDataGovHkApi(applicationContext)) {
-                                    GovNwstEtaWorker::class.java
+                                    RtNwstEtaWorker::class.java
                                 } else {
                                     NwstEtaWorker::class.java
                                 }

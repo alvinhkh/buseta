@@ -11,7 +11,7 @@ import com.alvinhkh.buseta.Api
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.datagovhk.MtrLineWorker
-import com.alvinhkh.buseta.datagovhk.NwstWorker
+import com.alvinhkh.buseta.datagovhk.RtNwstWorker
 import com.alvinhkh.buseta.datagovhk.TdWorker
 import com.alvinhkh.buseta.follow.FollowRouteWorker
 import com.alvinhkh.buseta.kmb.KmbEtaRouteWorker
@@ -140,7 +140,7 @@ class ProviderUpdateService: IntentService(TAG) {
                     .putString(C.EXTRA.COMPANY_CODE, C.PROVIDER.NWST)
                     .build()
             WorkManager.getInstance()
-                    .enqueue(OneTimeWorkRequest.Builder(NwstWorker::class.java).addTag(TAG)
+                    .enqueue(OneTimeWorkRequest.Builder(RtNwstWorker::class.java).addTag(TAG)
                             .setInputData(dataGovHkNwst).build())
         } else {
             val dataNwst = Data.Builder()

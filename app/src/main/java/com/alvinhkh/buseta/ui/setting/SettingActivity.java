@@ -15,6 +15,8 @@ import android.os.Build;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
+import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.AlertDialog;
@@ -90,7 +92,7 @@ public class SettingActivity extends BasePreferenceActivity {
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat implements
-            OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener {
+            OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener {
 
         private Activity mActivity;
 
@@ -156,6 +158,9 @@ public class SettingActivity extends BasePreferenceActivity {
                 });
             }
             //
+            Preference nwstApi = getPreferenceScreen().findPreference("nwst_api");
+            nwstApi.setOnPreferenceChangeListener(this);
+            //
             Preference checkAppUpdate = getPreferenceScreen().findPreference("check_app_update");
             checkAppUpdate.setOnPreferenceClickListener(this);
 
@@ -178,6 +183,17 @@ public class SettingActivity extends BasePreferenceActivity {
             // Unregister the listener whenever a key changes
             PreferenceManager.getDefaultSharedPreferences(mActivity)
                     .unregisterOnSharedPreferenceChangeListener(this);
+        }
+
+        @Override
+        public boolean onPreferenceChange(Preference preference, Object newValue) {
+            switch (preference.getKey()) {
+                case "nwst_api": {
+                    clearCache();
+                    return true;
+                }
+            }
+            return false;
         }
 
         @Override
@@ -212,6 +228,7 @@ public class SettingActivity extends BasePreferenceActivity {
                                 if (mActivity != null) {
                                     int rowDeleted = 0;
                                     if (suggestionDatabase != null) {
+                                        WorkManager.getInstance().cancelAllWorkByTag("FollowRouteWorker");
                                         rowDeleted = suggestionDatabase.suggestionDao().clearHistory();
                                     }
                                     Snackbar snackbar = Snackbar.make(mActivity.findViewById(android.R.id.content),
@@ -230,24 +247,7 @@ public class SettingActivity extends BasePreferenceActivity {
                             .setTitle(mActivity.getString(R.string.message_confirm_clear_route))
                             .setNegativeButton(R.string.action_cancel, (dialoginterface, i) -> dialoginterface.cancel())
                             .setPositiveButton(R.string.action_confirm, (dialoginterface, i) -> {
-                                if (mActivity != null) {
-                                    int rowDeleted = 0;
-                                    if (arrivalTimeDatabase != null) {
-                                        arrivalTimeDatabase.arrivalTimeDao().clear();
-                                    }
-                                    if (routeDatabase != null) {
-                                        rowDeleted = routeDatabase.routeDao().clear();
-                                        rowDeleted += routeDatabase.routeStopDao().clear();
-                                        WorkManager.getInstance().enqueue(new OneTimeWorkRequest.Builder(FollowRouteWorker.class).build());
-                                        WorkManager.getInstance().enqueue(new OneTimeWorkRequest.Builder(MtrLineWorker.class).build());
-                                    }
-                                    Snackbar snackbar = Snackbar.make(mActivity.findViewById(android.R.id.content),
-                                            rowDeleted > 0
-                                                    ? R.string.message_clear_success_route
-                                                    : R.string.message_clear_fail_route,
-                                            Snackbar.LENGTH_SHORT);
-                                    snackbar.show();
-                                }
+                                clearCache();
                             })
                             .show();
                     return true;
@@ -271,11 +271,9 @@ public class SettingActivity extends BasePreferenceActivity {
                     return true;
                 }
                 case "check_app_update": {
-                    {
-                        Intent intent = new Intent(mActivity, ProviderUpdateService.class);
-                        intent.putExtra(C.EXTRA.MANUAL, true);
-                        mActivity.startService(intent);
-                    }
+                    Intent intent = new Intent(mActivity, ProviderUpdateService.class);
+                    intent.putExtra(C.EXTRA.MANUAL, true);
+                    mActivity.startService(intent);
                     return true;
                 }
             }
@@ -323,6 +321,28 @@ public class SettingActivity extends BasePreferenceActivity {
                 p.setSummary(listPref.getEntry());
             }
         }
+
+        private void clearCache() {
+            if (mActivity != null) {
+                WorkManager.getInstance().cancelAllWork();
+                int rowDeleted = 0;
+                if (arrivalTimeDatabase != null) {
+                    arrivalTimeDatabase.arrivalTimeDao().clear();
+                }
+                if (routeDatabase != null) {
+                    rowDeleted = routeDatabase.routeDao().clear();
+                    rowDeleted += routeDatabase.routeStopDao().clear();
+                    WorkManager.getInstance().enqueue(new OneTimeWorkRequest.Builder(FollowRouteWorker.class).build());
+                    WorkManager.getInstance().enqueue(new OneTimeWorkRequest.Builder(MtrLineWorker.class).build());
+                }
+                Snackbar snackbar = Snackbar.make(mActivity.findViewById(android.R.id.content),
+                        rowDeleted > 0
+                                ? R.string.message_clear_success_route
+                                : R.string.message_clear_fail_route,
+                        Snackbar.LENGTH_SHORT);
+                snackbar.show();
+            }
+        }
     }
 
     DisposableObserver<Intent> suggestionRouteUpdateObserver() {
@@ -340,7 +360,7 @@ public class SettingActivity extends BasePreferenceActivity {
                         Snackbar snackbar = Snackbar.make(findViewById(android.R.id.content),
                                 messageId, Snackbar.LENGTH_LONG);
                         if (messageId == R.string.message_database_updating) {
-                            snackbar.setDuration(Snackbar.LENGTH_INDEFINITE);
+                            snackbar.setDuration(BaseTransientBottomBar.LENGTH_INDEFINITE);
                         } else if (messageId == R.string.message_database_updated) {
                             int count = 0;
                             if (suggestionDatabase != null) {

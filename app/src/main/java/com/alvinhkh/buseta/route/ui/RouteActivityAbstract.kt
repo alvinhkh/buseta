@@ -43,7 +43,7 @@ import androidx.work.WorkManager
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
-import com.alvinhkh.buseta.datagovhk.NwstWorker
+import com.alvinhkh.buseta.datagovhk.RtNwstWorker
 import com.alvinhkh.buseta.mtr.ui.MtrBusStopListFragment
 import com.alvinhkh.buseta.kmb.KmbRouteWorker
 import com.alvinhkh.buseta.kmb.ui.KmbStopListFragment

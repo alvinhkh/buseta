@@ -121,6 +121,15 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
         }
 
         if (loadStop) {
+            if (routeNo.isNotEmpty()) {
+                routeDatabase?.routeStopDao()?.delete(C.PROVIDER.NWST, routeNo, timeNow)
+                routeDatabase?.routeStopDao()?.delete(C.PROVIDER.CTB, routeNo, timeNow)
+                routeDatabase?.routeStopDao()?.delete(C.PROVIDER.NWFB, routeNo, timeNow)
+            } else {
+                routeDatabase?.routeStopDao()?.delete(C.PROVIDER.NWST, timeNow)
+                routeDatabase?.routeStopDao()?.delete(C.PROVIDER.CTB, timeNow)
+                routeDatabase?.routeStopDao()?.delete(C.PROVIDER.NWFB, timeNow)
+            }
             val requests = arrayListOf<OneTimeWorkRequest>()
             routeList.forEach { route ->
                 val data = Data.Builder()

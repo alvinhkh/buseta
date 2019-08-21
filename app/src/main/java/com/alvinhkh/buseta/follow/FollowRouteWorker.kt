@@ -3,7 +3,7 @@ package com.alvinhkh.buseta.follow
 import android.content.Context
 import androidx.work.*
 import com.alvinhkh.buseta.C
-import com.alvinhkh.buseta.datagovhk.NwstWorker
+import com.alvinhkh.buseta.datagovhk.RtNwstWorker
 import com.alvinhkh.buseta.datagovhk.MtrLineWorker
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.kmb.KmbRouteWorker
@@ -52,7 +52,7 @@ class FollowRouteWorker(context : Context, params : WorkerParameters)
                 C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> {
                     requests.add(OneTimeWorkRequest.Builder(
                             if (PreferenceUtil.isUsingNwstDataGovHkApi(applicationContext)) {
-                                NwstWorker::class.java
+                                RtNwstWorker::class.java
                             } else {
                                 NwstRouteWorker::class.java
                             }
