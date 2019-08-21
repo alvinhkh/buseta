@@ -116,9 +116,9 @@ class MainActivity : BaseActivity() {
         if (bottomNavigationView != null) {
             val followDatabase = FollowDatabase.getInstance(applicationContext)
             if (followDatabase != null && followDatabase.followDao().count() > 0) {
-                bottomNavigationView.selectedItemId = R.id.action_follow
+                bottomNavigationView?.selectedItemId = R.id.action_follow
             } else {
-                bottomNavigationView.selectedItemId = R.id.action_search_history
+                bottomNavigationView?.selectedItemId = R.id.action_search_history
             }
         }
         try {

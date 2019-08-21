@@ -87,12 +87,16 @@ abstract class RouteActivityAbstract : BaseActivity(),
 
     lateinit var routeDatabase: RouteDatabase
 
+    lateinit var suggestionDatabase: SuggestionDatabase
+
     /**
      * The [ViewPager] that will host the section contents.
      */
     lateinit var viewPager: ViewPager
 
     lateinit var pagerAdapter: RoutePagerAdapter
+
+    lateinit var tabLayout: TabLayout
 
     lateinit var fab: FloatingActionButton
 
@@ -151,7 +155,9 @@ abstract class RouteActivityAbstract : BaseActivity(),
 
         arrivalTimeDatabase = ArrivalTimeDatabase.getInstance(this)!!
         routeDatabase = RouteDatabase.getInstance(this)!!
-        val suggestionDatabase = SuggestionDatabase.getInstance(this)!!
+        suggestionDatabase = SuggestionDatabase.getInstance(this)!!
+
+        WorkManager.getInstance().cancelAllWorkByTag("RouteList")
 
         setContentView(R.layout.activity_route)
 
@@ -192,7 +198,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
         // Set up the ViewPager with the sections adapter.
         viewPager = findViewById(R.id.viewPager)
         viewPager.adapter = pagerAdapter
-        val tabLayout = findViewById<TabLayout>(R.id.tabs)
+        tabLayout = findViewById<TabLayout>(R.id.tabs)
         tabLayout.setupWithViewPager(viewPager)
         tabLayout.addOnTabSelectedListener(object : TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
             override fun onTabReselected(tab: TabLayout.Tab?) {
@@ -242,106 +248,6 @@ abstract class RouteActivityAbstract : BaseActivity(),
 
         val preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
         isShowMap = preferences.getBoolean("load_map", false)
-        if (isShowMap) {
-            showMapFragment()
-        }
-
-        // load route from database
-        val viewModel = ViewModelProviders.of(this).get(RouteViewModel::class.java)
-        val liveData = viewModel.getAsLiveData(companyCode?:"", routeNo?:"")
-        liveData.removeObservers(this)
-        liveData.observe(this, Observer<MutableList<Route>> { routes ->
-                    pagerAdapter.clear()
-                    var company = ""
-                    var isScrollToPage = false
-                    var hasDestination = false
-                    routes?.forEach { route ->
-                        company = route.companyCode?:companyCode?:""
-                        var navStop = stopFromIntent
-                        if (navStop == null && !stopIdFromIntent.isNullOrEmpty()) {
-                            navStop = RouteStop()
-                            navStop.companyCode = route.companyCode
-                            navStop.routeNo = route.name
-                            navStop.routeSequence = route.sequence
-                            navStop.routeServiceType = route.serviceType
-                            navStop.stopId = stopIdFromIntent
-                        }
-                        val fragment: Fragment = when (company) {
-                            C.PROVIDER.AESBUS -> AESBusStopListFragment.newInstance(route, navStop)
-                            C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> NwstStopListFragment.newInstance(route, navStop)
-                            C.PROVIDER.KMB, C.PROVIDER.LWB -> if (PreferenceUtil.isUsingNewKmbApi(applicationContext)) {
-                                KmbStopListFragment.newInstance(route, navStop)
-                            } else {
-                                LwbStopListFragment.newInstance(route, navStop)
-                            }
-                            C.PROVIDER.LRTFEEDER -> MtrBusStopListFragment.newInstance(route, navStop)
-                            C.PROVIDER.MTR -> MtrStationListFragment.newInstance(route, navStop)
-                            C.PROVIDER.NLB -> NlbStopListFragment.newInstance(route, navStop)
-                            else -> return@forEach
-                        }
-                        val pageTitle = if (!route.origin.isNullOrEmpty()) {
-                             ((if (route.origin.isNullOrEmpty()) "" else route.origin!! + if (routes.size > 1) "\n" else " ")
-                                     + (if (!route.destination.isNullOrEmpty()) getString(R.string.destination, route.destination) else "")
-                                     + if (route.isSpecial!!) "#" else "")
-                        } else {
-                            route.name?:getString(R.string.route)
-                        }
-                        if (pageTitle != route.name && pageTitle != getString(R.string.route)) {
-                            hasDestination = true
-                        }
-                        pagerAdapter.addFragment(fragment, pageTitle, route)
-                        val fragmentCount = pagerAdapter.count
-                        if (navStop != null &&
-                                route.companyCode == navStop.companyCode
-                                && route.sequence == navStop.routeSequence
-                                && route.serviceType == navStop.routeServiceType) {
-                            fragNo = fragmentCount - 1
-                            isScrollToPage = true
-                        }
-                        if (!route.colour.isNullOrEmpty()) {
-                            when (company) {
-                                C.PROVIDER.MTR -> activityColor(Color.parseColor(route.colour))
-                            }
-                        } else {
-                            activityColor(route.companyColour(applicationContext))
-                        }
-                    }
-
-                    val routeName = Route.companyName(this, company, routeNo) + " " + routeNo
-                    supportActionBar?.title = routeName
-                    tabLayout.visibility = if (hasDestination) View.VISIBLE else View.GONE
-                    if (routes?.isNotEmpty() == true && !company.isEmpty() && company != C.PROVIDER.MTR) {
-                        suggestion = Suggestion.createInstance()
-                        suggestion?.companyCode = company
-                        suggestion?.route = routeNo?:""
-                        suggestion?.type = Suggestion.TYPE_HISTORY
-                        if (suggestion != null) {
-                            suggestionDatabase.suggestionDao().insert(suggestion!!)
-                            appIndexStart(suggestion!!)
-                        }
-                    }
-
-                    if (isScrollToPage && !isScrolledToPage) {
-                        viewPager.setCurrentItem(fragNo, false)
-                        isScrolledToPage = true
-                        isScrollToPage = false
-                    }
-                    if (isShowMap) {
-                        if (fragNo - 1 < 1) {
-                            fragNo = 0
-                        }
-                        if (viewPager.currentItem == fragNo && viewPager.currentItem < pagerAdapter.routeList.size) {
-                            loadMapMarkers(pagerAdapter.routeList[viewPager.currentItem])
-                        }
-                    }
-
-                    if (pagerAdapter.count > 0) {
-                        emptyView.visibility = View.GONE
-                        liveData.removeObservers(this)
-                    } else {
-                        showEmptyView()
-                    }
-                })
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -355,7 +261,10 @@ abstract class RouteActivityAbstract : BaseActivity(),
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.action_refresh -> loadRoute(companyCode?:"", routeNo?:"")
+            R.id.action_refresh -> {
+                pagerAdapter.clear()
+                loadRoute(companyCode?:"", routeNo?:"")
+            }
             R.id.action_show_map -> {
                 isShowMap = !isShowMap
                 if (viewPager.currentItem >= 0 && viewPager.currentItem < pagerAdapter.routeList.size) {
@@ -376,8 +285,10 @@ abstract class RouteActivityAbstract : BaseActivity(),
 
     public override fun onPause() {
         super.onPause()
-        WorkManager.getInstance()
-                .enqueue(OneTimeWorkRequest.Builder(UpdateAppShortcutWorker::class.java).build())
+        WorkManager.getInstance().enqueue(
+                OneTimeWorkRequest.Builder(UpdateAppShortcutWorker::class.java)
+                        .addTag("AppShortcut").build()
+        )
     }
 
     override fun onDestroy() {
@@ -406,13 +317,107 @@ abstract class RouteActivityAbstract : BaseActivity(),
             showEmptyView()
             return
         }
+        showLoadingView()
+        // load route from database
+        val viewModel = ViewModelProviders.of(this).get(RouteViewModel::class.java)
+        val liveData = viewModel.getAsLiveData(companyCode, routeNo)
+        liveData.observe(this, Observer<MutableList<Route>> { routes ->
+            pagerAdapter.clear()
+            var company = ""
+            var isScrollToPage = false
+            var hasDestination = false
+            routes?.forEach { route ->
+                company = route.companyCode?:companyCode?:""
+                var navStop = stopFromIntent
+                if (navStop == null && !stopIdFromIntent.isNullOrEmpty()) {
+                    navStop = RouteStop()
+                    navStop.companyCode = route.companyCode
+                    navStop.routeNo = route.name
+                    navStop.routeSequence = route.sequence
+                    navStop.routeServiceType = route.serviceType
+                    navStop.stopId = stopIdFromIntent
+                }
+                val fragment: Fragment = when (company) {
+                    C.PROVIDER.AESBUS -> AESBusStopListFragment.newInstance(route, navStop)
+                    C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> NwstStopListFragment.newInstance(route, navStop)
+                    C.PROVIDER.KMB, C.PROVIDER.LWB -> if (PreferenceUtil.isUsingNewKmbApi(applicationContext)) {
+                        KmbStopListFragment.newInstance(route, navStop)
+                    } else {
+                        LwbStopListFragment.newInstance(route, navStop)
+                    }
+                    C.PROVIDER.LRTFEEDER -> MtrBusStopListFragment.newInstance(route, navStop)
+                    C.PROVIDER.MTR -> MtrStationListFragment.newInstance(route, navStop)
+                    C.PROVIDER.NLB -> NlbStopListFragment.newInstance(route, navStop)
+                    else -> return@forEach
+                }
+                val pageTitle = if (!route.origin.isNullOrEmpty()) {
+                    ((if (route.origin.isNullOrEmpty()) "" else route.origin!! + if (routes.size > 1) "\n" else " ")
+                            + (if (!route.destination.isNullOrEmpty()) getString(R.string.destination, route.destination) else "")
+                            + if (route.isSpecial!!) "#" else "")
+                } else {
+                    route.name?:getString(R.string.route)
+                }
+                if (pageTitle != route.name && pageTitle != getString(R.string.route)) {
+                    hasDestination = true
+                }
+                pagerAdapter.addFragment(fragment, pageTitle, route)
+                val fragmentCount = pagerAdapter.count
+                if (navStop != null &&
+                        route.companyCode == navStop.companyCode
+                        && route.sequence == navStop.routeSequence
+                        && route.serviceType == navStop.routeServiceType) {
+                    fragNo = fragmentCount - 1
+                    isScrollToPage = true
+                }
+                if (!route.colour.isNullOrEmpty()) {
+                    when (company) {
+                        C.PROVIDER.MTR -> activityColor(Color.parseColor(route.colour))
+                    }
+                } else {
+                    activityColor(route.companyColour(applicationContext))
+                }
+            }
+
+            val routeName = Route.companyName(this, company, routeNo) + " " + routeNo
+            supportActionBar?.title = routeName
+            tabLayout.visibility = if (hasDestination) View.VISIBLE else View.GONE
+            if (routes?.isNotEmpty() == true && !company.isEmpty() && company != C.PROVIDER.MTR) {
+                suggestion = Suggestion.createInstance()
+                suggestion?.companyCode = company
+                suggestion?.route = routeNo?:""
+                suggestion?.type = Suggestion.TYPE_HISTORY
+                if (suggestion != null) {
+                    suggestionDatabase.suggestionDao().insert(suggestion!!)
+                    appIndexStart(suggestion!!)
+                }
+            }
+
+            if (isScrollToPage && !isScrolledToPage) {
+                viewPager.setCurrentItem(fragNo, false)
+                isScrolledToPage = true
+                isScrollToPage = false
+            }
+            if (isShowMap) {
+                showMapFragment()
+                if (fragNo - 1 < 1) {
+                    fragNo = 0
+                }
+                if (viewPager.currentItem == fragNo && viewPager.currentItem < pagerAdapter.routeList.size) {
+                    loadMapMarkers(pagerAdapter.routeList[viewPager.currentItem])
+                }
+            }
+
+            if (pagerAdapter.count > 0) {
+                emptyView.visibility = View.GONE
+                liveData.removeObservers(this)
+            }
+        })
         when (companyCode) {
             C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER, C.PROVIDER.MTR, C.PROVIDER.NLB -> return
             C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> {
                 if (routeDatabase.routeDao().count(arrayListOf("", C.PROVIDER.DATAGOVHK_NWST), companyCode, routeNo) > 0) return
             }
         }
-        showLoadingView()
 
         val data = Data.Builder()
                 .putString(C.EXTRA.COMPANY_CODE, companyCode)
@@ -423,11 +428,12 @@ abstract class RouteActivityAbstract : BaseActivity(),
             C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> {
                 OneTimeWorkRequest.Builder(
                         if (PreferenceUtil.isUsingNwstDataGovHkApi(applicationContext)) {
-                            NwstWorker::class.java
+                            RtNwstWorker::class.java
                         } else {
                             NwstRouteWorker::class.java
                         })
                         .setInputData(data)
+                        .addTag("RouteList")
                         .build()
             }
             C.PROVIDER.KMB, C.PROVIDER.LWB -> {
@@ -438,6 +444,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
                             LwbRouteWorker::class.java
                         })
                         .setInputData(data)
+                        .addTag("RouteList")
                         .build()
             }
             else -> return
@@ -558,8 +565,11 @@ abstract class RouteActivityAbstract : BaseActivity(),
         if (marker.tag is RouteStop) {
             marker.showInfoWindow()
             val routeStop = marker.tag as RouteStop? ?: return false
-            map?.animateCamera(CameraUpdateFactory.newLatLngZoom(
-                    LatLng(routeStop.latitude?.toDouble()?:0.0, routeStop.longitude?.toDouble()?:0.0), 16f))
+            val lat = routeStop.latitude?.toDouble()?:0.0
+            val lng = routeStop.longitude?.toDouble()?:0.0
+            if (lat != 0.0 && lng != 0.0) {
+                map?.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lng), 16f))
+            }
             try {
                 val intent = Intent(this, EtaService::class.java)
                 intent.putExtra(C.EXTRA.STOP_OBJECT, routeStop)
@@ -572,7 +582,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
     }
 
     open fun mapCamera(latitude: Double?, longitude: Double?) {
-        if (isShowMap && latitude?.isFinite() == true && longitude?.isFinite() == true) {
+        if (isShowMap && latitude?.isFinite() == true && longitude?.isFinite() == true && latitude != 0.0 && longitude != 0.0) {
             map?.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(latitude, longitude), 18f))
         }
     }
@@ -600,18 +610,20 @@ abstract class RouteActivityAbstract : BaseActivity(),
                 if (!routeStop.latitude.isNullOrEmpty() && !routeStop.longitude.isNullOrEmpty()) {
                     val lat = routeStop.latitude?.toDouble()?:0.0
                     val lng = routeStop.longitude?.toDouble()?:0.0
-                    if (!hasMapCoordinates && lat != 0.0 && lng != 0.0) {
-                        mapCoordinates.add(LatLong(lat, lng))
-                    }
-                    val drawable = ContextCompat.getDrawable(applicationContext, R.drawable.ic_twotone_directions_bus_18dp)
-                    val marker = map?.addMarker(MarkerOptions()
-                            .position(LatLng(lat, lng))
-                            .title(routeStop.sequence + ": " + routeStop.name)
-                            .icon(markerIconFromDrawable(drawable!!))
-                    )
-                    marker?.tag = routeStop
-                    if (index == 0) {
-                        map?.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lng), 14f))
+                    if (lat != 0.0 && lng != 0.0) {
+                        if (!hasMapCoordinates) {
+                            mapCoordinates.add(LatLong(lat, lng))
+                        }
+                        val drawable = ContextCompat.getDrawable(applicationContext, R.drawable.ic_twotone_directions_bus_18dp)
+                        val marker = map?.addMarker(MarkerOptions()
+                                .position(LatLng(lat, lng))
+                                .title(routeStop.sequence + ": " + routeStop.name)
+                                .icon(markerIconFromDrawable(drawable!!))
+                        )
+                        marker?.tag = routeStop
+                        if (index == 0) {
+                            map?.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lng), 14f))
+                        }
                     }
                 }
             }

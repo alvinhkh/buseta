@@ -47,33 +47,40 @@ class EtaService : LifecycleService() {
         val widgetId = extras.getInt(C.EXTRA.WIDGET_UPDATE, -1)
         val notificationId = extras.getInt(C.EXTRA.NOTIFICATION_ID, -1)
 
+        var tag = "Eta"
         val routeStopList = mutableListOf<RouteStop>()
         if (extras.getBoolean(C.EXTRA.STOP_LIST)) {
+            val routeNo = extras.getString(C.EXTRA.ROUTE_NO, "")
+            val routeSequence = extras.getString(C.EXTRA.ROUTE_SEQUENCE, "")
             val companyCode = extras.getString(C.EXTRA.COMPANY_CODE, "")
             routeStopList.addAll(routeDatabase.routeStopDao().get(companyCode,
                     extras.getString(C.EXTRA.ROUTE_ID, ""),
-                    extras.getString(C.EXTRA.ROUTE_NO, ""),
-                    extras.getString(C.EXTRA.ROUTE_SEQUENCE, ""),
+                    routeNo,
+                    routeSequence,
                     extras.getString(C.EXTRA.ROUTE_SERVICE_TYPE, "")))
             if (arrayListOf(C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER).contains(companyCode) && routeStopList.size > 0) {
+                // require only one request to get all results
                 val routeStop = routeStopList[0]
                 routeStopList.clear()
                 routeStopList.add(routeStop)
             }
+            tag = "StopListEta_${companyCode}_${routeNo}_$routeSequence"
+            WorkManager.getInstance().cancelAllWorkByTag(tag)
         }
         val stop = extras.getParcelable<RouteStop>(C.EXTRA.STOP_OBJECT)
         if (stop != null) {
             routeStopList.add(stop)
         }
-        if (extras.getBoolean(C.EXTRA.FOLLOW)) {
-            val groupId = extras.getString(C.EXTRA.GROUP_ID)
-            val followList = if (groupId.isNullOrEmpty()) followDatabase.followDao().list() else followDatabase.followDao().list(groupId)
+        val isFollow = extras.getBoolean(C.EXTRA.FOLLOW)
+        if (isFollow) {
+            val groupId = extras.getString(C.EXTRA.GROUP_ID)?:""
+            val followList = if (groupId.isEmpty()) followDatabase.followDao().list() else followDatabase.followDao().list(groupId)
             for (follow in followList) {
                 routeStopList.add(follow.toRouteStop())
             }
+            tag = "FollowEta_$groupId"
+            WorkManager.getInstance().cancelAllWorkByTag(tag)
         }
-
-        WorkManager.getInstance().cancelAllWorkByTag(TAG)
 
         val workerRequestList = arrayListOf<OneTimeWorkRequest>()
         for (i in routeStopList.indices) {
@@ -95,7 +102,7 @@ class EtaService : LifecycleService() {
                 when (routeStop.companyCode) {
                     C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER -> {
                         workerRequest = OneTimeWorkRequest.Builder(AESBusEtaWorker::class.java)
-                                .addTag(TAG).setInputData(data).build()
+                                .addTag(tag).setInputData(data).build()
                     }
                     C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> {
                         workerRequest = OneTimeWorkRequest.Builder(
@@ -104,19 +111,19 @@ class EtaService : LifecycleService() {
                                 } else {
                                     NwstEtaWorker::class.java
                                 }
-                        ).addTag(TAG).setInputData(data).build()
+                        ).addTag(tag).setInputData(data).build()
                     }
                     C.PROVIDER.KMB, C.PROVIDER.LWB -> {
                         workerRequest = OneTimeWorkRequest.Builder(KmbEtaWorker::class.java)
-                                .addTag(TAG).setInputData(data).build()
+                                .addTag(tag).setInputData(data).build()
                     }
                     C.PROVIDER.MTR -> {
                         workerRequest = OneTimeWorkRequest.Builder(MtrEtaWorker::class.java)
-                                .addTag(TAG).setInputData(data).build()
+                                .addTag(tag).setInputData(data).build()
                     }
                     C.PROVIDER.NLB -> {
                         workerRequest = OneTimeWorkRequest.Builder(NlbEtaWorker::class.java)
-                                .addTag(TAG).setInputData(data).build()
+                                .addTag(tag).setInputData(data).build()
                     }
                     else -> notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId)
                 }
@@ -157,9 +164,5 @@ class EtaService : LifecycleService() {
         }
         intent.putExtra(C.EXTRA.STOP_OBJECT, stop)
         sendBroadcast(intent)
-    }
-
-    companion object {
-        private const val TAG = "EtaService"
     }
 }

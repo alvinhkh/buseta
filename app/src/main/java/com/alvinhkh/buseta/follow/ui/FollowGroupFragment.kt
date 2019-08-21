@@ -16,6 +16,7 @@ import androidx.viewpager.widget.ViewPager
 import androidx.appcompat.app.AppCompatActivity
 import android.view.*
 import android.widget.FrameLayout
+import androidx.lifecycle.LiveData
 import com.alvinhkh.buseta.C
 
 import com.alvinhkh.buseta.R
@@ -23,7 +24,6 @@ import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.follow.model.FollowGroup
 import com.alvinhkh.buseta.search.ui.SearchActivity
 import com.alvinhkh.buseta.service.EtaService
-import com.alvinhkh.buseta.ui.MainActivity
 import com.alvinhkh.buseta.utils.ColorUtil
 import com.alvinhkh.buseta.utils.ConnectivityUtil
 
@@ -33,6 +33,8 @@ class FollowGroupFragment : Fragment() {
     private lateinit var followDatabase: FollowDatabase
     private lateinit var viewPager: ViewPager
     private lateinit var pagerAdapter: FollowGroupPagerAdapter
+    private lateinit var viewModel: FollowGroupViewModel
+    private lateinit var liveData: LiveData<MutableList<FollowGroup>>
     private lateinit var fab: FloatingActionButton
 
     private val fetchEtaHandler = Handler()
@@ -81,8 +83,9 @@ class FollowGroupFragment : Fragment() {
         fab.setOnClickListener {
             startActivity(Intent(context, SearchActivity::class.java))
         }
-        val viewModel = ViewModelProviders.of(this).get(FollowGroupViewModel::class.java)
-        viewModel.getAsLiveData().observe(this, Observer<MutableList<FollowGroup>> { list ->
+        viewModel = ViewModelProviders.of(this).get(FollowGroupViewModel::class.java)
+        liveData = viewModel.getAsLiveData()
+        liveData.observe(this, Observer<MutableList<FollowGroup>> { list ->
             val groupList = mutableListOf<FollowGroup>()
             list?.forEach { item ->
                 val count = followDatabase.followDao().count(item.id)
@@ -117,6 +120,11 @@ class FollowGroupFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         fetchEtaHandler.removeCallbacksAndMessages(null)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        liveData?.removeObservers(this)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {

@@ -139,7 +139,8 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
                         .putString(C.EXTRA.ROUTE_SEQUENCE, route.sequence)
                         .putString(C.EXTRA.ROUTE_SERVICE_TYPE, route.serviceType)
                         .build()
-                requests.add(OneTimeWorkRequest.Builder(NwstStopListWorker::class.java).setInputData(data).build())
+                requests.add(OneTimeWorkRequest.Builder(NwstStopListWorker::class.java)
+                        .setInputData(data).addTag("RouteStopList").build())
             }
             WorkManager.getInstance().enqueue(requests)
         }

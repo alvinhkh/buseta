@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import android.view.*
 import com.alvinhkh.buseta.R
-import com.alvinhkh.buseta.route.model.Route
 import androidx.appcompat.app.AppCompatActivity
 
 

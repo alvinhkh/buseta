@@ -808,8 +808,11 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
             vh.stopImage?.visibility = View.GONE
             vh.stopImageButton?.visibility = View.GONE
             if (!routeStop?.imageUrl.isNullOrEmpty()) {
+                val tag = "StopImage_${routeStop?.imageUrl}"
+                WorkManager.getInstance().cancelAllWorkByTag(tag)
                 val request = OneTimeWorkRequest.Builder(ImageDownloadWorker::class.java)
                         .setInputData(Data.Builder().putString("url", routeStop?.imageUrl).build())
+                        .addTag(tag)
                         .build()
                 if (preferences != null && preferences.getBoolean("load_stop_image", false)) {
                     WorkManager.getInstance().enqueue(request)

@@ -71,6 +71,9 @@ class ProviderUpdateService: IntentService(TAG) {
         }
         sharedPreferences.edit().putLong("last_update_suggestions", timeNow).apply()
 
+        WorkManager.getInstance().cancelAllWorkByTag("RouteList")
+        WorkManager.getInstance().cancelAllWorkByTag("RouteStopList")
+
         try {
             val apiService = Api.retrofit.create(Api::class.java)
             val response = apiService.appUpdate().execute()

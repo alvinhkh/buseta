@@ -58,6 +58,8 @@ import java.util.UUID
 abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.OnRefreshListener,
         SharedPreferences.OnSharedPreferenceChangeListener {
 
+    private val SCROLL_POSITION_STATE_KEY = "SCROLL_POSITION_STATE_KEY"
+
     protected var route: Route? = null
 
     private var navToStop: RouteStop? = null
@@ -81,7 +83,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
 
     private lateinit var viewModel: RouteStopListViewModel
 
-    private lateinit var viewAdapter: RouteStopListViewAdapter
+    private var viewAdapter: RouteStopListViewAdapter? = null
 
     private var requestId: UUID? = null
 
@@ -112,7 +114,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
 
     protected val adapterUpdateRunnable: Runnable = object : Runnable {
         override fun run() {
-            viewAdapter.notifyDataSetChanged()
+            viewAdapter?.notifyDataSetChanged()
             adapterUpdateHandler.postDelayed(this, 30000)  // refresh every 30 sec
         }
     }
@@ -125,7 +127,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
         override fun run() {
             if (refreshInterval > 0) {
                 onRefresh()
-                viewAdapter.notifyDataSetChanged()
+                viewAdapter?.notifyDataSetChanged()
                 refreshHandler.postDelayed(this, (refreshInterval * 1000).toLong())
             }
         }
@@ -138,7 +140,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
             }
             for (location in locationResult.locations) {
                 if (location != null) {
-                    viewAdapter.setCurrentLocation(location)
+                    viewAdapter?.setCurrentLocation(location)
                 }
             }
         }
@@ -171,7 +173,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                 || ActivityCompat.checkSelfPermission(context!!, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             LocationServices.getFusedLocationProviderClient(context!!)
                     .lastLocation
-                    .addOnSuccessListener { location -> if (location != null) viewAdapter.setCurrentLocation(location) }
+                    .addOnSuccessListener { location -> if (location != null) viewAdapter?.setCurrentLocation(location) }
         }
 
         swipeRefreshLayout = rootView.findViewById(R.id.swipe_refresh_layout)
@@ -203,11 +205,11 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                             if (!swipeRefreshLayout.isRefreshing) {
                                 swipeRefreshLayout.isRefreshing = true
                             }
-                            viewAdapter.clear(false)
-                            viewAdapter.addAll(stops, dataType)
+                            viewAdapter?.clear(false)
+                            viewAdapter?.addAll(stops, dataType)
                             var count = 0
                             if (route?.description?.isEmpty() == false) {
-                                viewAdapter.addHeader(route?.description?:"")
+                                viewAdapter?.addHeader(route?.description?:"")
                                 count = 1
                             }
                             stops.forEachIndexed { index, routeStop ->
@@ -222,7 +224,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                                                 routeStop.etas += eta
                                             }
                                         }
-                                        viewAdapter.replace(index + count, routeStop, dataType)
+                                        viewAdapter?.replace(index + count, routeStop, dataType)
                                     }
                                 })
                                 val followCount = followDatabase.followDao().liveCount(
@@ -231,7 +233,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                                         routeStop.stopId?:"", routeStop.sequence?:"")
                                 followCount.removeObservers(this@RouteStopListFragmentAbstract)
                                 followCount.observe(this@RouteStopListFragmentAbstract, Observer {
-                                    viewAdapter.notifyItemChanged(index + count)
+                                    viewAdapter?.notifyItemChanged(index + count)
                                 })
                             }
 
@@ -242,12 +244,12 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                             }
 
                             if (emptyView.visibility == View.VISIBLE || visibility == View.GONE) {
-                                emptyView.visibility = if (viewAdapter.itemCount > 0) View.GONE else View.VISIBLE
+                                emptyView.visibility = if (viewAdapter?.itemCount?:0 > 0) View.GONE else View.VISIBLE
 
                                 var isScrollToPosition: Boolean? = false
                                 var scrollToPosition: Int? = 0
                                 refreshHandler.post(refreshRunnable)
-                                if (viewAdapter.itemCount > 0) {
+                                if (viewAdapter?.itemCount?:0 > 0) {
                                     if ((route != null
                                                     && route?.companyCode != null && route?.companyCode == navToStop?.companyCode
                                                     && route?.name != null && route?.name == navToStop?.routeNo
@@ -259,8 +261,8 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                                                     && navToStop?.routeServiceType != null
                                                     && (navToStop?.sequence != null || navToStop?.stopId != null))
                                     ) {
-                                        for (i in 0 until viewAdapter.itemCount) {
-                                            val item = viewAdapter.get(i)?: continue
+                                        for (i in 0 until (viewAdapter?.itemCount?:0)) {
+                                            val item = viewAdapter?.get(i)?: continue
                                             if (item.type != TYPE_ROUTE_STOP) continue
                                             val stop = item.obj as RouteStop
                                             if ((stop.name != null
@@ -357,8 +359,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        val id = item!!.itemId
-        when (id) {
+        when (item?.itemId) {
             R.id.action_notice -> if (route != null) {
                 val intent = Intent(context, RouteAnnounceActivity::class.java)
                 intent.putExtra(C.EXTRA.ROUTE_OBJECT, route)
@@ -373,8 +374,8 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String) {
         if (key == "load_wheelchair_icon" || key == "load_wifi_icon") {
             // to reflect changes when toggle display icon
-            if (viewAdapter.itemCount > 0) {
-                viewAdapter.notifyDataSetChanged()
+            if (viewAdapter?.itemCount?:0 > 0) {
+                viewAdapter?.notifyDataSetChanged()
             }
         }
     }
@@ -401,7 +402,6 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
         val companyCode = route.companyCode?:""
         when (companyCode) {
             C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER, C.PROVIDER.MTR, C.PROVIDER.NLB -> return true
-            C.PROVIDER.NWST, C.PROVIDER.NWFB, C.PROVIDER.CTB -> return true
             "" -> return false
         }
 
@@ -412,6 +412,8 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                 .putString(C.EXTRA.ROUTE_SEQUENCE, route.sequence?:"")
                 .putString(C.EXTRA.ROUTE_SERVICE_TYPE, route.serviceType?:"")
                 .build()
+        val tag = "StopList_${companyCode}_${route.code}_${route.name}_${route.sequence}_${route.serviceType}"
+        WorkManager.getInstance().cancelAllWorkByTag(tag)
         val request = when (companyCode) {
             C.PROVIDER.KMB, C.PROVIDER.LWB -> {
                 OneTimeWorkRequest.Builder(
@@ -420,12 +422,21 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                         } else {
                             LwbStopListWorker::class.java
                         }
-                ).setInputData(data).build()
+                )
+                        .setInputData(data)
+                        .addTag(tag)
+                        .build()
             }
-//            C.PROVIDER.NWST, C.PROVIDER.NWFB, C.PROVIDER.CTB ->
-//                OneTimeWorkRequest.Builder(NwstStopListWorker::class.java)
-//                        .setInputData(data)
-//                        .build()
+            C.PROVIDER.NWST, C.PROVIDER.NWFB, C.PROVIDER.CTB -> {
+                if (!PreferenceUtil.isUsingNwstDataGovHkApi(context!!)) {
+                    OneTimeWorkRequest.Builder(NwstStopListWorker::class.java)
+                            .setInputData(data)
+                            .addTag(tag)
+                            .build()
+                } else {
+                    return true
+                }
+            }
             else -> return false
         }
         if (!swipeRefreshLayout.isRefreshing) {
@@ -460,9 +471,9 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
     fun onMarkerClick(marker: Marker) {
         if (marker.tag is RouteStop) {
             val markerStop = marker.tag as RouteStop?
-            for (i in 0 until viewAdapter.itemCount) {
-                if (viewAdapter.get(i)?.type == TYPE_ROUTE_STOP && viewAdapter.get(i)?.obj is RouteStop) {
-                    val routeStop = viewAdapter.get(i)?.obj as RouteStop
+            for (i in 0 until (viewAdapter?.itemCount?:0)) {
+                if (viewAdapter?.get(i)?.type == TYPE_ROUTE_STOP && viewAdapter?.get(i)?.obj is RouteStop) {
+                    val routeStop = viewAdapter?.get(i)?.obj as RouteStop
                     if (routeStop.sequence == markerStop?.sequence) {
                         val smoothScroller = object : androidx.recyclerview.widget.LinearSmoothScroller(recyclerView?.context) {
                             override fun getVerticalSnapPreference(): Int {
@@ -482,7 +493,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
         if (swipeRefreshLayout.isRefreshing) {
             swipeRefreshLayout.isRefreshing = false
         }
-        if (viewAdapter.itemCount > 0) {
+        if (viewAdapter?.itemCount?:0 > 0) {
             if (!s.isNullOrEmpty()) {
                 Snackbar.make(view?.rootView?.findViewById(R.id.coordinator_layout)?:view!!, s, Snackbar.LENGTH_INDEFINITE).show()
             }
@@ -511,11 +522,5 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
     private fun stopLocationUpdates() {
         if (context == null || locationCallback == null) return
         LocationServices.getFusedLocationProviderClient(context!!).removeLocationUpdates(locationCallback!!)
-    }
-
-    companion object {
-
-        private const val SCROLL_POSITION_STATE_KEY = "SCROLL_POSITION_STATE_KEY"
-
     }
 }

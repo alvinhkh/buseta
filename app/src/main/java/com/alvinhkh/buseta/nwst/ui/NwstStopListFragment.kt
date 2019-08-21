@@ -31,13 +31,13 @@ class NwstStopListFragment : RouteStopListFragmentAbstract() {
     override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
         super.onCreateOptionsMenu(menu, inflater)
         timetableItem = menu!!.findItem(R.id.action_timetable)
-        timetableItem?.isVisible = !timetableHtml.isEmpty()
+        timetableItem?.isVisible = timetableHtml.isNotEmpty()
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
         val id = item!!.itemId
         when (id) {
-            R.id.action_timetable -> if (!timetableHtml.isEmpty()) {
+            R.id.action_timetable -> if (timetableHtml.isNotEmpty()) {
                 val intent = Intent(context, WebViewActivity::class.java)
                 var title = getString(R.string.timetable)
                 if (route != null && !route?.name.isNullOrEmpty()) {
@@ -54,6 +54,8 @@ class NwstStopListFragment : RouteStopListFragmentAbstract() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val tag = "TimeTable_${route?.companyCode}_${route?.code}_${route?.name}_${route?.sequence}"
+        WorkManager.getInstance().cancelAllWorkByTag(tag)
         val request = OneTimeWorkRequest.Builder(NwstStopTimetableWorker::class.java)
                 .setInputData(Data.Builder()
                         .putString(C.EXTRA.COMPANY_CODE, route?.companyCode)
@@ -62,9 +64,10 @@ class NwstStopListFragment : RouteStopListFragmentAbstract() {
                         .putString(C.EXTRA.ROUTE_SEQUENCE, route?.sequence)
                         .putString(C.EXTRA.ROUTE_SERVICE_TYPE, route?.serviceType)
                         .build())
+                .addTag(tag)
                 .build()
         WorkManager.getInstance()
-                .beginWith(OneTimeWorkRequest.Builder(NwstTokenWorker::class.java).build())
+                .beginWith(OneTimeWorkRequest.Builder(NwstTokenWorker::class.java).addTag(tag).build())
                 .then(request)
                 .enqueue()
         WorkManager.getInstance().getWorkInfoByIdLiveData(request.id)

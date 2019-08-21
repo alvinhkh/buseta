@@ -19,7 +19,6 @@ import androidx.work.WorkManager
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.datagovhk.MtrLineWorker
 import com.alvinhkh.buseta.utils.ConnectivityUtil
-import timber.log.Timber
 
 
 class MtrLineStatusFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
@@ -95,6 +94,6 @@ class MtrLineStatusFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
         } else {
             snackbar.show()
         }
-        WorkManager.getInstance().enqueue(OneTimeWorkRequest.Builder(MtrLineWorker::class.java).build())
+        WorkManager.getInstance().enqueue(OneTimeWorkRequest.Builder(MtrLineWorker::class.java).addTag("RouteList").build())
     }
 }

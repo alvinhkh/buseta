@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import android.view.*
+import androidx.lifecycle.LiveData
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
@@ -24,23 +25,12 @@ class FollowFragment: Fragment() {
     private lateinit var arrivalTimeDatabase: ArrivalTimeDatabase
     private lateinit var followDatabase: FollowDatabase
     private lateinit var recyclerView: RecyclerView
+    private lateinit var viewModel: FollowViewModel
+    private lateinit var liveData: LiveData<MutableList<Follow>>
     private var viewAdapter: FollowViewAdapter? = null
     private lateinit var emptyView: View
     private lateinit var snackbar: Snackbar
     private var groupId = FollowGroup.UNCATEGORISED
-
-    private val refreshHandler = Handler()
-    private val refreshRunnable = object : Runnable {
-        override fun run() {
-            if (ConnectivityUtil.isConnected(context)) {
-                snackbar.dismiss()
-                viewAdapter?.notifyDataSetChanged()
-                refreshHandler.postDelayed(this, 30000)
-            } else {
-                snackbar.show()
-            }
-        }
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -51,6 +41,11 @@ class FollowFragment: Fragment() {
         followDatabase = FollowDatabase.getInstance(context!!)!!
 
         snackbar = Snackbar.make(rootView?.findViewById(R.id.coordinator_layout)?:rootView, R.string.message_no_internet_connection, Snackbar.LENGTH_INDEFINITE)
+        if (ConnectivityUtil.isConnected(context)) {
+            snackbar.dismiss()
+        } else {
+            snackbar.show()
+        }
         emptyView = rootView.findViewById(R.id.empty_view)
         emptyView.visibility = View.GONE
         recyclerView = rootView.findViewById(R.id.recycler_view)
@@ -60,8 +55,8 @@ class FollowFragment: Fragment() {
             layoutManager = LinearLayoutManager(context)
             adapter = viewAdapter
         }
-        val viewModel = ViewModelProviders.of(this).get(FollowViewModel::class.java)
-        val liveData = viewModel.getAsLiveData(groupId)
+        viewModel = ViewModelProviders.of(this).get(FollowViewModel::class.java)
+        liveData = viewModel.getAsLiveData(groupId)
         liveData.removeObservers(this)
         liveData.observe(this, Observer<MutableList<Follow>> { list ->
             viewAdapter?.replaceItems(list?: mutableListOf())
@@ -88,12 +83,16 @@ class FollowFragment: Fragment() {
 
     override fun onResume() {
         super.onResume()
-        refreshHandler.postDelayed(refreshRunnable, 500)
+        if (ConnectivityUtil.isConnected(context)) {
+            snackbar.dismiss()
+        } else {
+            snackbar.show()
+        }
     }
 
-    override fun onPause() {
-        super.onPause()
-        refreshHandler.removeCallbacksAndMessages(null)
+    override fun onDestroy() {
+        super.onDestroy()
+        liveData.removeObservers(this)
     }
 
     companion object {

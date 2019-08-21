@@ -7,6 +7,7 @@ import com.alvinhkh.buseta.datagovhk.RtNwstWorker
 import com.alvinhkh.buseta.datagovhk.MtrLineWorker
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.kmb.KmbRouteWorker
+import com.alvinhkh.buseta.lwb.LwbRouteWorker
 import com.alvinhkh.buseta.mtr.AESBusWorker
 import com.alvinhkh.buseta.mtr.MtrBusWorker
 import com.alvinhkh.buseta.mtr.MtrResourceWorker
@@ -24,6 +25,8 @@ class FollowRouteWorker(context : Context, params : WorkerParameters)
     override fun doWork(): Result {
         val outputData = Data.Builder()
                 .build()
+
+        WorkManager.getInstance().cancelAllWorkByTag(TAG)
 
         val map = hashMapOf<String, Pair<String, String>>()
 
@@ -58,7 +61,15 @@ class FollowRouteWorker(context : Context, params : WorkerParameters)
                             }
                     ).addTag(TAG).setInputData(data).build())
                 }
-                C.PROVIDER.KMB, C.PROVIDER.LWB -> requests.add(OneTimeWorkRequest.Builder(KmbRouteWorker::class.java).addTag(TAG).setInputData(data).build())
+                C.PROVIDER.KMB, C.PROVIDER.LWB -> {
+                    requests.add(OneTimeWorkRequest.Builder(
+                            if (PreferenceUtil.isUsingNewKmbApi(applicationContext)) {
+                                KmbRouteWorker::class.java
+                            } else {
+                                LwbRouteWorker::class.java
+                            }
+                    ).addTag(TAG).setInputData(data).build())
+                }
                 C.PROVIDER.LRTFEEDER -> {
                     requests.add(OneTimeWorkRequest.Builder(MtrResourceWorker::class.java).addTag(TAG).setInputData(data).build())
                     requests.add(OneTimeWorkRequest.Builder(MtrBusWorker::class.java).addTag(TAG).setInputData(data).build())

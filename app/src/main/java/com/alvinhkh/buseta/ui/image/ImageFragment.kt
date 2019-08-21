@@ -35,6 +35,8 @@ import timber.log.Timber
 
 class ImageFragment : Fragment() {
 
+    private val TAG = "Rawimage"
+
     private lateinit var actionBar: ActionBar
 
     private lateinit var progressBar: ProgressBar
@@ -140,8 +142,10 @@ class ImageFragment : Fragment() {
         }
         progressBar.visibility = View.VISIBLE
 
+        WorkManager.getInstance().cancelAllWorkByTag(TAG)
         val request = OneTimeWorkRequest.Builder(ImageDownloadWorker::class.java)
                 .setInputData(Data.Builder().putString("url", url).build())
+                .addTag(TAG)
                 .build()
         WorkManager.getInstance().enqueue(request)
         WorkManager.getInstance().getWorkInfoByIdLiveData(request.id).observe(this,
