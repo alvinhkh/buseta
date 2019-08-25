@@ -32,8 +32,6 @@ import com.alvinhkh.buseta.BuildConfig;
 import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase;
-import com.alvinhkh.buseta.datagovhk.MtrLineWorker;
-import com.alvinhkh.buseta.follow.FollowRouteWorker;
 import com.alvinhkh.buseta.follow.dao.FollowDatabase;
 import com.alvinhkh.buseta.model.AppUpdate;
 import com.alvinhkh.buseta.route.dao.RouteDatabase;
@@ -42,7 +40,6 @@ import com.alvinhkh.buseta.service.ProviderUpdateService;
 import com.alvinhkh.buseta.service.RxBroadcastReceiver;
 import com.alvinhkh.buseta.utils.PreferenceUtil;
 
-import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableObserver;
@@ -332,8 +329,12 @@ public class SettingActivity extends BasePreferenceActivity {
                 if (routeDatabase != null) {
                     rowDeleted = routeDatabase.routeDao().clear();
                     rowDeleted += routeDatabase.routeStopDao().clear();
-                    WorkManager.getInstance().enqueue(new OneTimeWorkRequest.Builder(FollowRouteWorker.class).build());
-                    WorkManager.getInstance().enqueue(new OneTimeWorkRequest.Builder(MtrLineWorker.class).build());
+                    try {
+                        Intent intent = new Intent(mActivity, ProviderUpdateService.class);
+                        intent.putExtra(C.EXTRA.MANUAL, true);
+                        mActivity.startService(intent);
+                    } catch (Exception ignored) {
+                    }
                 }
                 Snackbar snackbar = Snackbar.make(mActivity.findViewById(android.R.id.content),
                         rowDeleted > 0

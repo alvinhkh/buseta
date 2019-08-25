@@ -54,13 +54,6 @@ class ProviderUpdateService: IntentService(TAG) {
         }
         WorkManager.getInstance().cancelAllWorkByTag(TAG)
 
-        val dataTd = Data.Builder()
-                .putBoolean(C.EXTRA.MANUAL, manualUpdate)
-                .build()
-        WorkManager.getInstance()
-                .enqueue(OneTimeWorkRequest.Builder(TdWorker::class.java).addTag(TAG)
-                        .setInputData(dataTd).build())
-
         val routeCount = routeDatabase.routeDao().count()
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val timeNow = System.currentTimeMillis() / 1000
@@ -73,6 +66,13 @@ class ProviderUpdateService: IntentService(TAG) {
 
         WorkManager.getInstance().cancelAllWorkByTag("RouteList")
         WorkManager.getInstance().cancelAllWorkByTag("RouteStopList")
+
+        val dataTd = Data.Builder()
+                .putBoolean(C.EXTRA.MANUAL, manualUpdate)
+                .build()
+        WorkManager.getInstance()
+                .enqueue(OneTimeWorkRequest.Builder(TdWorker::class.java).addTag(TAG)
+                        .setInputData(dataTd).build())
 
         try {
             val apiService = Api.retrofit.create(Api::class.java)
