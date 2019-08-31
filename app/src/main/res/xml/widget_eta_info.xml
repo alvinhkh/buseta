@@ -8,5 +8,6 @@
     android:initialLayout="@layout/widget_eta"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen|keyguard"
+    android:configure="com.alvinhkh.buseta.appwidget.FollowWidgetConfigurationActivity"
     android:previewImage="@mipmap/ic_launcher">
 </appwidget-provider>

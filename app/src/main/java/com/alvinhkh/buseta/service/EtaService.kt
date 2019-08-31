@@ -1,5 +1,6 @@
 package com.alvinhkh.buseta.service
 
+import android.appwidget.AppWidgetManager
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.Observer
 import android.content.Intent
@@ -9,6 +10,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 
 import com.alvinhkh.buseta.C
+import com.alvinhkh.buseta.appwidget.FollowWidgetProvider
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
 import com.alvinhkh.buseta.datagovhk.RtNwstEtaWorker
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
@@ -158,6 +160,10 @@ class EtaService : LifecycleService() {
         intent.putExtra(status, true)
         if (widgetId >= 0) {
             intent.putExtra(C.EXTRA.WIDGET_UPDATE, widgetId)
+            val widgetIntent = Intent(applicationContext, FollowWidgetProvider::class.java)
+            widgetIntent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+            widgetIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
+            sendBroadcast(widgetIntent)
         }
         if (notificationId >= 0) {
             intent.putExtra(C.EXTRA.NOTIFICATION_ID, notificationId)

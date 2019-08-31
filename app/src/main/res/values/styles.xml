@@ -19,6 +19,7 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="popupTheme">@style/AppTheme.PopupOverlay</item>
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+        <item name="checkboxStyle">@style/Widget.AppCompat.CompoundButton.CheckBox</item>
     </style>
 
     <style name="AppTheme.DayNight" parent="Theme.MaterialComponents.Light" />

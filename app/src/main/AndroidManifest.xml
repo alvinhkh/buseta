@@ -226,10 +226,6 @@
             android:name=".service.EtaService"
             android:enabled="true" />
         <service
-            android:name=".service.EtaWidgetService"
-            android:enabled="true"
-            android:permission="android.permission.BIND_REMOTEVIEWS" />
-        <service
             android:name=".service.NotificationService"
             android:enabled="true" />
         <service
@@ -242,10 +238,18 @@
             </intent-filter>
         </service>
 
-        <!-- Broadcast Receiver -->
-        <receiver android:name=".provider.EtaWidgetProvider">
+        <!-- AppWidget -->
+        <activity
+            android:name=".appwidget.FollowWidgetConfigurationActivity"
+            android:theme="@style/AppTheme">
             <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
+            </intent-filter>
+        </activity>
+
+        <receiver android:name=".appwidget.FollowWidgetProvider">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
                 <action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
                 <action android:name="android.appwidget.action.APPWIDGET_DELETED" />
                 <action android:name="android.appwidget.action.APPWIDGET_DISABLED" />
@@ -253,11 +257,18 @@
             <intent-filter>
                 <action android:name="com.alvinhkh.buseta.WIDGET_UPDATE" />
             </intent-filter>
-
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/widget_eta_info" />
+                android:resource="@xml/widget_eta_info"/>
         </receiver>
+
+        <receiver android:name=".appwidget.FollowWidgetPinnedReceiver" android:enabled="true"/>
+
+        <service
+            android:name=".appwidget.FollowWidgetService"
+            android:enabled="true"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
     </application>
 
 </manifest>
