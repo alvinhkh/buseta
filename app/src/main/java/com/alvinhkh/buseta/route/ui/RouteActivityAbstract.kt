@@ -403,7 +403,11 @@ abstract class RouteActivityAbstract : BaseActivity(),
                     fragNo = 0
                 }
                 if (viewPager.currentItem == fragNo && viewPager.currentItem < pagerAdapter.routeList.size) {
-                    loadMapMarkers(pagerAdapter.routeList[viewPager.currentItem])
+                    currentRoute = pagerAdapter.routeList[viewPager.currentItem]
+                    mapHandler.removeCallbacksAndMessages(null)
+                    mapHandler.postDelayed({
+                        loadMapMarkers(currentRoute!!)
+                    }, 200)
                 }
             }
 
@@ -635,8 +639,8 @@ abstract class RouteActivityAbstract : BaseActivity(),
             }
             if (mapCoordinates.size > 0) {
                 map?.addPolyline(singleLine)
+                routeStopLiveData.removeObservers(this@RouteActivityAbstract)
             }
-            routeStopLiveData.removeObservers(this@RouteActivityAbstract)
         })
 
         val liveData = arrivalTimeDatabase.arrivalTimeDao().getLiveData(route.companyCode?:"", route.name?:"", route.sequence?:"")
