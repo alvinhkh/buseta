@@ -20,9 +20,22 @@ import com.alvinhkh.buseta.search.ui.HistoryFragment
 import com.alvinhkh.buseta.service.ProviderUpdateService
 import com.alvinhkh.buseta.utils.AdViewUtil
 import com.alvinhkh.buseta.utils.ColorUtil
+import com.google.android.material.snackbar.Snackbar
+import com.google.android.play.core.appupdate.AppUpdateManager
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.install.InstallState
+import com.google.android.play.core.install.InstallStateUpdatedListener
+import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.InstallStatus
+import com.google.android.play.core.install.model.UpdateAvailability
+import timber.log.Timber
+import timber.log.Timber.log
 
 
-class MainActivity : BaseActivity() {
+class MainActivity : BaseActivity(), InstallStateUpdatedListener {
+
+    private val APP_UPDATE_REQUEST_CODE = 1100
+    private lateinit var appUpdateManager: AppUpdateManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -125,6 +138,22 @@ class MainActivity : BaseActivity() {
             startService(Intent(this, ProviderUpdateService::class.java))
         } catch (ignored: Throwable) {
         }
+
+        appUpdateManager = AppUpdateManagerFactory.create(this)
+        appUpdateManager.registerListener(this)
+        appUpdateManager.unregisterListener(this)
+        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
+        appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+                    && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
+            ) {
+                appUpdateManager.startUpdateFlowForResult(
+                        appUpdateInfo,
+                        AppUpdateType.FLEXIBLE,
+                        this,
+                        APP_UPDATE_REQUEST_CODE)
+            }
+        }
     }
 
     override fun onBackPressed() {
@@ -132,6 +161,42 @@ class MainActivity : BaseActivity() {
             supportFragmentManager.backStackEntryCount < 2 -> finish()
             supportFragmentManager.backStackEntryCount > 0 -> supportFragmentManager.popBackStack()
             else -> super.onBackPressed()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        appUpdateManager
+                .appUpdateInfo
+                .addOnSuccessListener { appUpdateInfo ->
+                    if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
+                        popupSnackbarForCompleteUpdate()
+                    }
+                }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == APP_UPDATE_REQUEST_CODE) {
+            if (resultCode != RESULT_OK) {
+                Timber.d("Update flow failed! Result code: $resultCode")
+            }
+        }
+    }
+
+    override fun onStateUpdate(state: InstallState) {
+        if (state.installStatus() == InstallStatus.DOWNLOADED) {
+            popupSnackbarForCompleteUpdate()
+        }
+    }
+
+    private fun popupSnackbarForCompleteUpdate() {
+        Snackbar.make(
+                findViewById(R.id.constraint_layout),
+                "An update has just been downloaded.",
+                Snackbar.LENGTH_INDEFINITE
+        ).apply {
+            setAction("RESTART") { appUpdateManager.completeUpdate() }
+            show()
         }
     }
 }
