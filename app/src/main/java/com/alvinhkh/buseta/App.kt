@@ -33,16 +33,16 @@ class App : Application() {
         val builder = OkHttpClient.Builder()
         builder.addNetworkInterceptor(UserAgentInterceptor())
         httpClient = builder
-                .connectTimeout(10, TimeUnit.SECONDS)
-                .writeTimeout(10, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
+                .connectTimeout(20, TimeUnit.SECONDS)
+                .writeTimeout(20, TimeUnit.SECONDS)
+                .readTimeout(40, TimeUnit.SECONDS)
                 .build()
         val builder2 = OkHttpClient.Builder()
         builder2.addNetworkInterceptor(UserAgentInterceptor("CitybusNWFB/5 CFNetwork/975.0.3 Darwin/18.2.0"))
         httpClient2 = builder2
-                .connectTimeout(10, TimeUnit.SECONDS)
-                .writeTimeout(10, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
+                .connectTimeout(20, TimeUnit.SECONDS)
+                .writeTimeout(20, TimeUnit.SECONDS)
+                .readTimeout(40, TimeUnit.SECONDS)
                 .build()
 
         val crashlytics = Crashlytics.Builder()
