@@ -26,7 +26,7 @@ class FollowFragment: Fragment() {
     private lateinit var followDatabase: FollowDatabase
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewModel: FollowViewModel
-    private lateinit var liveData: LiveData<MutableList<Follow>>
+    private var liveData: LiveData<MutableList<Follow>>? = null
     private var viewAdapter: FollowViewAdapter? = null
     private lateinit var emptyView: View
     private lateinit var snackbar: Snackbar
@@ -57,8 +57,8 @@ class FollowFragment: Fragment() {
         }
         viewModel = ViewModelProviders.of(this).get(FollowViewModel::class.java)
         liveData = viewModel.getAsLiveData(groupId)
-        liveData.removeObservers(this)
-        liveData.observe(this, Observer<MutableList<Follow>> { list ->
+        liveData?.removeObservers(this)
+        liveData?.observe(this, Observer<MutableList<Follow>> { list ->
             viewAdapter?.replaceItems(list?: mutableListOf())
             list?.forEachIndexed { index, follow ->
                 val id = follow.companyCode + follow.routeNo + follow.routeSeq + follow.routeServiceType + follow.stopId + follow.stopSeq
@@ -92,7 +92,7 @@ class FollowFragment: Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        liveData.removeObservers(this)
+        liveData?.removeObservers(this)
     }
 
     companion object {

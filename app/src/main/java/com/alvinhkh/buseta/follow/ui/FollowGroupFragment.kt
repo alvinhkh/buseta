@@ -34,7 +34,7 @@ class FollowGroupFragment : Fragment() {
     private lateinit var viewPager: ViewPager
     private lateinit var pagerAdapter: FollowGroupPagerAdapter
     private lateinit var viewModel: FollowGroupViewModel
-    private lateinit var liveData: LiveData<MutableList<FollowGroup>>
+    private var liveData: LiveData<MutableList<FollowGroup>>? = null
     private lateinit var fab: FloatingActionButton
 
     private val fetchEtaHandler = Handler()
@@ -85,7 +85,7 @@ class FollowGroupFragment : Fragment() {
         }
         viewModel = ViewModelProviders.of(this).get(FollowGroupViewModel::class.java)
         liveData = viewModel.getAsLiveData()
-        liveData.observe(this, Observer<MutableList<FollowGroup>> { list ->
+        liveData?.observe(this, Observer<MutableList<FollowGroup>> { list ->
             val groupList = mutableListOf<FollowGroup>()
             list?.forEach { item ->
                 val count = followDatabase.followDao().count(item.id)
