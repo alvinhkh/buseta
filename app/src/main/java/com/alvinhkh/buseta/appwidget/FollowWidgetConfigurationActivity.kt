@@ -48,7 +48,12 @@ class FollowWidgetConfigurationActivity : AppCompatActivity() {
             followGroupAdapter.clear()
             followGroupList = list?.toList()?: emptyList()
             list.forEach { followGroup ->
-                followGroupAdapter.add(followGroup.name)
+                val name = when {
+                    followGroup.name.isNotEmpty() -> followGroup.name
+                    followGroup.id == FollowGroup.UNCATEGORISED -> getString(R.string.uncategorised)
+                    else -> followGroup.id
+                }
+                followGroupAdapter.add(name)
             }
         })
 
@@ -74,7 +79,7 @@ class FollowWidgetConfigurationActivity : AppCompatActivity() {
     }
 
     private fun save() {
-        if (followGroupList[followGroupSpinner.selectedItemPosition].id.isEmpty()) {
+        if (followGroupList.isEmpty() || followGroupList[followGroupSpinner.selectedItemPosition].id.isEmpty()) {
             return
         }
 
