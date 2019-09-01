@@ -49,14 +49,15 @@ data class NwstEta(
                 obj.etaTime = tmp2[0]
                 val tmp3 = data[17].split("|")
                 val tmp4 = data[18].split("|")
-                obj.title = tmp3[0].replace(Regex.fromLiteral("往: " + obj.placeTo), "")
-                        .replace(", ", "").replace(obj.boundText, "")
                 if (obj.title.isEmpty()) {
                     obj.title = obj.etaTime
                 }
                 obj.subtitle = tmp4[0]
+                if (obj.boundText.isEmpty()) {
+                    obj.boundText = tmp3[0].replace(Regex.fromLiteral("往: " + obj.placeTo), "").replace(", ", "")
+                }
             }
-            if (!obj.companyCode.isEmpty()) {
+            if (obj.companyCode.isNotEmpty()) {
                 if (obj.companyCode.contains("DISABLED")) {
                     obj.title = data[12]
                 } else if (obj.companyCode.contains("HTML")) {

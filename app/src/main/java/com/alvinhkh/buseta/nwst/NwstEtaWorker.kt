@@ -116,7 +116,7 @@ class NwstEtaWorker(private val context : Context, params : WorkerParameters)
                 }
                 arrivalTime.text = text(nwstEta.title)
                 val subtitle = text(nwstEta.subtitle)
-                if (!subtitle.isEmpty()) {
+                if (subtitle.isNotEmpty()) {
                     if (subtitle.contains("距離") || subtitle.contains("距离") || subtitle.contains("Distance")) {
                         arrivalTime.distanceKM = parseDistance(subtitle).toDouble()
                     }
