@@ -20,7 +20,6 @@ import com.alvinhkh.buseta.datagovhk.MtrLineWorker
 import com.alvinhkh.buseta.datagovhk.RtNwstWorker
 import com.alvinhkh.buseta.datagovhk.TdWorker
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
-import com.alvinhkh.buseta.kmb.KmbEtaRouteWorker
 import com.alvinhkh.buseta.kmb.KmbRouteWorker
 import com.alvinhkh.buseta.lwb.LwbRouteWorker
 import com.alvinhkh.buseta.mtr.AESBusWorker
@@ -29,7 +28,6 @@ import com.alvinhkh.buseta.mtr.MtrResourceWorker
 import com.alvinhkh.buseta.nlb.NlbWorker
 import com.alvinhkh.buseta.nwst.NwstRouteWorker
 import com.alvinhkh.buseta.route.dao.RouteDatabase
-import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.utils.ConnectivityUtil
 import com.alvinhkh.buseta.utils.PreferenceUtil
 import timber.log.Timber
@@ -37,8 +35,6 @@ import timber.log.Timber
 class ProviderUpdateService: Service() {
 
     private lateinit var followDatabase: FollowDatabase
-
-    private lateinit var suggestionDatabase: SuggestionDatabase
 
     private lateinit var routeDatabase: RouteDatabase
 
@@ -51,7 +47,6 @@ class ProviderUpdateService: Service() {
     override fun onCreate() {
         super.onCreate()
         followDatabase = FollowDatabase.getInstance(this)!!
-        suggestionDatabase = SuggestionDatabase.getInstance(this)!!
         routeDatabase = RouteDatabase.getInstance(this)!!
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
 
@@ -131,7 +126,6 @@ class ProviderUpdateService: Service() {
         sharedPreferences.edit().putLong("last_update_suggestions", timeNow).apply()
 
         WorkManager.getInstance().cancelAllWorkByTag("RouteList")
-        WorkManager.getInstance().cancelAllWorkByTag("RouteStopList")
         var workCount = 0
         WorkManager.getInstance().getWorkInfosByTagLiveData(TAG).observeForever { workInfos ->
             if (workCount == 0) {
@@ -194,15 +188,6 @@ class ProviderUpdateService: Service() {
                 .then(aesBusRequest)
                 .enqueue()
 
-        val dataKmb = Data.Builder()
-                .putBoolean(C.EXTRA.MANUAL, manualUpdate)
-                .putString(C.EXTRA.COMPANY_CODE, C.PROVIDER.KMB)
-                .build()
-        val kmbRequest = OneTimeWorkRequest.Builder(KmbEtaRouteWorker::class.java)
-                .addTag(TAG).setInputData(dataKmb).build()
-        WorkManager.getInstance()
-                .enqueue(kmbRequest)
-
         val dataMtrBus = Data.Builder()
                 .putBoolean(C.EXTRA.MANUAL, manualUpdate)
                 .putString(C.EXTRA.COMPANY_CODE, C.PROVIDER.LRTFEEDER)
@@ -233,26 +218,6 @@ class ProviderUpdateService: Service() {
                 .addTag(TAG).setInputData(dataNlb).build()
         WorkManager.getInstance()
                 .enqueue(nlbRequest)
-
-        if (PreferenceUtil.isUsingNwstDataGovHkApi(applicationContext)) {
-            val dataGovHkNwst = Data.Builder()
-                    .putBoolean(C.EXTRA.MANUAL, manualUpdate)
-                    .putString(C.EXTRA.COMPANY_CODE, C.PROVIDER.NWST)
-                    .build()
-            val rtNwstRequest = OneTimeWorkRequest.Builder(RtNwstWorker::class.java)
-                    .addTag(TAG).setInputData(dataGovHkNwst).build()
-            WorkManager.getInstance()
-                    .enqueue(rtNwstRequest)
-        } else {
-            val dataNwst = Data.Builder()
-                    .putBoolean(C.EXTRA.MANUAL, manualUpdate)
-                    .putString(C.EXTRA.COMPANY_CODE, C.PROVIDER.NWST)
-                    .build()
-            val nwstRequest = OneTimeWorkRequest.Builder(NwstRouteWorker::class.java)
-                    .addTag(TAG).setInputData(dataNwst).build()
-            WorkManager.getInstance()
-                    .enqueue(nwstRequest)
-        }
 
         return START_STICKY
     }

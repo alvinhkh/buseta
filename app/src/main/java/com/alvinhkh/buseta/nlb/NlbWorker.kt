@@ -1,19 +1,14 @@
 package com.alvinhkh.buseta.nlb
 
 import android.content.Context
-import android.content.Intent
 import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.alvinhkh.buseta.C
-import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.nlb.model.NlbRouteStop
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.route.model.RouteStop
-import com.alvinhkh.buseta.search.dao.SuggestionDatabase
-import com.alvinhkh.buseta.search.model.Suggestion
-import timber.log.Timber
 import java.util.TreeMap
 
 class NlbWorker(context : Context, params : WorkerParameters)
@@ -22,8 +17,6 @@ class NlbWorker(context : Context, params : WorkerParameters)
     private val nlbService = NlbService.api.create(NlbService::class.java)
 
     private val routeDatabase = RouteDatabase.getInstance(context)
-
-    private val suggestionDatabase = SuggestionDatabase.getInstance(context)
 
     override fun doWork(): Result {
         val manualUpdate = inputData.getBoolean(C.EXTRA.MANUAL, false)
@@ -38,7 +31,6 @@ class NlbWorker(context : Context, params : WorkerParameters)
             return Result.failure(outputData)
         }
 
-        val suggestionList = arrayListOf<Suggestion>()
         val routeList = arrayListOf<Route>()
         val stopList = arrayListOf<RouteStop>()
         val timeNow = System.currentTimeMillis() / 1000
@@ -89,15 +81,7 @@ class NlbWorker(context : Context, params : WorkerParameters)
                 stop.sequence = i.toString()
                 stopList.add(stop)
             }
-
-            suggestionList.add(Suggestion(0, companyCode, nlbRoute.route_no, 0, Suggestion.TYPE_DEFAULT))
         }
-
-        suggestionDatabase?.suggestionDao()?.delete(Suggestion.TYPE_DEFAULT, companyCode, timeNow)
-        if (suggestionList.size > 0) {
-            suggestionDatabase?.suggestionDao()?.insert(suggestionList)
-        }
-        Timber.d("%s: %s", companyCode, suggestionList.size)
 
         val insertedList = routeDatabase?.routeDao()?.insert(routeList)
         if (insertedList?.size?:0 > 0) {

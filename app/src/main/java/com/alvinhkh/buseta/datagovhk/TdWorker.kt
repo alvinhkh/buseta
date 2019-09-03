@@ -12,6 +12,8 @@ import com.alvinhkh.buseta.datagovhk.model.TdRouteBus
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.route.model.RouteStop
+import com.alvinhkh.buseta.search.dao.SuggestionDatabase
+import com.alvinhkh.buseta.search.model.Suggestion
 import com.google.gson.Gson
 import timber.log.Timber
 import java.nio.charset.Charset
@@ -23,15 +25,19 @@ class TdWorker(context : Context, params : WorkerParameters)
 
     private val routeDatabase = RouteDatabase.getInstance(context)
 
+    private val suggestionDatabase = SuggestionDatabase.getInstance(context)
+
     override fun doWork(): Result {
         val manualUpdate = inputData.getBoolean(C.EXTRA.MANUAL, false)
         val outputData = Data.Builder()
                 .putBoolean(C.EXTRA.MANUAL, manualUpdate)
                 .build()
 
+        val suggestionList = arrayListOf<Suggestion>()
         val routeList = arrayListOf<Route>()
         val stopList = arrayListOf<RouteStop>()
         val timeNow = System.currentTimeMillis() / 1000
+        val companyCodeList = arrayListOf<String>()
 
         val codeMap = hashMapOf<String, TdCompanyCode.CompanyCode>()
         try {
@@ -72,6 +78,11 @@ class TdWorker(context : Context, params : WorkerParameters)
                         route.hyperlink = tdRoute.hyperlinkTc
                         route.lastUpdate = timeNow
                         routeList.add(route)
+
+                        suggestionList.add(Suggestion(0, route.companyCode!!, route.name!!, 0, Suggestion.TYPE_DEFAULT))
+                        if (!companyCodeList.contains(companyCode)) {
+                            companyCodeList.add(companyCode)
+                        }
                     }
                 }
             }
@@ -80,7 +91,10 @@ class TdWorker(context : Context, params : WorkerParameters)
             return Result.failure(outputData)
         }
 
-        // TODO: search view with smart input
+        suggestionDatabase?.suggestionDao()?.delete(Suggestion.TYPE_DEFAULT, companyCodeList, timeNow)
+        if (suggestionList.size > 0) {
+            suggestionDatabase?.suggestionDao()?.insert(suggestionList)
+        }
 
         val insertedList = routeDatabase?.routeDao()?.insert(routeList)
         if (insertedList?.size?:0 > 0) {

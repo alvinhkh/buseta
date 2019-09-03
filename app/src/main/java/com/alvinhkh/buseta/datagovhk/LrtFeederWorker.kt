@@ -1,20 +1,16 @@
 package com.alvinhkh.buseta.datagovhk
 
 import android.content.Context
-import android.content.Intent
 import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.alvinhkh.buseta.C
-import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.datagovhk.model.MtrBusFare
 import com.alvinhkh.buseta.datagovhk.model.MtrBusRoute
 import com.alvinhkh.buseta.datagovhk.model.MtrBusStop
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.route.model.RouteStop
-import com.alvinhkh.buseta.search.dao.SuggestionDatabase
-import com.alvinhkh.buseta.search.model.Suggestion
 import org.jsoup.parser.Parser
 import timber.log.Timber
 
@@ -25,8 +21,6 @@ class LrtFeederWorker(context : Context, params : WorkerParameters)
 
     private val routeDatabase = RouteDatabase.getInstance(context)
 
-    private val suggestionDatabase = SuggestionDatabase.getInstance(context)
-
     override fun doWork(): Result {
         val manualUpdate = inputData.getBoolean(C.EXTRA.MANUAL, false)
         val companyCode = inputData.getString(C.EXTRA.COMPANY_CODE)?:C.PROVIDER.LRTFEEDER
@@ -35,7 +29,6 @@ class LrtFeederWorker(context : Context, params : WorkerParameters)
                 .putString(C.EXTRA.COMPANY_CODE, companyCode)
                 .build()
 
-        val suggestionList = arrayListOf<Suggestion>()
         val routeList = arrayListOf<Route>()
         val stopList = arrayListOf<RouteStop>()
         val timeNow = System.currentTimeMillis() / 1000
@@ -68,18 +61,10 @@ class LrtFeederWorker(context : Context, params : WorkerParameters)
                 route.lastUpdate = timeNow
                 routeList.add(route)
                 mtrBusRouteMap[mtrBusRoute.routeId!!] = route
-
-                suggestionList.add(Suggestion(0, companyCode, mtrBusRoute.routeId!!, 0, Suggestion.TYPE_DEFAULT))
             }
         } catch (e: Throwable) {
             return Result.failure(outputData)
         }
-
-        suggestionDatabase?.suggestionDao()?.delete(Suggestion.TYPE_DEFAULT, companyCode, timeNow)
-        if (suggestionList.size > 0) {
-            suggestionDatabase?.suggestionDao()?.insert(suggestionList)
-        }
-        Timber.d("%s: %s", companyCode, suggestionList.size)
 
         val insertedList = routeDatabase?.routeDao()?.insert(routeList)
         if (insertedList?.size?:0 > 0) {

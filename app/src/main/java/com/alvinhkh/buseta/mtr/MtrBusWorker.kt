@@ -72,8 +72,8 @@ class MtrBusWorker(context : Context, params : WorkerParameters)
                 suggestionList.add(Suggestion(0, companyCode, mtrBusRoute.routeNumber, 0, Suggestion.TYPE_DEFAULT))
             }
 
-            val count = suggestionDatabase?.suggestionDao()?.delete(Suggestion.TYPE_DEFAULT, companyCode, timeNow)?:-1
-            if (count > 0) {
+            suggestionDatabase?.suggestionDao()?.delete(Suggestion.TYPE_DEFAULT, companyCode, timeNow)
+            if (suggestionList.size > 0) {
                 suggestionDatabase?.suggestionDao()?.insert(suggestionList)
             }
 

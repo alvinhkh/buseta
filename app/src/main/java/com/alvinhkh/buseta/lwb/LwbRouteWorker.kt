@@ -18,7 +18,7 @@ class LwbRouteWorker(context : Context, params : WorkerParameters)
         val companyCode = inputData.getString(C.EXTRA.COMPANY_CODE)?:C.PROVIDER.KMB
         val routeNo = inputData.getString(C.EXTRA.ROUTE_NO)?:return Result.failure()
         val loadStop = inputData.getBoolean(C.EXTRA.LOAD_STOP, false)
-        val routeStopListTag = inputData.getString(C.EXTRA.TAG)?: "RouteStopList"
+        val routeStopListTag = inputData.getString(C.EXTRA.TAG)?: "StopList_${companyCode}_${routeNo}"
         val outputData = Data.Builder()
                 .putBoolean(C.EXTRA.MANUAL, manualUpdate)
                 .putString(C.EXTRA.COMPANY_CODE, companyCode)

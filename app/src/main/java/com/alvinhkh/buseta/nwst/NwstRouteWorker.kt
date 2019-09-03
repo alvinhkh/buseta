@@ -1,18 +1,14 @@
 package com.alvinhkh.buseta.nwst
 
 import android.content.Context
-import android.content.Intent
 import androidx.work.*
 import com.alvinhkh.buseta.C
-import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.nwst.NwstService.*
 import com.alvinhkh.buseta.nwst.model.NwstRoute
 import com.alvinhkh.buseta.nwst.model.NwstVariant
 import com.alvinhkh.buseta.nwst.util.NwstRequestUtil
 import com.alvinhkh.buseta.route.dao.RouteDatabase
-import com.alvinhkh.buseta.search.dao.SuggestionDatabase
-import com.alvinhkh.buseta.search.model.Suggestion
 import timber.log.Timber
 
 class NwstRouteWorker(context : Context, params : WorkerParameters)
@@ -22,14 +18,12 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
 
     private val routeDatabase = RouteDatabase.getInstance(context)
 
-    private val suggestionDatabase = SuggestionDatabase.getInstance(context)
-
     override fun doWork(): Result {
         val manualUpdate = inputData.getBoolean(C.EXTRA.MANUAL, false)
         val companyCode = inputData.getString(C.EXTRA.COMPANY_CODE)?:C.PROVIDER.NWST
         val routeNo = inputData.getString(C.EXTRA.ROUTE_NO)?:""
         val loadStop = inputData.getBoolean(C.EXTRA.LOAD_STOP, false)
-        val routeStopListTag = inputData.getString(C.EXTRA.TAG)?: "RouteStopList"
+        val routeStopListTag = inputData.getString(C.EXTRA.TAG)?: "StopList_${companyCode}_${routeNo}"
         val outputData = Data.Builder()
                 .putBoolean(C.EXTRA.MANUAL, manualUpdate)
                 .putString(C.EXTRA.COMPANY_CODE, companyCode)
@@ -37,7 +31,6 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
                 .putBoolean(C.EXTRA.LOAD_STOP, loadStop)
                 .build()
 
-        val suggestionList = arrayListOf<Suggestion>()
         val routeList = arrayListOf<Route>()
         val timeNow = System.currentTimeMillis() / 1000
 
@@ -87,20 +80,11 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
                         route.lastUpdate = timeNow
                         routeList.add(route)
                     }
-                    suggestionList.add(Suggestion(0, nwstRoute.companyCode, nwstRoute.routeNo, 0, Suggestion.TYPE_DEFAULT))
                 }
             }
         } catch (e: Exception) {
             Timber.d(e)
             return Result.failure(outputData)
-        }
-
-        if (routeNo.isEmpty()) {
-            suggestionDatabase?.suggestionDao()?.delete(Suggestion.TYPE_DEFAULT, companyCode, timeNow)
-            if (suggestionList.size > 0) {
-                suggestionDatabase?.suggestionDao()?.insert(suggestionList)
-            }
-            Timber.d("%s: %s", companyCode, suggestionList.size)
         }
 
         val insertedList = routeDatabase?.routeDao()?.insert(routeList)

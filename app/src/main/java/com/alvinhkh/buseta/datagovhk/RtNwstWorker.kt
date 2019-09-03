@@ -1,18 +1,14 @@
 package com.alvinhkh.buseta.datagovhk
 
 import android.content.Context
-import android.content.Intent
 import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.alvinhkh.buseta.C
-import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.datagovhk.model.*
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.route.model.RouteStop
-import com.alvinhkh.buseta.search.dao.SuggestionDatabase
-import com.alvinhkh.buseta.search.model.Suggestion
 import timber.log.Timber
 
 class RtNwstWorker(context : Context, params : WorkerParameters)
@@ -21,8 +17,6 @@ class RtNwstWorker(context : Context, params : WorkerParameters)
     private val dataGovHkService = DataGovHkService.transport.create(DataGovHkService::class.java)
 
     private val routeDatabase = RouteDatabase.getInstance(context)
-
-    private val suggestionDatabase = SuggestionDatabase.getInstance(context)
 
     override fun doWork(): Result {
         val manualUpdate = inputData.getBoolean(C.EXTRA.MANUAL, false)
@@ -36,7 +30,6 @@ class RtNwstWorker(context : Context, params : WorkerParameters)
                 .putBoolean(C.EXTRA.LOAD_STOP, loadStop)
                 .build()
 
-        val suggestionList = arrayListOf<Suggestion>()
         val routeList = arrayListOf<Route>()
         val stopList = arrayListOf<RouteStop>()
         val timeNow = System.currentTimeMillis() / 1000
@@ -88,7 +81,6 @@ class RtNwstWorker(context : Context, params : WorkerParameters)
                 route.lastUpdate = timeNow
 //                route.lastUpdate = nwstRoute.dataTimestamp
                 tempRouteList.add(route)
-                suggestionList.add(Suggestion(0, nwstRoute.companyCode, nwstRoute.routeName, 0, Suggestion.TYPE_DEFAULT))
             }
         } catch (e: Exception) {
             Timber.d(e)
@@ -184,14 +176,6 @@ class RtNwstWorker(context : Context, params : WorkerParameters)
         } catch (e: Exception) {
             Timber.d(e)
             return Result.failure(outputData)
-        }
-
-        if (routeNo.isEmpty()) {
-            suggestionDatabase?.suggestionDao()?.delete(Suggestion.TYPE_DEFAULT, companyCode, timeNow)
-            if (suggestionList.size > 0) {
-                suggestionDatabase?.suggestionDao()?.insert(suggestionList)
-            }
-            Timber.d("%s: %s", companyCode, suggestionList.size)
         }
 
         val insertedList = routeDatabase?.routeDao()?.insert(routeList)

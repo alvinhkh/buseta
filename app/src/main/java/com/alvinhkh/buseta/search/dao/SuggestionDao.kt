@@ -21,6 +21,9 @@ interface SuggestionDao {
     @Query("DELETE FROM suggestions WHERE type = :type AND company = :companyCode AND date < :lastUpdate")
     fun delete(type: String, companyCode: String, lastUpdate: Long): Int
 
+    @Query("DELETE FROM suggestions WHERE type = :type AND company IN (:companyCodes) AND date < :lastUpdate")
+    fun delete(type: String, companyCodes: List<String>, lastUpdate: Long): Int
+
     @Query("SELECT COUNT(*) FROM suggestions WHERE type = 'default'")
     fun countDefault(): Int
 

@@ -186,10 +186,6 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
         swipeRefreshLayout.visibility = View.VISIBLE
         swipeRefreshLayout.isRefreshing = false
 
-        if (!loadStopList(route?:Route())) {
-            return rootView
-        }
-
         // load route stops from database
         recyclerView = rootView.findViewById(R.id.recycler_view)
         recyclerView?.run {
@@ -397,11 +393,13 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
         }
     }
 
-
     private fun loadStopList(route: Route): Boolean {
         val companyCode = route.companyCode?:""
         when (companyCode) {
-            C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER, C.PROVIDER.MTR, C.PROVIDER.NLB -> return true
+            C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER, C.PROVIDER.MTR, C.PROVIDER.NLB -> {
+                viewAdapter?.notifyDataSetChanged()
+                return true
+            }
             "" -> return false
         }
 
@@ -457,15 +455,8 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                             showEmptyMessage(getString(R.string.message_fail_to_request))
                         }
                     }
-                    if (workInfo?.state == WorkInfo.State.SUCCEEDED) {
-                        onWorkerSucceeded(workInfo.outputData)
-                    }
                 })
         return true
-    }
-
-    open fun onWorkerSucceeded(workerOutputData: Data) {
-
     }
 
     fun onMarkerClick(marker: Marker) {
