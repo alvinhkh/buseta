@@ -1,9 +1,7 @@
 package com.alvinhkh.buseta.lwb
 
 import android.content.Context
-import androidx.work.Data
-import androidx.work.Worker
-import androidx.work.WorkerParameters
+import androidx.work.*
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.dao.RouteDatabase
@@ -19,6 +17,8 @@ class LwbRouteWorker(context : Context, params : WorkerParameters)
         val manualUpdate = inputData.getBoolean(C.EXTRA.MANUAL, false)
         val companyCode = inputData.getString(C.EXTRA.COMPANY_CODE)?:C.PROVIDER.KMB
         val routeNo = inputData.getString(C.EXTRA.ROUTE_NO)?:return Result.failure()
+        val loadStop = inputData.getBoolean(C.EXTRA.LOAD_STOP, false)
+        val routeStopListTag = inputData.getString(C.EXTRA.TAG)?: "RouteStopList"
         val outputData = Data.Builder()
                 .putBoolean(C.EXTRA.MANUAL, manualUpdate)
                 .putString(C.EXTRA.COMPANY_CODE, companyCode)
@@ -53,6 +53,22 @@ class LwbRouteWorker(context : Context, params : WorkerParameters)
         val insertedList = routeDatabase?.routeDao()?.insert(routeList)
         if (insertedList?.size?:0 > 0) {
             routeDatabase?.routeDao()?.delete(companyCode, routeNo, timeNow)
+        }
+
+        if (loadStop) {
+            val requests = arrayListOf<OneTimeWorkRequest>()
+            routeList.forEach { route ->
+                val data = Data.Builder()
+                        .putString(C.EXTRA.COMPANY_CODE, route.companyCode)
+                        .putString(C.EXTRA.ROUTE_ID, route.code)
+                        .putString(C.EXTRA.ROUTE_NO, route.name)
+                        .putString(C.EXTRA.ROUTE_SEQUENCE, route.sequence)
+                        .putString(C.EXTRA.ROUTE_SERVICE_TYPE, route.serviceType)
+                        .build()
+                requests.add(OneTimeWorkRequest.Builder(LwbStopListWorker::class.java)
+                        .setInputData(data).addTag(routeStopListTag).build())
+            }
+            WorkManager.getInstance().enqueue(requests)
         }
 
         return Result.success(outputData)

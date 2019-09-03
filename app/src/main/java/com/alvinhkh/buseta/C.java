@@ -68,6 +68,8 @@ public class C {
         String MESSAGE_RID = "com.alvinhkh.buseta.MESSAGE_RID";
 
         String APP_UPDATE_OBJECT = "com.alvinhkh.buseta.APP_UDPATE_OBJECT";
+
+        String TAG = "com.alvinhkh.buseta.TAG";
     }
 
     public interface PREF {
@@ -129,11 +131,13 @@ public class C {
     }
 
     public interface NOTIFICATION {
-        String CHANNEL_FOREGROUND = "CHANNEL_ID_FOREGROUND";
+        String CHANNEL_ARRIVAL_ALERT = "CHANNEL_ID_ARRIVAL_ALERT";
 
         String CHANNEL_ETA = "CHANNEL_ID_ETA";
 
-        String CHANNEL_ARRIVAL_ALERT = "CHANNEL_ID_ARRIVAL_ALERT";
+        String CHANNEL_FOREGROUND = "CHANNEL_ID_FOREGROUND";
+
+        String CHANNEL_UPDATE = "CHANNEL_ID_UPDATE";
     }
 
     public interface GEOFENCE {

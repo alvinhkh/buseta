@@ -29,6 +29,7 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
         val companyCode = inputData.getString(C.EXTRA.COMPANY_CODE)?:C.PROVIDER.NWST
         val routeNo = inputData.getString(C.EXTRA.ROUTE_NO)?:""
         val loadStop = inputData.getBoolean(C.EXTRA.LOAD_STOP, false)
+        val routeStopListTag = inputData.getString(C.EXTRA.TAG)?: "RouteStopList"
         val outputData = Data.Builder()
                 .putBoolean(C.EXTRA.MANUAL, manualUpdate)
                 .putString(C.EXTRA.COMPANY_CODE, companyCode)
@@ -98,11 +99,6 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
             suggestionDatabase?.suggestionDao()?.delete(Suggestion.TYPE_DEFAULT, companyCode, timeNow)
             if (suggestionList.size > 0) {
                 suggestionDatabase?.suggestionDao()?.insert(suggestionList)
-                val i = Intent(C.ACTION.SUGGESTION_ROUTE_UPDATE)
-                i.putExtra(C.EXTRA.UPDATED, true)
-                i.putExtra(C.EXTRA.MANUAL, manualUpdate)
-                i.putExtra(C.EXTRA.MESSAGE_RID, R.string.message_database_updated)
-                applicationContext.sendBroadcast(i)
             }
             Timber.d("%s: %s", companyCode, suggestionList.size)
         }
@@ -140,7 +136,7 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
                         .putString(C.EXTRA.ROUTE_SERVICE_TYPE, route.serviceType)
                         .build()
                 requests.add(OneTimeWorkRequest.Builder(NwstStopListWorker::class.java)
-                        .setInputData(data).addTag("RouteStopList").build())
+                        .setInputData(data).addTag(routeStopListTag).build())
             }
             WorkManager.getInstance().enqueue(requests)
         }

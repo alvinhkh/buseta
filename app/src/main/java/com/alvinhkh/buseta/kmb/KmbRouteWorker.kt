@@ -22,6 +22,7 @@ class KmbRouteWorker(context : Context, params : WorkerParameters)
         val companyCode = inputData.getString(C.EXTRA.COMPANY_CODE)?:C.PROVIDER.KMB
         val routeNo = inputData.getString(C.EXTRA.ROUTE_NO)?:return Result.failure()
         val loadStop = inputData.getBoolean(C.EXTRA.LOAD_STOP, false)
+        val routeStopListTag = inputData.getString(C.EXTRA.TAG)?: "RouteStopList"
         val outputData = Data.Builder()
                 .putBoolean(C.EXTRA.MANUAL, manualUpdate)
                 .putString(C.EXTRA.COMPANY_CODE, companyCode)
@@ -85,7 +86,7 @@ class KmbRouteWorker(context : Context, params : WorkerParameters)
                             .putString(C.EXTRA.ROUTE_SERVICE_TYPE, route.serviceType)
                             .build()
                     requests.add(OneTimeWorkRequest.Builder(KmbStopListWorker::class.java)
-                            .setInputData(data).addTag("RouteStopList").build())
+                            .setInputData(data).addTag(routeStopListTag).build())
                 }
                 WorkManager.getInstance().enqueue(requests)
             }

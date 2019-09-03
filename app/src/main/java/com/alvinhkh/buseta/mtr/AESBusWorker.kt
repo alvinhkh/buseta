@@ -69,11 +69,6 @@ class AESBusWorker(context : Context, params : WorkerParameters)
             suggestionDatabase?.suggestionDao()?.delete(Suggestion.TYPE_DEFAULT, companyCode, timeNow)
             if (suggestionList.size > 0) {
                 suggestionDatabase?.suggestionDao()?.insert(suggestionList)
-                val i = Intent(C.ACTION.SUGGESTION_ROUTE_UPDATE)
-                i.putExtra(C.EXTRA.UPDATED, true)
-                i.putExtra(C.EXTRA.MANUAL, manualUpdate)
-                i.putExtra(C.EXTRA.MESSAGE_RID, R.string.message_database_updated)
-                applicationContext.sendBroadcast(i)
             }
             Timber.d("%s: %s", companyCode, suggestionList.size)
 

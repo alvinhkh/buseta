@@ -9,6 +9,8 @@
     <string name="channel_description_arrival_alert">到站提示通知</string>
     <string name="channel_name_foreground">「%1$s」背景執行需要用到的前台通知</string>
     <string name="channel_description_foreground">長按可永久隱藏此類別通知（不會影響ETA通知）</string>
+    <string name="channel_name_update">檢查更新</string>
+    <string name="channel_description_update">正在更新路線資料</string>
     <string name="default_notification_channel_id">CHANNEL_ID_DEFAULT</string>
 
     <string name="action_settings">設定</string>

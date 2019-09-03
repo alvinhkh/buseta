@@ -221,7 +221,7 @@
         <service
             android:name=".service.ProviderUpdateService"
             android:enabled="true"
-            android:stopWithTask="true"  />
+            android:stopWithTask="false" />
         <service
             android:name=".service.EtaService"
             android:enabled="true" />

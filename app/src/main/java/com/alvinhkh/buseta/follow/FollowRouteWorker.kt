@@ -86,6 +86,6 @@ class FollowRouteWorker(context : Context, params : WorkerParameters)
     }
 
     companion object {
-        private const val TAG = "FollowRouteWorker"
+        internal const val TAG = "FollowRouteWorker"
     }
 }
