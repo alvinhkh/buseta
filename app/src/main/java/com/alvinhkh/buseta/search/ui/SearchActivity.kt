@@ -210,20 +210,24 @@ class SearchActivity : AppCompatActivity() {
                     finish()
                 } else {
                     list?.forEach { route ->
-                        if (lastCompanyCode != route.companyCode) {
-                            if (lastCompanyCode.isNotBlank() && routeNo.isNotBlank()) {
-                                viewAdapter.addButton(Suggestion(0, lastCompanyCode, routeNo, 0, Suggestion.TYPE_DEFAULT))
+                        val companyCode = route.companyCode?:""
+                        if (lastCompanyCode != companyCode) {
+                            if (lastCompanyCode.isNotBlank() && lastRouteNo.isNotBlank()) {
+                                viewAdapter.addButton(Suggestion(0, lastCompanyCode, lastRouteNo, 0, Suggestion.TYPE_DEFAULT))
                             }
-                            val companyName = Route.companyName(applicationContext, route.companyCode?:"", route.name)
+                            val companyName = Route.companyName(applicationContext, companyCode, route.name)
                             viewAdapter.addSection(companyName)
-                            shownCompanyCode.add(route.companyCode?:"")
+                            shownCompanyCode.add(companyCode)
                             lastRouteNo = ""
                         }
                         if (lastRouteNo != route.name?:"") {
                             viewAdapter.add(route)
                         }
                         lastRouteNo = route.name?:""
-                        lastCompanyCode = route.companyCode?:""
+                        lastCompanyCode = companyCode
+                    }
+                    if (shownCompanyCode.size == 1 && lastCompanyCode.isNotBlank() && lastRouteNo.isNotBlank()) {
+                        viewAdapter.addButton(Suggestion(0, lastCompanyCode, lastRouteNo, 0, Suggestion.TYPE_DEFAULT))
                     }
                 }
             }
