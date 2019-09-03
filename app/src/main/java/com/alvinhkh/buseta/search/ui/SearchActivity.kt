@@ -195,6 +195,12 @@ class SearchActivity : AppCompatActivity() {
         queryLiveData = viewModel.liveData(route, companyCodes)
         queryLiveData?.observe(this@SearchActivity, Observer { list ->
             viewAdapter.clear()
+            val providerSearchList = arrayListOf<String>()
+            listOf(C.PROVIDER.CTB, C.PROVIDER.KMB, C.PROVIDER.LWB, C.PROVIDER.NLB, C.PROVIDER.NWFB).forEach {
+                if (checkedProviders.size == 0 || checkedProviders.contains(it)) {
+                    providerSearchList.add(it)
+                }
+            }
             var lastCompanyCode = ""
             var lastRouteNo = ""
             val routeNo = route.replace(Regex("[^a-zA-Z0-9 ]"), "")
@@ -212,13 +218,15 @@ class SearchActivity : AppCompatActivity() {
                     list?.forEach { route ->
                         val companyCode = route.companyCode?:""
                         if (lastCompanyCode != companyCode) {
-                            if (lastCompanyCode.isNotBlank() && lastRouteNo.isNotBlank()) {
+                            if (lastCompanyCode.isNotBlank() && lastRouteNo.isNotBlank()
+                                    && routeNo.isNotBlank() && providerSearchList.contains(lastCompanyCode)) {
                                 viewAdapter.addButton(Suggestion(0, lastCompanyCode, lastRouteNo, 0, Suggestion.TYPE_DEFAULT))
                             }
                             val companyName = Route.companyName(applicationContext, companyCode, route.name)
                             viewAdapter.addSection(companyName)
-                            shownCompanyCode.add(companyCode)
-                            lastRouteNo = ""
+                            if (!shownCompanyCode.contains(companyCode)) {
+                                shownCompanyCode.add(companyCode)
+                            }
                         }
                         if (lastRouteNo != route.name?:"") {
                             viewAdapter.add(route)
@@ -226,13 +234,14 @@ class SearchActivity : AppCompatActivity() {
                         lastRouteNo = route.name?:""
                         lastCompanyCode = companyCode
                     }
-                    if (shownCompanyCode.size == 1 && lastCompanyCode.isNotBlank() && lastRouteNo.isNotBlank()) {
+                    if (lastCompanyCode.isNotBlank() && lastRouteNo.isNotBlank()
+                            && routeNo.isNotBlank() && providerSearchList.contains(lastCompanyCode)) {
                         viewAdapter.addButton(Suggestion(0, lastCompanyCode, lastRouteNo, 0, Suggestion.TYPE_DEFAULT))
                     }
                 }
             }
             if (routeNo.isNotBlank()) {
-                listOf(C.PROVIDER.CTB, C.PROVIDER.KMB, C.PROVIDER.LWB, C.PROVIDER.NLB, C.PROVIDER.NWFB).forEach {
+                providerSearchList.forEach {
                     if (!shownCompanyCode.contains(it)) {
                         val companyName = Route.companyName(applicationContext, it, route.replace(Regex("[^a-zA-Z0-9]"), ""))
                         viewAdapter.addSection(companyName)
