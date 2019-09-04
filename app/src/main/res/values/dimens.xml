@@ -19,7 +19,7 @@
     <dimen name="card_item_icon_touch_target_dense">24dp</dimen>
     <dimen name="card_item_icon_margin_start">16dp</dimen>
     <dimen name="card_item_text_margin_start">72dp</dimen>
-    <dimen name="card_item_horizontal_padding">16dp</dimen>
+    <dimen name="card_item_horizontal_padding">12dp</dimen>
     <dimen name="card_item_vertical_padding">12dp</dimen>
     <dimen name="card_section_horizontal_padding">16dp</dimen>
     <dimen name="card_section_vertical_padding">16dp</dimen>

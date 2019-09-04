@@ -51,7 +51,7 @@
             tool:text="@string/stop_name" />
 
         <TextView
-            android:id="@+id/route_location_end"
+            android:id="@+id/destination"
             style="@style/TextAppearance.AppCompat.Small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

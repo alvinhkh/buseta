@@ -19,6 +19,7 @@ import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
 import com.alvinhkh.buseta.follow.model.Follow
+import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.ui.RouteStopFragment
 import com.alvinhkh.buseta.search.ui.SearchActivity
 import com.alvinhkh.buseta.utils.PreferenceUtil
@@ -69,9 +70,13 @@ class FollowViewAdapter(
 
         @SuppressLint("ClickableViewAccessibility")
         fun bindItems(follow: Follow, activityRef: WeakReference<FragmentActivity>) {
+            val companyColor = Route.companyColour(itemView.context, follow.companyCode, follow.routeNo)
+            if (companyColor != null) {
+                itemView.findViewById<View>(R.id.color).setBackgroundColor(companyColor)
+            }
             itemView.findViewById<TextView>(R.id.name).text = follow.stopName
             itemView.findViewById<TextView>(R.id.route_no).text = follow.routeNo
-            itemView.findViewById<TextView>(R.id.route_location_end).text = follow.routeDestination
+            itemView.findViewById<TextView>(R.id.destination).text = follow.routeDestination
 
             itemView.setOnClickListener {
                 val intent = Intent(Intent.ACTION_VIEW)
@@ -91,11 +96,11 @@ class FollowViewAdapter(
             var direction = ""
             if (follow.etas.isEmpty()) {
                 itemView.findViewById<TextView>(R.id.eta).text = ""
-                itemView.findViewById<TextView>(R.id.eta_next).text = ""
+                itemView.findViewById<TextView>(R.id.eta2).text = ""
             }
             follow.etas.forEachIndexed { _, obj ->
                 val arrivalTime = ArrivalTime.estimate(itemView.context, obj)
-                if (!arrivalTime.order.isEmpty()) {
+                if (arrivalTime.order.isNotEmpty()) {
                     val etaText = SpannableStringBuilder(arrivalTime.text)
                     val pos = Integer.parseInt(arrivalTime.order)
                     var colorInt: Int? = ContextCompat.getColor(itemView.context,
@@ -110,22 +115,22 @@ class FollowViewAdapter(
                         else
                             R.color.textPrimary)
                     }
-                    if (!arrivalTime.platform.isEmpty()) {
-                        etaText.insert(0, "[" + arrivalTime.platform + "] ")
+                    if (arrivalTime.platform.isNotEmpty()) {
+                        etaText.insert(0, "[${arrivalTime.platform}] ")
                     }
-                    if (!arrivalTime.note.isEmpty()) {
+                    if (arrivalTime.note.isNotEmpty()) {
                         etaText.append("#")
                     }
                     if (arrivalTime.isSchedule) {
                         etaText.append("*")
                     }
-                    if (!arrivalTime.estimate.isEmpty()) {
+                    if (arrivalTime.estimate.isNotEmpty()) {
                         etaText.append(" (").append(arrivalTime.estimate).append(")")
                     }
                     if (arrivalTime.distanceKM >= 0) {
                         etaText.append(" ").append(itemView.context.getString(R.string.km_short, arrivalTime.distanceKM))
                     }
-                    if (!arrivalTime.plate.isEmpty()) {
+                    if (arrivalTime.plate.isNotEmpty()) {
                         etaText.append(" ").append(arrivalTime.plate)
                     }
                     if (arrivalTime.capacity >= 0) {
@@ -144,14 +149,13 @@ class FollowViewAdapter(
                         }
                         if (drawable != null) {
                             drawable = DrawableCompat.wrap(drawable)
-                            if (pos == 0) {
-                                drawable!!.setBounds(0, 0,
+                            when (pos) {
+                                0 -> drawable!!.setBounds(0, 0,
                                         itemView.findViewById<TextView>(R.id.eta).lineHeight,
                                         itemView.findViewById<TextView>(R.id.eta).lineHeight)
-                            } else {
-                                drawable!!.setBounds(0, 0,
-                                        itemView.findViewById<TextView>(R.id.eta_next).lineHeight,
-                                        itemView.findViewById<TextView>(R.id.eta_next).lineHeight)
+                                else -> drawable!!.setBounds(0, 0,
+                                        itemView.findViewById<TextView>(R.id.eta2).lineHeight,
+                                        itemView.findViewById<TextView>(R.id.eta2).lineHeight)
                             }
                             DrawableCompat.setTint(drawable.mutate(), colorInt!!)
                             val imageSpan = ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM)
@@ -164,12 +168,11 @@ class FollowViewAdapter(
                     if (arrivalTime.hasWheelchair && PreferenceUtil.isShowWheelchairIcon(itemView.context)) {
                         var drawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_outline_accessible_18dp)
                         drawable = DrawableCompat.wrap(drawable!!)
-                        if (pos == 0) {
-                            drawable!!.setBounds(0, 0, itemView.findViewById<TextView>(R.id.eta).lineHeight,
+                        when (pos) {
+                            0 -> drawable!!.setBounds(0, 0, itemView.findViewById<TextView>(R.id.eta).lineHeight,
                                     itemView.findViewById<TextView>(R.id.eta).lineHeight)
-                        } else {
-                            drawable!!.setBounds(0, 0, itemView.findViewById<TextView>(R.id.eta_next).lineHeight,
-                                    itemView.findViewById<TextView>(R.id.eta_next).lineHeight)
+                            else -> drawable!!.setBounds(0, 0, itemView.findViewById<TextView>(R.id.eta2).lineHeight,
+                                    itemView.findViewById<TextView>(R.id.eta2).lineHeight)
                         }
                         DrawableCompat.setTint(drawable.mutate(), colorInt!!)
                         val imageSpan = ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM)
@@ -181,12 +184,11 @@ class FollowViewAdapter(
                     if (arrivalTime.hasWifi && PreferenceUtil.isShowWifiIcon(itemView.context)) {
                         var drawable = ContextCompat.getDrawable(itemView.context, R.drawable.ic_outline_wifi_18dp)
                         drawable = DrawableCompat.wrap(drawable!!)
-                        if (pos == 0) {
-                            drawable!!.setBounds(0, 0, itemView.findViewById<TextView>(R.id.eta).lineHeight,
+                        when (pos) {
+                            0 -> drawable!!.setBounds(0, 0, itemView.findViewById<TextView>(R.id.eta).lineHeight,
                                     itemView.findViewById<TextView>(R.id.eta).lineHeight)
-                        } else {
-                            drawable!!.setBounds(0, 0, itemView.findViewById<TextView>(R.id.eta_next).lineHeight,
-                                    itemView.findViewById<TextView>(R.id.eta_next).lineHeight)
+                            else -> drawable!!.setBounds(0, 0, itemView.findViewById<TextView>(R.id.eta2).lineHeight,
+                                    itemView.findViewById<TextView>(R.id.eta2).lineHeight)
                         }
                         DrawableCompat.setTint(drawable.mutate(), colorInt!!)
                         val imageSpan = ImageSpan(drawable, ImageSpan.ALIGN_BOTTOM)
@@ -200,31 +202,25 @@ class FollowViewAdapter(
                     }
                     if (arrivalTime.companyCode == C.PROVIDER.MTR) {
                         if (direction != arrivalTime.direction) {
-                            if (pos == 0) {
-                                itemView.findViewById<TextView>(R.id.eta).text = etaText
-                            } else {
-                                itemView.findViewById<TextView>(R.id.eta_next).text = etaText
-                            }
+                            itemView.findViewById<TextView>(when (pos) {
+                                0 -> R.id.eta
+                                else -> R.id.eta2
+                            }).text = etaText
                         }
                     } else {
                         when (pos) {
                             0 -> {
                                 itemView.findViewById<TextView>(R.id.eta).text = etaText
-                                itemView.findViewById<TextView>(R.id.eta_next).text = null
+                                itemView.findViewById<TextView>(R.id.eta2).text = null
                             }
                             1 -> {
-                                etaText.insert(0, itemView.findViewById<TextView>(R.id.eta_next).text)
-                                itemView.findViewById<TextView>(R.id.eta_next).text = etaText
-                            }
-                            2 -> {
-                                etaText.insert(0, "  ")
-                                etaText.insert(0, itemView.findViewById<TextView>(R.id.eta_next).text)
-                                itemView.findViewById<TextView>(R.id.eta_next).text = etaText
+                                etaText.insert(0, itemView.findViewById<TextView>(R.id.eta2).text)
+                                itemView.findViewById<TextView>(R.id.eta2).text = etaText
                             }
                             else -> {
                                 etaText.insert(0, "  ")
-                                etaText.insert(0, itemView.findViewById<TextView>(R.id.eta_next).text)
-                                itemView.findViewById<TextView>(R.id.eta_next).text = etaText
+                                etaText.insert(0, itemView.findViewById<TextView>(R.id.eta2).text)
+                                itemView.findViewById<TextView>(R.id.eta2).text = etaText
                             }
                         }
                     }

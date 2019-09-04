@@ -88,7 +88,7 @@ class EditFollowViewAdapter(
             }
             itemView.findViewById<TextView>(R.id.name).text = follow.stopName
             itemView.findViewById<TextView>(R.id.route_no).text = follow.routeNo
-            itemView.findViewById<TextView>(R.id.route_location_end).text = follow.routeDestination
+            itemView.findViewById<TextView>(R.id.destination).text = follow.routeDestination
             itemView.setOnLongClickListener{
                 onItemDragListener?.onItemStartDrag(this)
                 true

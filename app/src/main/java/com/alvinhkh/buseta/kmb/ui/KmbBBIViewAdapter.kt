@@ -68,7 +68,7 @@ class KmbBBIViewAdapter(
             if (data?.type == Data.TYPE_BBI) {
                 val record = data.obj as KmbBBI2.Record
                 itemView.route_no.text = record.secRouteno
-                itemView.route_location_end.text = itemView.context.getString(R.string.destination, record.secDest)
+                itemView.destination.text = itemView.context.getString(R.string.destination, record.secDest)
                 itemView.name.text = record.xchange
                 itemView.discount.text = record.discountMax
                 itemView.remark.text = record.validity
