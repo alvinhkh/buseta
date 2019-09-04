@@ -26,9 +26,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/search_et"
             android:layout_margin="8dp"
-            style="@style/Widget.MaterialComponents.ChipGroup">
-
-        </com.google.android.material.chip.ChipGroup>
+            app:chipSpacing="8dp" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_view"

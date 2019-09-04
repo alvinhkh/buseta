@@ -107,6 +107,7 @@ class SearchActivity : AppCompatActivity() {
                 chip.isClickable = true
                 chip.isCheckable = true
                 chip.isChecked = false
+                chip.setTextColor(ContextCompat.getColor(context, R.color.black))
                 chip.setOnCheckedChangeListener(chipListener)
                 this.addView(chip)
             }
