@@ -229,7 +229,7 @@ class SearchActivity : AppCompatActivity() {
                                 shownCompanyCode.add(companyCode)
                             }
                         }
-                        if (lastRouteNo != route.name?:"") {
+                        if (lastRouteNo != route.name?:"" || lastCompanyCode != companyCode) {
                             viewAdapter.add(route)
                         }
                         lastRouteNo = route.name?:""
