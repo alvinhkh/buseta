@@ -121,15 +121,18 @@ class AESBusEtaWorker(private val context : Context, params : WorkerParameters)
                         if (busStopId == null) continue
                         if (busStopId != routeStop.stopId && busStopId != "999") continue
                         if (buses != null && buses.isNotEmpty()) {
-                            for (j in 0 until buses.size) {
+                            for (j in buses.indices) {
                                 isAvailable = true
                                 val aesEtaBus = buses[j]
                                 val arrivalTime = ArrivalTime.emptyInstance(context, routeStop)
-                                arrivalTime.estimate = aesEtaBus.arrivalTimeText.orEmpty()
                                 val calendar = Calendar.getInstance()
                                 calendar.time = statusTime
-                                calendar.add(Calendar.SECOND, aesEtaBus.arrivalTimeInSecond.orEmpty().toInt())
-                                arrivalTime.text = SimpleDateFormat("HH:mm", Locale.ENGLISH).format(calendar.time)
+                                if (aesEtaBus.arrivalTimeInSecond.orEmpty().toInt() < 108000) {
+                                    calendar.add(Calendar.SECOND, aesEtaBus.arrivalTimeInSecond.orEmpty().toInt())
+                                    arrivalTime.text = SimpleDateFormat("HH:mm", Locale.ENGLISH).format(calendar.time)
+                                } else {
+                                    arrivalTime.text = aesEtaBus.arrivalTimeText.orEmpty()
+                                }
                                 if (!aesEtaBus.busRemark.isNullOrEmpty()) {
                                     arrivalTime.text += " " + aesEtaBus.busRemark
                                 }
