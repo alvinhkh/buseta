@@ -128,6 +128,7 @@ data class Route(
                 C.PROVIDER.NR -> context.getString(R.string.provider_short_residents)
                 C.PROVIDER.NWFB -> context.getString(R.string.provider_short_nwfb)
                 C.PROVIDER.NWST -> context.getString(R.string.provider_short_nwst)
+                C.PROVIDER.GMB901 -> context.getString(R.string.provider_short_gmb)
                 else -> companyCode
             }
         }
@@ -159,6 +160,7 @@ data class Route(
                 C.PROVIDER.NR -> ContextCompat.getColor(context, R.color.colorPrimary)
                 C.PROVIDER.NWFB -> ContextCompat.getColor(context, R.color.provider_nwfb)
                 C.PROVIDER.NWST -> ContextCompat.getColor(context, R.color.colorPrimary)
+                C.PROVIDER.GMB901 -> ContextCompat.getColor(context, R.color.provider_gmb)
                 else -> null
             }
         }

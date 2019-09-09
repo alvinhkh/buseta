@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.nlb.NlbService
 import com.alvinhkh.buseta.nlb.model.NlbNews
@@ -19,6 +20,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class NlbNewsViewAdapter(
+        val companyCode: String,
         private val data: MutableList<NlbNews> = mutableListOf()
 ): RecyclerView.Adapter<NlbNewsViewAdapter.Holder>() {
 
@@ -27,7 +29,7 @@ class NlbNewsViewAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
-        return Holder(LayoutInflater.from(parent.context).inflate(R.layout.item_route_announce, parent, false))
+        return Holder(companyCode, LayoutInflater.from(parent.context).inflate(R.layout.item_route_announce, parent, false))
     }
 
     override fun getItemCount(): Int = data.size
@@ -43,7 +45,7 @@ class NlbNewsViewAdapter(
         notifyDataSetChanged()
     }
 
-    class Holder(itemView: View?): RecyclerView.ViewHolder(itemView!!){
+    class Holder(val companyCode: String, itemView: View?): RecyclerView.ViewHolder(itemView!!){
 
         fun bindItems(nlbNews: NlbNews) {
             itemView.icon.setImageResource(R.drawable.ic_outline_event_note_24dp)
@@ -62,8 +64,14 @@ class NlbNewsViewAdapter(
 
             itemView.setOnClickListener { v ->
                 CoroutineScope(Dispatchers.Main).launch {
-                    val nlbService = NlbService.apiCoroutine.create(NlbService::class.java)
-                    val response = nlbService.news(NlbNewsRequest(nlbNews.newsId, "zh")).await()
+                    val request = NlbNewsRequest(nlbNews.newsId, "zh")
+                    val response = if (companyCode == C.PROVIDER.GMB901) {
+                        val nlbService = NlbService.nlbApiCoroutine.create(NlbService::class.java)
+                        nlbService.news(request).await()
+                    } else {
+                        val gmb901Service = NlbService.gmb901ApiCoroutine.create(NlbService::class.java)
+                        gmb901Service.news(request).await()
+                    }
                     val body = response.body()
                     if (response.isSuccessful && body?.news?.content?.isEmpty() == false) {
                         val intent = Intent(v.context, WebViewActivity::class.java)

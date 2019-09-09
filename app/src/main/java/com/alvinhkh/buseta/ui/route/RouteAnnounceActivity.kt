@@ -68,7 +68,11 @@ class RouteAnnounceActivity : BaseActivity() {
                 f.arguments = b
                 fragmentTransaction.replace(R.id.fragment_container, f)
             }
-            C.PROVIDER.NLB -> fragmentTransaction.replace(R.id.fragment_container, NlbNewsFragment())
+            C.PROVIDER.NLB, C.PROVIDER.GMB901 -> {
+                val f = NlbNewsFragment()
+                f.arguments = b
+                fragmentTransaction.replace(R.id.fragment_container, f)
+            }
             C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> {
                 val f = NwstNoticeFragment()
                 f.arguments = b

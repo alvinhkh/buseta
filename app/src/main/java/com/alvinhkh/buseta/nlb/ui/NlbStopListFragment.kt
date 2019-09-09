@@ -12,6 +12,8 @@ import android.view.MenuItem
 
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
+import com.alvinhkh.buseta.nlb.NlbService.Companion.GMB901
+import com.alvinhkh.buseta.nlb.NlbService.Companion.NLB
 import com.alvinhkh.buseta.nlb.NlbService.Companion.TIMETABLE_URL
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.model.RouteStop
@@ -30,7 +32,12 @@ class NlbStopListFragment : RouteStopListFragmentAbstract() {
         val id = item!!.itemId
         when (id) {
             R.id.action_timetable -> if (route != null && route?.code != null) {
-                openLink(context!!, TIMETABLE_URL + route?.code, R.color.provider_nlb)
+                val prefix = if (route?.companyCode == C.PROVIDER.GMB901) {
+                    GMB901
+                } else {
+                    NLB
+                }
+                openLink(context!!, prefix + TIMETABLE_URL + route?.code, R.color.provider_nlb)
                 return true
             }
         }

@@ -47,21 +47,38 @@ interface NlbService {
 
     companion object {
 
-        const val TIMETABLE_URL = "https://nlb.kcbh.com.hk:8443/api/passenger/route.php?action=getDetail&routeId="
+        const val GMB901 = "https://gmb901.kcbh.com.hk:8443"
+
+        const val NLB = "https://nlb.kcbh.com.hk:8443"
+
+        const val TIMETABLE_URL = "/api/passenger/route.php?action=getDetail&routeId="
 
         val gson: Gson = GsonBuilder()
                 .serializeNulls()
                 .create()
 
-        val api: Retrofit = Retrofit.Builder()
+        val gmb901Api: Retrofit = Retrofit.Builder()
                 .client(App.httpClient)
-                .baseUrl("https://nlb.kcbh.com.hk:8443/api/passenger/")
+                .baseUrl("${GMB901}/api/passenger/")
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build()
 
-        val apiCoroutine: Retrofit = Retrofit.Builder()
+        val gmb901ApiCoroutine: Retrofit = Retrofit.Builder()
                 .client(App.httpClient)
-                .baseUrl("https://nlb.kcbh.com.hk:8443/api/passenger/")
+                .baseUrl("${GMB901}/api/passenger/")
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .addCallAdapterFactory(CoroutineCallAdapterFactory.invoke())
+                .build()
+
+        val nlbApi: Retrofit = Retrofit.Builder()
+                .client(App.httpClient)
+                .baseUrl("${NLB}/api/passenger/")
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build()
+
+        val nlbApiCoroutine: Retrofit = Retrofit.Builder()
+                .client(App.httpClient)
+                .baseUrl("${NLB}/api/passenger/")
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .addCallAdapterFactory(CoroutineCallAdapterFactory.invoke())
                 .build()

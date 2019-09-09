@@ -112,6 +112,8 @@ public class C {
 
         String NWST = "NWST";
 
+        String GMB901 = "GMB901";
+
     }
 
     public interface TYPE {

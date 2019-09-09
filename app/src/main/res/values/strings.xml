@@ -176,6 +176,7 @@
     <string name="provider_nlb">新大嶼山巴士</string>
     <string name="provider_nwfb">新世界第一巴士</string>
     <string name="provider_nwst">城巴/新世界第一巴士</string>
+    <string name="provider_gmb">專線小巴</string>
     <string name="provider_short_aes_bus">機場快綫</string>
     <string name="provider_short_ctb">城巴</string>
     <string name="provider_short_lwb">龍運</string>
@@ -186,6 +187,7 @@
     <string name="provider_short_nwfb">新巴</string>
     <string name="provider_short_nwst">城巴/新巴</string>
     <string name="provider_short_residents">居民巴士</string>
+    <string name="provider_short_gmb">小巴</string>
 
     <string name="search_shortcut_short_label">@string/search_route</string>
     <string name="search_shortcut_long_label">@string/search_route</string>

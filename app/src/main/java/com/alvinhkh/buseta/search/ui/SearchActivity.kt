@@ -261,7 +261,7 @@ class SearchActivity : AppCompatActivity() {
             C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> intent = Intent(applicationContext, NwstActivity::class.java)
             C.PROVIDER.LRTFEEDER -> intent = Intent(applicationContext, MtrBusActivity::class.java)
             C.PROVIDER.MTR -> intent = Intent(applicationContext, MtrStationActivity::class.java)
-            C.PROVIDER.NLB -> intent = Intent(applicationContext, NlbActivity::class.java)
+            C.PROVIDER.NLB, C.PROVIDER.GMB901 -> intent = Intent(applicationContext, NlbActivity::class.java)
             C.PROVIDER.KMB, C.PROVIDER.LWB -> {
                 intent = Intent(applicationContext, LwbActivity::class.java)
                 if (PreferenceUtil.isUsingNewKmbApi(applicationContext)) {

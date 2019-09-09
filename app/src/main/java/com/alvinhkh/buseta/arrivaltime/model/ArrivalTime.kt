@@ -131,7 +131,7 @@ data class ArrivalTime (
                     C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER -> return AESEtaBus.estimate(context, arrivalTime)
                     C.PROVIDER.KMB, C.PROVIDER.LWB -> return KmbEtaUtil.estimate(context, arrivalTime)
                     C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> return NwstEtaUtil.estimate(context, arrivalTime)
-                    C.PROVIDER.NLB -> return NlbEtaUtil.estimate(context, arrivalTime)
+                    C.PROVIDER.NLB, C.PROVIDER.GMB901 -> return NlbEtaUtil.estimate(context, arrivalTime)
                     C.PROVIDER.MTR -> return MtrSchedule.estimate(context, arrivalTime)
                 }
             }

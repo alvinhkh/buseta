@@ -123,7 +123,7 @@ class EtaService : LifecycleService() {
                         workerRequest = OneTimeWorkRequest.Builder(MtrEtaWorker::class.java)
                                 .addTag(tag).setInputData(data).build()
                     }
-                    C.PROVIDER.NLB -> {
+                    C.PROVIDER.NLB, C.PROVIDER.GMB901 -> {
                         workerRequest = OneTimeWorkRequest.Builder(NlbEtaWorker::class.java)
                                 .addTag(tag).setInputData(data).build()
                     }

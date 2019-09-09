@@ -347,7 +347,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
                     }
                     C.PROVIDER.LRTFEEDER -> MtrBusStopListFragment.newInstance(route, navStop)
                     C.PROVIDER.MTR -> MtrStationListFragment.newInstance(route, navStop)
-                    C.PROVIDER.NLB -> NlbStopListFragment.newInstance(route, navStop)
+                    C.PROVIDER.NLB, C.PROVIDER.GMB901 -> NlbStopListFragment.newInstance(route, navStop)
                     else -> return@forEach
                 }
                 val pageTitle = if (!route.origin.isNullOrEmpty()) {
@@ -419,7 +419,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
             }
         })
         when (companyCode) {
-            C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER, C.PROVIDER.MTR, C.PROVIDER.NLB -> return
+            C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER, C.PROVIDER.MTR, C.PROVIDER.NLB, C.PROVIDER.GMB901 -> return
             C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> {
                 if (routeDatabase.routeDao().count(arrayListOf("", C.PROVIDER.DATAGOVHK_NWST), companyCode, routeNo) > 0) return
             }

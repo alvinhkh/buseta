@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView
 import android.view.*
 import com.alvinhkh.buseta.R
 import androidx.appcompat.app.AppCompatActivity
+import com.alvinhkh.buseta.C
+import com.alvinhkh.buseta.route.model.Route
 
 
 class NlbNewsFragment: Fragment() {
@@ -20,8 +22,14 @@ class NlbNewsFragment: Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
+        val route = arguments!!.getParcelable(C.EXTRA.ROUTE_OBJECT)?: Route()
+        val companyCode = route.companyCode?: C.PROVIDER.NLB
         (activity as AppCompatActivity).supportActionBar?.setTitle(R.string.latest_news)
-        (activity as AppCompatActivity).supportActionBar?.setSubtitle(R.string.provider_nlb)
+        (activity as AppCompatActivity).supportActionBar?.subtitle = if (companyCode == C.PROVIDER.GMB901) {
+            getString(R.string.provider_gmb) + " 901"
+        } else {
+            getString(R.string.provider_nlb)
+        }
         val rootView = inflater.inflate(R.layout.fragment_list, container, false)
         setHasOptionsMenu(true)
         val swipeRefreshLayout: SwipeRefreshLayout? = rootView.findViewById(R.id.swipe_refresh_layout)
@@ -33,12 +41,12 @@ class NlbNewsFragment: Fragment() {
         recyclerView?.run {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
-            viewAdapter = NlbNewsViewAdapter()
+            viewAdapter = NlbNewsViewAdapter(companyCode)
             adapter = viewAdapter
         }
         val snackbar = Snackbar.make(rootView.findViewById(R.id.coordinator_layout), R.string.message_no_notice, Snackbar.LENGTH_INDEFINITE)
         val viewModel = ViewModelProviders.of(this@NlbNewsFragment).get(NlbNewsViewModel::class.java)
-        viewModel.getAsLiveData().observe(this@NlbNewsFragment, Observer { items ->
+        viewModel.liveData(companyCode).observe(this@NlbNewsFragment, Observer { items ->
             swipeRefreshLayout?.isRefreshing = true
             if (items.isNullOrEmpty()) {
                 snackbar.show()

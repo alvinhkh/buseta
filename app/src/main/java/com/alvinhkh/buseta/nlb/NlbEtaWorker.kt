@@ -15,7 +15,9 @@ import org.jsoup.Jsoup
 class NlbEtaWorker(private val context : Context, params : WorkerParameters)
     : Worker(context, params) {
 
-    private val nlbService = NlbService.api.create(NlbService::class.java)
+    private val nlbService = NlbService.nlbApi.create(NlbService::class.java)
+
+    private val gmb901Service = NlbService.gmb901Api.create(NlbService::class.java)
 
     private val arrivalTimeDatabase = ArrivalTimeDatabase.getInstance(context)!!
 
@@ -51,7 +53,12 @@ class NlbEtaWorker(private val context : Context, params : WorkerParameters)
         val timeNow = System.currentTimeMillis()
 
         try {
-            val response = nlbService.eta(NlbEtaRequest(routeStop.routeSequence?:"", routeStop.stopId?:"", "zh")).execute()
+            val request = NlbEtaRequest(routeStop.routeSequence?:"", routeStop.stopId?:"", "zh")
+            val response = if (companyCode == C.PROVIDER.GMB901) {
+                gmb901Service.eta(request).execute()
+            } else {
+                nlbService.eta(request).execute()
+            }
             if (!response.isSuccessful) {
                 if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
                         && !routeStop.sequence.isNullOrEmpty()) {
@@ -85,7 +92,7 @@ class NlbEtaWorker(private val context : Context, params : WorkerParameters)
                 }
                 for (i in 0 until s) {
                     val arrivalTime = ArrivalTime.emptyInstance(context, routeStop)
-                    arrivalTime.companyCode = C.PROVIDER.NLB
+                    arrivalTime.companyCode = companyCode
                     val text = divs[i].text()
                     arrivalTime.text = Jsoup.parse(text).text().replace("　".toRegex(), " ")
                             .replace(" ?預計時間".toRegex(), "")

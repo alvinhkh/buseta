@@ -5,6 +5,7 @@ import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.alvinhkh.buseta.C
+import com.alvinhkh.buseta.nlb.model.NlbDatabase
 import com.alvinhkh.buseta.nlb.model.NlbRouteStop
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.dao.RouteDatabase
@@ -14,7 +15,9 @@ import java.util.TreeMap
 class NlbWorker(context : Context, params : WorkerParameters)
     : Worker(context, params) {
 
-    private val nlbService = NlbService.api.create(NlbService::class.java)
+    private val nlbService = NlbService.nlbApi.create(NlbService::class.java)
+
+    private val gmb901Service = NlbService.gmb901Api.create(NlbService::class.java)
 
     private val routeDatabase = RouteDatabase.getInstance(context)
 
@@ -30,15 +33,25 @@ class NlbWorker(context : Context, params : WorkerParameters)
         if (!response.isSuccessful) {
             return Result.failure(outputData)
         }
+        insertData(C.PROVIDER.NLB, response.body())
 
+        val response2 = gmb901Service.database().execute()
+        if (!response2.isSuccessful) {
+            return Result.failure(outputData)
+        }
+        insertData(C.PROVIDER.GMB901, response2.body())
+
+        return Result.success(outputData)
+    }
+
+    private fun insertData(companyCode: String, database: NlbDatabase?) {
         val routeList = arrayListOf<Route>()
         val stopList = arrayListOf<RouteStop>()
         val timeNow = System.currentTimeMillis() / 1000
 
-        val database = response.body()
-
         for (nlbRoute in database?.routes?: emptyList()) {
             val route = Route()
+            route.dataSource = companyCode
             route.companyCode = companyCode
             val location = nlbRoute.route_name_c.split(" > ".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             route.origin = location[0]
@@ -60,7 +73,7 @@ class NlbWorker(context : Context, params : WorkerParameters)
             for (nlbStop in database?.stops?: emptyList()) {
                 if (!map.containsKey(nlbStop.stop_id)) continue
                 val routeStop = RouteStop()
-                routeStop.companyCode = C.PROVIDER.NLB
+                routeStop.companyCode = companyCode
                 routeStop.routeNo = route.name
                 routeStop.routeId = map[nlbStop.stop_id]?.route_id
                 routeStop.routeServiceType = route.serviceType
@@ -92,7 +105,5 @@ class NlbWorker(context : Context, params : WorkerParameters)
         if (insertedStopList?.size?:0 > 0) {
             routeDatabase?.routeStopDao()?.delete(companyCode, timeNow)
         }
-
-        return Result.success(outputData)
     }
 }
