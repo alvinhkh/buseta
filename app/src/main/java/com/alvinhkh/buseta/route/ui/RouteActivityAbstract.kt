@@ -198,7 +198,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
         // Set up the ViewPager with the sections adapter.
         viewPager = findViewById(R.id.viewPager)
         viewPager.adapter = pagerAdapter
-        tabLayout = findViewById<TabLayout>(R.id.tabs)
+        tabLayout = findViewById(R.id.tabs)
         tabLayout.setupWithViewPager(viewPager)
         tabLayout.addOnTabSelectedListener(object : TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
             override fun onTabReselected(tab: TabLayout.Tab?) {
@@ -362,10 +362,12 @@ abstract class RouteActivityAbstract : BaseActivity(),
                 }
                 pagerAdapter.addFragment(fragment, pageTitle, route)
                 val fragmentCount = pagerAdapter.count
-                if (navStop != null &&
-                        route.companyCode == navStop.companyCode
+                if (navStop != null
+                        && route.companyCode == navStop.companyCode
                         && route.sequence == navStop.routeSequence
-                        && route.serviceType == navStop.routeServiceType) {
+                        && route.serviceType == navStop.routeServiceType
+                        && (navStop.routeId.isNullOrBlank() || route.code == navStop.routeId)
+                ) {
                     fragNo = fragmentCount - 1
                     isScrollToPage = true
                 }
@@ -384,7 +386,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
             if (routes?.isNotEmpty() == true && !company.isEmpty() && company != C.PROVIDER.MTR) {
                 suggestion = Suggestion.createInstance()
                 suggestion?.companyCode = company
-                suggestion?.route = routeNo?:""
+                suggestion?.route = routeNo
                 suggestion?.type = Suggestion.TYPE_HISTORY
                 if (suggestion != null) {
                     suggestionDatabase.suggestionDao().insert(suggestion!!)
