@@ -3,7 +3,6 @@ package com.alvinhkh.buseta.follow.ui
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
-import android.os.Handler
 import com.google.android.material.snackbar.Snackbar
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -56,26 +55,10 @@ class FollowFragment: Fragment() {
             adapter = viewAdapter
         }
         viewModel = ViewModelProviders.of(this).get(FollowViewModel::class.java)
-        liveData = viewModel.getAsLiveData(groupId)
+        liveData = viewModel.liveData(groupId)
         liveData?.removeObservers(this)
         liveData?.observe(this, Observer<MutableList<Follow>> { list ->
             viewAdapter?.replaceItems(list?: mutableListOf())
-            list?.forEachIndexed { index, follow ->
-                val id = follow.companyCode + follow.routeNo + follow.routeSeq + follow.routeServiceType + follow.stopId + follow.stopSeq
-                val arrivalTimeLiveData = arrivalTimeDatabase.arrivalTimeDao().getLiveData(follow.companyCode, follow.routeNo, follow.routeSeq, follow.stopId, follow.stopSeq)
-                arrivalTimeLiveData.removeObservers(this)
-                arrivalTimeLiveData.observe(this, Observer { etas ->
-                    if (etas != null && id == (follow.companyCode + follow.routeNo + follow.routeSeq + follow.routeServiceType + follow.stopId + follow.stopSeq)) {
-                        follow.etas = listOf()
-                        etas.forEach { eta ->
-                            if (eta.updatedAt > System.currentTimeMillis() - 600000) {
-                                follow.etas += eta
-                            }
-                        }
-                        viewAdapter?.replaceItem(index, follow)
-                    }
-                })
-            }
             emptyView.visibility = if (list?.size?:0 > 0) View.GONE else View.VISIBLE
         })
         return rootView

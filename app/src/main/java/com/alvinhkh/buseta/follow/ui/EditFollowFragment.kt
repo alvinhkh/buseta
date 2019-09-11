@@ -66,7 +66,7 @@ class EditFollowFragment: Fragment(), OnItemDragListener {
             itemTouchHelper.attachToRecyclerView(this)
         }
         val viewModel = ViewModelProviders.of(this).get(FollowViewModel::class.java)
-        viewModel.getAsLiveData(groupId).observe(this, Observer { list ->
+        viewModel.liveData(groupId).observe(this, Observer { list ->
             viewAdapter.replaceItems(list?: mutableListOf())
             emptyView.visibility = if (viewAdapter.itemCount > 0) View.GONE else View.VISIBLE
         })

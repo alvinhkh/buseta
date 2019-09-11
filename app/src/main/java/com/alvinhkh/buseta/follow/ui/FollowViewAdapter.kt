@@ -2,6 +2,7 @@ package com.alvinhkh.buseta.follow.ui
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.drawable.Drawable
 import androidx.fragment.app.FragmentActivity
 import androidx.core.content.ContextCompat
@@ -70,7 +71,11 @@ class FollowViewAdapter(
 
         @SuppressLint("ClickableViewAccessibility")
         fun bindItems(follow: Follow, activityRef: WeakReference<FragmentActivity>) {
-            val companyColor = Route.companyColour(itemView.context, follow.companyCode, follow.routeNo)
+            val companyColor = if (follow.routeColour.isNotEmpty()) {
+                Color.parseColor(follow.routeColour)
+            } else {
+                Route.companyColour(itemView.context, follow.companyCode, follow.routeNo)
+            }
             if (companyColor != null) {
                 itemView.findViewById<View>(R.id.color).setBackgroundColor(companyColor)
             }

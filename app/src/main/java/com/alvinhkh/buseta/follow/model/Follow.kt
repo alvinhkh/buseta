@@ -19,41 +19,43 @@ import com.alvinhkh.buseta.route.model.RouteStop
         COLUMN_ROUTE_NO, COLUMN_ROUTE_SEQ, COLUMN_ROUTE_SERVICE_TYPE, COLUMN_STOP_ID, COLUMN_STOP_SEQ), unique = true))])
 data class Follow(
         @PrimaryKey(autoGenerate = true)
-        @ColumnInfo(name = Follow.COLUMN_ID, typeAffinity = ColumnInfo.INTEGER)
+        @ColumnInfo(name = COLUMN_ID, typeAffinity = ColumnInfo.INTEGER)
         var _id: Long,
-        @ColumnInfo(name = Follow.COLUMN_GROUP_ID, typeAffinity = ColumnInfo.TEXT)
+        @ColumnInfo(name = COLUMN_GROUP_ID, typeAffinity = ColumnInfo.TEXT)
         var groupId: String,
-        @ColumnInfo(name = Follow.COLUMN_TYPE, typeAffinity = ColumnInfo.TEXT)
+        @ColumnInfo(name = COLUMN_TYPE, typeAffinity = ColumnInfo.TEXT)
         var type: String,
-        @ColumnInfo(name = Follow.COLUMN_COMPANY_CODE, typeAffinity = ColumnInfo.TEXT)
+        @ColumnInfo(name = COLUMN_COMPANY_CODE, typeAffinity = ColumnInfo.TEXT)
         var companyCode: String,
-        @ColumnInfo(name = Follow.COLUMN_ROUTE_NO, typeAffinity = ColumnInfo.TEXT)
+        @ColumnInfo(name = COLUMN_ROUTE_NO, typeAffinity = ColumnInfo.TEXT)
         var routeNo: String,
-        @ColumnInfo(name = Follow.COLUMN_ROUTE_ID, typeAffinity = ColumnInfo.TEXT)
+        @ColumnInfo(name = COLUMN_ROUTE_ID, typeAffinity = ColumnInfo.TEXT)
         var routeId: String,
-        @ColumnInfo(name = Follow.COLUMN_ROUTE_SEQ, typeAffinity = ColumnInfo.TEXT)
+        @ColumnInfo(name = COLUMN_ROUTE_SEQ, typeAffinity = ColumnInfo.TEXT)
         var routeSeq: String,
-        @ColumnInfo(name = Follow.COLUMN_ROUTE_SERVICE_TYPE, typeAffinity = ColumnInfo.TEXT)
+        @ColumnInfo(name = COLUMN_ROUTE_SERVICE_TYPE, typeAffinity = ColumnInfo.TEXT)
         var routeServiceType: String,
-        @ColumnInfo(name = Follow.COLUMN_ROUTE_DESTINATION, typeAffinity = ColumnInfo.TEXT)
+        @ColumnInfo(name = COLUMN_ROUTE_DESTINATION, typeAffinity = ColumnInfo.TEXT)
         var routeDestination: String,
-        @ColumnInfo(name = Follow.COLUMN_ROUTE_ORIGIN, typeAffinity = ColumnInfo.TEXT)
+        @ColumnInfo(name = COLUMN_ROUTE_ORIGIN, typeAffinity = ColumnInfo.TEXT)
         var routeOrigin: String,
-        @ColumnInfo(name = Follow.COLUMN_STOP_ID, typeAffinity = ColumnInfo.TEXT)
+        @Ignore
+        var routeColour: String = "",
+        @ColumnInfo(name = COLUMN_STOP_ID, typeAffinity = ColumnInfo.TEXT)
         var stopId: String,
-        @ColumnInfo(name = Follow.COLUMN_STOP_NAME, typeAffinity = ColumnInfo.TEXT)
+        @ColumnInfo(name = COLUMN_STOP_NAME, typeAffinity = ColumnInfo.TEXT)
         var stopName: String,
-        @ColumnInfo(name = Follow.COLUMN_STOP_SEQ, typeAffinity = ColumnInfo.TEXT)
+        @ColumnInfo(name = COLUMN_STOP_SEQ, typeAffinity = ColumnInfo.TEXT)
         var stopSeq: String,
-        @ColumnInfo(name = Follow.COLUMN_STOP_LATITUDE, typeAffinity = ColumnInfo.TEXT)
+        @ColumnInfo(name = COLUMN_STOP_LATITUDE, typeAffinity = ColumnInfo.TEXT)
         var stopLatitude: String,
-        @ColumnInfo(name = Follow.COLUMN_STOP_LONGITUDE, typeAffinity = ColumnInfo.TEXT)
+        @ColumnInfo(name = COLUMN_STOP_LONGITUDE, typeAffinity = ColumnInfo.TEXT)
         var stopLongitude: String,
-        @ColumnInfo(name = Follow.COLUMN_ETA_GET, typeAffinity = ColumnInfo.TEXT)
+        @ColumnInfo(name = COLUMN_ETA_GET, typeAffinity = ColumnInfo.TEXT)
         var etaGet: String,
-        @ColumnInfo(name = Follow.COLUMN_DISPLAY_ORDER, typeAffinity = ColumnInfo.INTEGER)
+        @ColumnInfo(name = COLUMN_DISPLAY_ORDER, typeAffinity = ColumnInfo.INTEGER)
         var order: Int,
-        @ColumnInfo(name = Follow.COLUMN_UPDATED_AT, typeAffinity = ColumnInfo.INTEGER)
+        @ColumnInfo(name = COLUMN_UPDATED_AT, typeAffinity = ColumnInfo.INTEGER)
         var updatedAt: Long,
         @Ignore
         var etas: List<ArrivalTime> = listOf()
@@ -61,10 +63,11 @@ data class Follow(
 
     constructor() : this(0, "", "", "", "", "", "", "",
             "", "", "", "", "",
-            "", "", "", 0, 0, listOf<ArrivalTime>())
+            "", "", "", "", 0, 0, listOf<ArrivalTime>())
 
     constructor(parcel: Parcel) : this(
             parcel.readLong(),
+            parcel.readString()?:"",
             parcel.readString()?:"",
             parcel.readString()?:"",
             parcel.readString()?:"",
@@ -95,6 +98,7 @@ data class Follow(
         parcel.writeString(routeServiceType)
         parcel.writeString(routeDestination)
         parcel.writeString(routeOrigin)
+        parcel.writeString(routeColour)
         parcel.writeString(stopId)
         parcel.writeString(stopName)
         parcel.writeString(stopSeq)
@@ -165,6 +169,7 @@ data class Follow(
             follow.routeServiceType = route?.serviceType?:""
             follow.routeOrigin = route?.origin?:""
             follow.routeDestination = route?.destination?:""
+            follow.routeColour = route?.colour?:""
             follow.stopId = routeStop?.stopId?:""
             follow.stopLatitude = routeStop?.latitude?:""
             follow.stopLongitude = routeStop?.longitude?:""
