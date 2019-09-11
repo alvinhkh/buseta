@@ -7,11 +7,13 @@ import androidx.lifecycle.Observer
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.location.Location
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.provider.Settings
@@ -456,14 +458,15 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
         if (follow == null) {
             follow = Follow.createInstance(route, routeStop)
         }
+        val companyColor: Int = if (!route?.colour.isNullOrBlank()) {
+            Color.parseColor(route?.colour)
+        } else {
+            Route.companyColour(context!!, routeStop?.companyCode?:"", routeStop?.routeNo?:"")?: ContextCompat.getColor(context!!, R.color.colorPrimary)
+        }
 
         vh.contentView = contentView
         vh.headerLayout = contentView.findViewById(R.id.header_layout)
-        if (!route?.colour.isNullOrEmpty()) {
-            vh.headerLayout?.setBackgroundColor(Color.parseColor(route?.colour))
-        } else if (route != null) {
-            vh.headerLayout?.setBackgroundColor(route.companyColour(context!!))
-        }
+        vh.headerLayout?.setBackgroundColor(companyColor)
         vh.stopImageButton = contentView.findViewById(R.id.show_image_button)
         vh.stopImageButton?.visibility = View.GONE
         vh.stopImage = contentView.findViewById(R.id.stop_image)
@@ -476,6 +479,18 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
         vh.streetviewButton = contentView.findViewById(R.id.open_streetview_button)
         vh.arrivalAlertButton = contentView.findViewById(R.id.arrival_alert_button)
         vh.arrivalAlertButton?.visibility = if (BuildConfig.DEBUG) View.VISIBLE else View.GONE
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            vh.followButton?.iconTint = ColorStateList.valueOf(companyColor)
+            vh.mapButton?.iconTint = ColorStateList.valueOf(companyColor)
+            vh.notificationButton?.iconTint = ColorStateList.valueOf(companyColor)
+            vh.streetviewButton?.iconTint = ColorStateList.valueOf(companyColor)
+            vh.arrivalAlertButton?.iconTint = ColorStateList.valueOf(companyColor)
+            vh.followButton?.setTextColor(companyColor)
+            vh.mapButton?.setTextColor(companyColor)
+            vh.notificationButton?.setTextColor(companyColor)
+            vh.streetviewButton?.setTextColor(companyColor)
+            vh.arrivalAlertButton?.setTextColor(companyColor)
+        }
 
         vh.nameText = contentView.findViewById(R.id.stop_name)
         vh.routeNoText = contentView.findViewById(R.id.route_no)
