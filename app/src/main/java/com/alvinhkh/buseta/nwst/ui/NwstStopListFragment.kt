@@ -28,14 +28,14 @@ class NwstStopListFragment : RouteStopListFragmentAbstract() {
 
     private var timetableHtml = ""
 
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         timetableItem = menu!!.findItem(R.id.action_timetable)
         timetableItem?.isVisible = timetableHtml.isNotEmpty()
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        val id = item!!.itemId
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.itemId
         when (id) {
             R.id.action_timetable -> if (timetableHtml.isNotEmpty()) {
                 val intent = Intent(context, WebViewActivity::class.java)

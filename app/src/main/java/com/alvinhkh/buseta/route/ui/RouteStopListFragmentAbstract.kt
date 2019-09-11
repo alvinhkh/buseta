@@ -354,8 +354,8 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
         super.onDestroy()
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item?.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
             R.id.action_notice -> if (route != null) {
                 val intent = Intent(context, RouteAnnounceActivity::class.java)
                 intent.putExtra(C.EXTRA.ROUTE_OBJECT, route)

@@ -58,8 +58,8 @@ class WebViewFragment : Fragment() {
         super.onDestroyView()
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        val id = item?.itemId
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.itemId
         if (id == R.id.action_refresh) {
             webView.loadData(contentHtml, "text/html; charset=UTF-8", null)
             return true

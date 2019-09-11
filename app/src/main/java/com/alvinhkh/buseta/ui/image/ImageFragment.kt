@@ -101,8 +101,8 @@ class ImageFragment : Fragment() {
         super.onDestroyView()
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        val id = item?.itemId
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.itemId
         if (id == R.id.action_refresh) {
             showNoticeImage(imageUrl)
             return true

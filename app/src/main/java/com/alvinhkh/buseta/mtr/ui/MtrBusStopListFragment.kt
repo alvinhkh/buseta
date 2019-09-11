@@ -15,7 +15,7 @@ import com.alvinhkh.buseta.route.ui.RouteStopListFragmentAbstract
 
 class MtrBusStopListFragment : RouteStopListFragmentAbstract() {
 
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         val noticeMenuItem = menu!!.findItem(R.id.action_notice)
         noticeMenuItem.isVisible = false

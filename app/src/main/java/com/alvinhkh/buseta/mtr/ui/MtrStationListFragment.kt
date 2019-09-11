@@ -15,10 +15,10 @@ import com.alvinhkh.buseta.route.ui.RouteStopListFragmentAbstract
 
 class MtrStationListFragment : RouteStopListFragmentAbstract() {
 
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        menu?.findItem(R.id.action_notice)?.isVisible = false
-        menu?.findItem(R.id.action_timetable)?.isVisible = false
+        menu.findItem(R.id.action_notice)?.isVisible = false
+        menu.findItem(R.id.action_timetable)?.isVisible = false
     }
 
     companion object {

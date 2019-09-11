@@ -78,13 +78,13 @@ class KmbScheduleFragment: Fragment() {
         viewAdapter?.notifyDataSetChanged()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        menu?.findItem(R.id.action_search_open)?.isVisible = false
+        menu.findItem(R.id.action_search_open)?.isVisible = false
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        val id = item!!.itemId
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.itemId
         if (id == R.id.action_refresh) {
             viewAdapter?.notifyDataSetChanged()
             return true

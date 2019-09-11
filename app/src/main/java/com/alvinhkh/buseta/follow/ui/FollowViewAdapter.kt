@@ -92,7 +92,7 @@ class FollowViewAdapter(
             itemView.setOnLongClickListener {
                 try {
                     val bottomSheetDialogFragment = RouteStopFragment.newInstance(follow)
-                    bottomSheetDialogFragment.show(activityRef.get()?.supportFragmentManager, bottomSheetDialogFragment.tag)
+                    bottomSheetDialogFragment.show(activityRef.get()?.supportFragmentManager!!, bottomSheetDialogFragment.tag)
                 } catch (ignored: Throwable) {
                 }
                 true

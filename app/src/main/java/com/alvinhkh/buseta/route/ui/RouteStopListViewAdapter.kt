@@ -150,7 +150,7 @@ class RouteStopListViewAdapter(
                 itemView.setOnLongClickListener {
                     try {
                         val bottomSheetDialogFragment = RouteStopFragment.newInstance(Follow.createInstance(route, routeStop))
-                        bottomSheetDialogFragment.show(activity?.supportFragmentManager, bottomSheetDialogFragment.tag)
+                        bottomSheetDialogFragment.show(activity?.supportFragmentManager!!, bottomSheetDialogFragment.tag)
                         return@setOnLongClickListener true
                     } catch (ignored: IllegalStateException) {
                     }
@@ -354,7 +354,7 @@ class RouteStopListViewAdapter(
                 itemView.setOnLongClickListener {
                     try {
                         val bottomSheetDialogFragment = RouteStopFragment.newInstance(Follow.createInstance(route, routeStop))
-                        bottomSheetDialogFragment.show(activity?.supportFragmentManager, bottomSheetDialogFragment.tag)
+                        bottomSheetDialogFragment.show(activity?.supportFragmentManager!!, bottomSheetDialogFragment.tag)
                         return@setOnLongClickListener true
                     } catch (ignored: IllegalStateException) {
                     }

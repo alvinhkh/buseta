@@ -21,14 +21,14 @@ import com.alvinhkh.buseta.route.ui.RouteStopListFragmentAbstract
 
 class AESBusStopListFragment : RouteStopListFragmentAbstract() {
 
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        menu?.findItem(R.id.action_notice)?.isVisible = false
-        menu?.findItem(R.id.action_timetable)?.isVisible = true
+        menu.findItem(R.id.action_notice)?.isVisible = false
+        menu.findItem(R.id.action_timetable)?.isVisible = true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item!!.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
             R.id.action_timetable -> {
                 openLink(context!!, WEB_PAGE_URL, R.color.provider_aes_bus)
                 return true

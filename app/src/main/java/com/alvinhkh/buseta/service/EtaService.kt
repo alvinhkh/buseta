@@ -1,5 +1,6 @@
 package com.alvinhkh.buseta.service
 
+import android.app.Service
 import android.appwidget.AppWidgetManager
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.Observer
@@ -40,9 +41,8 @@ class EtaService : LifecycleService() {
         routeDatabase = RouteDatabase.getInstance(this)!!
     }
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent == null) return super.onStartCommand(intent, flags, startId)
-        val extras = intent.extras ?: return super.onStartCommand(intent, flags, startId)
+    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        val extras = intent.extras ?: return Service.START_NOT_STICKY
 
         if (!ConnectivityUtil.isConnected(this)) return super.onStartCommand(intent, flags, startId)
 

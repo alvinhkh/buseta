@@ -81,8 +81,8 @@ class MtrLineStatusFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
         swipeRefreshLayout.isRefreshing = false
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item?.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
             R.id.action_refresh -> onRefresh()
         }
         return super.onOptionsItemSelected(item)

@@ -48,14 +48,11 @@ class MainActivity : BaseActivity(), InstallStateUpdatedListener {
         }
         adViewContainer = findViewById(R.id.adView_container)
         adView = AdViewUtil.banner(adViewContainer)
-        val followGroupFragment = FollowGroupFragment()
-        val historyFragment = HistoryFragment()
-        val mtrLineStatusFragment = MtrLineStatusFragment()
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.bottom_navigation)
         bottomNavigationView.setOnNavigationItemSelectedListener { item ->
             @ColorInt var colorRes = 0
             var title = getString(R.string.app_name)
-            val fm = supportFragmentManager ?: return@setOnNavigationItemSelectedListener false
+            val fm = supportFragmentManager
             fm.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
             when (item.itemId) {
                 R.id.action_follow -> {
@@ -63,7 +60,7 @@ class MainActivity : BaseActivity(), InstallStateUpdatedListener {
                         title = getString(R.string.app_name)
                         colorRes = ContextCompat.getColor(this, R.color.colorPrimary)
                         val ft = fm.beginTransaction()
-                        ft.replace(R.id.fragment_container, followGroupFragment)
+                        ft.replace(R.id.fragment_container, FollowGroupFragment())
                         ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                         ft.addToBackStack("follow_list")
                         ft.commit()
@@ -74,7 +71,7 @@ class MainActivity : BaseActivity(), InstallStateUpdatedListener {
                         title = getString(R.string.app_name)
                         colorRes = ContextCompat.getColor(this, R.color.colorPrimary)
                         val ft = fm.beginTransaction()
-                        ft.replace(R.id.fragment_container, historyFragment)
+                        ft.replace(R.id.fragment_container, HistoryFragment())
                         ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                         ft.addToBackStack("search_history")
                         ft.commit()
@@ -85,7 +82,7 @@ class MainActivity : BaseActivity(), InstallStateUpdatedListener {
                         title = getString(R.string.provider_mtr)
                         colorRes = ContextCompat.getColor(this, R.color.provider_mtr)
                         val ft = fm.beginTransaction()
-                        ft.replace(R.id.fragment_container, mtrLineStatusFragment)
+                        ft.replace(R.id.fragment_container, MtrLineStatusFragment())
                         ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                         ft.addToBackStack("railway")
                         ft.commit()
@@ -176,6 +173,7 @@ class MainActivity : BaseActivity(), InstallStateUpdatedListener {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == APP_UPDATE_REQUEST_CODE) {
             if (resultCode != RESULT_OK) {
                 Timber.d("Update flow failed! Result code: $resultCode")

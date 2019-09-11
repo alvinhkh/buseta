@@ -22,14 +22,14 @@ import com.alvinhkh.buseta.route.ui.RouteStopListFragmentAbstract
 
 class NlbStopListFragment : RouteStopListFragmentAbstract() {
 
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         val timetableItem = menu!!.findItem(R.id.action_timetable)
         timetableItem.isVisible = true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        val id = item!!.itemId
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val id = item.itemId
         when (id) {
             R.id.action_timetable -> if (route != null && route?.code != null) {
                 val prefix = if (route?.companyCode == C.PROVIDER.GMB901) {

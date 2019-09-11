@@ -15,14 +15,14 @@ import com.alvinhkh.buseta.route.ui.RouteStopListFragmentAbstract
 
 class KmbStopListFragment : RouteStopListFragmentAbstract() {
 
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        menu?.findItem(R.id.action_timetable)?.isVisible = true
-        menu?.findItem(R.id.action_bbi)?.isVisible = true
+        menu.findItem(R.id.action_timetable)?.isVisible = true
+        menu.findItem(R.id.action_bbi)?.isVisible = true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item?.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
             R.id.action_timetable -> if (route != null && context != null) {
                 val intent = Intent(context, KmbScheduleActivity::class.java)
                 intent.putExtra(C.EXTRA.ROUTE_OBJECT, route)

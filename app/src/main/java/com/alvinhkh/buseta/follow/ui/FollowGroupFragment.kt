@@ -127,13 +127,13 @@ class FollowGroupFragment : Fragment() {
         liveData?.removeObservers(this)
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?, inflater: MenuInflater?) {
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        inflater!!.inflate(R.menu.menu_follow, menu)
+        inflater.inflate(R.menu.menu_follow, menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        when (item?.itemId) {
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
             R.id.action_refresh -> fetchEtaHandler.postDelayed(fetchEtaRunnable, 100)
             R.id.action_edit_follow -> {
                 val fragmentManager = activity?.supportFragmentManager!!
