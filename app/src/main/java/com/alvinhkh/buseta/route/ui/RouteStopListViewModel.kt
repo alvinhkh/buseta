@@ -25,8 +25,8 @@ class RouteStopListViewModel(application: Application) : AndroidViewModel(applic
         val result = MutableLiveData<MutableList<RouteStop>>()
         result.value = null
         CoroutineScope(Dispatchers.Main).launch {
-            val list = arrayListOf<RouteStop>()
             routeDatabase?.routeStopDao()?.liveData(companyCode, routeId, routeNo, routeSequence, routeServiceType)?.observeForever { routeStopList ->
+                val list = arrayListOf<RouteStop>()
                 routeStopList.forEach { routeStop ->
                     arrivalTimeDatabase?.arrivalTimeDao()
                             ?.getLiveData(routeStop.companyCode?:"", routeStop.routeNo?:"",
@@ -54,8 +54,12 @@ class RouteStopListViewModel(application: Application) : AndroidViewModel(applic
                             }
                     list.add(routeStop)
                 }
+                if (result.value != null) {
+                    result.postValue(list)
+                } else {
+                    result.value = list
+                }
             }
-            result.value = list
         }
         return result
     }
