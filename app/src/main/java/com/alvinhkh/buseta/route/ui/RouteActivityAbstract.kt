@@ -713,7 +713,10 @@ abstract class RouteActivityAbstract : BaseActivity(),
 
     private fun activityColor(color: Int) {
         supportActionBar?.setBackgroundDrawable(ColorDrawable(color))
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+            window?.statusBarColor = color
+            window?.navigationBarColor = ContextCompat.getColor(this, R.color.transparent)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             window?.statusBarColor = ColorUtil.darkenColor(color)
             window?.navigationBarColor = ColorUtil.darkenColor(color)
         }

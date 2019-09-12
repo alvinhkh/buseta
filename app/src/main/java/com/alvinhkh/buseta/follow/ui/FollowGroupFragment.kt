@@ -152,7 +152,10 @@ class FollowGroupFragment : Fragment() {
         else
             ContextCompat.getColor(context!!, R.color.colorPrimary)
         (activity as AppCompatActivity).supportActionBar?.setBackgroundDrawable(ColorDrawable(color))
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+            activity?.window?.statusBarColor = color
+            activity?.window?.navigationBarColor = ContextCompat.getColor(context!!, R.color.bottomNavigationBackground)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             activity?.window?.statusBarColor = ColorUtil.darkenColor(color)
             activity?.window?.navigationBarColor = ColorUtil.darkenColor(color)
         }

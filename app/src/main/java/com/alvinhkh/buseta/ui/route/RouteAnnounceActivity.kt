@@ -11,6 +11,7 @@ import com.alvinhkh.buseta.nlb.ui.NlbNewsFragment
 import com.alvinhkh.buseta.nwst.ui.NwstNoticeFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
@@ -94,7 +95,10 @@ class RouteAnnounceActivity : BaseActivity() {
 
     private fun activityColor(color: Int) {
         supportActionBar?.setBackgroundDrawable(ColorDrawable(color))
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+            window?.statusBarColor = color
+            window?.navigationBarColor = ContextCompat.getColor(this, R.color.transparent)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             window?.statusBarColor = ColorUtil.darkenColor(color)
             window?.navigationBarColor = ColorUtil.darkenColor(color)
         }

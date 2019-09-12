@@ -93,11 +93,14 @@ class MainActivity : BaseActivity(), InstallStateUpdatedListener {
             supportActionBar?.title = title
             supportActionBar?.subtitle = null
             if (colorRes != 0) {
-                val darkenColor = ColorUtil.darkenColor(colorRes)
                 supportActionBar?.setBackgroundDrawable(ColorDrawable(colorRes))
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && window != null) {
-                    window.statusBarColor = darkenColor
-                    window.navigationBarColor = darkenColor
+                if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+                    window?.statusBarColor = colorRes
+                    window?.navigationBarColor = ContextCompat.getColor(this, R.color.bottomNavigationBackground)
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    val darkenColor = ColorUtil.darkenColor(colorRes)
+                    window?.statusBarColor = darkenColor
+                    window?.navigationBarColor = darkenColor
                 }
                 adViewContainer.setBackgroundColor(colorRes)
                 adView = AdViewUtil.banner(adViewContainer, adView, false)
