@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.location.Location
+import android.os.Build
+import android.text.Html
 import androidx.fragment.app.FragmentActivity
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
@@ -361,7 +363,11 @@ class RouteStopListViewAdapter(
                     return@setOnLongClickListener false
                 }
             } else if (data.type == Data.TYPE_HEADER || data.type == Data.TYPE_FOOTER) {
-                itemView.findViewById<TextView>(R.id.note).text = data.obj as String
+                itemView.findViewById<TextView>(R.id.note).text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    Html.fromHtml(data.obj as String, Html.FROM_HTML_MODE_COMPACT)
+                } else {
+                    Html.fromHtml(data.obj as String)
+                }
             } else {
                 itemView.findViewById<TextView>(R.id.note).visibility = View.GONE
             }
