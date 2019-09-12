@@ -23,7 +23,6 @@ import android.widget.TextView
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
-import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.follow.model.Follow
 import com.alvinhkh.buseta.mtr.ui.MtrScheduleViewAdapter
 import com.alvinhkh.buseta.route.model.Route
@@ -36,13 +35,10 @@ import java.util.*
 
 class RouteStopListViewAdapter(
         val activity: FragmentActivity,
-        recyclerView: RecyclerView,
-        var route: Route,
+        val route: Route,
         val data: MutableList<Data> = mutableListOf()
 ): RecyclerView.Adapter<RouteStopListViewAdapter.Holder>() {
 
-    private val followDatabase = FollowDatabase.getInstance(recyclerView.context)
-    private val context = recyclerView.context
     private var currentLocation: Location? = null
 
     data class Data(
@@ -63,11 +59,11 @@ class RouteStopListViewAdapter(
     }
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
-        holder.bindItems(data[position], activity, followDatabase, route, currentLocation)
+        holder.bindItems(data[position], activity, route, currentLocation)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
-        return Holder(LayoutInflater.from(context).inflate(when(viewType) {
+        return Holder(LayoutInflater.from(parent.context).inflate(when(viewType) {
             Data.TYPE_HEADER, Data.TYPE_FOOTER -> R.layout.item_note
             Data.TYPE_ROUTE_STOP -> R.layout.item_route_stop
             Data.TYPE_RAILWAY_STATION -> R.layout.item_railway_station
@@ -86,42 +82,22 @@ class RouteStopListViewAdapter(
         notifyItemInserted(0)
     }
 
-    fun add(o: RouteStop, dataType: Int = Data.TYPE_ROUTE_STOP): Int {
-        data.add(Data(dataType, o))
-        val index = data.size
-        notifyItemInserted(index)
-        return index - 1
-    }
-
-    fun addAll(list: List<RouteStop>, dataType: Int = Data.TYPE_ROUTE_STOP) {
+    fun replaceAll(list: List<RouteStop>, dataType: Int = Data.TYPE_ROUTE_STOP) {
+        data.clear()
         list.forEach {
             data.add(Data(dataType, it))
         }
         notifyDataSetChanged()
     }
 
-    fun clear(notify: Boolean = false) {
-        data.clear()
-        if (notify) {
-            notifyDataSetChanged()
-        }
-    }
-
     fun get(index: Int): Data? {
         return data[index]
-    }
-
-    fun replace(index: Int, t: RouteStop, dataType: Int = Data.TYPE_ROUTE_STOP) {
-        if (index < data.size && index >= 0) {
-            data[index] = Data(dataType, t)
-            notifyItemChanged(index)
-        }
     }
 
     class Holder(itemView: View?): RecyclerView.ViewHolder(itemView!!) {
 
         @SuppressLint("ClickableViewAccessibility")
-        fun bindItems(data: Data, activity: FragmentActivity?, followDatabase: FollowDatabase?, route: Route, currentLocation: Location?) {
+        fun bindItems(data: Data, activity: FragmentActivity?, route: Route, currentLocation: Location?) {
             if (data.type == Data.TYPE_ROUTE_STOP) {
                 val routeStop = data.obj as RouteStop
                 itemView.findViewById<TextView>(R.id.name).text = routeStop.name
@@ -177,17 +153,13 @@ class RouteStopListViewAdapter(
                 }
 
                 // Follow
-                val count = followDatabase?.followDao()?.count(
-                        routeStop.companyCode?:"", routeStop.routeNo?:"",
-                        routeStop.routeSequence?:"", routeStop.routeServiceType?:"",
-                        routeStop.stopId?:"", routeStop.sequence?:"")?:0
-                itemView.findViewById<ImageView>(R.id.follow).visibility = if (count > 0) View.VISIBLE else View.GONE
+                itemView.findViewById<ImageView>(R.id.follow).visibility = if (routeStop.isFollow) View.VISIBLE else View.GONE
 
                 // ETA
                 var direction = ""
                 routeStop.etas.forEach { obj ->
                     val arrivalTime = ArrivalTime.estimate(itemView.context, obj)
-                    if (!arrivalTime.order.isEmpty()) {
+                    if (arrivalTime.order.isNotEmpty()) {
                         val etaText = SpannableStringBuilder(arrivalTime.text)
                         val pos = arrivalTime.order.toInt()
                         var colorInt: Int? = ContextCompat.getColor(itemView.context,

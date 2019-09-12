@@ -64,6 +64,8 @@ data class RouteStop(
         @ColumnInfo(name = COLUMN_STOP_ID, typeAffinity = ColumnInfo.TEXT)
         var stopId: String? = null,
         @Ignore
+        var isFollow: Boolean = false,
+        @Ignore
         var etas: List<ArrivalTime> = listOf()
 ) : Parcelable {
 
@@ -71,7 +73,7 @@ data class RouteStop(
             "", "", "", "", 0,
             "", "", "", "", "",
             "", "", "", "", "",
-            "", "", listOf<ArrivalTime>())
+            "", "", false, listOf<ArrivalTime>())
 
     constructor(parcel: Parcel) : this(
             parcel.readLong(),
@@ -95,7 +97,8 @@ data class RouteStop(
             parcel.readString(),
             parcel.readString(),
             parcel.readString(),
-            parcel.readString())
+            parcel.readString(),
+            parcel.readInt() == 1)
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeLong(id)
@@ -120,6 +123,7 @@ data class RouteStop(
         parcel.writeString(routeServiceType)
         parcel.writeString(sequence)
         parcel.writeString(stopId)
+        parcel.writeInt(if(isFollow) 1 else 0)
     }
 
     override fun describeContents(): Int {

@@ -29,8 +29,6 @@ import androidx.work.WorkManager
 
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
-import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
-import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.kmb.KmbStopListWorker
 import com.alvinhkh.buseta.lwb.LwbStopListWorker
 import com.alvinhkh.buseta.nwst.NwstStopListWorker
@@ -54,7 +52,6 @@ import java.util.UUID
 // TODO: better way to find nearest stop
 // TODO: keep (nearest) stop on top
 // TODO: auto refresh eta for follow stop and nearby stop
-// TODO: better way to query route stops, arrival time, folloe count
 abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.OnRefreshListener,
         SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -65,11 +62,6 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
     private var navToStop: RouteStop? = null
 
     private var scrollToPos: Int? = 0
-
-
-    private lateinit var arrivalTimeDatabase: ArrivalTimeDatabase
-
-    private lateinit var followDatabase: FollowDatabase
 
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
@@ -155,8 +147,6 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
         if (context == null) return
         PreferenceManager.getDefaultSharedPreferences(context!!)
                 .registerOnSharedPreferenceChangeListener(this)
-        arrivalTimeDatabase = ArrivalTimeDatabase.getInstance(context!!)!!
-        followDatabase = FollowDatabase.getInstance(context!!)!!
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
@@ -191,46 +181,19 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
         recyclerView?.run {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
-            viewAdapter = RouteStopListViewAdapter(activity!!, this, route?:Route())
+            viewAdapter = RouteStopListViewAdapter(activity!!, route?:Route())
             adapter = viewAdapter
             viewModel = ViewModelProviders.of(this@RouteStopListFragmentAbstract).get(RouteStopListViewModel::class.java)
-            viewModel.getAsLiveData(route?.companyCode?:"", route?.code?:"", route?.name?:"", route?.sequence?:"", route?.serviceType?:"")
+            viewModel.liveData(route?.companyCode?:"", route?.code?:"", route?.name?:"", route?.sequence?:"", route?.serviceType?:"")
                     .observe(this@RouteStopListFragmentAbstract, Observer<MutableList<RouteStop>> { stops ->
                         if (stops != null) {
                             val dataType = if (route?.companyCode == C.PROVIDER.MTR) TYPE_RAILWAY_STATION else TYPE_ROUTE_STOP
                             if (!swipeRefreshLayout.isRefreshing) {
                                 swipeRefreshLayout.isRefreshing = true
                             }
-                            viewAdapter?.clear(false)
-                            viewAdapter?.addAll(stops, dataType)
-                            var count = 0
+                            viewAdapter?.replaceAll(stops, dataType)
                             if (route?.description?.isEmpty() == false) {
                                 viewAdapter?.addHeader(route?.description?:"")
-                                count = 1
-                            }
-                            stops.forEachIndexed { index, routeStop ->
-                                val id = routeStop.companyCode + routeStop.routeNo + routeStop.routeSequence + routeStop.routeServiceType + routeStop.stopId + routeStop.sequence
-                                val arrivalTimeLiveData = arrivalTimeDatabase.arrivalTimeDao().getLiveData(routeStop.companyCode?:"", routeStop.routeNo?:"", routeStop.routeSequence?:"", routeStop.stopId?:"", routeStop.sequence?:"")
-                                arrivalTimeLiveData.removeObservers(this@RouteStopListFragmentAbstract)
-                                arrivalTimeLiveData.observe(this@RouteStopListFragmentAbstract, Observer { etas ->
-                                    if (etas != null && id == (routeStop.companyCode + routeStop.routeNo + routeStop.routeSequence + routeStop.routeServiceType + routeStop.stopId + routeStop.sequence)) {
-                                        routeStop.etas = listOf()
-                                        etas.forEach { eta ->
-                                            if (eta.updatedAt > System.currentTimeMillis() - 600000) {
-                                                routeStop.etas += eta
-                                            }
-                                        }
-                                        viewAdapter?.replace(index + count, routeStop, dataType)
-                                    }
-                                })
-                                val followCount = followDatabase.followDao().liveCount(
-                                        routeStop.companyCode?:"", routeStop.routeNo?:"",
-                                        routeStop.routeSequence?:"", routeStop.routeServiceType?:"",
-                                        routeStop.stopId?:"", routeStop.sequence?:"")
-                                followCount.removeObservers(this@RouteStopListFragmentAbstract)
-                                followCount.observe(this@RouteStopListFragmentAbstract, Observer {
-                                    viewAdapter?.notifyItemChanged(index + count)
-                                })
                             }
 
                             val preferences = PreferenceManager.getDefaultSharedPreferences(context!!)
