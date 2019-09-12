@@ -1,16 +1,26 @@
 package com.alvinhkh.buseta.service
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.appwidget.AppWidgetManager
+import android.content.Context
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.Observer
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import androidx.annotation.RequiresApi
+import androidx.core.app.NotificationCompat
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 
 import com.alvinhkh.buseta.C
+import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.appwidget.FollowWidgetProvider
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
 import com.alvinhkh.buseta.datagovhk.RtNwstEtaWorker
@@ -39,6 +49,11 @@ class EtaService : LifecycleService() {
         arrivalTimeDatabase = ArrivalTimeDatabase.getInstance(this)!!
         followDatabase = FollowDatabase.getInstance(this)!!
         routeDatabase = RouteDatabase.getInstance(this)!!
+    }
+
+    override fun onDestroy() {
+        stopForeground(true)
+        super.onDestroy()
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
@@ -82,6 +97,9 @@ class EtaService : LifecycleService() {
             }
             tag = "FollowEta_$groupId"
             WorkManager.getInstance().cancelAllWorkByTag(tag)
+        }
+        if (widgetId >= 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            showForegroundNotification()
         }
 
         val workerRequestList = arrayListOf<OneTimeWorkRequest>()
@@ -149,6 +167,15 @@ class EtaService : LifecycleService() {
 
         if (workerRequestList.size > 0) {
             WorkManager.getInstance().enqueue(workerRequestList)
+            var isFinishedCount = 0
+            WorkManager.getInstance().getWorkInfosByTagLiveData(tag).observeForever { workInfos ->
+                workInfos.forEach { workInfo ->
+                    if (workInfo.state.isFinished) isFinishedCount += 1
+                }
+                if (isFinishedCount >= workerRequestList.size) {
+                    stopSelf()
+                }
+            }
         }
 
         return super.onStartCommand(intent, flags, startId)
@@ -170,5 +197,42 @@ class EtaService : LifecycleService() {
         }
         intent.putExtra(C.EXTRA.STOP_OBJECT, stop)
         sendBroadcast(intent)
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun showForegroundNotification() {
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager?
+        if (notificationManager?.getNotificationChannel(C.NOTIFICATION.CHANNEL_FOREGROUND) == null) {
+            val foregroundChannel = NotificationChannel(C.NOTIFICATION.CHANNEL_FOREGROUND,
+                    getString(R.string.channel_name_foreground, getString(R.string.app_name)), NotificationManager.IMPORTANCE_NONE)
+            foregroundChannel.description = getString(R.string.channel_description_foreground)
+            foregroundChannel.enableLights(false)
+            foregroundChannel.enableVibration(false)
+            foregroundChannel.importance = NotificationManager.IMPORTANCE_NONE
+            notificationManager?.createNotificationChannel(foregroundChannel)
+        }
+        val notificationId = 1001
+        val intent = Intent()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            intent.action = Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS
+            intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+            intent.putExtra(Settings.EXTRA_CHANNEL_ID, C.NOTIFICATION.CHANNEL_FOREGROUND)
+        } else {
+            intent.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+            intent.data = Uri.fromParts("package", packageName, null)
+        }
+        val contentIntent = PendingIntent.getActivity(this,
+                notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT)
+        val builder = NotificationCompat.Builder(this, C.NOTIFICATION.CHANNEL_FOREGROUND)
+        builder.setOnlyAlertOnce(true)
+                .setVisibility(NotificationCompat.VISIBILITY_SECRET)
+                .setPriority(NotificationCompat.PRIORITY_MIN)
+                .setSmallIcon(R.drawable.ic_outline_directions_bus_24dp)
+                .setCategory(NotificationCompat.CATEGORY_SYSTEM)
+                .setShowWhen(false)
+                .setContentTitle(getString(R.string.channel_name_update))
+                .setContentText(getString(R.string.channel_description_foreground))
+                .setContentIntent(contentIntent)
+        startForeground(notificationId, builder.build())
     }
 }
