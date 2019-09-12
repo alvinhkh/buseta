@@ -19,8 +19,6 @@ class MtrLineStatusViewModel(application: Application) : AndroidViewModel(applic
 
     private val routeDatabase = RouteDatabase.getInstance(application.applicationContext)
 
-    init {}
-
     @UiThread
     fun getAsLiveData(): MutableLiveData<List<MtrLineStatus>>{
         val result = MutableLiveData<List<MtrLineStatus>>()

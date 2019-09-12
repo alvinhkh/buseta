@@ -15,8 +15,6 @@ class MtrLatestAlertViewModel(application: Application) : AndroidViewModel(appli
 
     private val mtrService = MtrService.tnews.create(MtrService::class.java)
 
-    init {}
-
     @UiThread
     fun getAsLiveData(): MutableLiveData<List<MtrLatestAlert>>{
         val result = MutableLiveData<List<MtrLatestAlert>>()

@@ -717,6 +717,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
             window?.statusBarColor = ColorUtil.darkenColor(color)
             window?.navigationBarColor = ColorUtil.darkenColor(color)
         }
+        findViewById<FrameLayout>(R.id.map)?.setBackgroundColor(color)
         findViewById<FrameLayout>(R.id.adView_container)?.setBackgroundColor(color)
         findViewById<TabLayout>(R.id.tabs)?.background = ColorDrawable(color)
     }
