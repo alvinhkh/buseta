@@ -233,10 +233,10 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                                 })
                             }
 
-                            val preferences = PreferenceManager.getDefaultSharedPreferences(context)
-                            val fab = activity?.findViewById<FloatingActionButton>(R.id.fab)
-                            if (preferences.getString("load_eta", "0")?.toInt()?:0 < 1) {
-                                fab?.show()
+                            val preferences = PreferenceManager.getDefaultSharedPreferences(context!!)
+                            refreshInterval = preferences.getString("load_eta", "0")?.toInt()?:0
+                            if (!listOf(C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER).contains(route?.companyCode) && refreshInterval <= 0) {
+                                activity?.findViewById<FloatingActionButton>(R.id.fab)?.show()
                             }
 
                             if (emptyView.visibility == View.VISIBLE || visibility == View.GONE) {
@@ -312,9 +312,8 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
         if (context != null) {
             val preferences = PreferenceManager.getDefaultSharedPreferences(context!!)
             refreshInterval = preferences.getString("load_eta", "0")?.toInt()?:0
-            if (refreshInterval < 1) {
-                val fab = activity?.findViewById<FloatingActionButton>(R.id.fab)
-                fab?.show()
+            if (!listOf(C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER).contains(route?.companyCode) && refreshInterval <= 0) {
+                activity?.findViewById<FloatingActionButton>(R.id.fab)?.show()
             }
         }
         startLocationUpdates()
