@@ -59,7 +59,7 @@ class EtaService : LifecycleService() {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         val extras = intent.extras ?: return Service.START_NOT_STICKY
 
-        if (!ConnectivityUtil.isConnected(this)) return super.onStartCommand(intent, flags, startId)
+        if (!ConnectivityUtil.isConnected(this)) return Service.START_NOT_STICKY
 
         val widgetId = extras.getInt(C.EXTRA.WIDGET_UPDATE, -1)
         val notificationId = extras.getInt(C.EXTRA.NOTIFICATION_ID, -1)
@@ -82,13 +82,12 @@ class EtaService : LifecycleService() {
                 routeStopList.add(routeStop)
             }
             tag = "StopListEta_${companyCode}_${routeNo}_$routeSequence"
-            WorkManager.getInstance().cancelAllWorkByTag(tag)
         }
         val stop = extras.getParcelable<RouteStop>(C.EXTRA.STOP_OBJECT)
         if (stop != null) {
             routeStopList.add(stop)
         }
-        val isFollow = extras.getBoolean(C.EXTRA.FOLLOW)
+        val isFollow = extras.getBoolean(C.EXTRA.FOLLOW, false)
         if (isFollow) {
             val groupId = extras.getString(C.EXTRA.GROUP_ID)?:""
             val followList = if (groupId.isEmpty()) followDatabase.followDao().list() else followDatabase.followDao().list(groupId)
@@ -96,12 +95,18 @@ class EtaService : LifecycleService() {
                 routeStopList.add(follow.toRouteStop())
             }
             tag = "FollowEta_$groupId"
-            WorkManager.getInstance().cancelAllWorkByTag(tag)
+        }
+        if (widgetId >= 0) {
+            tag = "${tag}_AppWidget_$widgetId"
         }
         if (widgetId >= 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             showForegroundNotification()
         }
+        if (!tag.startsWith("Eta")) {
+            WorkManager.getInstance().cancelAllWorkByTag(tag)
+        }
 
+        var isFinishedCount = 0
         val workerRequestList = arrayListOf<OneTimeWorkRequest>()
         for (i in routeStopList.indices) {
             val routeStop = routeStopList[i]
@@ -152,11 +157,15 @@ class EtaService : LifecycleService() {
                     workerRequestList.add(workerRequest)
                     WorkManager.getInstance().getWorkInfoByIdLiveData(workerRequest.id)
                             .observe(this, Observer { workInfo ->
+                                if (workInfo.state.isFinished) isFinishedCount += 1
                                 if (workInfo?.state == WorkInfo.State.FAILED) {
                                     notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId)
                                 }
                                 if (workInfo?.state == WorkInfo.State.SUCCEEDED) {
                                     notifyUpdate(routeStop, C.EXTRA.UPDATED, widgetId, notificationId)
+                                }
+                                if (isFinishedCount >= workerRequestList.size) {
+                                    stopSelf()
                                 }
                             })
                 }
@@ -167,15 +176,6 @@ class EtaService : LifecycleService() {
 
         if (workerRequestList.size > 0) {
             WorkManager.getInstance().enqueue(workerRequestList)
-            var isFinishedCount = 0
-            WorkManager.getInstance().getWorkInfosByTagLiveData(tag).observeForever { workInfos ->
-                workInfos.forEach { workInfo ->
-                    if (workInfo.state.isFinished) isFinishedCount += 1
-                }
-                if (isFinishedCount >= workerRequestList.size) {
-                    stopSelf()
-                }
-            }
         }
 
         return super.onStartCommand(intent, flags, startId)
