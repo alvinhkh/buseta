@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta.ui.route
 
-import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle

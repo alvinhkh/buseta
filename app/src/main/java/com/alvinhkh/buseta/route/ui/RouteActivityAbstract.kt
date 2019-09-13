@@ -9,7 +9,6 @@ import android.content.res.Configuration
 import android.database.DataSetObserver
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
