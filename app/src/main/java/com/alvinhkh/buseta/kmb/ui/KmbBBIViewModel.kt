@@ -14,7 +14,7 @@ class KmbBBIViewModel(application: Application) : AndroidViewModel(application) 
     private val kmbService = KmbService.webCoroutine.create(KmbService::class.java)
 
     @UiThread
-    fun getAsLiveData(routeNo: String, routeBound: String): MutableLiveData<List<KmbBBIViewAdapter.Data>>{
+    fun liveData(routeNo: String, routeBound: String, query: String): MutableLiveData<List<KmbBBIViewAdapter.Data>>{
         val result = MutableLiveData<List<KmbBBIViewAdapter.Data>>()
         val list = arrayListOf<KmbBBIViewAdapter.Data>()
         CoroutineScope(Main).launch {
@@ -24,7 +24,9 @@ class KmbBBIViewModel(application: Application) : AndroidViewModel(application) 
                     response1.body()?.run {
                         list.add(KmbBBIViewAdapter.Data(KmbBBIViewAdapter.Data.TYPE_SECTION, "第一程 往" + (busArr[0]["dest"]?:"")))
                         records.forEach { item ->
-                            list.add(KmbBBIViewAdapter.Data(KmbBBIViewAdapter.Data.TYPE_BBI, item))
+                            if (query.isBlank() || item.secRouteno.indexOf(query) >= 0) {
+                                list.add(KmbBBIViewAdapter.Data(KmbBBIViewAdapter.Data.TYPE_BBI, item))
+                            }
                         }
                     }
                 }
@@ -33,7 +35,9 @@ class KmbBBIViewModel(application: Application) : AndroidViewModel(application) 
                     response2.body()?.run {
                         list.add(KmbBBIViewAdapter.Data(KmbBBIViewAdapter.Data.TYPE_SECTION, "第二程 往" + (busArr[0]["dest"]?:"")))
                         records.forEach { item ->
-                            list.add(KmbBBIViewAdapter.Data(KmbBBIViewAdapter.Data.TYPE_BBI, item))
+                            if (query.isBlank() || item.secRouteno.indexOf(query) >= 0) {
+                                list.add(KmbBBIViewAdapter.Data(KmbBBIViewAdapter.Data.TYPE_BBI, item))
+                            }
                         }
                     }
                 }

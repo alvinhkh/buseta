@@ -3,6 +3,8 @@ package com.alvinhkh.buseta.kmb.ui
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import androidx.fragment.app.Fragment
@@ -14,6 +16,9 @@ import android.view.*
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.route.model.Route
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
+import java.util.*
 
 
 class KmbBBIFragment: Fragment() {
@@ -45,7 +50,35 @@ class KmbBBIFragment: Fragment() {
             adapter = viewAdapter
         }
         val viewModel = ViewModelProviders.of(this@KmbBBIFragment).get(KmbBBIViewModel::class.java)
-        viewModel.getAsLiveData(routeNo, routeBound).observe(this@KmbBBIFragment, Observer { items ->
+        rootView.findViewById<TextInputLayout>(R.id.search_edittext_layout)?.visibility = View.VISIBLE
+        with(rootView.findViewById<TextInputEditText>(R.id.search_edittext)) {
+            addTextChangedListener(object : TextWatcher {
+                override fun afterTextChanged(p0: Editable?) {
+                    val t = p0?.replace("[^a-zA-Z0-9]*".toRegex(), "")?.toUpperCase(Locale.ENGLISH)
+                    val liveData = viewModel.liveData(routeNo, routeBound, t ?: "")
+                    liveData.observe(this@KmbBBIFragment, Observer { items ->
+                        swipeRefreshLayout?.isRefreshing = true
+                        if (items.isNullOrEmpty()) {
+                            viewAdapter?.clear()
+                            snackbar.show()
+                        } else {
+                            snackbar.dismiss()
+                            viewAdapter?.replace(items)
+                        }
+                        swipeRefreshLayout?.isRefreshing = false
+                        liveData.removeObservers(this@KmbBBIFragment)
+                    })
+                }
+
+                override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                }
+
+                override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+                }
+            })
+        }
+        val liveData = viewModel.liveData(routeNo, routeBound, "")
+        liveData.observe(this@KmbBBIFragment, Observer { items ->
             swipeRefreshLayout?.isRefreshing = true
             if (items.isNullOrEmpty()) {
                 viewAdapter?.clear()
@@ -55,6 +88,7 @@ class KmbBBIFragment: Fragment() {
                 viewAdapter?.replace(items)
             }
             swipeRefreshLayout?.isRefreshing = false
+            liveData.removeObservers(this)
         })
         val fab = activity?.findViewById<FloatingActionButton>(R.id.fab)
         fab?.hide()
