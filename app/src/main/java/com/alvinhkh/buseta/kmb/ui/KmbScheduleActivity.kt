@@ -41,11 +41,7 @@ class KmbScheduleActivity : BaseActivity() {
                     Toast.makeText(this, R.string.missing_input, Toast.LENGTH_SHORT).show()
                     finish()
                 }
-                activityColor(if (!route.colour.isNullOrEmpty()) {
-                    Color.parseColor(route.colour)
-                } else {
-                    route.companyColour(this)
-                })
+                activityColor(route.companyColour(this))
                 val fragmentTransaction = supportFragmentManager.beginTransaction()
                 val fragment = KmbScheduleFragment()
                 fragment.arguments = bundle

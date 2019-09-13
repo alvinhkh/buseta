@@ -371,11 +371,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
                     fragNo = fragmentCount - 1
                     isScrollToPage = true
                 }
-                activityColor(if (!route.colour.isNullOrEmpty()) {
-                    Color.parseColor(route.colour)
-                } else {
-                    route.companyColour(this)
-                })
+                activityColor(route.companyColour(this))
             }
 
             val routeName = Route.companyName(this, company, routeNo) + " " + routeNo

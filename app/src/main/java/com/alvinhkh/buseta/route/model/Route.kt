@@ -2,6 +2,7 @@ package com.alvinhkh.buseta.route.model
 
 import androidx.room.*
 import android.content.Context
+import android.graphics.Color
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.core.content.ContextCompat
@@ -84,8 +85,12 @@ data class Route(
     }
 
     fun companyColour(context: Context): Int {
-        return companyColour(context, companyCode?:"", name)
-                ?:ContextCompat.getColor(context, R.color.colorPrimary)
+        return if (!colour.isNullOrEmpty()) {
+            Color.parseColor(colour)
+        } else {
+            companyColour(context, companyCode?:"", name)
+                    ?:ContextCompat.getColor(context, R.color.colorPrimary)
+        }
     }
 
     fun companyName(context: Context): String {

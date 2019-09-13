@@ -46,11 +46,7 @@ class RouteAnnounceActivity : BaseActivity() {
         supportActionBar?.setTitle(R.string.notice)
         supportActionBar?.subtitle = route.name
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        activityColor(if (!route.colour.isNullOrEmpty()) {
-            Color.parseColor(route.colour)
-        } else {
-            route.companyColour(this)
-        })
+        activityColor(route.companyColour(this))
 
         adViewContainer = findViewById(R.id.adView_container)
         if (adViewContainer != null) {
