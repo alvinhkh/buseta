@@ -63,7 +63,7 @@
                 android:id="@+id/adView_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="?attr/colorPrimary" />
+                android:background="@color/transparent" />
 
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tabs"

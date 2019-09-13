@@ -27,7 +27,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="260dp"
                 android:layout_marginTop="?attr/actionBarSize"
-                android:background="@color/background"
+                android:background="@color/transparent"
                 android:visibility="gone"
                 app:layout_collapseMode="parallax" />
 
