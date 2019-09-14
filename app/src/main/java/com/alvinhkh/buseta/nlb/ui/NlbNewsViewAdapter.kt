@@ -66,11 +66,11 @@ class NlbNewsViewAdapter(
                 CoroutineScope(Dispatchers.Main).launch {
                     val request = NlbNewsRequest(nlbNews.newsId, "zh")
                     val response = if (companyCode == C.PROVIDER.GMB901) {
-                        val nlbService = NlbService.nlbApiCoroutine.create(NlbService::class.java)
-                        nlbService.news(request).await()
-                    } else {
                         val gmb901Service = NlbService.gmb901ApiCoroutine.create(NlbService::class.java)
                         gmb901Service.news(request).await()
+                    } else {
+                        val nlbService = NlbService.nlbApiCoroutine.create(NlbService::class.java)
+                        nlbService.news(request).await()
                     }
                     val body = response.body()
                     if (response.isSuccessful && body?.news?.content?.isEmpty() == false) {
