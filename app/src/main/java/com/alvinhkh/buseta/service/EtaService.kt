@@ -96,10 +96,10 @@ class EtaService : LifecycleService() {
             }
             tag = "FollowEta_$groupId"
         }
-        if (widgetId >= 0) {
+        if (widgetId > 0) {
             tag = "${tag}_AppWidget_$widgetId"
         }
-        if (widgetId >= 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (widgetId > 0 && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             showForegroundNotification()
         }
         if (!tag.startsWith("Eta")) {
@@ -185,7 +185,7 @@ class EtaService : LifecycleService() {
                              widgetId: Int, notificationId: Int) {
         val intent = Intent(C.ACTION.ETA_UPDATE)
         intent.putExtra(status, true)
-        if (widgetId >= 0) {
+        if (widgetId > 0) {
             intent.putExtra(C.EXTRA.WIDGET_UPDATE, widgetId)
             val widgetIntent = Intent(applicationContext, FollowWidgetProvider::class.java)
             widgetIntent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE

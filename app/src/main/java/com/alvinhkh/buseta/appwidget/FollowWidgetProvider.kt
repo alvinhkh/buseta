@@ -6,12 +6,14 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
-import android.os.Build
 import android.view.View
 import android.widget.RemoteViews
+import androidx.core.content.ContextCompat
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
+import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.search.ui.SearchActivity
 import com.alvinhkh.buseta.service.EtaService
 import com.alvinhkh.buseta.service.EtaWidgetAlarm
@@ -20,6 +22,7 @@ import com.alvinhkh.buseta.ui.MainActivity
 class FollowWidgetProvider : AppWidgetProvider() {
 
     companion object {
+
         fun updateWidgets(context: Context) {
             val intent = Intent(context, FollowWidgetProvider::class.java)
             intent.action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
@@ -32,14 +35,23 @@ class FollowWidgetProvider : AppWidgetProvider() {
             val widgetPreferences = WidgetPreferences(context)
             val followGroupId = widgetPreferences.getFollowGroupId(widgetId) ?: ""
             val withHeader = widgetPreferences.getWithHeader(widgetId)
+            val followDatabase = FollowDatabase.getInstance(context)
+            val followGroup = followDatabase?.followGroupDao()?.get(followGroupId)
+            var widgetName = followGroup?.name?: context.getString(R.string.app_name)
+            if (widgetName.isBlank()) {
+                widgetName = context.getString(R.string.uncategorised)
+            }
 
-            val widgetName = context.getString(R.string.app_name)
             // Specify the service to provide data for the collection widget.  Note that we need to
             // embed the appWidgetId via the data otherwise it will be ignored.
             val intent = Intent(context, FollowWidgetService::class.java)
             intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
             intent.data = Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME))
             val remoteViews = RemoteViews(context.packageName, R.layout.widget_eta)
+            remoteViews.setInt(R.id.header, "setBackgroundColor", if (!followGroup?.colour.isNullOrBlank())
+                Color.parseColor(followGroup?.colour)
+            else
+                ContextCompat.getColor(context, R.color.colorPrimary))
             remoteViews.setTextViewText(R.id.header_text, widgetName)
             remoteViews.setEmptyView(R.id.list_view, R.id.empty_view)
             remoteViews.setRemoteAdapter(R.id.list_view, intent)
@@ -52,12 +64,11 @@ class FollowWidgetProvider : AppWidgetProvider() {
             refreshIntent.action = C.ACTION.WIDGET_UPDATE
             refreshIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
             refreshIntent.putExtra(C.EXTRA.GROUP_ID, followGroupId)
-            val updatePendingIntent = PendingIntent.getBroadcast(context, 0,
+            val updatePendingIntent = PendingIntent.getBroadcast(context, widgetId,
                     refreshIntent, PendingIntent.FLAG_UPDATE_CURRENT)
 
             val activityIntent = Intent(context, SearchActivity::class.java)
             activityIntent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
-//            activityIntent.setData()
             val pendingIntent = PendingIntent.getActivity(context, widgetId,
                     activityIntent, PendingIntent.FLAG_UPDATE_CURRENT)
             remoteViews.setPendingIntentTemplate(R.id.list_view, updatePendingIntent)
@@ -113,9 +124,12 @@ class FollowWidgetProvider : AppWidgetProvider() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
+        super.onReceive(context, intent)
         val action = intent.action
         if (action != null) {
+//            val widgetIds = intent.getIntegerArrayListExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS)
             val widgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
+            if (widgetId <= AppWidgetManager.INVALID_APPWIDGET_ID) return
             val followGroupId = intent.getStringExtra(C.EXTRA.GROUP_ID)
             when (action) {
                 AppWidgetManager.ACTION_APPWIDGET_OPTIONS_CHANGED, AppWidgetManager.ACTION_APPWIDGET_UPDATE -> {
@@ -134,6 +148,5 @@ class FollowWidgetProvider : AppWidgetProvider() {
                 }
             }
         }
-        super.onReceive(context, intent)
     }
 }

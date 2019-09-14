@@ -35,8 +35,8 @@ class FollowWidgetPinnedReceiver : BroadcastReceiver() {
             return
         }
 
-        val widgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1)
-        if (widgetId == -1) {
+        val widgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID)
+        if (widgetId <= AppWidgetManager.INVALID_APPWIDGET_ID) {
             return
         }
 
