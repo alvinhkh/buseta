@@ -37,18 +37,19 @@ class NlbStopListFragment : RouteStopListFragmentAbstract() {
                 } else {
                     NLB
                 }
-                openLink(context!!, prefix + TIMETABLE_URL + route?.code, R.color.provider_nlb)
+                openLink(context!!, prefix + TIMETABLE_URL + route?.code,
+                        route?.companyColour(context!!)?: ContextCompat.getColor(context!!, R.color.provider_nlb))
                 return true
             }
         }
         return super.onOptionsItemSelected(item)
     }
 
-    private fun openLink(context: Context, url: String, colorInt: Int) {
+    private fun openLink(context: Context, url: String, color: Int) {
         val link = Uri.parse(url)
         try {
             val builder = CustomTabsIntent.Builder()
-            builder.setToolbarColor(ContextCompat.getColor(context, colorInt))
+            builder.setToolbarColor(color)
             val customTabsIntent = builder.build()
             customTabsIntent.launchUrl(context, link)
         } catch (ignored: Throwable) {

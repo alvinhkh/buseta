@@ -30,7 +30,7 @@ class NwstStopListFragment : RouteStopListFragmentAbstract() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        timetableItem = menu!!.findItem(R.id.action_timetable)
+        timetableItem = menu.findItem(R.id.action_timetable)
         timetableItem?.isVisible = timetableHtml.isNotEmpty()
     }
 
@@ -42,6 +42,7 @@ class NwstStopListFragment : RouteStopListFragmentAbstract() {
                 var title = getString(R.string.timetable)
                 if (route != null && !route?.name.isNullOrEmpty()) {
                     title = route?.name + " " + title
+                    intent.putExtra(WebViewActivity.COLOUR, Route.companyColour(context!!, route?.companyCode?: C.PROVIDER.NWST, route?.name?: ""))
                 }
                 intent.putExtra(WebViewActivity.TITLE, title)
                 intent.putExtra(WebViewActivity.HTML, timetableHtml)

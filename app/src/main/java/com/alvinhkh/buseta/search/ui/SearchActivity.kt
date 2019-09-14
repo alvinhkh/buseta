@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProviders
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import com.google.android.material.chip.Chip
 import androidx.core.content.ContextCompat
@@ -38,6 +39,7 @@ import com.alvinhkh.buseta.route.ui.RouteListViewModel
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.model.Suggestion
 import com.alvinhkh.buseta.ui.PinnedHeaderItemDecoration
+import com.alvinhkh.buseta.utils.ColorUtil
 import com.alvinhkh.buseta.utils.PreferenceUtil
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_search.*
@@ -59,6 +61,15 @@ class SearchActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val color = ContextCompat.getColor(this, R.color.background)
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+            window?.statusBarColor = color
+            window?.navigationBarColor = ContextCompat.getColor(this, R.color.transparent)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window?.statusBarColor = ColorUtil.darkenColor(color)
+            window?.navigationBarColor = ColorUtil.darkenColor(color)
+        }
 
         suggestionDatabase = SuggestionDatabase.getInstance(this)!!
         setContentView(R.layout.activity_search)

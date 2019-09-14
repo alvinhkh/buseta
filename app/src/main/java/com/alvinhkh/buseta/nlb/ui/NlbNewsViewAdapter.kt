@@ -10,6 +10,7 @@ import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.nlb.NlbService
 import com.alvinhkh.buseta.nlb.model.NlbNews
 import com.alvinhkh.buseta.nlb.model.NlbNewsRequest
+import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.ui.webview.WebViewActivity
 import kotlinx.android.synthetic.main.item_route_announce.view.*
 import kotlinx.coroutines.CoroutineScope
@@ -77,6 +78,7 @@ class NlbNewsViewAdapter(
                         val intent = Intent(v.context, WebViewActivity::class.java)
                         intent.putExtra(WebViewActivity.TITLE, body.news?.title)
                         intent.putExtra(WebViewActivity.HTML, body.news?.content)
+                        intent.putExtra(WebViewActivity.COLOUR, Route.companyColour(itemView.context, companyCode, ""))
                         v.context.startActivity(intent)
                     }
                 }
