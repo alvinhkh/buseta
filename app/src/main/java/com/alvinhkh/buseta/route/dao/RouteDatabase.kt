@@ -32,7 +32,7 @@ abstract class RouteDatabase : RoomDatabase() {
                                 override fun migrate(db: SupportSQLiteDatabase) {
                                     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
                                     val editor = sharedPreferences.edit()
-                                    editor.putLong("last_update_suggestions", 0)
+                                    editor.putLong("last_update_check", 0)
                                     editor.apply()
                                     throw IllegalStateException()
                                 }

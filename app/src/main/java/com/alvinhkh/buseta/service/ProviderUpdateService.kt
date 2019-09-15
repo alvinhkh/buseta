@@ -117,13 +117,13 @@ class ProviderUpdateService: Service() {
         val routeCount = routeDatabase.routeDao().count()
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val timeNow = System.currentTimeMillis() / 1000
-        val savedTime = sharedPreferences.getLong("last_update_suggestions", 0)
-        if (!manualUpdate && routeCount > 0 && timeNow < savedTime + 21600) {
+        val savedTime = sharedPreferences.getLong("last_update_check", 0)
+        if (!manualUpdate && routeCount > 0 && timeNow < savedTime + 129600) {
             Timber.d("recently updated and not manual update")
             stopSelf()
             return START_NOT_STICKY
         }
-        sharedPreferences.edit().putLong("last_update_suggestions", timeNow).apply()
+        sharedPreferences.edit().putLong("last_update_check", timeNow).apply()
 
         WorkManager.getInstance().cancelAllWorkByTag("RouteList")
         var workCount = 0
