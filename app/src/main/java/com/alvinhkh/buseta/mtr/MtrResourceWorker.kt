@@ -57,7 +57,7 @@ class MtrResourceWorker(context : Context, params : WorkerParameters)
 //            val response1 = mtrMobService.zipResources().execute()
 //            val mtrMobileVersionCheck = response1.body()?:return Result.failure(outputData)
 //            val busDatabaseFileUrl = mtrMobileVersionCheck.resources?.mtrBus?.url?:return Result.failure(outputData)
-                val busDatabaseFileUrl = "http://mavmapp1044.azurewebsites.net/sil_data/E_Bus_20190319.zip"
+                val busDatabaseFileUrl = "http://mavmapp1044.azurewebsites.net/sil_data/E_Bus_20190830.zip"
                 val uri = Uri.parse(busDatabaseFileUrl)
                 applicationContext.deleteDatabase("E_Bus.db")
                 val fileName = uri.lastPathSegment ?: return Result.failure(outputData)
