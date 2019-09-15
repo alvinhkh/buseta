@@ -1,6 +1,8 @@
 package com.alvinhkh.buseta.route.ui
 
 import android.annotation.SuppressLint
+import android.os.Build
+import android.text.Html
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import androidx.viewpager.widget.ViewPager
 import androidx.recyclerview.widget.RecyclerView
@@ -64,7 +66,11 @@ class RouteSelectViewAdapter(
             } else {
                 itemView.findViewById<TextView>(R.id.location).visibility = View.GONE
             }
-            itemView.findViewById<TextView>(R.id.description).text = route.description
+            itemView.findViewById<TextView>(R.id.description).text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                Html.fromHtml(route.description, Html.FROM_HTML_MODE_COMPACT)
+            } else {
+                Html.fromHtml(route.description)
+            }
             itemView.findViewById<TextView>(R.id.description).visibility = if (route.description.isNullOrEmpty()) View.GONE else View.VISIBLE
             itemView.setOnClickListener {
                 viewPagerRef.get()?.currentItem = adapterPosition

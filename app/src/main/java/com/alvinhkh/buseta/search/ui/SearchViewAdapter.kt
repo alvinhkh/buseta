@@ -3,6 +3,8 @@ package com.alvinhkh.buseta.search.ui
 import android.content.Intent
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
+import android.os.Build
+import android.text.Html
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
@@ -133,7 +135,11 @@ class SearchViewAdapter(
                     } else {
                         itemView.findViewById<TextView>(R.id.location).visibility = View.GONE
                     }
-                    itemView.findViewById<TextView>(R.id.description).text = route.description
+                    itemView.findViewById<TextView>(R.id.description).text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        Html.fromHtml(route.description, Html.FROM_HTML_MODE_COMPACT)
+                    } else {
+                        Html.fromHtml(route.description)
+                    }
                     itemView.findViewById<TextView>(R.id.description).visibility = if (route.description.isNullOrEmpty()) View.GONE else View.VISIBLE
                     itemView.setOnClickListener{ listener?.onClick(data) }
                     itemView.setOnLongClickListener{
