@@ -2,10 +2,7 @@ package com.alvinhkh.buseta.mtr.dao
 
 import androidx.room.Dao
 import androidx.room.Query
-import com.alvinhkh.buseta.mtr.model.MtrBusFare
-import com.alvinhkh.buseta.mtr.model.MtrBusRoute
-import com.alvinhkh.buseta.mtr.model.MtrBusRouteLine
-import com.alvinhkh.buseta.mtr.model.MtrBusStop
+import com.alvinhkh.buseta.mtr.model.*
 
 
 @Dao
@@ -22,5 +19,8 @@ interface MtrBusDao {
 
     @Query("SELECT * FROM busFare ORDER BY route_ID ASC")
     fun allFares(): List<MtrBusFare>
+
+    @Query("SELECT * FROM busFrequence ORDER BY routeLine_ID ASC, sort_order ASC")
+    fun allFrequences(): List<MtrBusFrequence>
 
 }

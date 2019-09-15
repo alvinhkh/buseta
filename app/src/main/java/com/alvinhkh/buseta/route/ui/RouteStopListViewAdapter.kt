@@ -99,7 +99,7 @@ class RouteStopListViewAdapter(
         @SuppressLint("ClickableViewAccessibility")
         fun bindItems(data: Data, activity: FragmentActivity?, route: Route, currentLocation: Location?) {
             if (data.type == Data.TYPE_ROUTE_STOP) {
-                val routeStop = data.obj as RouteStop
+                val routeStop = (data.obj as RouteStop?)?: return
                 itemView.findViewById<TextView>(R.id.name).text = routeStop.name
                 itemView.findViewById<TextView>(R.id.distance).text = ""
                 if (!routeStop.fareFull.isNullOrEmpty() && routeStop.fareFull!!.toFloat() > 0) {

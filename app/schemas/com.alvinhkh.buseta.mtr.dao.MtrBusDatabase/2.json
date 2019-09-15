@@ -1,0 +1,402 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "cf68f163dd9775dbc20001957d4f7681",
+    "entities": [
+      {
+        "tableName": "busRoute",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`route_ID` INTEGER NOT NULL, `route_number` TEXT NOT NULL, `description_en` TEXT, `description_zh` TEXT, `extra_description_en` TEXT, `extra_description_zh` TEXT, `effectiveDate` TEXT, `frequency_remark_en` TEXT, `frequency_remark_zh` TEXT, `route_remark_en` TEXT, `route_remark_zh` TEXT, `hotline` TEXT, PRIMARY KEY(`route_ID`))",
+        "fields": [
+          {
+            "fieldPath": "routeId",
+            "columnName": "route_ID",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "routeNumber",
+            "columnName": "route_number",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "descriptionEn",
+            "columnName": "description_en",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "descriptionZh",
+            "columnName": "description_zh",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "extraDescriptionEn",
+            "columnName": "extra_description_en",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "extraDescriptionZh",
+            "columnName": "extra_description_zh",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "effectiveDate",
+            "columnName": "effectiveDate",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "frequencyRemarkEn",
+            "columnName": "frequency_remark_en",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "frequencyRemarkZh",
+            "columnName": "frequency_remark_zh",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "routeRemarkEn",
+            "columnName": "route_remark_en",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "routeRemarkZh",
+            "columnName": "route_remark_zh",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "hotline",
+            "columnName": "hotline",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "route_ID"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "busRouteLine",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`routeLine_ID` INTEGER NOT NULL, `route_ID` INTEGER NOT NULL, `from_stop` TEXT NOT NULL, `shape` TEXT, `station_remark_en` TEXT, `station_remark_zh` TEXT, PRIMARY KEY(`routeLine_ID`))",
+        "fields": [
+          {
+            "fieldPath": "routeLineId",
+            "columnName": "routeLine_ID",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "routeId",
+            "columnName": "route_ID",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fromStop",
+            "columnName": "from_stop",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "shape",
+            "columnName": "shape",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "stationRemarkEn",
+            "columnName": "station_remark_en",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "stationRemarkZh",
+            "columnName": "station_remark_zh",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "routeLine_ID"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "busStop",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`stop_ID` INTEGER NOT NULL, `routeLine_ID` INTEGER NOT NULL, `name_en` TEXT NOT NULL, `name_ch` TEXT, `remark_en` TEXT, `remark_ch` TEXT, `rail_line` TEXT, `is_edge` INTEGER NOT NULL, `sort_order` INTEGER NOT NULL, `latitude` TEXT, `longitude` TEXT, `name2_en` TEXT, `name2_ch` TEXT, `ref_ID` TEXT, PRIMARY KEY(`stop_ID`))",
+        "fields": [
+          {
+            "fieldPath": "stopId",
+            "columnName": "stop_ID",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "routeLineId",
+            "columnName": "routeLine_ID",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nameEn",
+            "columnName": "name_en",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nameCh",
+            "columnName": "name_ch",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "remarkEn",
+            "columnName": "remark_en",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "remarkCh",
+            "columnName": "remark_ch",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "railLine",
+            "columnName": "rail_line",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "isEdge",
+            "columnName": "is_edge",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sortOrder",
+            "columnName": "sort_order",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "latitude",
+            "columnName": "latitude",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "longitude",
+            "columnName": "longitude",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "name2En",
+            "columnName": "name2_en",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "name2Ch",
+            "columnName": "name2_ch",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "refId",
+            "columnName": "ref_ID",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "stop_ID"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "busFare",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`fare_ID` INTEGER NOT NULL, `route_ID` INTEGER NOT NULL, `cash_adult` REAL NOT NULL, `octopus_adult` REAL NOT NULL, `cash_child_senior` REAL NOT NULL, `octopus_child_senior` REAL NOT NULL, `cash_disabilities` REAL NOT NULL, `octopus_disabilities` REAL NOT NULL, `cash_student` REAL NOT NULL, `octopus_student` REAL NOT NULL, `cash_child` TEXT, `octopus_child` TEXT, `cash_senior` TEXT, `octopus_senior` TEXT, PRIMARY KEY(`fare_ID`))",
+        "fields": [
+          {
+            "fieldPath": "fareId",
+            "columnName": "fare_ID",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "routeId",
+            "columnName": "route_ID",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cashAdult",
+            "columnName": "cash_adult",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "octopusAdult",
+            "columnName": "octopus_adult",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cashChildSenior",
+            "columnName": "cash_child_senior",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "octopusChildSenior",
+            "columnName": "octopus_child_senior",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cashDisabilities",
+            "columnName": "cash_disabilities",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "octopusDisabilities",
+            "columnName": "octopus_disabilities",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cashStudent",
+            "columnName": "cash_student",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "octopusStudent",
+            "columnName": "octopus_student",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cashChild",
+            "columnName": "cash_child",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "octopusChild",
+            "columnName": "octopus_child",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "cashSenior",
+            "columnName": "cash_senior",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "octopusSenior",
+            "columnName": "octopus_senior",
+            "affinity": "TEXT",
+            "notNull": false
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "fare_ID"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "busFrequence",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`frequence_ID` INTEGER NOT NULL, `routeLine_ID` INTEGER NOT NULL, `description_en` TEXT NOT NULL, `description_zh` TEXT, `period` TEXT, `frequency` TEXT, `sort_order` INTEGER NOT NULL, PRIMARY KEY(`frequence_ID`))",
+        "fields": [
+          {
+            "fieldPath": "frequenceId",
+            "columnName": "frequence_ID",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "routeLineId",
+            "columnName": "routeLine_ID",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "descriptionEn",
+            "columnName": "description_en",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "descriptionZh",
+            "columnName": "description_zh",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "period",
+            "columnName": "period",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "frequency",
+            "columnName": "frequency",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "sortOrder",
+            "columnName": "sort_order",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "frequence_ID"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cf68f163dd9775dbc20001957d4f7681')"
+    ]
+  }
+}
