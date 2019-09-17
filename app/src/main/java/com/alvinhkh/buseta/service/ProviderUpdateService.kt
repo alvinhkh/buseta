@@ -286,6 +286,8 @@ class ProviderUpdateService: Service() {
                 }
             }
             WorkManager.getInstance().enqueue(requests)
+        } else {
+            stopSelf()
         }
     }
 
