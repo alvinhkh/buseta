@@ -23,16 +23,14 @@ import com.alvinhkh.buseta.utils.ColorUtil
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.play.core.appupdate.AppUpdateManager
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
-import com.google.android.play.core.install.InstallState
 import com.google.android.play.core.install.InstallStateUpdatedListener
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import timber.log.Timber
-import timber.log.Timber.log
 
 
-class MainActivity : BaseActivity(), InstallStateUpdatedListener {
+class MainActivity : BaseActivity() {
 
     private val APP_UPDATE_REQUEST_CODE = 1100
     private lateinit var appUpdateManager: AppUpdateManager
@@ -129,9 +127,9 @@ class MainActivity : BaseActivity(), InstallStateUpdatedListener {
         if (bottomNavigationView != null) {
             val followDatabase = FollowDatabase.getInstance(applicationContext)
             if (followDatabase != null && followDatabase.followDao().count() > 0) {
-                bottomNavigationView?.selectedItemId = R.id.action_follow
+                bottomNavigationView.selectedItemId = R.id.action_follow
             } else {
-                bottomNavigationView?.selectedItemId = R.id.action_search_history
+                bottomNavigationView.selectedItemId = R.id.action_search_history
             }
         }
         try {
@@ -139,19 +137,29 @@ class MainActivity : BaseActivity(), InstallStateUpdatedListener {
         } catch (ignored: Throwable) {
         }
 
+        val listener = InstallStateUpdatedListener { state ->
+            Timber.d("InAppUpdate: state=%s", state)
+            if (state.installStatus() == InstallStatus.DOWNLOADED) {
+                popupSnackbarForCompleteUpdate()
+            }
+        }
         appUpdateManager = AppUpdateManagerFactory.create(this)
-        appUpdateManager.registerListener(this)
-        appUpdateManager.unregisterListener(this)
+        appUpdateManager.registerListener(listener)
+        appUpdateManager.unregisterListener(listener)
         val appUpdateInfoTask = appUpdateManager.appUpdateInfo
+        appUpdateInfoTask.addOnFailureListener { e -> Timber.i(e, "InAppUpdate: error.") }
         appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
                     && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
             ) {
+                Timber.i("InAppUpdate: An update is available.")
                 appUpdateManager.startUpdateFlowForResult(
                         appUpdateInfo,
                         AppUpdateType.FLEXIBLE,
                         this,
                         APP_UPDATE_REQUEST_CODE)
+            } else if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
+                popupSnackbarForCompleteUpdate()
             }
         }
     }
@@ -169,6 +177,8 @@ class MainActivity : BaseActivity(), InstallStateUpdatedListener {
         appUpdateManager
                 .appUpdateInfo
                 .addOnSuccessListener { appUpdateInfo ->
+                    // If the update is downloaded but not installed,
+                    // notify the user to complete the update.
                     if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
                         popupSnackbarForCompleteUpdate()
                     }
@@ -179,20 +189,15 @@ class MainActivity : BaseActivity(), InstallStateUpdatedListener {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == APP_UPDATE_REQUEST_CODE) {
             if (resultCode != RESULT_OK) {
-                Timber.d("Update flow failed! Result code: $resultCode")
+                Timber.i("InAppUpdate: Update flow failed! Result code: $resultCode")
             }
         }
     }
 
-    override fun onStateUpdate(state: InstallState) {
-        if (state.installStatus() == InstallStatus.DOWNLOADED) {
-            popupSnackbarForCompleteUpdate()
-        }
-    }
-
     private fun popupSnackbarForCompleteUpdate() {
+        Timber.i("InAppUpdate: An update has just been downloaded.")
         Snackbar.make(
-                findViewById(R.id.constraint_layout),
+                findViewById(android.R.id.content),
                 "An update has just been downloaded.",
                 Snackbar.LENGTH_INDEFINITE
         ).apply {
