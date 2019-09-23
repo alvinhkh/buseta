@@ -5,6 +5,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.content.res.Configuration
 import android.database.DataSetObserver
 import android.graphics.Bitmap
@@ -719,5 +720,6 @@ abstract class RouteActivityAbstract : BaseActivity(),
         findViewById<FrameLayout>(R.id.map)?.setBackgroundColor(color)
         findViewById<FrameLayout>(R.id.adView_container)?.setBackgroundColor(color)
         findViewById<TabLayout>(R.id.tabs)?.background = ColorDrawable(color)
+        findViewById<FloatingActionButton>(R.id.fab)?.backgroundTintList = ColorStateList.valueOf(color)
     }
 }

@@ -3,6 +3,7 @@ package com.alvinhkh.buseta.follow.ui
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
@@ -161,5 +162,6 @@ class FollowGroupFragment : Fragment() {
         }
         activity?.findViewById<FrameLayout>(R.id.adView_container)?.setBackgroundColor(color)
         activity?.findViewById<TabLayout>(R.id.tabs)?.background = ColorDrawable(color)
+        fab.backgroundTintList = ColorStateList.valueOf(color)
     }
 }
