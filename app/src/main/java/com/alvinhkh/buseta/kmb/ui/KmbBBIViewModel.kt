@@ -19,10 +19,14 @@ class KmbBBIViewModel(application: Application) : AndroidViewModel(application) 
         val list = arrayListOf<KmbBBIViewAdapter.Data>()
         CoroutineScope(Main).launch {
             try {
-                val response1 = kmbService.bbi(routeNo, if (routeBound == "2") "B" else "F").await()
+                val response1 = kmbService.bbi(routeNo, "F").await()
                 if (response1.isSuccessful) {
                     response1.body()?.run {
-                        list.add(KmbBBIViewAdapter.Data(KmbBBIViewAdapter.Data.TYPE_SECTION, "第一程 往" + (busArr[0]["dest"]?:"")))
+                        var title = "第一程 往" + (busArr[0]["dest"]?:"")
+                        if (routeBound == "1") {
+                            title = ">> $title"
+                        }
+                        list.add(KmbBBIViewAdapter.Data(KmbBBIViewAdapter.Data.TYPE_SECTION, title))
                         records.forEach { item ->
                             if (query.isBlank() || item.secRouteno.indexOf(query) >= 0) {
                                 list.add(KmbBBIViewAdapter.Data(KmbBBIViewAdapter.Data.TYPE_BBI, item))
@@ -30,10 +34,44 @@ class KmbBBIViewModel(application: Application) : AndroidViewModel(application) 
                         }
                     }
                 }
-                val response2 = kmbService.bbi(routeNo, if (routeBound == "2") "B" else "F", "2").await()
+                val response3 = kmbService.bbi(routeNo, "B").await()
+                if (response3.isSuccessful) {
+                    response3.body()?.run {
+                        var title = "第一程 往" + (busArr[0]["dest"]?:"")
+                        if (routeBound == "0") {
+                            title = ">> $title"
+                        }
+                        list.add(KmbBBIViewAdapter.Data(KmbBBIViewAdapter.Data.TYPE_SECTION, title))
+                        records.forEach { item ->
+                            if (query.isBlank() || item.secRouteno.indexOf(query) >= 0) {
+                                list.add(KmbBBIViewAdapter.Data(KmbBBIViewAdapter.Data.TYPE_BBI, item))
+                            }
+                        }
+                    }
+                }
+                val response2 = kmbService.bbi(routeNo, "F", "2").await()
                 if (response2.isSuccessful) {
                     response2.body()?.run {
-                        list.add(KmbBBIViewAdapter.Data(KmbBBIViewAdapter.Data.TYPE_SECTION, "第二程 往" + (busArr[0]["dest"]?:"")))
+                        var title = "第一程 往" + (busArr[0]["dest"]?:"")
+                        if (routeBound == "1") {
+                            title = ">> $title"
+                        }
+                        list.add(KmbBBIViewAdapter.Data(KmbBBIViewAdapter.Data.TYPE_SECTION, title))
+                        records.forEach { item ->
+                            if (query.isBlank() || item.secRouteno.indexOf(query) >= 0) {
+                                list.add(KmbBBIViewAdapter.Data(KmbBBIViewAdapter.Data.TYPE_BBI, item))
+                            }
+                        }
+                    }
+                }
+                val response4 = kmbService.bbi(routeNo, "B", "2").await()
+                if (response4.isSuccessful) {
+                    response4.body()?.run {
+                        var title = "第二程 往" + (busArr[0]["dest"]?:"")
+                        if (routeBound == "0") {
+                            title = ">> $title"
+                        }
+                        list.add(KmbBBIViewAdapter.Data(KmbBBIViewAdapter.Data.TYPE_SECTION, title))
                         records.forEach { item ->
                             if (query.isBlank() || item.secRouteno.indexOf(query) >= 0) {
                                 list.add(KmbBBIViewAdapter.Data(KmbBBIViewAdapter.Data.TYPE_BBI, item))
