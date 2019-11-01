@@ -115,7 +115,7 @@ class NwstEtaWorker(private val context : Context, params : WorkerParameters)
                     arrivalTime.companyCode = nwstEta.companyCode
                 }
                 arrivalTime.text = text(nwstEta.title)
-                val subtitle = text(nwstEta.subtitle)
+                val subtitle = text(nwstEta.subtitle).trim()
                 if (subtitle.isNotEmpty()) {
                     if (subtitle.contains("距離") || subtitle.contains("距离") || subtitle.contains("Distance")) {
                         arrivalTime.distanceKM = parseDistance(subtitle).toDouble()
@@ -126,7 +126,13 @@ class NwstEtaWorker(private val context : Context, params : WorkerParameters)
                 }
                 arrivalTime.note = nwstEta.boundText.trim { it <= ' ' }
                 arrivalTime.isoTime = nwstEta.etaIsoTime
-                arrivalTime.isSchedule = !nwstEta.subtitle.isEmpty() && (nwstEta.subtitle.contains("預定班次") || nwstEta.subtitle.contains("预定班次") || nwstEta.subtitle.contains("Scheduled"))
+                arrivalTime.isSchedule = nwstEta.subtitle.isNotEmpty() && (
+                        nwstEta.subtitle.contains("預定班次") ||
+                                nwstEta.subtitle.contains("预定班次") ||
+                                nwstEta.subtitle.contains("Scheduled") ||
+                                nwstEta.subtitle.contains("非實時") ||
+                                nwstEta.subtitle.contains("非实时") ||
+                                nwstEta.subtitle.contains("Non-Real time"))
                 val data1 = nwstEta.serverTime.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
                 if (data1.size == 3) {
                     try {
@@ -149,9 +155,9 @@ class NwstEtaWorker(private val context : Context, params : WorkerParameters)
                 arrivalTimeList.add(arrivalTime)
             }
             arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTimeList)
+            return Result.success(outputData)
         } catch (e: Exception) {
             Timber.d(e)
-            return Result.failure(outputData)
         }
 
         return Result.failure(outputData)
@@ -162,6 +168,9 @@ class NwstEtaWorker(private val context : Context, params : WorkerParameters)
                 .replace(" ?預定班次".toRegex(), "")
                 .replace(" ?预定班次".toRegex(), "")
                 .replace(" ?Scheduled".toRegex(), "")
+                .replace(" ?非實時".toRegex(), "")
+                .replace(" ?非实时".toRegex(), "")
+                .replace(" ?Non-Real time".toRegex(), "")
                 .replace("現時未能提供預計抵站時間，請參閱時間表。", "未能提供預計時間")
                 .replace("现时未能提供预计抵站时间，请参阅时间表。", "未能提供预计时间")
                 .replace("Estimated Time of Arrival is currently not available. Please refer to timetable.", "ETA not available")
