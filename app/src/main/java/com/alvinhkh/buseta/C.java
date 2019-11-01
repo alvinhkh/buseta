@@ -70,6 +70,8 @@ public class C {
         String APP_UPDATE_OBJECT = "com.alvinhkh.buseta.APP_UDPATE_OBJECT";
 
         String TAG = "com.alvinhkh.buseta.TAG";
+
+        String HTML = "com.alvinhkh.buseta.HTMLs";
     }
 
     public interface PREF {

@@ -5,20 +5,33 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import androidx.lifecycle.Observer
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequest
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
+import com.alvinhkh.buseta.kmb.KmbInfoWorker
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.model.RouteStop
 import com.alvinhkh.buseta.route.ui.RouteStopListFragmentAbstract
+import com.alvinhkh.buseta.ui.webview.WebViewActivity
 
 
 class KmbStopListFragment : RouteStopListFragmentAbstract() {
+
+    private var infoItem: MenuItem? = null
+
+    private var infoHtml = ""
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         menu.findItem(R.id.action_timetable)?.isVisible = true
         menu.findItem(R.id.action_bbi)?.isVisible = true
+        infoItem = menu.findItem(R.id.action_info)
+        infoItem?.isVisible = infoHtml.isNotEmpty()
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -35,8 +48,52 @@ class KmbStopListFragment : RouteStopListFragmentAbstract() {
                 startActivity(intent)
                 return true
             }
+            R.id.action_info -> if (infoHtml.isNotEmpty()) {
+                val intent = Intent(context, WebViewActivity::class.java)
+                var title = getString(R.string.timetable)
+                if (route != null && !route?.name.isNullOrEmpty()) {
+                    title = route?.name + " " + title
+                    intent.putExtra(WebViewActivity.COLOUR, Route.companyColour(context!!, route?.companyCode?: C.PROVIDER.NWST, route?.name?: ""))
+                }
+                intent.putExtra(WebViewActivity.TITLE, title)
+                intent.putExtra(WebViewActivity.HTML, infoHtml)
+                startActivity(intent)
+                return true
+            }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val tag = "Info_${route?.companyCode}_${route?.code}_${route?.name}_${route?.sequence}"
+        WorkManager.getInstance().cancelAllWorkByTag(tag)
+        val request = OneTimeWorkRequest.Builder(KmbInfoWorker::class.java)
+                .setInputData(Data.Builder()
+                        .putString(C.EXTRA.COMPANY_CODE, route?.companyCode)
+                        .putString(C.EXTRA.ROUTE_ID, route?.code)
+                        .putString(C.EXTRA.ROUTE_NO, route?.name)
+                        .putString(C.EXTRA.ROUTE_SEQUENCE, route?.sequence)
+                        .putString(C.EXTRA.ROUTE_SERVICE_TYPE, route?.serviceType)
+                        .build())
+                .addTag(tag)
+                .build()
+        WorkManager.getInstance().enqueue(request)
+        WorkManager.getInstance().getWorkInfoByIdLiveData(request.id)
+                .observe(this, Observer { workInfo ->
+                    if (workInfo?.state == WorkInfo.State.FAILED) {
+                        infoItem?.isVisible = false
+                    }
+                    if (workInfo?.state == WorkInfo.State.SUCCEEDED) {
+                        try {
+                            infoHtml = workInfo.outputData.getString(C.EXTRA.HTML)?:""
+                            infoItem?.isVisible = true
+                        } catch (e: Exception) {
+                            infoHtml = ""
+                            infoItem?.isVisible = false
+                        }
+                    }
+                })
     }
 
     companion object {

@@ -87,7 +87,7 @@ class KmbStopListWorker(context : Context, params : WorkerParameters)
                 try {
                     hasCoordinates = true
                     val gson = Gson()
-                    val lineGeometry = gson.fromJson(lineGeometryStr, KmbStopsRes.Data.Route.LineGeometry::class.java)
+                    val lineGeometry = gson.fromJson(lineGeometryStr, KmbStopsRes.LineGeometry::class.java)
                     for (index in lineGeometry.paths.indices) {
                         val path = lineGeometry.paths[index]
                         for (j in path.indices) {

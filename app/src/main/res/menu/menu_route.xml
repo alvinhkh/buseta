@@ -4,29 +4,28 @@
       tools:context=".ui.route.RouteActivityAbstract">
 
     <item
-        android:id="@+id/action_notice"
-        android:icon="@drawable/ic_outline_event_note_24dp"
-        android:title="@string/notice"
+        android:id="@+id/action_show_map"
+        android:icon="@drawable/ic_outline_map_24dp"
+        android:title="@string/map"
+        android:visible="false"
         android:orderInCategory="90"
         app:iconTint="@color/white"
         app:showAsAction="ifRoom"/>
 
     <item
-        android:id="@+id/action_show_map"
-        android:icon="@drawable/ic_outline_map_24dp"
-        android:title="@string/map"
-        android:visible="false"
+        android:id="@+id/action_notice"
+        android:icon="@drawable/ic_outline_event_note_24dp"
+        android:title="@string/notice"
         android:orderInCategory="91"
         app:iconTint="@color/white"
         app:showAsAction="ifRoom"/>
 
     <item
-        android:id="@+id/action_timetable"
-        android:icon="@drawable/ic_outline_access_time_24dp"
-        android:title="@string/timetable"
+        android:id="@+id/action_info"
+        android:title="@string/special_info"
+        android:icon="@drawable/ic_outline_info_24dp"
         android:orderInCategory="92"
         android:visible="false"
-        app:iconTint="@color/white"
         app:showAsAction="ifRoom"/>
 
     <item
@@ -34,5 +33,14 @@
         android:title="@string/bus_to_bus_interchange_scheme"
         android:orderInCategory="93"
         android:visible="false"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/action_timetable"
+        android:icon="@drawable/ic_outline_access_time_24dp"
+        android:title="@string/timetable"
+        android:orderInCategory="94"
+        android:visible="false"
+        app:iconTint="@color/white"
         app:showAsAction="ifRoom"/>
 </menu>
