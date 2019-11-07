@@ -15,7 +15,7 @@ import com.alvinhkh.buseta.C;
 import com.alvinhkh.buseta.R;
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime;
 import com.alvinhkh.buseta.route.model.RouteStop;
-import com.alvinhkh.buseta.service.NotificationService;
+import com.alvinhkh.buseta.service.EtaNotificationService;
 import com.alvinhkh.buseta.search.ui.SearchActivity;
 
 import java.text.SimpleDateFormat;
@@ -205,7 +205,7 @@ public class NotificationUtil {
                 .setColor(color)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setCategory(NotificationCompat.CATEGORY_ALARM)
+                .setCategory(NotificationCompat.CATEGORY_SERVICE)
                 .setShowWhen(true)
                 .setWhen(Calendar.getInstance().getTimeInMillis())
                 .setContentIntent(contentIntent)
@@ -236,7 +236,7 @@ public class NotificationUtil {
     }
 
     private static PendingIntent createDeleteIntent(Context context, int notificationId) {
-        Intent deleteIntent = new Intent(context, NotificationService.class);
+        Intent deleteIntent = new Intent(context, EtaNotificationService.class);
         deleteIntent.setAction(C.ACTION.CANCEL);
         deleteIntent.putExtra(C.EXTRA.NOTIFICATION_ID, notificationId);
         return PendingIntent.getService(context.getApplicationContext(), notificationId,

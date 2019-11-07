@@ -51,10 +51,7 @@ import com.alvinhkh.buseta.follow.ui.FollowGroupDialogFragment
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.model.RouteStop
-import com.alvinhkh.buseta.service.EtaService
-import com.alvinhkh.buseta.service.GeofenceTransitionsIntentService
-import com.alvinhkh.buseta.service.ImageDownloadWorker
-import com.alvinhkh.buseta.service.NotificationService
+import com.alvinhkh.buseta.service.*
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingClient
 import com.google.android.gms.location.GeofencingRequest
@@ -638,7 +635,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                     showSnackbar("Notification disabled in system settings.")
                     return@setOnClickListener
                 }
-                val intent = Intent(v.context, NotificationService::class.java)
+                val intent = Intent(v.context, EtaNotificationService::class.java)
                 intent.putExtra(C.EXTRA.STOP_OBJECT, routeStop)
                 ContextCompat.startForegroundService(v.context, intent)
                 showSnackbar(getString(R.string.message_shown_as_notification))

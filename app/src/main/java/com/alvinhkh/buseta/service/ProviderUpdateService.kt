@@ -28,6 +28,7 @@ import com.alvinhkh.buseta.mtr.MtrResourceWorker
 import com.alvinhkh.buseta.nlb.NlbWorker
 import com.alvinhkh.buseta.nwst.NwstRouteWorker
 import com.alvinhkh.buseta.route.dao.RouteDatabase
+import com.alvinhkh.buseta.ui.MainActivity
 import com.alvinhkh.buseta.utils.ConnectivityUtil
 import com.alvinhkh.buseta.utils.PreferenceUtil
 import timber.log.Timber
@@ -53,13 +54,13 @@ class ProviderUpdateService: Service() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager?
             if (notificationManager?.getNotificationChannel(C.NOTIFICATION.CHANNEL_UPDATE) == null) {
-                val etaChannel = NotificationChannel(C.NOTIFICATION.CHANNEL_UPDATE,
+                val notificationChannel = NotificationChannel(C.NOTIFICATION.CHANNEL_UPDATE,
                         getString(R.string.channel_name_update), NotificationManager.IMPORTANCE_DEFAULT)
-                etaChannel.description = getString(R.string.channel_description_update)
-                etaChannel.enableLights(false)
-                etaChannel.enableVibration(false)
-                etaChannel.importance = NotificationManager.IMPORTANCE_DEFAULT
-                notificationManager?.createNotificationChannel(etaChannel)
+                notificationChannel.description = getString(R.string.channel_description_update)
+                notificationChannel.enableLights(false)
+                notificationChannel.enableVibration(false)
+                notificationChannel.importance = NotificationManager.IMPORTANCE_DEFAULT
+                notificationManager?.createNotificationChannel(notificationChannel)
             }
         }
         startForegroundNotification(100, 0)
@@ -67,16 +68,6 @@ class ProviderUpdateService: Service() {
 
     private fun startForegroundNotification(max: Int, progress: Int) {
         val notificationId = 2000
-        val i = Intent()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            i.action = Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS
-            i.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
-            i.putExtra(Settings.EXTRA_CHANNEL_ID, C.NOTIFICATION.CHANNEL_UPDATE)
-        } else {
-            i.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-            i.data = Uri.fromParts("package", packageName, null)
-        }
-        val contentIntent = PendingIntent.getActivity(this, notificationId, i, PendingIntent.FLAG_UPDATE_CURRENT)
         val builder = NotificationCompat.Builder(this, C.NOTIFICATION.CHANNEL_UPDATE)
         builder.setOnlyAlertOnce(true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
@@ -91,7 +82,6 @@ class ProviderUpdateService: Service() {
                 } else {
                     "$progress/$max"
                 })
-                .setContentIntent(contentIntent)
         startForeground(notificationId, builder.build())
     }
 
