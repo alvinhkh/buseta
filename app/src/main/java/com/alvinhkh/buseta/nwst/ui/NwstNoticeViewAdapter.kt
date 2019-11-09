@@ -54,13 +54,18 @@ class NwstNoticeViewAdapter(
                 val d = SimpleDateFormat("dd/MM", Locale.ENGLISH)
                 val t = SimpleDateFormat("HH:mm", Locale.ENGLISH)
                 val date = sdf.parse(nwstNotice.releaseDate)
-                var iconText = d.format(date)
-                if (t.format(date) != "00:00") {
-                    iconText += "\n" + t.format(date)
+                if (date != null) {
+                    var iconText: String = d.format(date)
+                    if (t.format(date) != "00:00") {
+                        iconText += "\n" + t.format(date)
+                    }
+                    itemView.icon.visibility = View.GONE
+                    itemView.iconText.visibility = View.VISIBLE
+                    itemView.iconText.text = iconText
+                } else {
+                    itemView.icon.visibility = View.VISIBLE
+                    itemView.iconText.visibility = View.GONE
                 }
-                itemView.icon.visibility = View.GONE
-                itemView.iconText.visibility = View.VISIBLE
-                itemView.iconText.text = iconText
             } catch (ignored: ParseException) {
                 itemView.icon.visibility = View.VISIBLE
                 itemView.iconText.visibility = View.GONE

@@ -45,8 +45,8 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
         try {
             val syscode = NwstRequestUtil.syscode()
             val syscode2 = NwstRequestUtil.syscode2()
-            val response = nwstService.ppStopList(qInfo, LANGUAGE_TC,
-                    syscode, PLATFORM, APP_VERSION, syscode2).execute()
+            val response = nwstService.ppStopList(qInfo, NwstService.LANGUAGE_TC,
+                    syscode, NwstService.PLATFORM, NwstService.APP_VERSION, syscode2).execute()
             if (!response.isSuccessful) {
                 return Result.failure(outputData)
             }
@@ -114,8 +114,8 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
             val variant = NwstVariant.parseInfo(routeId)
             val syscode = NwstRequestUtil.syscode()
             val syscode2 = NwstRequestUtil.syscode2()
-            val response = nwstService.lineMulti2(variant?.rdv, LANGUAGE_TC,
-                    syscode, PLATFORM, APP_VERSION, syscode2).execute()
+            val response = nwstService.lineMulti2(variant?.rdv?:"", NwstService.LANGUAGE_TC,
+                    syscode, NwstService.PLATFORM, NwstService.APP_VERSION, syscode2).execute()
             if (response.isSuccessful) {
                 hasCoordinates = true
                 val res = response.body()

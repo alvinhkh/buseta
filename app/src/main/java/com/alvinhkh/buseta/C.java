@@ -49,6 +49,8 @@ public class C {
 
         String ROUTE_TIMETABLE_FILE = "com.alvinhkh.buseta.ROUTE_TIMETABLE_FILE";
 
+        String ROUTE_REMARK_FILE = "com.alvinhkh.buseta.ROUTE_REMARK_FILE";
+
         String STOP_ID = "com.alvinhkh.buseta.STOP_ID";
 
         String STOP_LIST = "com.alvinhkh.buseta.STOP_LIST";

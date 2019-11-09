@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.work.*
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.route.model.Route
-import com.alvinhkh.buseta.nwst.NwstService.*
 import com.alvinhkh.buseta.nwst.model.NwstRoute
 import com.alvinhkh.buseta.nwst.model.NwstVariant
 import com.alvinhkh.buseta.nwst.util.NwstRequestUtil
@@ -35,8 +34,8 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
         val timeNow = System.currentTimeMillis() / 1000
 
         try {
-            val response = nwstService.routeList(routeNo, TYPE_ALL_ROUTES,
-                    LANGUAGE_TC, NwstRequestUtil.syscode(), PLATFORM, APP_VERSION,
+            val response = nwstService.routeList(routeNo, NwstService.TYPE_ALL_ROUTES,
+                    NwstService.LANGUAGE_TC, NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION,
                     NwstRequestUtil.syscode2()).execute()
             if (!response.isSuccessful) {
                 return Result.failure(outputData)
@@ -49,8 +48,8 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
                 if (text.isEmpty()) continue
                 val nwstRoute = NwstRoute.fromString(text)
                 if (nwstRoute != null && nwstRoute.routeNo.isNotBlank()) {
-                    val response2 = nwstService.variantList(nwstRoute.rdv, LANGUAGE_TC,
-                            NwstRequestUtil.syscode(), PLATFORM, APP_VERSION,
+                    val response2 = nwstService.variantList(nwstRoute.rdv, NwstService.LANGUAGE_TC,
+                            NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION,
                             NwstRequestUtil.syscode2()).execute()
                     if (!response2.isSuccessful) {
                         return Result.failure(outputData)

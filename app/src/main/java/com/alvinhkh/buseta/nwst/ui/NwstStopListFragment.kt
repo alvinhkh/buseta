@@ -24,12 +24,18 @@ import java.io.File
 
 class NwstStopListFragment : RouteStopListFragmentAbstract() {
 
+    private var bbiItem: MenuItem? = null
+
     private var timetableItem: MenuItem? = null
+
+    private var remarkHtml = ""
 
     private var timetableHtml = ""
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
+        bbiItem = menu.findItem(R.id.action_bbi)
+        bbiItem?.isVisible = remarkHtml.isNotEmpty()
         timetableItem = menu.findItem(R.id.action_timetable)
         timetableItem?.isVisible = timetableHtml.isNotEmpty()
     }
@@ -37,6 +43,18 @@ class NwstStopListFragment : RouteStopListFragmentAbstract() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         val id = item.itemId
         when (id) {
+            R.id.action_bbi -> if (remarkHtml.isNotEmpty()) {
+                val intent = Intent(context, WebViewActivity::class.java)
+                var title = getString(R.string.bus_to_bus_interchange_scheme)
+                if (route != null && !route?.name.isNullOrEmpty()) {
+                    title = route?.name + " " + title
+                    intent.putExtra(WebViewActivity.COLOUR, Route.companyColour(context!!, route?.companyCode?: C.PROVIDER.NWST, route?.name?: ""))
+                }
+                intent.putExtra(WebViewActivity.TITLE, title)
+                intent.putExtra(WebViewActivity.HTML, remarkHtml)
+                startActivity(intent)
+                return true
+            }
             R.id.action_timetable -> if (timetableHtml.isNotEmpty()) {
                 val intent = Intent(context, WebViewActivity::class.java)
                 var title = getString(R.string.timetable)
@@ -75,15 +93,21 @@ class NwstStopListFragment : RouteStopListFragmentAbstract() {
                 .observe(this, Observer { workInfo ->
                     if (workInfo?.state == WorkInfo.State.FAILED) {
                         timetableItem?.isVisible = false
+                        bbiItem?.isVisible = false
                     }
                     if (workInfo?.state == WorkInfo.State.SUCCEEDED) {
                         try {
-                            val filePath = workInfo.outputData.getString(C.EXTRA.ROUTE_TIMETABLE_FILE)?:""
-                            timetableHtml = File(filePath).inputStream().readBytes().toString(Charsets.UTF_8)
+                            val timetableFilePath = workInfo.outputData.getString(C.EXTRA.ROUTE_TIMETABLE_FILE)?:""
+                            timetableHtml = File(timetableFilePath).inputStream().readBytes().toString(Charsets.UTF_8)
                             timetableItem?.isVisible = true
+                            val remarkFilePath = workInfo.outputData.getString(C.EXTRA.ROUTE_REMARK_FILE)?:""
+                            remarkHtml = File(remarkFilePath).inputStream().readBytes().toString(Charsets.UTF_8)
+                            bbiItem?.isVisible = true
                         } catch (e: Exception) {
                             timetableHtml = ""
                             timetableItem?.isVisible = false
+                            remarkHtml = ""
+                            bbiItem?.isVisible = false
                         }
                     }
                 })

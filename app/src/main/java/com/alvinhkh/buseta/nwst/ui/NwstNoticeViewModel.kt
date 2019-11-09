@@ -6,7 +6,6 @@ import androidx.lifecycle.MutableLiveData
 import android.content.Context
 import androidx.annotation.UiThread
 import com.alvinhkh.buseta.nwst.NwstService
-import com.alvinhkh.buseta.nwst.NwstService.*
 import com.alvinhkh.buseta.nwst.model.NwstNotice
 import com.alvinhkh.buseta.nwst.util.NwstRequestUtil
 import kotlinx.coroutines.CoroutineScope
@@ -23,29 +22,60 @@ class NwstNoticeViewModel(application: Application) : AndroidViewModel(applicati
         val result = MutableLiveData<List<NwstNotice>>()
         result.value = null
         CoroutineScope(Main).launch {
+            val noticeList = arrayListOf<NwstNotice>()
             try {
-                val options = HashMap<String, String>()
-                options[QUERY_ROUTE] = routeNo
-                options[QUERY_LANGUAGE] = LANGUAGE_TC
-                options[QUERY_PLATFORM] = PLATFORM
-                options[QUERY_VERSION] = APP_VERSION
-                options[QUERY_SYSCODE] = NwstRequestUtil.syscode()
-                val response = nwstService.noticeList(options).await()
-                if (response.isSuccessful) {
-                    val noticeList = arrayListOf<NwstNotice>()
-                    val notices = response.body()?.string()?.split("\\|\\*\\|".toRegex())?.toTypedArray()?: arrayOf()
+                val specialOptions = HashMap<String, String>()
+                specialOptions[NwstService.QUERY_R] = routeNo
+                specialOptions[NwstService.QUERY_LANGUAGE] = NwstService.LANGUAGE_TC
+                specialOptions[NwstService.QUERY_PLATFORM] = NwstService.PLATFORM
+                specialOptions[NwstService.QUERY_VERSION] = NwstService.APP_VERSION
+                specialOptions[NwstService.QUERY_SYSCODE] = NwstRequestUtil.syscode()
+                val specialResponse = nwstService.specialAsync(specialOptions).await()
+                if (specialResponse.isSuccessful) {
+                    var text = ""
+                    val nwstNotice = NwstNotice()
+                    val specials = specialResponse.body()?.string()?.split("\\|\\*\\|".toRegex())?.toTypedArray()?: arrayOf()
+                    for (specialText in specials.withIndex()) {
+                        val data = specialText.value.replace("<br>", "").trim().split("\\|\\|".toRegex()).dropLastWhile { it.isBlank() }.toTypedArray()
+                        if (data.size >= 3 && data[0] == "D") {
+                            text += data[1].split(" ")[0] + "：" + data[2].split(" ")[0]
+                            if (specialText.index < specials.size - 3) {
+                                text += "\n"
+                            }
+                        }
+                    }
+                    if (text.isNotEmpty()) {
+                        nwstNotice.companyCode = "NWST"
+                        nwstNotice.routeNo = routeNo
+                        nwstNotice.releaseDate = ""
+                        nwstNotice.link = ""
+                        nwstNotice.title = text
+                        nwstNotice.source = ""
+                        noticeList.add(nwstNotice)
+                    }
+                }
+            }
+            catch (e: Exception) {
+            }
+            try {
+                val noticeListOptions = HashMap<String, String>()
+                noticeListOptions[NwstService.QUERY_ROUTE] = routeNo
+                noticeListOptions[NwstService.QUERY_LANGUAGE] = NwstService.LANGUAGE_TC
+                noticeListOptions[NwstService.QUERY_PLATFORM] = NwstService.PLATFORM
+                noticeListOptions[NwstService.QUERY_VERSION] = NwstService.APP_VERSION
+                noticeListOptions[NwstService.QUERY_SYSCODE] = NwstRequestUtil.syscode()
+                val noticeListResponse = nwstService.noticeListAsync(noticeListOptions).await()
+                if (noticeListResponse.isSuccessful) {
+                    val notices = noticeListResponse.body()?.string()?.split("\\|\\*\\|".toRegex())?.toTypedArray()?: arrayOf()
                     for (noticeText in notices) {
                         val nwstNotice = NwstNotice.fromString(noticeText.replace("<br>", "").trim { it <= ' ' }) ?: continue
                         noticeList.add(nwstNotice)
                     }
-                    result.value = noticeList.toList()
-                } else {
-                    result.value = null
                 }
             }
             catch (e: Exception) {
-                result.value = null
             }
+            result.value = noticeList.toList()
         }
         return result
     }

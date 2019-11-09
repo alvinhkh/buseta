@@ -55,8 +55,8 @@ class NwstEtaWorker(private val context : Context, params : WorkerParameters)
         
         try {
             var response = nwstService.eta((routeStop.stopId?:"0").toInt().toString(),
-                    routeStop.routeNo, "Y", "60", NwstService.LANGUAGE_TC, routeStop.routeSequence,
-                    routeStop.sequence, routeStop.routeId, "Y", "Y",
+                    routeStop.routeNo?:"", "Y", "60", NwstService.LANGUAGE_TC, routeStop.routeSequence?:"",
+                    routeStop.sequence?:"", routeStop.routeId?:"", "Y", "Y",
                     NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2).execute()
             if (!response.isSuccessful) {
                 var tk = preferences.getString("nwst_tk", "")?:""
@@ -81,8 +81,8 @@ class NwstEtaWorker(private val context : Context, params : WorkerParameters)
                 }
 
                 response = nwstService.eta((routeStop.stopId?:"0").toInt().toString(),
-                        routeStop.routeNo, "Y", "60", NwstService.LANGUAGE_TC, routeStop.routeSequence,
-                        routeStop.sequence, routeStop.routeId, "Y", "Y",
+                        routeStop.routeNo?:"", "Y", "60", NwstService.LANGUAGE_TC, routeStop.routeSequence?:"",
+                        routeStop.sequence?:"", routeStop.routeId?:"", "Y", "Y",
                         NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2, NwstRequestUtil.syscode2(), tk).execute()
             }
             if (!response.isSuccessful) {
