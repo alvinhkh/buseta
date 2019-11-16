@@ -6,6 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.recyclerview.widget.RecyclerView
 import android.util.Patterns
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -47,28 +48,35 @@ class NwstNoticeViewAdapter(
     class Holder(itemView: View?): RecyclerView.ViewHolder(itemView!!){
 
         fun bindItems(nwstNotice: NwstNotice) {
-            itemView.icon.setImageResource(R.drawable.ic_outline_event_note_24dp)
-            itemView.title.text = nwstNotice.title
-            try {
-                val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH)
-                val d = SimpleDateFormat("dd/MM", Locale.ENGLISH)
-                val t = SimpleDateFormat("HH:mm", Locale.ENGLISH)
-                val date = sdf.parse(nwstNotice.releaseDate)
-                if (date != null) {
-                    var iconText: String = d.format(date)
-                    if (t.format(date) != "00:00") {
-                        iconText += "\n" + t.format(date)
+            if (nwstNotice.source == "special") {
+                itemView.icon.visibility = View.GONE
+                itemView.iconText.visibility = View.GONE
+                itemView.title.text = nwstNotice.title
+                itemView.title.setTextSize(TypedValue.COMPLEX_UNIT_SP,12f)
+            } else {
+                itemView.icon.setImageResource(R.drawable.ic_outline_event_note_24dp)
+                itemView.title.text = nwstNotice.title
+                try {
+                    val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH)
+                    val d = SimpleDateFormat("dd/MM", Locale.ENGLISH)
+                    val t = SimpleDateFormat("HH:mm", Locale.ENGLISH)
+                    val date = sdf.parse(nwstNotice.releaseDate)
+                    if (date != null) {
+                        var iconText: String = d.format(date)
+                        if (t.format(date) != "00:00") {
+                            iconText += "\n" + t.format(date)
+                        }
+                        itemView.icon.visibility = View.GONE
+                        itemView.iconText.visibility = View.VISIBLE
+                        itemView.iconText.text = iconText
+                    } else {
+                        itemView.icon.visibility = View.VISIBLE
+                        itemView.iconText.visibility = View.GONE
                     }
-                    itemView.icon.visibility = View.GONE
-                    itemView.iconText.visibility = View.VISIBLE
-                    itemView.iconText.text = iconText
-                } else {
+                } catch (ignored: ParseException) {
                     itemView.icon.visibility = View.VISIBLE
                     itemView.iconText.visibility = View.GONE
                 }
-            } catch (ignored: ParseException) {
-                itemView.icon.visibility = View.VISIBLE
-                itemView.iconText.visibility = View.GONE
             }
 
             itemView.setOnClickListener { v ->

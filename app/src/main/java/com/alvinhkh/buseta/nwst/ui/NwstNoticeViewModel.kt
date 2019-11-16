@@ -38,10 +38,13 @@ class NwstNoticeViewModel(application: Application) : AndroidViewModel(applicati
                     for (specialText in specials.withIndex()) {
                         val data = specialText.value.replace("<br>", "").trim().split("\\|\\|".toRegex()).dropLastWhile { it.isBlank() }.toTypedArray()
                         if (data.size >= 3 && data[0] == "D") {
-                            text += data[1].split(" ")[0] + "：" + data[2].split(" ")[0]
+                            text += data[1].split(" ")[0] + "：" + data[2]
                             if (specialText.index < specials.size - 3) {
                                 text += "\n"
                             }
+                        }
+                        if (specialText.index > 2 && data.size >= 3 && data[0] == "R") {
+                            text += "\n"
                         }
                     }
                     if (text.isNotEmpty()) {
@@ -50,7 +53,7 @@ class NwstNoticeViewModel(application: Application) : AndroidViewModel(applicati
                         nwstNotice.releaseDate = ""
                         nwstNotice.link = ""
                         nwstNotice.title = text
-                        nwstNotice.source = ""
+                        nwstNotice.source = "special"
                         noticeList.add(nwstNotice)
                     }
                 }
