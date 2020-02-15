@@ -28,6 +28,7 @@ def versionBuild = 0
 
 android {
     compileSdkVersion 29
+
     defaultConfig {
         applicationId "com.alvinhkh.buseta"
         minSdkVersion 16
@@ -37,7 +38,9 @@ android {
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         resConfigs 'en', 'zh-rHK'
         multiDexEnabled true
+        vectorDrawables.useSupportLibrary = true
     }
+
     buildTypes {
         debug {
             versionNameSuffix "-build-${versionBuild}"
@@ -47,25 +50,34 @@ android {
             // minifyEnabled true
         }
     }
+
     buildTypes.each {
         it.resValue 'string', 'AD_BANNER_UNIT_ID', AdBannerUnitId
         it.resValue 'string', 'ADMOB_APP_ID', AdmobAppId
         it.resValue 'string', 'DIRECTION_API_KEY', DirectionApiKey
     }
+
     lintOptions {
         checkReleaseBuilds true
         abortOnError false
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
+
     packagingOptions {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/LICENSE-FIREBASE.txt'
         exclude 'META-INF/NOTICE'
         exclude 'META-INF/rxjava.properties'
     }
+
     kapt {
         arguments {
             arg("room.schemaLocation", "$projectDir/schemas".toString())
@@ -74,34 +86,40 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.lifecycle:lifecycle-runtime:2.1.0'
-    implementation 'androidx.lifecycle:lifecycle-extensions:2.1.0'
-    implementation 'androidx.lifecycle:lifecycle-common-java8:2.1.0'
-    implementation 'androidx.room:room-runtime:2.2.1'
-    implementation 'androidx.room:room-rxjava2:2.2.1'
-    annotationProcessor 'androidx.room:room-compiler:2.2.1'
-    kapt 'androidx.room:room-compiler:2.2.1'
+    def lifecycle_version = "2.2.0"
+    def preference_version = "1.1.0"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle_version"
+    implementation 'androidx.room:room-runtime:2.2.3'
+    implementation 'androidx.room:room-rxjava2:2.2.3'
+    annotationProcessor 'androidx.room:room-compiler:2.2.3'
+    kapt 'androidx.room:room-compiler:2.2.3'
     implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
-    implementation 'androidx.core:core-ktx:1.1.0'
-    implementation 'androidx.browser:browser:1.0.0'
-    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'androidx.core:core-ktx:1.2.0'
+    implementation 'androidx.browser:browser:1.2.0'
+    implementation 'com.google.android.material:material:1.1.0'
     implementation 'androidx.preference:preference:1.1.0'
-    implementation 'androidx.recyclerview:recyclerview:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
     implementation 'androidx.annotation:annotation:1.1.0'
     implementation 'androidx.media:media:1.1.0'
     implementation 'androidx.multidex:multidex:2.0.1'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.0.0'
+    implementation "androidx.preference:preference-ktx:$preference_version"
     implementation 'com.google.android.gms:play-services-location:17.0.0'
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
     implementation 'com.google.android.gms:play-services-oss-licenses:17.0.0'
-    implementation 'com.google.android.play:core:1.6.4'
+    implementation 'com.google.android.play:core:1.6.5'
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.google.firebase:firebase-ads:18.3.0'
-    implementation 'com.google.firebase:firebase-appindexing:19.0.0'
-    implementation 'com.google.firebase:firebase-config:19.0.3'
-    implementation 'com.google.firebase:firebase-core:17.2.1'
-    implementation 'com.google.firebase:firebase-messaging:20.0.0'
+    implementation 'com.google.firebase:firebase-appindexing:19.1.0'
+    implementation 'com.google.firebase:firebase-config:19.1.1'
+    implementation 'com.google.firebase:firebase-core:17.2.2'
+    implementation 'com.google.firebase:firebase-messaging:20.1.0'
     implementation 'com.google.maps.android:android-maps-utils:0.6.2'
     implementation "android.arch.work:work-runtime:1.0.1"
     implementation (group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1') {

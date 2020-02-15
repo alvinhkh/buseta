@@ -1,9 +1,7 @@
 package com.alvinhkh.buseta.appwidget
 
 import android.appwidget.AppWidgetManager
-import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Binder
 import android.text.Spannable
 import android.text.SpannableStringBuilder
@@ -13,15 +11,12 @@ import android.view.View
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
 import androidx.core.content.ContextCompat
-import androidx.preference.PreferenceManager
 
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
-import com.alvinhkh.buseta.follow.model.Follow
-import com.alvinhkh.buseta.route.model.RouteStop
 import com.alvinhkh.buseta.search.ui.SearchActivity
 import com.alvinhkh.buseta.utils.ConnectivityUtil
 import com.alvinhkh.buseta.utils.PreferenceUtil

@@ -3,7 +3,7 @@ package com.alvinhkh.buseta.utils
 import android.app.UiModeManager
 import android.content.Context
 import android.os.Build
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 import androidx.appcompat.app.AppCompatDelegate
 
 object NightModeUtil {

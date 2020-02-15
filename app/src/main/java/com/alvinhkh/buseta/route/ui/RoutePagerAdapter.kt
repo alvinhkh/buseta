@@ -5,7 +5,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import com.alvinhkh.buseta.route.model.Route
 
-class RoutePagerAdapter(fm: FragmentManager) : FragmentPagerAdapter(fm) {
+class RoutePagerAdapter(fm: FragmentManager) : FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
     private var fragmentList: MutableList<Fragment> = arrayListOf()
 

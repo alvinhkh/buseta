@@ -2,7 +2,7 @@ package com.alvinhkh.buseta.utils
 
 import android.content.Context
 import android.content.Intent
-import android.preference.PreferenceManager
+import androidx.preference.PreferenceManager
 
 import com.alvinhkh.buseta.R
 
