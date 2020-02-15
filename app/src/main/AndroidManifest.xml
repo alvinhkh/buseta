@@ -168,40 +168,31 @@
         </activity>
         <activity
             android:name=".lwb.ui.LwbActivity"
-            android:label="@string/provider_kmb"
-            android:hardwareAccelerated="true" />
+            android:label="@string/provider_kmb" />
         <activity
             android:name=".kmb.ui.KmbActivity"
-            android:label="@string/provider_kmb"
-            android:hardwareAccelerated="true" />
+            android:label="@string/provider_kmb" />
         <activity
             android:name=".kmb.ui.KmbScheduleActivity"
-            android:label="@string/timetable"
-            android:hardwareAccelerated="true" />
+            android:label="@string/timetable" />
         <activity
             android:name=".kmb.ui.KmbBBIActivity"
-            android:label="@string/provider_kmb"
-            android:hardwareAccelerated="true" />
+            android:label="@string/provider_kmb" />
         <activity
             android:name=".nlb.ui.NlbActivity"
-            android:label="@string/provider_nlb"
-            android:hardwareAccelerated="true" />
+            android:label="@string/provider_nlb" />
         <activity
             android:name=".nwst.ui.NwstActivity"
-            android:label="@string/provider_nwst"
-            android:hardwareAccelerated="true" />
+            android:label="@string/provider_nwst" />
         <activity
             android:name=".mtr.ui.MtrBusActivity"
-            android:label="@string/provider_lrtfeeder"
-            android:hardwareAccelerated="true" />
+            android:label="@string/provider_lrtfeeder" />
         <activity
             android:name=".mtr.ui.AESBusActivity"
-            android:label="@string/provider_mtr"
-            android:hardwareAccelerated="true" />
+            android:label="@string/provider_mtr" />
         <activity
             android:name=".mtr.ui.MtrStationActivity"
-            android:label="@string/provider_mtr"
-            android:hardwareAccelerated="true" />
+            android:label="@string/provider_mtr" />
 
         <!-- Google Play Services AdActivity -->
         <activity
