@@ -17,7 +17,10 @@
             android:layout_height="wrap_content"
             android:background="?attr/colorPrimary"
             style="@style/Widget.MaterialComponents.TabLayout.Colored"
-            app:tabBackground="@color/transparent" />
+            app:tabBackground="@color/transparent"
+            app:tabIndicatorColor="@color/colorOnSecondary"
+            app:tabRippleColor="@color/colorOnSecondary"
+            app:tabTextColor="@color/colorOnSecondary" />
 
         <androidx.viewpager.widget.ViewPager
             android:id="@+id/viewPager"

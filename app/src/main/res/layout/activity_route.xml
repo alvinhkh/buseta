@@ -55,8 +55,11 @@
             style="@style/Widget.MaterialComponents.TabLayout.Colored"
             app:tabBackground="@color/transparent"
             app:tabGravity="fill"
+            app:tabIndicatorColor="@color/colorOnSecondary"
             app:tabMaxWidth="0dp"
-            app:tabMode="fixed" />
+            app:tabMode="fixed"
+            app:tabRippleColor="@color/colorOnSecondary"
+            app:tabTextColor="@color/colorOnSecondary" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
@@ -97,6 +100,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/fab_margin"
+        app:backgroundTint="@color/colorAccent"
         app:srcCompat="@drawable/ic_outline_refresh_24dp"
         app:tint="@color/white"
         app:fabSize="normal"

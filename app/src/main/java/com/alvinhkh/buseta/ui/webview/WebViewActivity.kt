@@ -43,7 +43,7 @@ class WebViewActivity : BaseActivity() {
                 return
             }
             val fragmentTransaction = supportFragmentManager.beginTransaction()
-            fragmentTransaction.replace(R.id.fragment_container, WebViewFragment.newInstance(contentTitle, contentHtml))
+            fragmentTransaction.replace(R.id.fragment_container, WebViewFragment.newInstance(contentTitle, contentHtml, true))
             fragmentTransaction.commit()
         } else {
             finish()

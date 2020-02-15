@@ -43,6 +43,7 @@ import com.alvinhkh.buseta.utils.ColorUtil
 import com.alvinhkh.buseta.utils.PreferenceUtil
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_search.*
+import java.util.*
 
 import java.util.regex.Pattern
 
@@ -114,11 +115,11 @@ class SearchActivity : AppCompatActivity() {
                 chip.tag = companyCode
                 chip.text = companyName
                 chip.chipIcon = ContextCompat.getDrawable(context, R.drawable.ic_outline_directions_bus_24dp)
+                chip.setChipIconTintResource(R.color.icons)
                 chip.isCloseIconVisible = false
                 chip.isClickable = true
                 chip.isCheckable = true
                 chip.isChecked = false
-                chip.setTextColor(ContextCompat.getColor(context, R.color.black))
                 chip.setOnCheckedChangeListener(chipListener)
                 this.addView(chip)
             }
@@ -143,7 +144,7 @@ class SearchActivity : AppCompatActivity() {
             intent.putExtra(SearchManager.QUERY, newIntent.getStringExtra(SearchManager.QUERY))
         }
 
-        val query = intent.getStringExtra(SearchManager.QUERY)?.toUpperCase()
+        val query = intent.getStringExtra(SearchManager.QUERY)?.toUpperCase(Locale.ENGLISH)
         if (query == C.PREF.AD_KEY || query == C.PREF.AD_SHOW) {
             val preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
             val hidden = preferences.getBoolean(C.PREF.AD_HIDE, false)
@@ -168,7 +169,7 @@ class SearchActivity : AppCompatActivity() {
             }
             setOnEditorActionListener(TextView.OnEditorActionListener { _, actionId, _ ->
                 if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    val t = text?.replace("[^a-zA-Z0-9]*".toRegex(), "")?.toUpperCase()
+                    val t = text?.replace("[^a-zA-Z0-9]*".toRegex(), "")?.toUpperCase(Locale.ENGLISH)
                     loadSearchResult(t?:"", checkedProviders, true)
                     return@OnEditorActionListener true
                 }
@@ -176,7 +177,7 @@ class SearchActivity : AppCompatActivity() {
             })
             addTextChangedListener(object : TextWatcher {
                 override fun afterTextChanged(p0: Editable?) {
-                    val t = p0?.replace("[^a-zA-Z0-9]*".toRegex(), "")?.toUpperCase()
+                    val t = p0?.replace("[^a-zA-Z0-9]*".toRegex(), "")?.toUpperCase(Locale.ENGLISH)
                     loadSearchResult("$t%", checkedProviders, false)
                 }
 
@@ -389,10 +390,10 @@ class SearchActivity : AppCompatActivity() {
                 val regex = "/route/(.*)/?"
                 val regexPattern = Pattern.compile(regex)
                 val match = regexPattern.matcher(data)
-                if (match.find()) {
-                    lastQuery = match.group(1)
+                lastQuery = if (match.find()) {
+                    match.group(1)
                 } else {
-                    lastQuery = data.substring(data.lastIndexOf("/") + 1)
+                    data.substring(data.lastIndexOf("/") + 1)
                 }
                 val i = providerIntent("")
                 i.putExtra(C.EXTRA.ROUTE_NO, lastQuery)

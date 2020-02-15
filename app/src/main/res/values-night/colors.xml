@@ -2,9 +2,13 @@
 <resources>
     <color name="colorPrimary">#D32F2F</color>
     <color name="colorPrimaryDark">#B71C1C</color>
+    <color name="colorSecondary">#F57C00</color>
     <color name="colorAccent">#F57C00</color>
     <color name="colorAccentDark">#E65100</color>
-    <color name="ripple">#EF6C00</color>
+    <color name="colorSurface">#111111</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+    <color name="colorOnSecondary">#FFFFFF</color>s
+    <color name="colorOnSurface">#deffffff</color>
 
     <color name="textPrimary">#deffffff</color>
     <color name="textSecondary">#61ffffff</color>

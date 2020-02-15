@@ -14,12 +14,11 @@ object NightModeUtil {
         val preferences = PreferenceManager.getDefaultSharedPreferences(context)
         val nightMode = (preferences.getString("app_theme", "1")?:"1").toInt()
         if (AppCompatDelegate.getDefaultNightMode() != nightMode) {
-            isRecreate = true
+            isRecreate = (nightMode > 0)
             when (nightMode) {
-                0 -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_AUTO)
+                0 -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
                 1 -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
                 2 -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-//                else -> AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
             }
         }
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {

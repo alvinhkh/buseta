@@ -5,9 +5,13 @@
     <color name="colorPrimary600">#E53935</color>
     <color name="colorPrimaryLight">#FFCDD2</color>
     <color name="colorPrimaryA700">#D50000</color>
+    <color name="colorSecondary">#FF9800</color>
     <color name="colorAccent">#FF9800</color>
     <color name="colorAccentDark">#F57C00</color>
-    <color name="ripple">#FB8C00</color>
+    <color name="colorSurface">#FFFFFF</color>
+    <color name="colorOnPrimary">#FFFFFF</color>
+    <color name="colorOnSecondary">#FFFFFF</color>
+    <color name="colorOnSurface">#DE000000</color>
 
     <color name="transparent">#00000000</color>
     <color name="white">#ffffff</color>
