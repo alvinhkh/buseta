@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.TimeUnit
 
+// https://opendata.mtr.com.hk/doc/Next_Train_DataDictionary_v1.1.pdf
 data class MtrSchedule(
         @field:SerializedName("ttnt")
         var ttnt: String? = null,

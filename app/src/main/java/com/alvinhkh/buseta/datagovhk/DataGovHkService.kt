@@ -2,29 +2,20 @@ package com.alvinhkh.buseta.datagovhk
 
 import com.alvinhkh.buseta.App
 import com.alvinhkh.buseta.datagovhk.model.*
+import com.alvinhkh.buseta.mtr.model.MtrScheduleRes
 
 import okhttp3.ResponseBody
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.simplexml.SimpleXmlConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 
 interface DataGovHkService {
-
-    @GET("mtr/data/mtr_bus_routes.csv")
-    fun mtrBusRoutes(): Call<ResponseBody>
-
-    @GET("mtr/data/mtr_bus_stops.csv")
-    fun mtrBusStops(): Call<ResponseBody>
-
-    @GET("mtr/data/mtr_bus_fares.csv")
-    fun mtrBusFares(): Call<ResponseBody>
-
-    @GET("mtr/data/mtr_lines_and_stations.csv")
-    fun mtrLinesAndStations(): Call<ResponseBody>
 
     @GET("td/routes-fares-xml/COMPANY_CODE.xml")
     fun tdCompanyCode(): Call<TdCompanyCode>
@@ -34,6 +25,11 @@ interface DataGovHkService {
 
     @GET("td/routes-fares-xml/RSTOP_BUS.xml")
     fun tdRouteStop(): Call<TdRouteStop>
+
+    @GET("mtr/getSchedule.php")
+    fun getSchedule(@Query("line") line: String,
+                    @Query("sta") sta: String,
+                    @Query("lang") lang: String): Call<MtrScheduleRes>
 
     @GET("citybus-nwfb/company/{company_id}")
     fun nwstCompany(@Path("company_id") companyId: String): Call<NwstResponseList<NwstCompany>>
@@ -55,10 +51,6 @@ interface DataGovHkService {
 
     companion object {
 
-        val resource: Retrofit = Retrofit.Builder()
-                .client(App.httpClient)
-                .baseUrl("http://resource.data.one.gov.hk/")
-                .build()
 
         val static: Retrofit = Retrofit.Builder()
                 .client(App.httpClient)

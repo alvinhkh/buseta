@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.datagovhk.model
+package com.alvinhkh.buseta.mtr.model
 
 import com.google.gson.annotations.SerializedName
 

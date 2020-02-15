@@ -25,7 +25,7 @@ import com.alvinhkh.buseta.appwidget.FollowWidgetProvider
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
 import com.alvinhkh.buseta.datagovhk.RtNwstEtaWorker
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
-import com.alvinhkh.buseta.datagovhk.MtrEtaWorker
+import com.alvinhkh.buseta.mtr.MtrEtaWorker
 import com.alvinhkh.buseta.kmb.KmbEtaWorker
 import com.alvinhkh.buseta.mtr.AESBusEtaWorker
 import com.alvinhkh.buseta.route.model.RouteStop

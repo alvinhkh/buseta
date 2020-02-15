@@ -5,8 +5,6 @@ import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.alvinhkh.buseta.C
-import com.alvinhkh.buseta.datagovhk.model.MtrLineName
-import com.alvinhkh.buseta.datagovhk.model.MtrLineStation
 import com.alvinhkh.buseta.datagovhk.model.TdCompanyCode
 import com.alvinhkh.buseta.datagovhk.model.TdRouteBus
 import com.alvinhkh.buseta.route.model.Route
@@ -14,9 +12,7 @@ import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.route.model.RouteStop
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.model.Suggestion
-import com.google.gson.Gson
 import timber.log.Timber
-import java.nio.charset.Charset
 
 class TdWorker(context : Context, params : WorkerParameters)
     : Worker(context, params) {

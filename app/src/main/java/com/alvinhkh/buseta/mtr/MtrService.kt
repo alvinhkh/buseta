@@ -51,6 +51,18 @@ interface MtrService {
     @Streaming
     fun downloadFile(@Url url: String): Call<ResponseBody>
 
+    @GET("data/mtr_bus_routes.csv")
+    fun busRoutes(): Call<ResponseBody>
+
+    @GET("data/mtr_bus_stops.csv")
+    fun busStops(): Call<ResponseBody>
+
+    @GET("data/mtr_bus_fares.csv")
+    fun busFares(): Call<ResponseBody>
+
+    @GET("data/mtr_lines_and_stations.csv")
+    fun linesAndStations(): Call<ResponseBody>
+
     companion object {
 
         val gson: Gson = GsonBuilder()
@@ -86,6 +98,11 @@ interface MtrService {
                 .client(App.httpClient)
                 .baseUrl("https://www.mtr.com.hk/")
                 .addConverterFactory(SimpleXmlConverterFactory.create())
+                .build()
+
+        val openData: Retrofit = Retrofit.Builder()
+                .client(App.httpClient)
+                .baseUrl("https://opendata.mtr.com.hk/")
                 .build()
     }
 }

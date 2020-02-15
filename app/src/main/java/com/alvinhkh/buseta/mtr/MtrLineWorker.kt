@@ -1,12 +1,12 @@
-package com.alvinhkh.buseta.datagovhk
+package com.alvinhkh.buseta.mtr
 
 import android.content.Context
 import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.alvinhkh.buseta.C
-import com.alvinhkh.buseta.datagovhk.model.MtrLineName
-import com.alvinhkh.buseta.datagovhk.model.MtrLineStation
+import com.alvinhkh.buseta.mtr.model.MtrLineName
+import com.alvinhkh.buseta.mtr.model.MtrLineStation
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.route.model.RouteStop
@@ -17,7 +17,7 @@ import java.nio.charset.Charset
 class MtrLineWorker(context : Context, params : WorkerParameters)
     : Worker(context, params) {
 
-    private val dataGovHkService = DataGovHkService.resource.create(DataGovHkService::class.java)
+    private val mtrService = MtrService.openData.create(MtrService::class.java)
 
     private val routeDatabase = RouteDatabase.getInstance(context)
 
@@ -62,7 +62,7 @@ class MtrLineWorker(context : Context, params : WorkerParameters)
         }
 
         try {
-            val response = dataGovHkService.mtrLinesAndStations().execute()
+            val response = mtrService.linesAndStations().execute()
             val res = response.body()
             val mtrStations = MtrLineStation.fromCSV(res?.string()?:"")
             mtrStations.forEach { mtrLineStation ->

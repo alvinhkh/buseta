@@ -17,7 +17,7 @@ import android.widget.TextView
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import com.alvinhkh.buseta.R
-import com.alvinhkh.buseta.datagovhk.MtrLineWorker
+import com.alvinhkh.buseta.mtr.MtrLineWorker
 import com.alvinhkh.buseta.utils.ConnectivityUtil
 
 

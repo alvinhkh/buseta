@@ -8,6 +8,7 @@ import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.datagovhk.model.MtrBusFare
 import com.alvinhkh.buseta.datagovhk.model.MtrBusRoute
 import com.alvinhkh.buseta.datagovhk.model.MtrBusStop
+import com.alvinhkh.buseta.mtr.MtrService
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.route.model.RouteStop
@@ -17,7 +18,7 @@ import timber.log.Timber
 class LrtFeederWorker(context : Context, params : WorkerParameters)
     : Worker(context, params) {
 
-    private val dataGovHkService = DataGovHkService.resource.create(DataGovHkService::class.java)
+    private val openDataService = MtrService.openData.create(MtrService::class.java)
 
     private val routeDatabase = RouteDatabase.getInstance(context)
 
@@ -37,7 +38,7 @@ class LrtFeederWorker(context : Context, params : WorkerParameters)
         val mtrBusFareMap = HashMap<String, MtrBusFare>()
 
         try {
-            val response = dataGovHkService.mtrBusRoutes().execute()
+            val response = openDataService.busRoutes().execute()
             val res = response.body()
 
             val mtrBusRouteList = MtrBusRoute.fromCSV(res?.string()?:"")
@@ -72,7 +73,7 @@ class LrtFeederWorker(context : Context, params : WorkerParameters)
         }
         
         try {
-            val response = dataGovHkService.mtrBusFares().execute()
+            val response = openDataService.busFares().execute()
             val res = response.body()
             val mtrBusFareList = MtrBusFare.fromCSV(res?.string()?:"")
             for (mtrBusFare in mtrBusFareList) {
@@ -85,7 +86,7 @@ class LrtFeederWorker(context : Context, params : WorkerParameters)
         }
 
         try {
-            val response = dataGovHkService.mtrBusStops().execute()
+            val response = openDataService.busStops().execute()
             val res = response.body()
             val mtrBusStopList = MtrBusStop.fromCSV(res?.string()?:"")
 

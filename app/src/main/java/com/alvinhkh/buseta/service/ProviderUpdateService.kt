@@ -4,10 +4,8 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.net.Uri
 import android.os.Build
 import android.os.IBinder
-import android.provider.Settings
 import androidx.core.app.NotificationCompat
 import androidx.preference.PreferenceManager
 import androidx.work.Data
@@ -16,7 +14,7 @@ import androidx.work.WorkManager
 import com.alvinhkh.buseta.Api
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
-import com.alvinhkh.buseta.datagovhk.MtrLineWorker
+import com.alvinhkh.buseta.mtr.MtrLineWorker
 import com.alvinhkh.buseta.datagovhk.RtNwstWorker
 import com.alvinhkh.buseta.datagovhk.TdWorker
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
@@ -28,7 +26,6 @@ import com.alvinhkh.buseta.mtr.MtrResourceWorker
 import com.alvinhkh.buseta.nlb.NlbWorker
 import com.alvinhkh.buseta.nwst.NwstRouteWorker
 import com.alvinhkh.buseta.route.dao.RouteDatabase
-import com.alvinhkh.buseta.ui.MainActivity
 import com.alvinhkh.buseta.utils.ConnectivityUtil
 import com.alvinhkh.buseta.utils.PreferenceUtil
 import timber.log.Timber

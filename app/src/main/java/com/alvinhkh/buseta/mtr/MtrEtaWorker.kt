@@ -1,4 +1,4 @@
-package com.alvinhkh.buseta.datagovhk
+package com.alvinhkh.buseta.mtr
 
 import android.content.Context
 import androidx.work.Data
@@ -8,28 +8,23 @@ import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
-import com.alvinhkh.buseta.datagovhk.model.MtrLineStation
-import com.alvinhkh.buseta.mtr.MtrService
+import com.alvinhkh.buseta.datagovhk.DataGovHkService
+import com.alvinhkh.buseta.mtr.model.MtrLineStation
 import com.alvinhkh.buseta.mtr.model.MtrSchedule
 import com.alvinhkh.buseta.route.dao.RouteDatabase
-import com.alvinhkh.buseta.utils.HashUtil
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import timber.log.Timber
-import java.text.SimpleDateFormat
 import java.util.*
 
 class MtrEtaWorker(private val context : Context, params : WorkerParameters)
     : Worker(context, params) {
 
-    private val dataGovHkService = DataGovHkService.resource.create(DataGovHkService::class.java)
+    private val dataGovHkService = DataGovHkService.transport.create(DataGovHkService::class.java)
 
-    private val mtrService = MtrService.api.create(MtrService::class.java)
+    private val openDataService = MtrService.openData.create(MtrService::class.java)
 
     private val arrivalTimeDatabase = ArrivalTimeDatabase.getInstance(context)!!
 
     private val routeDatabase = RouteDatabase.getInstance(context)!!
-
-    private val firebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
 
     override fun doWork(): Result {
         val widgetId = inputData.getInt(C.EXTRA.WIDGET_UPDATE, -1)
@@ -67,7 +62,7 @@ class MtrEtaWorker(private val context : Context, params : WorkerParameters)
         val arrivalTimeList = arrayListOf<ArrivalTime>()
         val timeNow = System.currentTimeMillis()
         
-        val response1 = dataGovHkService.mtrLinesAndStations().execute()
+        val response1 = openDataService.linesAndStations().execute()
         if (!response1.isSuccessful) {
             if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
                     && !routeStop.sequence.isNullOrEmpty()) {
@@ -102,14 +97,7 @@ class MtrEtaWorker(private val context : Context, params : WorkerParameters)
             }
 
             val lang = "en"
-            val today = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH).format(Date())
-            val secret = firebaseRemoteConfig.getString("mtr_schedule_secret")
-            val key = HashUtil.sha1(routeStop.routeId + "|" + routeStop.stopId + "|" + lang + "|" + today + "|" + secret)
-            if (key.isEmpty() || routeStop.routeId.isNullOrEmpty() || routeStop.stopId.isNullOrEmpty()) {
-                return Result.failure(outputData)
-            }
-
-            val response = mtrService.getSchedule(key!!, routeStop.routeId!!, routeStop.stopId!!, lang).execute()
+            val response = dataGovHkService.getSchedule(routeStop.routeId!!, routeStop.stopId!!, lang).execute()
             val res = response.body() ?: return Result.failure(outputData)
             if (res.status == 0) {
                 if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
