@@ -4,7 +4,6 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import android.view.View
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -12,7 +11,6 @@ import androidx.core.content.ContextCompat
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.ui.BaseActivity
 import com.alvinhkh.buseta.utils.ColorUtil
-import com.google.android.material.tabs.TabLayout
 
 
 class WebViewActivity : BaseActivity() {

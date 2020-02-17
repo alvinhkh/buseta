@@ -1,6 +1,7 @@
 package com.alvinhkh.buseta.ui.webview
 
 import android.content.res.Configuration
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -25,14 +26,16 @@ class WebViewFragment : Fragment() {
 
     private var contentHtml: String? = null
 
-    private var upEnabled: Boolean = true
+    private var contentUrl: String? = null
 
+    private var upEnabled: Boolean = true
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_webview, container, false)
         contentTitle = arguments?.getString(ARG_TITLE)
         contentHtml = arguments?.getString(ARG_HTML)
+        contentUrl = arguments?.getString(ARG_URL)
         upEnabled = arguments?.getBoolean(ARG_UP_ENABLED)?: true
         if (activity == null) return view
 
@@ -43,14 +46,20 @@ class WebViewFragment : Fragment() {
         setHasOptionsMenu(false)
 
         webView = view.findViewById(R.id.web_view)
-        webView.loadData(contentHtml, "text/html; charset=UTF-8", null)
+        webView.setBackgroundColor(Color.TRANSPARENT)
         webView.settings.loadWithOverviewMode = true
         webView.settings.useWideViewPort = true
+        webView.settings.javaScriptEnabled = true
         if (Build.VERSION.SDK_INT >= 29) {
             val nightModeFlags = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
             if (nightModeFlags == Configuration.UI_MODE_NIGHT_YES) {
                 webView.settings.forceDark = WebSettings.FORCE_DARK_ON
             }
+        }
+        if (!contentUrl.isNullOrEmpty()) {
+            webView.loadUrl(contentUrl)
+        } else {
+            webView.loadData(contentHtml, "text/html; charset=UTF-8", null)
         }
         return view
     }
@@ -59,6 +68,7 @@ class WebViewFragment : Fragment() {
         super.onSaveInstanceState(outState)
         outState.putString(ARG_TITLE, contentTitle)
         outState.putString(ARG_HTML, contentHtml)
+        outState.putString(ARG_URL, contentUrl)
         outState.putBoolean(ARG_UP_ENABLED, upEnabled)
     }
 
@@ -88,6 +98,8 @@ class WebViewFragment : Fragment() {
 
         const val ARG_HTML = "content_html"
 
+        const val ARG_URL = "content_url"
+
         const val ARG_UP_ENABLED = "up_enabled"
 
         fun newInstance(title: String, html: String, upEnabled: Boolean): WebViewFragment {
@@ -96,6 +108,16 @@ class WebViewFragment : Fragment() {
             args.putString(ARG_TITLE, title)
             args.putString(ARG_HTML, html)
             args.putBoolean(ARG_UP_ENABLED, upEnabled)
+            fragment.arguments = args
+            return fragment
+        }
+
+        fun newInstance(title: String, url: String): WebViewFragment {
+            val fragment = WebViewFragment()
+            val args = Bundle()
+            args.putString(ARG_TITLE, title)
+            args.putString(ARG_URL, url)
+            args.putBoolean(ARG_UP_ENABLED, false)
             fragment.arguments = args
             return fragment
         }
