@@ -34,8 +34,8 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
         val timeNow = System.currentTimeMillis() / 1000
 
         try {
-            val response = nwstService.routeList(routeNo, NwstService.TYPE_ALL_ROUTES,
-                    NwstService.LANGUAGE_TC, NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION,
+            val response = nwstService.routeList(routeNo, NwstService.LANGUAGE_TC,
+                    NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION,
                     NwstRequestUtil.syscode2()).execute()
             if (!response.isSuccessful) {
                 return Result.failure(outputData)

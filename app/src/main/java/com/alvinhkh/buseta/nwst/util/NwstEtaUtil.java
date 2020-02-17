@@ -19,7 +19,7 @@ import timber.log.Timber;
 public class NwstEtaUtil {
 
     public static ArrivalTime estimate(@NonNull Context context, @NonNull ArrivalTime object) {
-        SimpleDateFormat isoDf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ENGLISH);
+        SimpleDateFormat isoDf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
         Date generatedDate = object.getGeneratedAt() > 0L ? new Date() : new Date(object.getGeneratedAt());
 
         // given iso time
@@ -53,53 +53,55 @@ public class NwstEtaUtil {
             }
         }
 
-        SimpleDateFormat etaDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.ENGLISH);
-        // given timeText
-        if (!TextUtils.isEmpty(object.getText()) && object.getText().matches(".*\\d.*")
-                && !object.getText().contains("unexpected") && object.getText().contains(":")) {
-            // if text has digit
-            String estimateMinutes = "";
-            long differences = new Date().getTime() - generatedDate.getTime(); // get device timeText and compare to server timeText
-            try {
-                Date etaCompareDate = generatedDate;
-                // first assume eta timeText and server timeText is on the same date
-                Date etaDate = etaDateFormat.parse(
-                        new SimpleDateFormat("yyyy", Locale.ENGLISH).format(etaCompareDate) + "/" +
-                                new SimpleDateFormat("MM", Locale.ENGLISH).format(etaCompareDate) + "/" +
-                                new SimpleDateFormat("dd", Locale.ENGLISH).format(etaCompareDate) + " " + object.getText());
-                // if not minutes will get negative integer
-                int minutes = (int) ((etaDate.getTime() / 60000) - ((generatedDate.getTime() + differences) / 60000));
-                if (minutes < -12 * 60) {
-                    // plus one day to get correct eta date
-                    etaCompareDate = new Date(generatedDate.getTime() + 24 * 60 * 60 * 1000);
-                    etaDate = etaDateFormat.parse(
-                            new SimpleDateFormat("yyyy", Locale.ENGLISH).format(etaCompareDate) + "/" +
-                                    new SimpleDateFormat("MM", Locale.ENGLISH).format(etaCompareDate) + "/" +
-                                    new SimpleDateFormat("dd", Locale.ENGLISH).format(etaCompareDate) + " " + object.getText());
-                    minutes = (int) ((etaDate.getTime() / 60000) - ((generatedDate.getTime() + differences) / 60000));
-                }
-                if (minutes >= 0 && minutes < 1440) {
-                    // minutes should be 0 to within a day
-                    estimateMinutes = String.valueOf(minutes);
-                }
-                if (minutes > 120) {
-                    // likely calculation error
-                    estimateMinutes = "";
-                }
-                Boolean expired = minutes <= -3;  // time past
-                expired |= TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - object.getUpdatedAt()) >= 2; // maybe outdated
-                object.setExpired(expired);
-            } catch (ParseException |ArrayIndexOutOfBoundsException ep) {
-                Timber.d(ep);
-            }
-            if (!TextUtils.isEmpty(estimateMinutes)) {
-                if (estimateMinutes.equals("0")) {
-                    object.setEstimate(context.getString(R.string.now));
-                } else {
-                    object.setEstimate(context.getString(R.string.minutes, estimateMinutes));
-                }
-            }
-        }
+        // given eta second
+
+//        SimpleDateFormat etaDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.ENGLISH);
+//        // given timeText
+//        if (!TextUtils.isEmpty(object.getText()) && object.getText().matches(".*\\d.*")
+//                && !object.getText().contains("unexpected") && object.getText().contains(":")) {
+//            // if text has digit
+//            String estimateMinutes = "";
+//            long differences = new Date().getTime() - generatedDate.getTime(); // get device timeText and compare to server timeText
+//            try {
+//                Date etaCompareDate = generatedDate;
+//                // first assume eta timeText and server timeText is on the same date
+//                Date etaDate = etaDateFormat.parse(
+//                        new SimpleDateFormat("yyyy", Locale.ENGLISH).format(etaCompareDate) + "/" +
+//                                new SimpleDateFormat("MM", Locale.ENGLISH).format(etaCompareDate) + "/" +
+//                                new SimpleDateFormat("dd", Locale.ENGLISH).format(etaCompareDate) + " " + object.getText());
+//                // if not minutes will get negative integer
+//                int minutes = (int) ((etaDate.getTime() / 60000) - ((generatedDate.getTime() + differences) / 60000));
+//                if (minutes < -12 * 60) {
+//                    // plus one day to get correct eta date
+//                    etaCompareDate = new Date(generatedDate.getTime() + 24 * 60 * 60 * 1000);
+//                    etaDate = etaDateFormat.parse(
+//                            new SimpleDateFormat("yyyy", Locale.ENGLISH).format(etaCompareDate) + "/" +
+//                                    new SimpleDateFormat("MM", Locale.ENGLISH).format(etaCompareDate) + "/" +
+//                                    new SimpleDateFormat("dd", Locale.ENGLISH).format(etaCompareDate) + " " + object.getText());
+//                    minutes = (int) ((etaDate.getTime() / 60000) - ((generatedDate.getTime() + differences) / 60000));
+//                }
+//                if (minutes >= 0 && minutes < 1440) {
+//                    // minutes should be 0 to within a day
+//                    estimateMinutes = String.valueOf(minutes);
+//                }
+//                if (minutes > 120) {
+//                    // likely calculation error
+//                    estimateMinutes = "";
+//                }
+//                Boolean expired = minutes <= -3;  // time past
+//                expired |= TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - object.getUpdatedAt()) >= 2; // maybe outdated
+//                object.setExpired(expired);
+//            } catch (ParseException |ArrayIndexOutOfBoundsException ep) {
+//                Timber.d(ep);
+//            }
+//            if (!TextUtils.isEmpty(estimateMinutes)) {
+//                if (estimateMinutes.equals("0")) {
+//                    object.setEstimate(context.getString(R.string.now));
+//                } else {
+//                    object.setEstimate(context.getString(R.string.minutes, estimateMinutes));
+//                }
+//            }
+//        }
         return object;
     }
 }

@@ -103,11 +103,11 @@ class NwstEtaWorker(private val context : Context, params : WorkerParameters)
             }
 
             val text = res.string()
-            val serverTime = text.split("\\|".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0].trim { it <= ' ' }
+//            val serverTime = text.split("\\|".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()[0].trim { it <= ' ' }
             val data = text.trim { it <= ' ' }.replaceFirst("^[^|]*\\|##\\|".toRegex(), "").split("<br>".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             for (i in data.indices) {
                 val nwstEta = NwstEta.fromString(data[i]) ?: continue
-                nwstEta.serverTime = serverTime.replace("[^0-9:]".toRegex(), "")
+//                nwstEta.serverTime = serverTime.replace("[^0-9:]".toRegex(), "")
 
                 val arrivalTime = ArrivalTime.emptyInstance(context, routeStop)
                 arrivalTime.companyCode = C.PROVIDER.NWST
@@ -116,23 +116,25 @@ class NwstEtaWorker(private val context : Context, params : WorkerParameters)
                 }
                 arrivalTime.text = text(nwstEta.title)
                 val subtitle = text(nwstEta.subtitle).trim()
-                if (subtitle.isNotEmpty()) {
-                    if (subtitle.contains("距離") || subtitle.contains("距离") || subtitle.contains("Distance")) {
-                        arrivalTime.distanceKM = parseDistance(subtitle).toDouble()
+                if (arrivalTime.text.isNotEmpty() && subtitle.isNotEmpty()) {
+                    arrivalTime.text += " "
+                }
+                arrivalTime.text += subtitle
+                if (nwstEta.distanceKM.isNotEmpty()) {
+                    if (nwstEta.distanceKM.contains("距離") || nwstEta.distanceKM.contains("距离") || nwstEta.distanceKM.contains("Distance")) {
+                        arrivalTime.distanceKM = parseDistance(nwstEta.distanceKM).toDouble()
                     }
                     if (arrivalTime.distanceKM < 0) {
-                        arrivalTime.text = arrivalTime.text + " " + subtitle
+                        arrivalTime.text += " ${context.getString(R.string.km_short, arrivalTime.distanceKM)}"
                     }
                 }
+                val routeDestination = (routeStop.routeDestination?:"").trim { it <= ' ' }
+                        .replace("（", "(").replace("）", ")")
                 arrivalTime.note = nwstEta.boundText.trim { it <= ' ' }
+                        .replace("（", "(").replace("）", ")")
+                        .replace(routeDestination, "").replace(", ", "")
                 arrivalTime.isoTime = nwstEta.etaIsoTime
-                arrivalTime.isSchedule = nwstEta.subtitle.isNotEmpty() && (
-                        nwstEta.subtitle.contains("預定班次") ||
-                                nwstEta.subtitle.contains("预定班次") ||
-                                nwstEta.subtitle.contains("Scheduled") ||
-                                nwstEta.subtitle.contains("非實時") ||
-                                nwstEta.subtitle.contains("非实时") ||
-                                nwstEta.subtitle.contains("Non-Real time"))
+                arrivalTime.isSchedule = nwstEta.isSchedule
                 val data1 = nwstEta.serverTime.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
                 if (data1.size == 3) {
                     try {

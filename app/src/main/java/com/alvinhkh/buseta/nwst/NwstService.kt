@@ -57,10 +57,9 @@ interface NwstService {
             @Query(value = QUERY_SYSCODE2, encoded = true) sysCode2: String
     ): Call<ResponseBody>
 
-    @GET("api6/getmmroutelist.php")
+    @GET("api6/getroutelist2.php?ui_v2=Y")
     fun routeList(
             @Query(QUERY_ROUTE_NO) routeNo: String,
-            @Query(QUERY_MODE) mode: String,
             @Query(QUERY_LANGUAGE) language: String,
             @Query(QUERY_SYSCODE) sysCode: String,
             @Query(QUERY_PLATFORM) platform: String,
@@ -68,7 +67,7 @@ interface NwstService {
             @Query(value = QUERY_SYSCODE2, encoded = true) sysCode2: String
     ): Call<ResponseBody>
 
-    @GET("api6/getvariantlist.php")
+    @GET("api6/getvariantlist.php?ui_v2=Y")
     fun variantList(
             @Query(QUERY_ID) id: String,
             @Query(QUERY_LANGUAGE) language: String,
@@ -78,7 +77,7 @@ interface NwstService {
             @Query(value = QUERY_SYSCODE2, encoded = true) sysCode2: String
     ): Call<ResponseBody>
 
-    @GET("api6/ppstoplist.php")
+    @GET("api6/ppstoplist.php?ui_v2=Y")
     fun ppStopList(
             @Query(QUERY_INFO) info: String,
             @Query(QUERY_LANGUAGE) language: String,
@@ -88,10 +87,10 @@ interface NwstService {
             @Query(value = QUERY_SYSCODE2, encoded = true) sysCode2: String
     ): Call<ResponseBody>
 
-    @GET("api6/get_notice_4.php")
+    @GET("api6/get_notice_4.php?ui_v2=Y")
     fun noticeListAsync(@QueryMap options: Map<String, String>): Deferred<Response<ResponseBody>>
 
-    @GET("api6/getnextbus2.php")
+    @GET("api6/getEta.php?mode=3eta&ui_v2=Y")
     fun eta(
             @Query(QUERY_STOP_ID) stopId: String,
             @Query(QUERY_SERVICE_NO) serviceNo: String,
@@ -109,7 +108,7 @@ interface NwstService {
             @Query(QUERY_VERSION2) version2: String
     ): Call<ResponseBody>
 
-    @GET("api6/getnextbus2.php")
+    @GET("api6/getEta.php?mode=3eta&ui_v2=Y")
     fun eta(
             @Query(QUERY_STOP_ID) stopId: String,
             @Query(QUERY_SERVICE_NO) serviceNo: String,
@@ -129,7 +128,7 @@ interface NwstService {
             @Query(QUERY_TK) tk: String
     ): Call<ResponseBody>
 
-    @GET("api6/getline_multi2.php")
+    @GET("api6/getline_multi2.php?ui_v2=Y")
     fun lineMulti2(
             @Query(QUERY_R) r: String,
             @Query(QUERY_LANGUAGE) language: String,
@@ -139,7 +138,7 @@ interface NwstService {
             @Query(value = QUERY_SYSCODE2, encoded = true) sysCode2: String
     ): Call<ResponseBody>
 
-    @GET("api6/gettimetable.php")
+    @GET("api6/gettimetable.php?ui_v2=Y")
     fun timetable(
             @Query(QUERY_RDV) rdv: String,
             @Query(QUERY_BOUND) bound: String,
@@ -162,20 +161,20 @@ interface NwstService {
             @Query(QUERY_TK) tk: String
     ): Call<ResponseBody>
 
-    @GET("api6/getspecial.php")
+    @GET("api6/getspecial.php?ui_v2=Y")
     fun specialAsync(@QueryMap options: Map<String, String>): Deferred<Response<ResponseBody>>
 
     companion object {
 
-        const val APP_VERSION = "3.5.5"
+        const val APP_VERSION = "4.0.2"
 
-        const val APP_VERSION2 = "5"
+        const val APP_VERSION2 = "62"
 
-        const val DEVICETYPE = "iphone"
+        const val DEVICETYPE = "android"
 
         const val LANGUAGE_TC = "0"
 
-        const val PLATFORM = "iphone"
+        const val PLATFORM = "android"
 
         const val QUERY_BM = "bm"
 

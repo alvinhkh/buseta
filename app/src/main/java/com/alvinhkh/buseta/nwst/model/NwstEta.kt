@@ -1,6 +1,9 @@
 package com.alvinhkh.buseta.nwst.model
 
 import org.jsoup.Jsoup
+import timber.log.Timber
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 data class NwstEta(
@@ -19,7 +22,9 @@ data class NwstEta(
         var etaSecond: Int = 0,
         var etaTime: String = "",
         var title: String = "",
-        var subtitle: String = ""
+        var subtitle: String = "",
+        var distanceKM: String = "",
+        var isSchedule: Boolean = true
 ) {
     companion object {
         fun fromString(text: String): NwstEta? {
@@ -30,31 +35,62 @@ data class NwstEta(
             obj.companyCode = data[0]
             if (data.size >= 12) {
                 obj.routeNo = data[1]
-                obj.placeTo = data[2]
-                obj.adultFare = data[3].toDouble()
+                obj.placeTo = data[2] // empty
+                obj.adultFare = data[3].toDoubleOrNull()?:0.0 // empty
                 obj.stopId = data[5]
                 obj.rdv = data[6]
-                obj.stopName = data[8]
-                obj.routeId = data[9]
-                obj.boundText = data[10]
+                obj.stopName = data[8] // empty
+                obj.routeId = data[9] // empty
+                obj.boundText = data[10] // empty
                 obj.bound = data[11]
             }
-            if (data.size >= 19) {
+            if (data.size >= 26) {
                 obj.etaIsoTime = data[12]
+                obj.isSchedule = data[22] != "Y"
                 obj.etaSecond = data[13].toInt()
+                val tmp19 = data[19].split("|*|")
+                if (tmp19.size >= 2 && tmp19[1].startsWith("202")) {
+                    obj.etaIsoTime = tmp19[1]
+                    try {
+                        val df = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH)
+                        val etaDate = df.parse(obj.etaIsoTime)?: Date()
+                        obj.etaTime = SimpleDateFormat("HH:mm", Locale.ENGLISH).format(etaDate)
+                        obj.title = obj.etaTime
+                    } catch (e: Exception) {
+                    }
+                }
                 if (obj.etaIsoTime == "0000-00-00 00:00:00") {
                     obj.etaIsoTime = ""
                 }
-                val tmp2 = data[16].split("|")
-                obj.etaTime = tmp2[0]
-                val tmp3 = data[17].split("|")
-                val tmp4 = data[18].split("|")
-                if (obj.title.isEmpty()) {
-                    obj.title = obj.etaTime
+                if (obj.etaTime.isEmpty() && obj.etaSecond > 0) {
+                    try {
+                        obj.serverTime = data[21]
+                        val df = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH)
+                        val nowCalendar = Calendar.getInstance()
+                        nowCalendar.time = df.parse(obj.serverTime) ?: Date()
+                        nowCalendar.add(Calendar.SECOND, obj.etaSecond)
+                        obj.etaTime = SimpleDateFormat("HH:mm", Locale.ENGLISH).format(nowCalendar.time)
+                        obj.title = obj.etaTime
+                    } catch (e: Exception) {
+                    }
                 }
-                obj.subtitle = tmp4[0]
-                if (obj.boundText.isEmpty()) {
-                    obj.boundText = tmp3[0].replace(Regex.fromLiteral("往: " + obj.placeTo), "").replace(", ", "")
+                val tmp25 = data[25].split("|*|")
+                if (tmp25.size >= 2) {
+                    if (obj.title.isNotEmpty()) {
+                        obj.title += " "
+                    }
+                    obj.title += tmp25[0]
+                    if (tmp25[1].contains("距離") || tmp25[1].contains("距离") || tmp25[1].contains("Distance")) {
+                        obj.distanceKM = tmp25[1]
+                    } else {
+                        obj.subtitle = tmp25[1]
+                    }
+                } else {
+                    obj.subtitle = data[25].replace("|*", "")
+                }
+                val tmp26 = data[26].replace("|**|", "").split("|*|")
+                if (obj.boundText.isEmpty() && tmp26.size > 4) {
+                    obj.boundText = tmp26[4]
                 }
             }
             if (obj.companyCode.isNotEmpty()) {
@@ -65,6 +101,8 @@ data class NwstEta(
                 } else if (obj.companyCode.contains("TEXT") || obj.companyCode.contains("SUSPEND")) {
                     obj.title = data[1]
                 }
+                obj.companyCode = "NWST"
+            } else {
                 obj.companyCode = "NWST"
             }
             return obj
