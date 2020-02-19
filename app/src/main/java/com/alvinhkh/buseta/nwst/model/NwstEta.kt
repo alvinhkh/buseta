@@ -1,7 +1,6 @@
 package com.alvinhkh.buseta.nwst.model
 
 import org.jsoup.Jsoup
-import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -19,7 +18,6 @@ data class NwstEta(
         var boundText: String = "",
         var bound: String = "",
         var etaIsoTime: String = "",
-        var etaSecond: Int = 0,
         var etaTime: String = "",
         var title: String = "",
         var subtitle: String = "",
@@ -46,8 +44,12 @@ data class NwstEta(
             }
             if (data.size >= 26) {
                 obj.etaIsoTime = data[12]
-                obj.isSchedule = data[22] != "Y"
-                obj.etaSecond = data[13].toInt()
+                val distanceM = data[13].toDoubleOrNull()?:0.0
+                obj.distanceKM = if (distanceM > 1 && distanceM <= 10000000) {
+                    (distanceM / 1000.0).toString()
+                } else {
+                    ""
+                }
                 val tmp19 = data[19].split("|*|")
                 if (tmp19.size >= 2 && tmp19[1].startsWith("202")) {
                     obj.etaIsoTime = tmp19[1]
@@ -62,31 +64,21 @@ data class NwstEta(
                 if (obj.etaIsoTime == "0000-00-00 00:00:00") {
                     obj.etaIsoTime = ""
                 }
-                if (obj.etaTime.isEmpty() && obj.etaSecond > 0) {
-                    try {
-                        obj.serverTime = data[21]
-                        val df = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH)
-                        val nowCalendar = Calendar.getInstance()
-                        nowCalendar.time = df.parse(obj.serverTime) ?: Date()
-                        nowCalendar.add(Calendar.SECOND, obj.etaSecond)
-                        obj.etaTime = SimpleDateFormat("HH:mm", Locale.ENGLISH).format(nowCalendar.time)
-                        obj.title = obj.etaTime
-                    } catch (e: Exception) {
-                    }
-                }
+                obj.isSchedule = data[22] != "Y"
                 val tmp25 = data[25].split("|*|")
                 if (tmp25.size >= 2) {
                     if (obj.title.isNotEmpty()) {
                         obj.title += " "
                     }
                     obj.title += tmp25[0]
-                    if (tmp25[1].contains("距離") || tmp25[1].contains("距离") || tmp25[1].contains("Distance")) {
-                        obj.distanceKM = tmp25[1]
-                    } else {
+                    if (!tmp25[1].contains("距離") && !tmp25[1].contains("距离") && !tmp25[1].contains("Distance")) {
                         obj.subtitle = tmp25[1]
                     }
                 } else {
                     obj.subtitle = data[25].replace("|*", "")
+                }
+                if (obj.subtitle.isEmpty()) {
+                    obj.subtitle = data[23]
                 }
                 val tmp26 = data[26].replace("|**|", "").split("|*|")
                 if (obj.boundText.isEmpty() && tmp26.size > 4) {

@@ -14,7 +14,6 @@ import com.alvinhkh.buseta.utils.HashUtil
 import org.jsoup.Jsoup
 import timber.log.Timber
 import java.util.*
-import java.util.regex.Pattern
 
 class NwstEtaWorker(private val context : Context, params : WorkerParameters)
     : Worker(context, params) {
@@ -121,10 +120,8 @@ class NwstEtaWorker(private val context : Context, params : WorkerParameters)
                 }
                 arrivalTime.text += subtitle
                 if (nwstEta.distanceKM.isNotEmpty()) {
-                    if (nwstEta.distanceKM.contains("距離") || nwstEta.distanceKM.contains("距离") || nwstEta.distanceKM.contains("Distance")) {
-                        arrivalTime.distanceKM = parseDistance(nwstEta.distanceKM).toDouble()
-                    }
-                    if (arrivalTime.distanceKM < 0) {
+                    arrivalTime.distanceKM = nwstEta.distanceKM.toDoubleOrNull()?:0.0
+                    if (arrivalTime.distanceKM < 0.0) {
                         arrivalTime.text += " ${context.getString(R.string.km_short, arrivalTime.distanceKM)}"
                     }
                 }
@@ -184,21 +181,5 @@ class NwstEtaWorker(private val context : Context, params : WorkerParameters)
                 .replace(" ?新巴".toRegex(), "")
                 .replace(" ?城巴".toRegex(), "")
                 .replace("^:\\($".toRegex(), context.getString(R.string.provider_no_eta))
-    }
-
-    private fun parseDistance(text: String): Float {
-        if (text.isEmpty()) return -1.0f
-        val matcher = Pattern.compile("[距離|距离|Distance]: (\\d*\\.?\\d*)").matcher(text)
-        if (matcher.find()) {
-            var distanceKM = matcher.group(1).toFloat()
-            if (distanceKM < 0.0f) {
-                distanceKM = -1.0f
-            } else if (distanceKM > 10000.0f) {
-                // filter out extreme value
-                distanceKM = -1.0f
-            }
-            return distanceKM
-        }
-        return -1.0f
     }
 }
