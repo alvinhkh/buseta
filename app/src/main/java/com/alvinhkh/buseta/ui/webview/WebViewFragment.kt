@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.util.Base64
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -46,7 +47,6 @@ class WebViewFragment : Fragment() {
         setHasOptionsMenu(false)
 
         webView = view.findViewById(R.id.web_view)
-        webView.setBackgroundColor(Color.TRANSPARENT)
         webView.settings.loadWithOverviewMode = true
         webView.settings.useWideViewPort = true
         webView.settings.javaScriptEnabled = true
@@ -54,12 +54,15 @@ class WebViewFragment : Fragment() {
             val nightModeFlags = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
             if (nightModeFlags == Configuration.UI_MODE_NIGHT_YES) {
                 webView.settings.forceDark = WebSettings.FORCE_DARK_ON
+                if (!contentUrl.isNullOrEmpty()) {
+                    webView.setBackgroundColor(Color.TRANSPARENT)
+                }
             }
         }
         if (!contentUrl.isNullOrEmpty()) {
             webView.loadUrl(contentUrl)
         } else {
-            webView.loadData(contentHtml, "text/html; charset=UTF-8", null)
+            webView.loadData(Base64.encodeToString(contentHtml?.toByteArray(), Base64.NO_PADDING), "text/html; charset=UTF-8", "base64")
         }
         return view
     }
