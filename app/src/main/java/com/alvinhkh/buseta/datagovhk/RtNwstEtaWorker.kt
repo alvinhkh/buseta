@@ -83,14 +83,33 @@ class RtNwstEtaWorker(private val context : Context, params : WorkerParameters)
                     arrivalTime.companyCode = eta.companyCode
                 }
                 try {
-                    arrivalTime.text = SimpleDateFormat("HH:mm", Locale.ENGLISH).format(isoDateFormat.parse(eta.eta))
+                    val etaDate = isoDateFormat.parse(eta.eta)
+                    if (etaDate != null) {
+                        arrivalTime.text = SimpleDateFormat("HH:mm", Locale.ENGLISH).format(etaDate)
+                    }
                     arrivalTime.isoTime = eta.eta
                 } catch (ee: ParseException) {
                     arrivalTime.text = eta.eta
                 }
-                arrivalTime.note = eta.remarkTc
+                if (eta.remarkTc.startsWith("九巴")) {
+                    if (arrivalTime.text.isNotEmpty()) {
+                        arrivalTime.text += " "
+                    }
+                    arrivalTime.text += eta.remarkTc
+                } else {
+                    arrivalTime.note = eta.remarkTc
+                }
+                val routeDestination = (routeStop.routeDestination?:"").replace(" ", "")
+                val destinationTc = eta.destinationTc.replace(" ", "")
+                if (routeDestination.isNotEmpty() && destinationTc.isNotEmpty()
+                        && destinationTc != routeDestination) {
+                    if (arrivalTime.note.isNotEmpty()) {
+                        arrivalTime.note += " "
+                    }
+                    arrivalTime.note = eta.destinationTc
+                }
 //                arrivalTime.isSchedule = false
-                arrivalTime.generatedAt = isoDateFormat.parse(eta.dataTimestamp).time
+                arrivalTime.generatedAt = (isoDateFormat.parse(eta.dataTimestamp)?:Date()).time
                 arrivalTime.companyCode = routeStop.companyCode?:""
                 arrivalTime.routeNo = routeStop.routeNo?:""
                 arrivalTime.routeSeq = routeStop.routeSequence?:""

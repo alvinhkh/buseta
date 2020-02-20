@@ -19,15 +19,24 @@ import timber.log.Timber;
 public class NwstEtaUtil {
 
     public static ArrivalTime estimate(@NonNull Context context, @NonNull ArrivalTime object) {
-        SimpleDateFormat isoDf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
+        SimpleDateFormat isoDf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ENGLISH);
         Date generatedDate = object.getGeneratedAt() > 0L ? new Date() : new Date(object.getGeneratedAt());
 
         // given iso time
         if (!TextUtils.isEmpty(object.getIsoTime())) {
             long differences = new Date().getTime() - generatedDate.getTime(); // get device timeText and compare to server timeText
+            String estimateMinutes = "";
+            Date etaDate = null;
             try {
-                String estimateMinutes = "";
-                Date etaDate = isoDf.parse(object.getIsoTime());
+                etaDate = isoDf.parse(object.getIsoTime());
+            } catch (ParseException e1) {
+                try {
+                    etaDate = df.parse(object.getIsoTime());
+                } catch (ParseException ignored) {
+                }
+            }
+            try {
                 int minutes = (int) ((etaDate.getTime() / 60000) - ((generatedDate.getTime() + differences) / 60000));
                 if (minutes >= 0 && minutes < 1440) {
                     // minutes should be 0 to within a day
@@ -48,7 +57,7 @@ public class NwstEtaUtil {
                 expired |= TimeUnit.MILLISECONDS.toMinutes(new Date().getTime() - object.getUpdatedAt()) >= 2; // maybe outdated
                 object.setExpired(expired);
                 return object;
-            } catch (ParseException |ArrayIndexOutOfBoundsException| NullPointerException ep) {
+            } catch (ArrayIndexOutOfBoundsException| NullPointerException ep) {
                 Timber.d(ep);
             }
         }

@@ -229,12 +229,12 @@ interface NwstService {
         const val TYPE_NIGHT_ROUTES = "1"
 
         val api = Retrofit.Builder()
-                .client(App.httpClient2)
+                .client(App.httpClient)
                 .baseUrl("https://mobile.nwstbus.com.hk/")
                 .build()
 
         val apiCoroutine = Retrofit.Builder()
-                .client(App.httpClient2)
+                .client(App.httpClient)
                 .baseUrl("https://mobile.nwstbus.com.hk/")
                 .addCallAdapterFactory(CoroutineCallAdapterFactory.invoke())
                 .build()

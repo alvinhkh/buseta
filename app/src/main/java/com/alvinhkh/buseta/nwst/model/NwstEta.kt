@@ -1,6 +1,7 @@
 package com.alvinhkh.buseta.nwst.model
 
 import org.jsoup.Jsoup
+import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -43,7 +44,16 @@ data class NwstEta(
                 obj.bound = data[11]
             }
             if (data.size >= 26) {
-                obj.etaIsoTime = data[12]
+                try {
+                    val df = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH)
+                    val isoDf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ENGLISH)
+                    val date = df.parse(data[12])
+                    if (date != null) {
+                        obj.etaIsoTime = isoDf.format(date)
+                    }
+                } catch (e: Exception) {
+                    Timber.d(e)
+                }
                 val distanceM = data[13].toDoubleOrNull()?:0.0
                 obj.distanceKM = if (distanceM > 1 && distanceM <= 10000000) {
                     (distanceM / 1000.0).toString()
