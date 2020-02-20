@@ -50,7 +50,7 @@ class KmbStopListFragment : RouteStopListFragmentAbstract() {
             }
             R.id.action_info -> if (infoHtml.isNotEmpty()) {
                 val intent = Intent(context, WebViewActivity::class.java)
-                var title = getString(R.string.timetable)
+                var title = getString(R.string.special_info)
                 if (route != null && !route?.name.isNullOrEmpty()) {
                     title = route?.name + " " + title
                     intent.putExtra(WebViewActivity.COLOUR, Route.companyColour(context!!, route?.companyCode?: C.PROVIDER.NWST, route?.name?: ""))
@@ -59,6 +59,8 @@ class KmbStopListFragment : RouteStopListFragmentAbstract() {
                 intent.putExtra(WebViewActivity.HTML, infoHtml)
                 startActivity(intent)
                 return true
+            } else {
+                infoItem?.isVisible = false
             }
         }
         return super.onOptionsItemSelected(item)

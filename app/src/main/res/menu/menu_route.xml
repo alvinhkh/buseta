@@ -26,6 +26,7 @@
         android:icon="@drawable/ic_outline_info_24dp"
         android:orderInCategory="92"
         android:visible="false"
+        app:iconTint="@color/white"
         app:showAsAction="ifRoom"/>
 
     <item
@@ -33,6 +34,7 @@
         android:title="@string/bus_to_bus_interchange_scheme"
         android:orderInCategory="93"
         android:visible="false"
+        app:iconTint="@color/white"
         app:showAsAction="ifRoom"/>
 
     <item
