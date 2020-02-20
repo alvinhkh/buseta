@@ -8,11 +8,11 @@ import androidx.room.PrimaryKey
 data class MtrBusStop(
         @PrimaryKey
         @ColumnInfo(name = "stop_ID")
-        var stopId: Int,
+        var stopId: Int? = 0,
         @ColumnInfo(name = "routeLine_ID")
-        var routeLineId: Int,
+        var routeLineId: Int? = 0,
         @ColumnInfo(name = "name_en", typeAffinity = ColumnInfo.TEXT)
-        var nameEn: String,
+        var nameEn: String? = null,
         @ColumnInfo(name = "name_ch", typeAffinity = ColumnInfo.TEXT)
         var nameCh: String? = null,
         @ColumnInfo(name = "remark_en", typeAffinity = ColumnInfo.TEXT)
@@ -22,9 +22,9 @@ data class MtrBusStop(
         @ColumnInfo(name = "rail_line", typeAffinity = ColumnInfo.TEXT)
         var railLine: String? = null,
         @ColumnInfo(name = "is_edge")
-        var isEdge: Int,
+        var isEdge: Int? = 0,
         @ColumnInfo(name = "sort_order")
-        var sortOrder: Int,
+        var sortOrder: Int? = 0,
         @ColumnInfo(name = "latitude", typeAffinity = ColumnInfo.TEXT)
         var latitude: String? = null,
         @ColumnInfo(name = "longitude", typeAffinity = ColumnInfo.TEXT)

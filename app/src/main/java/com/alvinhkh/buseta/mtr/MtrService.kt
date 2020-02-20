@@ -44,7 +44,7 @@ interface MtrService {
     @GET("alert/ryg_line_status.xml")
     fun lineStatus(): Deferred<Response<MtrLineStatusRes>>
 
-    @GET("https://www.mtr.com.hk/mob/mtrmobile_versioncheck_v12_16.xml")
+    @GET("https://www.mtr.com.hk/mob/mtrmobile_versioncheck_v12_21.xml")
     fun zipResources(): Call<MtrMobileVersionCheck>
 
     @GET

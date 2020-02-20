@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "36fe9c9ebb0893329370b67083a9e7dd",
+    "identityHash": "dd18b31c97b5472f208e0db33027ccac",
     "entities": [
       {
         "tableName": "Bus_new",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`BusNumber` TEXT NOT NULL, `Route` TEXT NOT NULL, `ServiceHours` TEXT, `Frequency` TEXT, `NearestAEMTRStation` INTEGER NOT NULL, `RouteSection` INTEGER NOT NULL, `DistrictID` INTEGER NOT NULL, PRIMARY KEY(`BusNumber`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`BusNumber` TEXT NOT NULL, `Route` TEXT, `ServiceHours` TEXT, `Frequency` TEXT, `NearestAEMTRStation` INTEGER, `RouteSection` INTEGER, `DistrictID` INTEGER, PRIMARY KEY(`BusNumber`))",
         "fields": [
           {
             "fieldPath": "busNumber",
@@ -18,7 +18,7 @@
             "fieldPath": "route",
             "columnName": "Route",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "serviceHours",
@@ -36,19 +36,19 @@
             "fieldPath": "nearestAEMTRStation",
             "columnName": "NearestAEMTRStation",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "routeSection",
             "columnName": "RouteSection",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "districtID",
             "columnName": "DistrictID",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -62,7 +62,7 @@
       },
       {
         "tableName": "Stop_new",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`StopID` TEXT NOT NULL, `BusNumber` TEXT NOT NULL, `StopNameCN` TEXT, `StopNameEN` TEXT, `StopLatitude` TEXT, `StopLongitude` TEXT, `RouteSection` TEXT, `DisplayStopNo` TEXT, `NearestStopID` TEXT, PRIMARY KEY(`StopID`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`StopID` TEXT NOT NULL, `BusNumber` TEXT, `StopNameCN` TEXT, `StopNameEN` TEXT, `StopLatitude` TEXT, `StopLongitude` TEXT, `RouteSection` TEXT, `DisplayStopNo` TEXT, `NearestStopID` TEXT, PRIMARY KEY(`StopID`))",
         "fields": [
           {
             "fieldPath": "stopId",
@@ -74,7 +74,7 @@
             "fieldPath": "busNumber",
             "columnName": "BusNumber",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "stopNameCn",
@@ -130,25 +130,25 @@
       },
       {
         "tableName": "District",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`DistrictID` TEXT NOT NULL, `DistrictCN` TEXT NOT NULL, `DistrictEN` TEXT NOT NULL, PRIMARY KEY(`DistrictID`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`DistrictID` INTEGER NOT NULL, `DistrictCN` TEXT, `DistrictEN` TEXT, PRIMARY KEY(`DistrictID`))",
         "fields": [
           {
             "fieldPath": "districtID",
             "columnName": "DistrictID",
-            "affinity": "TEXT",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
             "fieldPath": "districtCn",
             "columnName": "DistrictCN",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "districtEn",
             "columnName": "DistrictEN",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -161,9 +161,10 @@
         "foreignKeys": []
       }
     ],
+    "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"36fe9c9ebb0893329370b67083a9e7dd\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'dd18b31c97b5472f208e0db33027ccac')"
     ]
   }
 }

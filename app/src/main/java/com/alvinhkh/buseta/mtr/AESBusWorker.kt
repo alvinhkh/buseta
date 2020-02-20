@@ -1,18 +1,18 @@
 package com.alvinhkh.buseta.mtr
 
 import android.content.Context
-import android.content.Intent
+import android.util.SparseArray
+import androidx.room.Room
 import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.alvinhkh.buseta.C
-import com.alvinhkh.buseta.R
+import com.alvinhkh.buseta.mtr.dao.AESBusDatabase
 import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.route.model.RouteStop
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.model.Suggestion
-import com.alvinhkh.buseta.utils.DatabaseUtil
 import timber.log.Timber
 import java.lang.Exception
 import java.util.*
@@ -37,14 +37,18 @@ class AESBusWorker(context : Context, params : WorkerParameters)
         val stopList = arrayListOf<RouteStop>()
         val timeNow = System.currentTimeMillis() / 1000
 
-        val database = DatabaseUtil.getAESBusDatabase(applicationContext)
+        applicationContext.deleteDatabase("E_AES.db")
+        val database = Room.databaseBuilder(applicationContext, AESBusDatabase::class.java, "E_AES.db")
+                .allowMainThreadQueries()
+                .createFromAsset("database/E_AES_20190328.db")
+                .build()
 
         val stopIds = HashMap<String, List<String>>()
         try {
             val aesBusDistricts = database.aesBusDao().allDistricts()
-            val districts = HashMap<String, String>()
+            val districts = SparseArray<String>()
             for (aesBusDistrict in aesBusDistricts) {
-                districts[aesBusDistrict.districtID] = aesBusDistrict.districtCn
+                districts.put(aesBusDistrict.districtID, aesBusDistrict.districtCn?:"")
             }
 
             val aesBusRoutes = database.aesBusDao().allRoutes()
@@ -53,15 +57,16 @@ class AESBusWorker(context : Context, params : WorkerParameters)
                 route.dataSource = C.PROVIDER.AESBUS
                 route.companyCode = companyCode
                 route.name = busNumber
-                if (districtID > 0) {
-                    route.origin = districts[districtID.toString()]
+                if (districtID?:0 > 0) {
+                    route.origin = districts.get(districtID?:0)
                 }
                 route.description = serviceHours
                 route.sequence = "0"
                 route.lastUpdate = timeNow
                 routeList.add(route)
 
-                stopIds[busNumber] = Arrays.asList(*routeStr.split("\\+".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray())
+                stopIds[busNumber] = listOf(*(routeStr?:"").split("\\+".toRegex())
+                        .dropLastWhile { it.isEmpty() }.toTypedArray())
 
                 suggestionList.add(Suggestion(0, companyCode, busNumber, 0, Suggestion.TYPE_DEFAULT))
             }
@@ -104,6 +109,7 @@ class AESBusWorker(context : Context, params : WorkerParameters)
                 }
             }
         } catch (e: Exception) {
+            Timber.d(e)
             return Result.failure(outputData)
         }
 

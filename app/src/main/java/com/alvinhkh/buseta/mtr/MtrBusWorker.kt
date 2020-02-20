@@ -4,10 +4,12 @@ import android.content.Context
 import android.util.SparseArray
 import android.util.SparseIntArray
 import androidx.core.util.set
+import androidx.room.Room
 import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.alvinhkh.buseta.C
+import com.alvinhkh.buseta.mtr.dao.MtrBusDatabase
 import com.alvinhkh.buseta.mtr.model.MtrBusFare
 import com.alvinhkh.buseta.mtr.model.MtrBusRoute
 import com.alvinhkh.buseta.mtr.model.MtrBusStop
@@ -16,7 +18,6 @@ import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.route.model.RouteStop
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.model.Suggestion
-import com.alvinhkh.buseta.utils.DatabaseUtil
 import timber.log.Timber
 import java.lang.Exception
 
@@ -39,7 +40,11 @@ class MtrBusWorker(context : Context, params : WorkerParameters)
         val stopList = arrayListOf<RouteStop>()
         val timeNow = System.currentTimeMillis() / 1000
 
-        val database = DatabaseUtil.getMtrBusDatabase(applicationContext)
+        applicationContext.deleteDatabase("E_Bus.db")
+        val database = Room.databaseBuilder(applicationContext, MtrBusDatabase::class.java, "E_Bus.db")
+                .allowMainThreadQueries()
+                .createFromAsset("database/E_Bus_20191209.db")
+                .build()
 
         val mtrBusFareArray = SparseArray<MtrBusFare>()
         try {
@@ -47,15 +52,15 @@ class MtrBusWorker(context : Context, params : WorkerParameters)
             val mtrBusRouteArray = SparseArray<MtrBusRoute>()
             val mtrBusRoutes = database.mtrBusDao().allRoutes()
             for (mtrBusRoute in mtrBusRoutes) {
-                mtrBusRouteArray.put(mtrBusRoute.routeId, mtrBusRoute)
+                mtrBusRouteArray.put(mtrBusRoute.routeId?:0, mtrBusRoute)
             }
 
             val mtrBusRouteLineArray = SparseIntArray()
             val mtrBusRouteIdCount = SparseIntArray()
             for (mtrBusRouteLine in mtrBusRouteLines) {
-                val mtrBusRoute = mtrBusRouteArray.get(mtrBusRouteLine.routeId)?: continue
+                val mtrBusRoute = mtrBusRouteArray.get(mtrBusRouteLine.routeId?:0)?: continue
                 val descriptionZh = mtrBusRoute.descriptionZh?.split("←→")
-                val sequence = mtrBusRouteIdCount[mtrBusRouteLine.routeId]
+                val sequence = mtrBusRouteIdCount[mtrBusRouteLine.routeId?:0]
                 val route = Route()
                 route.dataSource = C.PROVIDER.LRTFEEDER
                 route.companyCode = companyCode
@@ -76,14 +81,14 @@ class MtrBusWorker(context : Context, params : WorkerParameters)
                 route.sequence = sequence.toString()
                 route.lastUpdate = timeNow
                 routeList.add(route)
-                mtrBusRouteIdCount[mtrBusRouteLine.routeId] += 1
-                mtrBusRouteLineArray[mtrBusRouteLine.routeLineId] = mtrBusRouteLine.routeId
-                suggestionList.add(Suggestion(0, companyCode, mtrBusRoute.routeNumber, 0, Suggestion.TYPE_DEFAULT))
+                mtrBusRouteIdCount[mtrBusRouteLine.routeId?:0] += 1
+                mtrBusRouteLineArray[mtrBusRouteLine.routeLineId?:0] = mtrBusRouteLine.routeId?:0
+                suggestionList.add(Suggestion(0, companyCode, mtrBusRoute.routeNumber?:"", 0, Suggestion.TYPE_DEFAULT))
             }
 
             val mtrBusFares = database.mtrBusDao().allFares()
             for (mtrBusFare in mtrBusFares) {
-                mtrBusFareArray[mtrBusFare.routeId] = mtrBusFare
+                mtrBusFareArray[mtrBusFare.routeId?:0] = mtrBusFare
             }
 
 //            val mtrBusFrequences = database.mtrBusDao().allFrequences()
@@ -94,10 +99,10 @@ class MtrBusWorker(context : Context, params : WorkerParameters)
             val mtrBusStops = database.mtrBusDao().allStops()
             val mtrBusStopsArray = SparseArray<ArrayList<MtrBusStop>>()
             for (mtrBusStop in mtrBusStops) {
-                if (mtrBusStopsArray[mtrBusStop.routeLineId] == null) {
-                    mtrBusStopsArray[mtrBusStop.routeLineId] = arrayListOf()
+                if (mtrBusStopsArray[mtrBusStop.routeLineId?:0] == null) {
+                    mtrBusStopsArray[mtrBusStop.routeLineId?:0] = arrayListOf()
                 }
-                mtrBusStopsArray[mtrBusStop.routeLineId].add(mtrBusStop)
+                mtrBusStopsArray[mtrBusStop.routeLineId?:0].add(mtrBusStop)
             }
 
             for (route in routeList) {

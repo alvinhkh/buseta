@@ -49,8 +49,8 @@ class FollowRouteWorker(context : Context, params : WorkerParameters)
                     .build()
             when (item.first) {
                 C.PROVIDER.AESBUS -> {
-                    requests.add(OneTimeWorkRequest.Builder(MtrResourceWorker::class.java).addTag(TAG).setInputData(data).build())
-                    requests.add(OneTimeWorkRequest.Builder(AESBusWorker::class.java).addTag(TAG).setInputData(data).build())
+                    requests.add(OneTimeWorkRequest.Builder(AESBusWorker::class.java)
+                            .addTag(TAG).setInputData(data).build())
                 }
                 C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> {
                     requests.add(OneTimeWorkRequest.Builder(
@@ -71,8 +71,8 @@ class FollowRouteWorker(context : Context, params : WorkerParameters)
                     ).addTag(TAG).setInputData(data).build())
                 }
                 C.PROVIDER.LRTFEEDER -> {
-                    requests.add(OneTimeWorkRequest.Builder(MtrResourceWorker::class.java).addTag(TAG).setInputData(data).build())
-                    requests.add(OneTimeWorkRequest.Builder(MtrBusWorker::class.java).addTag(TAG).setInputData(data).build())
+                    requests.add(OneTimeWorkRequest.Builder(MtrBusWorker::class.java)
+                            .addTag(TAG).setInputData(data).build())
                 }
                 C.PROVIDER.MTR -> requests.add(OneTimeWorkRequest.Builder(MtrLineWorker::class.java).addTag(TAG).setInputData(data).build())
                 C.PROVIDER.NLB -> requests.add(OneTimeWorkRequest.Builder(NlbWorker::class.java).addTag(TAG).setInputData(data).build())

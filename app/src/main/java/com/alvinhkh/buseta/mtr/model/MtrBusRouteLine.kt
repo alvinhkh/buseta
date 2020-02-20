@@ -8,11 +8,11 @@ import androidx.room.PrimaryKey
 data class MtrBusRouteLine(
         @PrimaryKey
         @ColumnInfo(name = "routeLine_ID")
-        var routeLineId: Int,
+        var routeLineId: Int? = 0,
         @ColumnInfo(name = "route_ID")
-        var routeId: Int,
+        var routeId: Int? = 0,
         @ColumnInfo(name = "from_stop", typeAffinity = ColumnInfo.TEXT)
-        var fromStop: String,
+        var fromStop: String? = null,
         @ColumnInfo(name = "shape", typeAffinity = ColumnInfo.TEXT)
         var shape: String? = null,
         @ColumnInfo(name = "station_remark_en", typeAffinity = ColumnInfo.TEXT)

@@ -7,10 +7,10 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "District")
 data class AESBusDistrict(
         @PrimaryKey
-        @ColumnInfo(name = "DistrictID", typeAffinity = ColumnInfo.TEXT)
-        var districtID: String,
+        @ColumnInfo(name = "DistrictID")
+        var districtID: Int,
         @ColumnInfo(name = "DistrictCN", typeAffinity = ColumnInfo.TEXT)
-        var districtCn: String,
+        var districtCn: String? = null,
         @ColumnInfo(name = "DistrictEN", typeAffinity = ColumnInfo.TEXT)
-        var districtEn: String
+        var districtEn: String? = null
 )

@@ -8,9 +8,9 @@ import androidx.room.PrimaryKey
 data class MtrBusRoute(
         @PrimaryKey
         @ColumnInfo(name = "route_ID")
-        var routeId: Int,
+        var routeId: Int? = 0,
         @ColumnInfo(name = "route_number", typeAffinity = ColumnInfo.TEXT)
-        var routeNumber: String,
+        var routeNumber: String? = "",
         @ColumnInfo(name = "description_en", typeAffinity = ColumnInfo.TEXT)
         var descriptionEn: String? = null,
         @ColumnInfo(name = "description_zh", typeAffinity = ColumnInfo.TEXT)

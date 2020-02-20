@@ -8,25 +8,25 @@ import androidx.room.PrimaryKey
 data class MtrBusFare(
         @PrimaryKey
         @ColumnInfo(name = "fare_ID")
-        var fareId: Int,
+        var fareId: Int? = 0,
         @ColumnInfo(name = "route_ID")
-        var routeId: Int,
+        var routeId: Int? = 0,
         @ColumnInfo(name = "cash_adult")
-        var cashAdult: Float,
+        var cashAdult: Float? = null,
         @ColumnInfo(name = "octopus_adult")
-        var octopusAdult: Float,
+        var octopusAdult: Float? = null,
         @ColumnInfo(name = "cash_child_senior")
-        var cashChildSenior: Float,
+        var cashChildSenior: Float? = null,
         @ColumnInfo(name = "octopus_child_senior")
-        var octopusChildSenior: Float,
+        var octopusChildSenior: Float? = null,
         @ColumnInfo(name = "cash_disabilities")
-        var cashDisabilities: Float,
+        var cashDisabilities: Float? = null,
         @ColumnInfo(name = "octopus_disabilities")
-        var octopusDisabilities: Float,
+        var octopusDisabilities: Float? = null,
         @ColumnInfo(name = "cash_student")
-        var cashStudent: Float,
+        var cashStudent: Float? = null,
         @ColumnInfo(name = "octopus_student")
-        var octopusStudent: Float,
+        var octopusStudent: Float? = null,
         @ColumnInfo(name = "cash_child", typeAffinity = ColumnInfo.TEXT)
         var cashChild: String? = null,
         @ColumnInfo(name = "octopus_child", typeAffinity = ColumnInfo.TEXT)

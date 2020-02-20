@@ -10,7 +10,7 @@ data class AESBusStop(
         @ColumnInfo(name = "StopID", typeAffinity = ColumnInfo.TEXT)
         var stopId: String,
         @ColumnInfo(name = "BusNumber", typeAffinity = ColumnInfo.TEXT)
-        var busNumber: String,
+        var busNumber: String?= null,
         @ColumnInfo(name = "StopNameCN", typeAffinity = ColumnInfo.TEXT)
         var stopNameCn: String? = null,
         @ColumnInfo(name = "StopNameEN", typeAffinity = ColumnInfo.TEXT)

@@ -8,11 +8,11 @@ import androidx.room.PrimaryKey
 data class MtrBusFrequence(
         @PrimaryKey
         @ColumnInfo(name = "frequence_ID")
-        var frequenceId: Int,
+        var frequenceId: Int? = 0,
         @ColumnInfo(name = "routeLine_ID")
-        var routeLineId: Int,
+        var routeLineId: Int? = 0,
         @ColumnInfo(name = "description_en", typeAffinity = ColumnInfo.TEXT)
-        var descriptionEn: String,
+        var descriptionEn: String? = null,
         @ColumnInfo(name = "description_zh", typeAffinity = ColumnInfo.TEXT)
         var descriptionZh: String? = null,
         @ColumnInfo(name = "period", typeAffinity = ColumnInfo.TEXT)

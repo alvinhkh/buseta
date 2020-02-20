@@ -2,23 +2,23 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "cf68f163dd9775dbc20001957d4f7681",
+    "identityHash": "dd0b80b8f60fc96d71ecfead9331fd6f",
     "entities": [
       {
         "tableName": "busRoute",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`route_ID` INTEGER NOT NULL, `route_number` TEXT NOT NULL, `description_en` TEXT, `description_zh` TEXT, `extra_description_en` TEXT, `extra_description_zh` TEXT, `effectiveDate` TEXT, `frequency_remark_en` TEXT, `frequency_remark_zh` TEXT, `route_remark_en` TEXT, `route_remark_zh` TEXT, `hotline` TEXT, PRIMARY KEY(`route_ID`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`route_ID` INTEGER, `route_number` TEXT, `description_en` TEXT, `description_zh` TEXT, `extra_description_en` TEXT, `extra_description_zh` TEXT, `effectiveDate` TEXT, `frequency_remark_en` TEXT, `frequency_remark_zh` TEXT, `route_remark_en` TEXT, `route_remark_zh` TEXT, `hotline` TEXT, PRIMARY KEY(`route_ID`))",
         "fields": [
           {
             "fieldPath": "routeId",
             "columnName": "route_ID",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "routeNumber",
             "columnName": "route_number",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "descriptionEn",
@@ -92,25 +92,25 @@
       },
       {
         "tableName": "busRouteLine",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`routeLine_ID` INTEGER NOT NULL, `route_ID` INTEGER NOT NULL, `from_stop` TEXT NOT NULL, `shape` TEXT, `station_remark_en` TEXT, `station_remark_zh` TEXT, PRIMARY KEY(`routeLine_ID`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`routeLine_ID` INTEGER, `route_ID` INTEGER, `from_stop` TEXT, `shape` TEXT, `station_remark_en` TEXT, `station_remark_zh` TEXT, PRIMARY KEY(`routeLine_ID`))",
         "fields": [
           {
             "fieldPath": "routeLineId",
             "columnName": "routeLine_ID",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "routeId",
             "columnName": "route_ID",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "fromStop",
             "columnName": "from_stop",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "shape",
@@ -142,25 +142,25 @@
       },
       {
         "tableName": "busStop",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`stop_ID` INTEGER NOT NULL, `routeLine_ID` INTEGER NOT NULL, `name_en` TEXT NOT NULL, `name_ch` TEXT, `remark_en` TEXT, `remark_ch` TEXT, `rail_line` TEXT, `is_edge` INTEGER NOT NULL, `sort_order` INTEGER NOT NULL, `latitude` TEXT, `longitude` TEXT, `name2_en` TEXT, `name2_ch` TEXT, `ref_ID` TEXT, PRIMARY KEY(`stop_ID`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`stop_ID` INTEGER, `routeLine_ID` INTEGER, `name_en` TEXT, `name_ch` TEXT, `remark_en` TEXT, `remark_ch` TEXT, `rail_line` TEXT, `is_edge` INTEGER, `sort_order` INTEGER, `latitude` TEXT, `longitude` TEXT, `name2_en` TEXT, `name2_ch` TEXT, `ref_ID` TEXT, PRIMARY KEY(`stop_ID`))",
         "fields": [
           {
             "fieldPath": "stopId",
             "columnName": "stop_ID",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "routeLineId",
             "columnName": "routeLine_ID",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "nameEn",
             "columnName": "name_en",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "nameCh",
@@ -190,13 +190,13 @@
             "fieldPath": "isEdge",
             "columnName": "is_edge",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "sortOrder",
             "columnName": "sort_order",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "latitude",
@@ -240,67 +240,67 @@
       },
       {
         "tableName": "busFare",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`fare_ID` INTEGER NOT NULL, `route_ID` INTEGER NOT NULL, `cash_adult` REAL NOT NULL, `octopus_adult` REAL NOT NULL, `cash_child_senior` REAL NOT NULL, `octopus_child_senior` REAL NOT NULL, `cash_disabilities` REAL NOT NULL, `octopus_disabilities` REAL NOT NULL, `cash_student` REAL NOT NULL, `octopus_student` REAL NOT NULL, `cash_child` TEXT, `octopus_child` TEXT, `cash_senior` TEXT, `octopus_senior` TEXT, PRIMARY KEY(`fare_ID`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`fare_ID` INTEGER, `route_ID` INTEGER, `cash_adult` REAL, `octopus_adult` REAL, `cash_child_senior` REAL, `octopus_child_senior` REAL, `cash_disabilities` REAL, `octopus_disabilities` REAL, `cash_student` REAL, `octopus_student` REAL, `cash_child` TEXT, `octopus_child` TEXT, `cash_senior` TEXT, `octopus_senior` TEXT, PRIMARY KEY(`fare_ID`))",
         "fields": [
           {
             "fieldPath": "fareId",
             "columnName": "fare_ID",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "routeId",
             "columnName": "route_ID",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "cashAdult",
             "columnName": "cash_adult",
             "affinity": "REAL",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "octopusAdult",
             "columnName": "octopus_adult",
             "affinity": "REAL",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "cashChildSenior",
             "columnName": "cash_child_senior",
             "affinity": "REAL",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "octopusChildSenior",
             "columnName": "octopus_child_senior",
             "affinity": "REAL",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "cashDisabilities",
             "columnName": "cash_disabilities",
             "affinity": "REAL",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "octopusDisabilities",
             "columnName": "octopus_disabilities",
             "affinity": "REAL",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "cashStudent",
             "columnName": "cash_student",
             "affinity": "REAL",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "octopusStudent",
             "columnName": "octopus_student",
             "affinity": "REAL",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "cashChild",
@@ -338,25 +338,25 @@
       },
       {
         "tableName": "busFrequence",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`frequence_ID` INTEGER NOT NULL, `routeLine_ID` INTEGER NOT NULL, `description_en` TEXT NOT NULL, `description_zh` TEXT, `period` TEXT, `frequency` TEXT, `sort_order` INTEGER NOT NULL, PRIMARY KEY(`frequence_ID`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`frequence_ID` INTEGER, `routeLine_ID` INTEGER, `description_en` TEXT, `description_zh` TEXT, `period` TEXT, `frequency` TEXT, `sort_order` INTEGER NOT NULL, PRIMARY KEY(`frequence_ID`))",
         "fields": [
           {
             "fieldPath": "frequenceId",
             "columnName": "frequence_ID",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "routeLineId",
             "columnName": "routeLine_ID",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "descriptionEn",
             "columnName": "description_en",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "descriptionZh",
@@ -396,7 +396,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'cf68f163dd9775dbc20001957d4f7681')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'dd0b80b8f60fc96d71ecfead9331fd6f')"
     ]
   }
 }
