@@ -107,14 +107,15 @@ class RtNwstWorker(context : Context, params : WorkerParameters)
                     outboundData?.forEach { nwstRouteStop ->
                         val routeStop = RouteStop()
                         var nwstStop: NwstStop? = null
-                        if (stopMap.containsKey(nwstRouteStop.stopId)) {
-                            nwstStop = stopMap[nwstRouteStop.stopId]
+                        val outboundStopId = route.sequence + nwstRouteStop.stopId
+                        if (stopMap.containsKey(outboundStopId)) {
+                            nwstStop = stopMap[outboundStopId]
                         }
                         if (nwstStop == null) {
                             val stopResponse = dataGovHkService.nwstStop(nwstRouteStop.stopId).execute()
                             nwstStop = stopResponse.body()?.data
                             if (nwstStop != null) {
-                                stopMap[nwstRouteStop.stopId] = nwstStop!!
+                                stopMap[outboundStopId] = nwstStop!!
                             }
                         }
                         if (nwstStop != null) {
@@ -133,7 +134,7 @@ class RtNwstWorker(context : Context, params : WorkerParameters)
                             routeStop.routeSequence = route.sequence
                             routeStop.routeServiceType = route.serviceType
                             routeStop.sequence = nwstRouteStop.sequence.toString()
-                            routeStop.stopId = nwstRouteStop.stopId
+                            routeStop.stopId = route.sequence + nwstRouteStop.stopId
                             routeStop.lastUpdate = timeNow
 //                        routeStop.lastUpdate = nwstRouteStop.dataTimestamp
                             stopList.add(routeStop)
@@ -142,14 +143,15 @@ class RtNwstWorker(context : Context, params : WorkerParameters)
                     inboundData?.forEach { nwstRouteStop ->
                         val routeStop = RouteStop()
                         var nwstStop: NwstStop? = null
-                        if (stopMap.containsKey(nwstRouteStop.stopId)) {
-                            nwstStop = stopMap[nwstRouteStop.stopId]
+                        val inboundStopId = inboundRoute.sequence + nwstRouteStop.stopId
+                        if (stopMap.containsKey(inboundStopId)) {
+                            nwstStop = stopMap[inboundStopId]
                         }
                         if (nwstStop == null) {
                             val stopResponse = dataGovHkService.nwstStop(nwstRouteStop.stopId).execute()
                             nwstStop = stopResponse.body()?.data
                             if (nwstStop != null) {
-                                stopMap[nwstRouteStop.stopId] = nwstStop!!
+                                stopMap[inboundStopId] = nwstStop!!
                             }
                         }
                         if (nwstStop != null) {
@@ -165,7 +167,7 @@ class RtNwstWorker(context : Context, params : WorkerParameters)
                             routeStop.routeSequence = inboundRoute.sequence
                             routeStop.routeServiceType = inboundRoute.serviceType
                             routeStop.sequence = nwstRouteStop.sequence.toString()
-                            routeStop.stopId = nwstRouteStop.stopId
+                            routeStop.stopId = inboundRoute.sequence + nwstRouteStop.stopId
                             routeStop.lastUpdate = timeNow
 //                        routeStop.lastUpdate = nwstRouteStop.dataTimestamp
                             stopList.add(routeStop)

@@ -10,6 +10,7 @@ import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.route.model.RouteStop
+import com.alvinhkh.buseta.utils.PreferenceUtil
 import timber.log.Timber
 import java.text.ParseException
 import java.text.SimpleDateFormat
@@ -63,7 +64,13 @@ class RtNwstEtaWorker(private val context : Context, params : WorkerParameters)
         val arrivalTimeList = arrayListOf<ArrivalTime>()
         val timeNow = System.currentTimeMillis()
 
-        val response1 = dataGovHkService.nwstETA(companyCode, stopId, routeNo).execute()
+
+        val requestStopId = if (PreferenceUtil.isUsingNwstDataGovHkApi(applicationContext)) {
+            stopId.substring(1)
+        } else {
+            stopId
+        }
+        val response1 = dataGovHkService.nwstETA(companyCode, requestStopId, routeNo).execute()
         if (!response1.isSuccessful) {
             message(context.getString(R.string.message_fail_to_request), routeStop, timeNow)
             return Result.failure(outputData)
@@ -71,54 +78,63 @@ class RtNwstEtaWorker(private val context : Context, params : WorkerParameters)
 
         try {
             val body = response1.body()
-            if (body == null) {
-                message(context.getString(R.string.message_fail_to_request), routeStop, timeNow)
+            if (body == null || body.data?.size == 0) {
+                message(context.getString(R.string.message_no_data), routeStop, timeNow)
                 return Result.failure(outputData)
             }
 
+            var pos = 0
             body.data?.forEach { eta ->
-                val arrivalTime = ArrivalTime.emptyInstance(context, routeStop)
-                arrivalTime.companyCode = C.PROVIDER.NWST
-                if (eta.companyCode == C.PROVIDER.CTB || eta.companyCode == C.PROVIDER.NWFB) {
-                    arrivalTime.companyCode = eta.companyCode
-                }
-                try {
-                    val etaDate = isoDateFormat.parse(eta.eta)
-                    if (etaDate != null) {
-                        arrivalTime.text = SimpleDateFormat("HH:mm", Locale.ENGLISH).format(etaDate)
-                    }
-                    arrivalTime.isoTime = eta.eta
-                } catch (ee: ParseException) {
-                    arrivalTime.text = eta.eta
-                }
-                if (eta.remarkTc.startsWith("九巴")) {
-                    if (arrivalTime.text.isNotEmpty()) {
-                        arrivalTime.text += " "
-                    }
-                    arrivalTime.text += eta.remarkTc
+                val hasSameDestination = if (PreferenceUtil.isUsingNwstDataGovHkApi(applicationContext)) {
+                    routeStop.routeDestination?.replace(" ", "").equals(eta.destinationTc)
                 } else {
-                    arrivalTime.note = eta.remarkTc
+                    true
                 }
-                val routeDestination = (routeStop.routeDestination?:"").replace(" ", "")
-                val destinationTc = eta.destinationTc.replace(" ", "")
-                if (routeDestination.isNotEmpty() && destinationTc.isNotEmpty()
-                        && destinationTc != routeDestination) {
-                    if (arrivalTime.note.isNotEmpty()) {
-                        arrivalTime.note += " "
+                if (hasSameDestination) {
+                    val arrivalTime = ArrivalTime.emptyInstance(context, routeStop)
+                    arrivalTime.companyCode = C.PROVIDER.NWST
+                    if (eta.companyCode == C.PROVIDER.CTB || eta.companyCode == C.PROVIDER.NWFB) {
+                        arrivalTime.companyCode = eta.companyCode
                     }
-                    arrivalTime.note = eta.destinationTc
-                }
-//                arrivalTime.isSchedule = false
-                arrivalTime.generatedAt = (isoDateFormat.parse(eta.dataTimestamp)?:Date()).time
-                arrivalTime.companyCode = routeStop.companyCode?:""
-                arrivalTime.routeNo = routeStop.routeNo?:""
-                arrivalTime.routeSeq = routeStop.routeSequence?:""
-                arrivalTime.stopId = routeStop.stopId?:""
-                arrivalTime.stopSeq = routeStop.sequence?:""
-                arrivalTime.order = (eta.etaSequence - 1).toString()
+                    try {
+                        val etaDate = isoDateFormat.parse(eta.eta)
+                        if (etaDate != null) {
+                            arrivalTime.text = SimpleDateFormat("HH:mm", Locale.ENGLISH).format(etaDate)
+                        }
+                        arrivalTime.isoTime = eta.eta
+                    } catch (ee: ParseException) {
+                        arrivalTime.text = eta.eta
+                    }
+                    if (eta.remarkTc.startsWith("九巴")) {
+                        if (arrivalTime.text.isNotEmpty()) {
+                            arrivalTime.text += " "
+                        }
+                        arrivalTime.text += eta.remarkTc
+                    } else {
+                        arrivalTime.note = eta.remarkTc
+                    }
+                    val routeDestination = (routeStop.routeDestination?:"").replace(" ", "")
+                    val destinationTc = eta.destinationTc.replace(" ", "")
+                    if (routeDestination.isNotEmpty() && destinationTc.isNotEmpty()
+                            && destinationTc != routeDestination) {
+                        if (arrivalTime.note.isNotEmpty()) {
+                            arrivalTime.note += " "
+                        }
+                        arrivalTime.note = eta.destinationTc
+                    }
+//                    arrivalTime.isSchedule = false
+                    arrivalTime.generatedAt = (isoDateFormat.parse(eta.dataTimestamp)?:Date()).time
+                    arrivalTime.companyCode = routeStop.companyCode?:""
+                    arrivalTime.routeNo = routeStop.routeNo?:""
+                    arrivalTime.routeSeq = routeStop.routeSequence?:""
+                    arrivalTime.stopId = routeStop.stopId?:""
+                    arrivalTime.stopSeq = routeStop.sequence?:""
+                    arrivalTime.order = pos.toString()
 
-                arrivalTime.updatedAt = timeNow
-                arrivalTimeList.add(arrivalTime)
+                    arrivalTime.updatedAt = timeNow
+                    arrivalTimeList.add(pos, arrivalTime)
+                    pos++
+                }
             }
             arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTimeList)
             return Result.success(outputData)
