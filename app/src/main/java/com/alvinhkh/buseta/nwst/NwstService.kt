@@ -8,6 +8,7 @@ import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Retrofit
+import retrofit2.converter.scalars.ScalarsConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 import retrofit2.http.QueryMap
@@ -25,7 +26,7 @@ interface NwstService {
             @Query(QUERY_VERSION2) version2: String,
             @Query(value = QUERY_SYSCODE2, encoded = true) sysCode2: String,
             @Query(QUERY_TK) tk: String
-    ): Call<ResponseBody>
+    ): Call<String>
 
     @GET("push/pushtokenenable.php")
     fun pushTokenEnable(
@@ -40,7 +41,7 @@ interface NwstService {
             @Query(QUERY_VERSION) version: String,
             @Query(QUERY_VERSION2) version2: String,
             @Query(value = QUERY_SYSCODE2, encoded = true) sysCode2: String
-    ): Call<ResponseBody>
+    ): Call<String>
 
     @GET("push/pushtoken.php")
     fun pushToken(
@@ -55,7 +56,7 @@ interface NwstService {
             @Query(QUERY_VERSION) version: String,
             @Query(QUERY_VERSION2) version2: String,
             @Query(value = QUERY_SYSCODE2, encoded = true) sysCode2: String
-    ): Call<ResponseBody>
+    ): Call<String>
 
     @GET("api6/getroutelist2.php?ui_v2=Y")
     fun routeList(
@@ -64,18 +65,22 @@ interface NwstService {
             @Query(QUERY_SYSCODE) sysCode: String,
             @Query(QUERY_PLATFORM) platform: String,
             @Query(QUERY_VERSION) version: String,
-            @Query(value = QUERY_SYSCODE2, encoded = true) sysCode2: String
-    ): Call<ResponseBody>
+            @Query(QUERY_TK) tk: String
+    ): Call<String>
 
     @GET("api6/getvariantlist.php?ui_v2=Y")
     fun variantList(
             @Query(QUERY_ID) id: String,
             @Query(QUERY_LANGUAGE) language: String,
+            @Query(QUERY_RDV) rdv: String,
+            @Query(QUERY_BOUND) bound: String,
             @Query(QUERY_SYSCODE) sysCode: String,
             @Query(QUERY_PLATFORM) platform: String,
             @Query(QUERY_VERSION) version: String,
-            @Query(value = QUERY_SYSCODE2, encoded = true) sysCode2: String
-    ): Call<ResponseBody>
+            @Query(QUERY_TK) tk: String,
+            @Query("syscode5") sysCode5: String,
+            @Query("appid") appId: String
+    ): Call<String>
 
     @GET("api6/ppstoplist.php?ui_v2=Y")
     fun ppStopList(
@@ -84,8 +89,9 @@ interface NwstService {
             @Query(QUERY_SYSCODE) sysCode: String,
             @Query(QUERY_PLATFORM) platform: String,
             @Query(QUERY_VERSION) version: String,
-            @Query(value = QUERY_SYSCODE2, encoded = true) sysCode2: String
-    ): Call<ResponseBody>
+            @Query("syscode5") sysCode5: String,
+            @Query("appid") appId: String
+    ): Call<String>
 
     @GET("api6/get_notice_4.php?ui_v2=Y")
     fun noticeListAsync(@QueryMap options: Map<String, String>): Deferred<Response<ResponseBody>>
@@ -105,28 +111,11 @@ interface NwstService {
             @Query(QUERY_SYSCODE) sysCode: String,
             @Query(QUERY_PLATFORM) platform: String,
             @Query(QUERY_VERSION) version: String,
-            @Query(QUERY_VERSION2) version2: String
-    ): Call<ResponseBody>
-
-    @GET("api6/getEta.php?mode=3eta&ui_v2=Y")
-    fun eta(
-            @Query(QUERY_STOP_ID) stopId: String,
-            @Query(QUERY_SERVICE_NO) serviceNo: String,
-            @Query("removeRepeatedSuspend") removeRepeatedSuspend: String,
-            @Query("interval") interval: String,
-            @Query(QUERY_LANGUAGE) language: String,
-            @Query(QUERY_BOUND) bound: String,
-            @Query(QUERY_STOP_SEQ) stopSeq: String,
-            @Query(QUERY_RDV) rdv: String,
-            @Query("showtime") showtime: String,
-            @Query("removeRepeatedSuspend") removeRepeatedSuspend2: String,
-            @Query(QUERY_SYSCODE) sysCode: String,
-            @Query(QUERY_PLATFORM) platform: String,
-            @Query(QUERY_VERSION) version: String,
             @Query(QUERY_VERSION2) version2: String,
-            @Query(value = QUERY_SYSCODE2, encoded = true) sysCode2: String,
-            @Query(QUERY_TK) tk: String
-    ): Call<ResponseBody>
+            @Query(QUERY_TK) tk: String,
+            @Query("syscode5") sysCode5: String,
+            @Query("appid") appId: String
+    ): Call<String>
 
     @GET("api6/getline_multi2.php?ui_v2=Y")
     fun lineMulti2(
@@ -136,7 +125,7 @@ interface NwstService {
             @Query(QUERY_PLATFORM) platform: String,
             @Query(QUERY_VERSION) version: String,
             @Query(value = QUERY_SYSCODE2, encoded = true) sysCode2: String
-    ): Call<ResponseBody>
+    ): Call<String>
 
     @GET("api6/gettimetable.php?ui_v2=Y")
     fun timetable(
@@ -148,7 +137,7 @@ interface NwstService {
             @Query(QUERY_VERSION) version: String,
             @Query(value = QUERY_SYSCODE2, encoded = true) sysCode2: String,
             @Query(QUERY_TK) tk: String
-    ): Call<ResponseBody>
+    ): Call<String>
 
     @GET("api6/getremark_2.php")
     fun remark(
@@ -159,7 +148,7 @@ interface NwstService {
             @Query(QUERY_VERSION) version: String,
             @Query(value = QUERY_SYSCODE2, encoded = true) sysCode2: String,
             @Query(QUERY_TK) tk: String
-    ): Call<ResponseBody>
+    ): Call<String>
 
     @GET("api6/getspecial.php?ui_v2=Y")
     fun specialAsync(@QueryMap options: Map<String, String>): Deferred<Response<ResponseBody>>
@@ -212,31 +201,23 @@ interface NwstService {
 
         const val QUERY_SYSCODE2 = "syscode2"
 
-        const val QUERY_SYSCODE3 = "syscode3"
-
         const val QUERY_TK = "tk"
 
         const val QUERY_VERSION = "version"
 
         const val QUERY_VERSION2 = "version2"
 
-        const val TYPE_ALL_ROUTES = "0"
-
-        const val TYPE_AIRPORT_ROUTES = "5"
-
-        const val TYPE_ETA_ROUTES = "2"
-
-        const val TYPE_NIGHT_ROUTES = "1"
-
         val api = Retrofit.Builder()
-                .client(App.httpClient)
+                .client(App.httpClient2)
                 .baseUrl("https://mobile.nwstbus.com.hk/")
+                .addConverterFactory(ScalarsConverterFactory.create())
                 .build()
 
         val apiCoroutine = Retrofit.Builder()
-                .client(App.httpClient)
+                .client(App.httpClient2)
                 .baseUrl("https://mobile.nwstbus.com.hk/")
                 .addCallAdapterFactory(CoroutineCallAdapterFactory.invoke())
+                .addConverterFactory(ScalarsConverterFactory.create())
                 .build()
     }
 

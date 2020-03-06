@@ -11,7 +11,9 @@ data class NwstRoute(
         var rdv: String = "",
         var routeIndex: String = "",
         var bound: String = "",
-        var remark: String = ""
+        var remark: String = "",
+        var stopsStartSequence: Int = 0,
+        var stopsEndSequence: Int = 0
 ) {
 
     companion object {
@@ -31,6 +33,12 @@ data class NwstRoute(
             obj.bound = data[9]
             if (data.size > 10) {
                 obj.remark = data[10]
+            }
+            if (data.size > 13) {
+                // data[11] // KMB
+                obj.stopsStartSequence = data[12].toIntOrNull()?:0
+                obj.stopsEndSequence = data[13].toIntOrNull()?:0
+                // data[14] // N
             }
             return obj
         }

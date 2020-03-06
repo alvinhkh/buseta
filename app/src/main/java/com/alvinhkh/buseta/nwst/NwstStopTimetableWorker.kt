@@ -45,7 +45,7 @@ class NwstStopTimetableWorker(private val context : Context, params : WorkerPara
 
                     val timetableResponse = nwstService.timetable(rdv, routeSequence,
                             LANGUAGE_TC, syscode, PLATFORM, APP_VERSION, syscode2, tk).execute()
-                    val timetableHtml = timetableResponse.body()?.string()?:""
+                    val timetableHtml = timetableResponse.body()?:""
                     val timetableFile = File(context.cacheDir, "nwst-timeable-" + routeNo + "-" + System.currentTimeMillis() + ".html")
                     val timetableStream = FileOutputStream(timetableFile)
                     PrintStream(timetableStream).use { out -> out.print(timetableHtml) }
@@ -54,7 +54,7 @@ class NwstStopTimetableWorker(private val context : Context, params : WorkerPara
 
                     val remarkResponse = nwstService.remark(rdv,
                             LANGUAGE_TC, syscode, PLATFORM, APP_VERSION, syscode2, tk).execute()
-                    val remarkHtml = remarkResponse.body()?.string()?:""
+                    val remarkHtml = remarkResponse.body()?:""
                     val remarkFile = File(context.cacheDir, "nwst-remark-" + routeNo + "-" + System.currentTimeMillis() + ".html")
                     val remarkStream = FileOutputStream(remarkFile)
                     PrintStream(remarkStream).use { out -> out.print(remarkHtml) }

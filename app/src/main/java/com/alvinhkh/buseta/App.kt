@@ -37,6 +37,13 @@ class App : Application() {
                 .writeTimeout(20, TimeUnit.SECONDS)
                 .readTimeout(40, TimeUnit.SECONDS)
                 .build()
+        val builder2 = OkHttpClient.Builder()
+        builder2.addNetworkInterceptor(UserAgentInterceptor())
+        httpClient2 = builder2
+                .connectTimeout(20, TimeUnit.SECONDS)
+                .writeTimeout(20, TimeUnit.SECONDS)
+                .readTimeout(40, TimeUnit.SECONDS)
+                .build()
 
         val crashlytics = Crashlytics.Builder()
                 .core(CrashlyticsCore.Builder().disabled(BuildConfig.DEBUG).build())
@@ -67,7 +74,7 @@ class App : Application() {
                 .setMinimumFetchIntervalInSeconds(cacheExpiration)
                 .build()
         firebaseRemoteConfig.setConfigSettingsAsync(configSettings)
-        firebaseRemoteConfig.setDefaults(R.xml.remote_config_defaults)
+        firebaseRemoteConfig.setDefaultsAsync(R.xml.remote_config_defaults)
         firebaseRemoteConfig.fetch(0)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {

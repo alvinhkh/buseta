@@ -1,6 +1,7 @@
 package com.alvinhkh.buseta.nwst
 
 import android.content.Context
+import androidx.preference.PreferenceManager
 import androidx.work.*
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.route.model.Route
@@ -8,6 +9,8 @@ import com.alvinhkh.buseta.nwst.model.NwstRoute
 import com.alvinhkh.buseta.nwst.model.NwstVariant
 import com.alvinhkh.buseta.nwst.util.NwstRequestUtil
 import com.alvinhkh.buseta.route.dao.RouteDatabase
+import com.alvinhkh.buseta.utils.HashUtil
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import timber.log.Timber
 
 class NwstRouteWorker(context : Context, params : WorkerParameters)
@@ -16,6 +19,8 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
     private val nwstService = NwstService.api.create(NwstService::class.java)
 
     private val routeDatabase = RouteDatabase.getInstance(context)
+
+    private val firebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
 
     override fun doWork(): Result {
         val manualUpdate = inputData.getBoolean(C.EXTRA.MANUAL, false)
@@ -29,35 +34,65 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
                 .putString(C.EXTRA.ROUTE_NO, routeNo)
                 .putBoolean(C.EXTRA.LOAD_STOP, loadStop)
                 .build()
+        val preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
 
         val routeList = arrayListOf<Route>()
         val timeNow = System.currentTimeMillis() / 1000
 
         try {
+            val sysCode5 = firebaseRemoteConfig.getString("nwst_syscode5")
+            val appId = firebaseRemoteConfig.getString("nwst_appid")
+            var tk = preferences.getString("nwst_tk", "")?:""
+            val r0 = nwstService.pushTokenEnable(tk, tk, NwstService.LANGUAGE_TC, "", "Y", NwstService.DEVICETYPE,
+                    NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
+                    NwstRequestUtil.syscode2()).execute()
+            if (r0.body() != "Already Registered") {
+                tk = HashUtil.randomHexString(64)
+                nwstService.pushToken(tk, tk, NwstService.LANGUAGE_TC, "", "R", NwstService.DEVICETYPE,
+                        NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
+                        NwstRequestUtil.syscode2()).execute()
+                nwstService.pushTokenEnable(tk, tk, NwstService.LANGUAGE_TC, "", "Y", NwstService.DEVICETYPE,
+                        NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
+                        NwstRequestUtil.syscode2()).execute()
+                nwstService.adv(NwstService.LANGUAGE_TC, "640",
+                        NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
+                        NwstRequestUtil.syscode2(), tk).execute()
+                val editor = preferences.edit()
+                editor.putString("nwst_tk", tk)
+                editor.apply()
+            }
+
             val response = nwstService.routeList(routeNo, NwstService.LANGUAGE_TC,
                     NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION,
-                    NwstRequestUtil.syscode2()).execute()
+                    tk).execute()
             if (!response.isSuccessful) {
+                Timber.d("%s", response.message())
+                return Result.failure(outputData)
+            }
+            val res = response.body()
+            if (res == null || res.isNullOrEmpty()) {
                 return Result.failure(outputData)
             }
 
-            val res = response.body()
-            val routeArray = res?.string()?.split("\\|\\*\\|".toRegex())?.toTypedArray()
-            for (rt in routeArray?: emptyArray()) {
+            val routeArray = res.split("\\|\\*\\|".toRegex()).toTypedArray()
+            for (rt in routeArray) {
                 val text = rt.replace("<br>", "").trim { it <= ' ' }
                 if (text.isEmpty()) continue
                 val nwstRoute = NwstRoute.fromString(text)
                 if (nwstRoute != null && nwstRoute.routeNo.isNotBlank()) {
-                    val response2 = nwstService.variantList(nwstRoute.rdv, NwstService.LANGUAGE_TC,
-                            NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION,
-                            NwstRequestUtil.syscode2()).execute()
+                    val response2 = nwstService.variantList(nwstRoute.rdv,
+                            NwstService.LANGUAGE_TC, nwstRoute.routeNo+"-"+nwstRoute.locationCode+"-1", nwstRoute.bound,
+                            NwstRequestUtil.syscode(), NwstService.PLATFORM,
+                            NwstService.APP_VERSION, tk, sysCode5, appId).execute()
                     if (!response2.isSuccessful) {
+                        Timber.d("%s", response2.message())
                         return Result.failure(outputData)
                     }
                     val res2 = response2.body()
-
-                    val b = res2?.string()?:""
-                    val datas = b.split("<br>".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+                    if (res2 == null || res2.isEmpty()) {
+                        return Result.failure(outputData)
+                    }
+                    val datas = res2.split("<br>".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
                     for (data in datas) {
                         val text2 = data.trim { it <= ' ' }
                         if (text2.isEmpty()) continue
@@ -73,7 +108,7 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
                         if (variant != null) {
                             route.stopsStartSequence = variant.startSequence
                             route.description = variant.remark
-                            route.isSpecial = !variant.remark.isEmpty() && variant.remark != "正常路線"
+                            route.isSpecial = variant.remark.isNotEmpty() && variant.remark != "正常路線"
                             route.code = variant.routeInfo
                         }
                         route.lastUpdate = timeNow
@@ -121,7 +156,9 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
                 requests.add(OneTimeWorkRequest.Builder(NwstStopListWorker::class.java)
                         .setInputData(data).addTag(routeStopListTag).build())
             }
-            WorkManager.getInstance().enqueue(requests)
+            if (requests.size > 0) {
+                WorkManager.getInstance().enqueue(requests)
+            }
         }
 
         return Result.success(outputData)

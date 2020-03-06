@@ -39,8 +39,8 @@ data class NwstVariant(
                 val tmp2 = obj.routeInfo.split("***")
                 if (tmp2.size == 6) {
                     obj.companyCode = tmp2[0]
-                    obj.startSequence = tmp2[2].toInt()
-                    obj.endSequence = tmp2[3].toInt()
+                    obj.startSequence = tmp2[2].toIntOrNull()?:0
+                    obj.endSequence = tmp2[3].toIntOrNull()?:0
                     obj.routeIndex = tmp2[4]
                     obj.bound = tmp2[5]
                 }
@@ -55,8 +55,8 @@ data class NwstVariant(
                 if (tmp2.size == 6) {
                     obj.companyCode = tmp2[0]
                     obj.rdv = tmp2[1]
-                    obj.startSequence = tmp2[2].toInt()
-                    obj.endSequence = tmp2[3].toInt()
+                    obj.startSequence = tmp2[2].toIntOrNull()?:0
+                    obj.endSequence = tmp2[3].toIntOrNull()?:0
                     obj.routeIndex = tmp2[4]
                     obj.bound = tmp2[5]
                 }

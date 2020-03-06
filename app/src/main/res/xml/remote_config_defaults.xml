@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <defaultsMap>
     <entry>
-        <key>mtr_schedule_secret</key>
-        <value>key</value>
+        <key>nwst_syscode5</key>
+        <value></value>
+    </entry>
+    <entry>
+        <key>nwst_appid</key>
+        <value></value>
     </entry>
 </defaultsMap>
