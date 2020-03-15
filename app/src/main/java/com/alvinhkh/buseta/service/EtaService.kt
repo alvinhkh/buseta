@@ -131,11 +131,11 @@ class EtaService : LifecycleService() {
                     }
                     C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> {
                         workerRequest = OneTimeWorkRequest.Builder(
-//                                if (PreferenceUtil.isUsingNwstDataGovHkApi(applicationContext)) {
+                                if (PreferenceUtil.isUsingNwstDataGovHkApi(applicationContext)) {
                                     RtNwstEtaWorker::class.java
-//                                } else {
-//                                    NwstEtaWorker::class.java
-//                                }
+                                } else {
+                                    NwstEtaWorker::class.java
+                                }
                         ).addTag(tag).setInputData(data).build()
                     }
                     C.PROVIDER.KMB, C.PROVIDER.LWB -> {
