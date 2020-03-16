@@ -163,6 +163,7 @@
     <string name="arrival_alert_leaving">離開落車提示車站範圍</string>
     <string name="arrival_alert_unknown">到站落車提示: 未知問題</string>
     <string name="latest_news">最新消息</string>
+    <string name="traffic_news">交通消息</string>
     <string name="notice">通告</string>
     <string name="km">%1$.2f公里</string>
     <string name="km_short">%1$.2fkm</string>

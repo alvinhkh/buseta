@@ -3,6 +3,7 @@ package com.alvinhkh.buseta.ui
 import android.app.ActivityManager
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
@@ -18,6 +19,7 @@ import com.alvinhkh.buseta.follow.ui.FollowGroupFragment
 import com.alvinhkh.buseta.mtr.ui.MtrLineStatusFragment
 import com.alvinhkh.buseta.search.ui.HistoryFragment
 import com.alvinhkh.buseta.service.ProviderUpdateService
+import com.alvinhkh.buseta.ui.webview.WebViewFragment
 import com.alvinhkh.buseta.utils.AdViewUtil
 import com.alvinhkh.buseta.utils.ColorUtil
 import com.google.android.material.snackbar.Snackbar
@@ -86,6 +88,18 @@ class MainActivity : BaseActivity() {
                         ft.commit()
                     }
                 }
+                R.id.action_traffic_news -> {
+                    if (fm.findFragmentByTag("traffic_news") == null) {
+                        val newsUrl = "https://www.hkemobility.gov.hk/loadtrafficinfo.php?mode=0&lang=TC&color=null&sysid=54"
+                        title = getString(R.string.traffic_news)
+                        colorRes = Color.parseColor("#008000")
+                        val ft = fm.beginTransaction()
+                        ft.replace(R.id.fragment_container, WebViewFragment.newInstance(getString(R.string.traffic_news), newsUrl))
+                        ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                        ft.addToBackStack("traffic_news")
+                        ft.commit()
+                    }
+                }
                 else -> finish()
             }
             supportActionBar?.title = title
@@ -121,6 +135,7 @@ class MainActivity : BaseActivity() {
                     "FollowFragment" -> bottomNavigationView.selectedItemId = R.id.action_follow
                     "HistoryFragment" -> bottomNavigationView.selectedItemId = R.id.action_search_history
                     "MtrLineStatusFragment" -> bottomNavigationView.selectedItemId = R.id.action_railway
+                    "WebViewFragment" -> bottomNavigationView.selectedItemId = R.id.action_traffic_news
                 }
             }
         }

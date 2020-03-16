@@ -12,4 +12,8 @@
         android:id="@+id/action_railway"
         android:icon="@drawable/ic_outline_directions_railway_24dp"
         android:title="@string/railway" />
+    <item
+        android:id="@+id/action_traffic_news"
+        android:icon="@drawable/ic_outline_event_note_24dp"
+        android:title="@string/traffic_news" />
 </menu>
