@@ -1,23 +1,23 @@
 package com.alvinhkh.buseta.mtr.ui
 
+import android.content.Intent
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.view.*
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import androidx.fragment.app.Fragment
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkManager
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.mtr.MtrLineWorker
+import com.alvinhkh.buseta.ui.image.ImageActivity
 import com.alvinhkh.buseta.utils.ConnectivityUtil
 
 
@@ -81,8 +81,25 @@ class MtrLineStatusFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
         swipeRefreshLayout.isRefreshing = false
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.menu_route, menu)
+        menu.findItem(R.id.action_search)?.isVisible = false
+        menu.findItem(R.id.action_search_open)?.isVisible = false
+        menu.findItem(R.id.action_show_map)?.isVisible = true
+        menu.findItem(R.id.action_notice)?.isVisible = false
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            R.id.action_show_map -> {
+                val intent = Intent(context, ImageActivity::class.java)
+                intent.putExtra(ImageActivity.IMAGE_TITLE, "港鐵車務狀況 (運輸署)")
+                intent.putExtra(ImageActivity.IMAGE_URL, "http://210.3.170.180/mtr_status/MTR.jpg")
+                intent.putExtra(ImageActivity.COLOUR, ContextCompat.getColor(context!!, R.color.black))
+                startActivity(intent)
+                return true
+            }
             R.id.action_refresh -> onRefresh()
         }
         return super.onOptionsItemSelected(item)

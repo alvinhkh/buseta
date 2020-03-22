@@ -5,10 +5,7 @@ import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.util.Base64
-import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.appcompat.app.ActionBar
@@ -84,6 +81,12 @@ class WebViewFragment : Fragment() {
     override fun onDestroyView() {
         view?.visibility = View.GONE
         super.onDestroyView()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        menu.findItem(R.id.action_search)?.isVisible = false
+        menu.findItem(R.id.action_search_open)?.isVisible = false
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

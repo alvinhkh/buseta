@@ -6,16 +6,13 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
+import android.view.*
 import androidx.annotation.RequiresApi
 import com.google.android.material.snackbar.Snackbar
 import androidx.fragment.app.Fragment
 import androidx.core.content.ContextCompat
 import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
-import android.view.LayoutInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
 import android.webkit.URLUtil
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -91,7 +88,7 @@ class ImageFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        actionBar.setTitle(R.string.notice)
+        actionBar.title = ""
         actionBar.subtitle = null
     }
 
@@ -99,6 +96,12 @@ class ImageFragment : Fragment() {
         photoView.setImageBitmap(null)
         view?.visibility = View.GONE
         super.onDestroyView()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        menu.findItem(R.id.action_search)?.isVisible = false
+        menu.findItem(R.id.action_search_open)?.isVisible = false
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -114,14 +117,13 @@ class ImageFragment : Fragment() {
     private fun setTaskDescription(title: String?) {
         // overview task
         if (Build.VERSION.SDK_INT >= 28) {
-            val taskDesc = ActivityManager.TaskDescription(title,
-                    R.mipmap.ic_launcher, R.color.colorPrimary600)
-            activity?.setTaskDescription(taskDesc)
-        } else {
+            activity?.setTaskDescription(ActivityManager.TaskDescription(title, R.mipmap.ic_launcher,
+                    ContextCompat.getColor(context!!, R.color.black)))
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             val bm = BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher)
-            val taskDesc = ActivityManager.TaskDescription(title, bm,
-                    ContextCompat.getColor(context!!, R.color.colorPrimary600))
-            activity?.setTaskDescription(taskDesc)
+            @Suppress("DEPRECATION")
+            activity?.setTaskDescription(ActivityManager.TaskDescription(title, bm,
+                    ContextCompat.getColor(context!!, R.color.black)))
         }
     }
 
@@ -141,6 +143,7 @@ class ImageFragment : Fragment() {
             return
         }
         progressBar.visibility = View.VISIBLE
+        photoView.setImageBitmap(null)
 
         WorkManager.getInstance().cancelAllWorkByTag(TAG)
         val request = OneTimeWorkRequest.Builder(ImageDownloadWorker::class.java)
