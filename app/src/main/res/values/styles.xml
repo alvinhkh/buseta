@@ -70,17 +70,13 @@
         <item name="android:windowExitAnimation">@anim/slide_down</item>
     </style>
 
-    <style name="TextAppearance.AppTheme.XSmall" parent="@style/TextAppearance.AppCompat.Small">
-        <item name="android:textSize">12sp</item>
-    </style>
-
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.MaterialComponents.Dark.ActionBar"/>
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.MaterialComponents.Light"/>
 
     <style name="AppTheme.PopupOverlay.Dark" parent="ThemeOverlay.MaterialComponents.Dark"/>
 
-    <style name="AppTheme.Dialog" parent="Theme.AppCompat.DayNight.Dialog.Alert">
+    <style name="AppTheme.Dialog" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
         <item name="android:background">@color/background</item>
         <item name="android:textColorPrimary">@color/textPrimary</item>
         <item name="android:textColorSecondary">@color/textSecondary</item>
