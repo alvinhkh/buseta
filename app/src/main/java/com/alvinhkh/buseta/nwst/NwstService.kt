@@ -155,9 +155,9 @@ interface NwstService {
 
     companion object {
 
-        const val APP_VERSION = "4.0.2"
+        const val APP_VERSION = "4.1.2"
 
-        const val APP_VERSION2 = "62"
+        const val APP_VERSION2 = "65"
 
         const val DEVICETYPE = "android"
 
@@ -209,13 +209,13 @@ interface NwstService {
 
         val api = Retrofit.Builder()
                 .client(App.httpClient2)
-                .baseUrl("https://mobile.nwstbus.com.hk/")
+                .baseUrl("https://mobile05.nwstbus.com.hk/")
                 .addConverterFactory(ScalarsConverterFactory.create())
                 .build()
 
         val apiCoroutine = Retrofit.Builder()
                 .client(App.httpClient2)
-                .baseUrl("https://mobile.nwstbus.com.hk/")
+                .baseUrl("https://mobile05.nwstbus.com.hk/")
                 .addCallAdapterFactory(CoroutineCallAdapterFactory.invoke())
                 .addConverterFactory(ScalarsConverterFactory.create())
                 .build()
