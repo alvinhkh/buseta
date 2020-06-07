@@ -19,8 +19,8 @@ class FollowGroupPagerAdapter(fm: FragmentManager) : FragmentStatePagerAdapter(f
     override fun getPageTitle(position: Int): CharSequence? {
         val followGroup = groupList[position]
         return when {
-            followGroup.name.isNotEmpty() -> followGroup.name
             followGroup.id == FollowGroup.UNCATEGORISED -> "未分類"
+            followGroup.name.isNotEmpty() -> followGroup.name
             else -> followGroup.id
         }
     }

@@ -47,6 +47,7 @@ import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.follow.model.Follow
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
+import com.alvinhkh.buseta.follow.model.FollowGroup
 import com.alvinhkh.buseta.follow.ui.FollowGroupDialogFragment
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.route.model.Route
@@ -580,8 +581,20 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                 if (count != null) {
                     vh.followButton?.setIconResource(if (count > 0) R.drawable.ic_outline_bookmark_36dp else R.drawable.ic_outline_bookmark_border_36dp)
                     vh.followButton?.setOnClickListener {
-                        val fragment = FollowGroupDialogFragment.newInstance(follow)
-                        fragment.show(childFragmentManager, "follow_group_dialog_fragment")
+                        if (count > 0) {
+                            val fragment = FollowGroupDialogFragment.newInstance(follow)
+                            fragment.show(childFragmentManager, "follow_group_dialog_fragment")
+                        } else {
+                            val noGroup = followDatabase.followGroupDao().get(FollowGroup.UNCATEGORISED)
+                            if (noGroup == null) {
+                                followDatabase.followGroupDao().insert(FollowGroup(FollowGroup.UNCATEGORISED, "", ""))
+                            }
+                            val f = follow.copy()
+                            f._id = 0
+                            f.groupId = FollowGroup.UNCATEGORISED
+                            f.updatedAt = System.currentTimeMillis()
+                            followDatabase.followDao().insert(f)
+                        }
                     }
                 }
             })

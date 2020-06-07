@@ -72,8 +72,8 @@ class EditFollowGroupViewAdapter(
                 true
             }
             val name = when {
-                followGroup.name.isNotEmpty() -> followGroup.name
                 followGroup.id == FollowGroup.UNCATEGORISED -> itemView.context.getString(R.string.uncategorised)
+                followGroup.name.isNotEmpty() -> followGroup.name
                 else -> followGroup.id
             }
             itemView.findViewById<TextView>(R.id.name).text = name

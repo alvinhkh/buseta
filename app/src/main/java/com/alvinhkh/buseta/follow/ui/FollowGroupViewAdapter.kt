@@ -56,8 +56,8 @@ class FollowGroupViewAdapter(
         @SuppressLint("ClickableViewAccessibility")
         fun bindItems(followGroup: FollowGroup, follow: Follow, followDatabase: FollowDatabase, fragmentRef: WeakReference<BottomSheetDialogFragment>) {
             itemView.findViewById<TextView>(R.id.name).text = when {
-                followGroup.name.isNotEmpty() -> followGroup.name
                 followGroup.id == FollowGroup.UNCATEGORISED -> itemView.context.getString(R.string.uncategorised)
+                followGroup.name.isNotEmpty() -> followGroup.name
                 else -> followGroup.id
             }
             val followCount = followDatabase.followDao().count(followGroup.id, follow.companyCode,

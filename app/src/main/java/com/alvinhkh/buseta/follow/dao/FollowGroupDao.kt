@@ -18,7 +18,7 @@ interface FollowGroupDao {
     fun delete(id: String): Int
 
     @Query("SELECT * FROM follow_category WHERE `id` = :id")
-    fun get(id: String): FollowGroup
+    fun get(id: String): FollowGroup?
 
     @Update
     fun updateAll(vararg entity: FollowGroup)

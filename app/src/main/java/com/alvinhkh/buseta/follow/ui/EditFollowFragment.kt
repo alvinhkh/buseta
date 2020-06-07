@@ -75,8 +75,8 @@ class EditFollowFragment: Fragment(), OnItemDragListener {
                     if (activity != null) {
                         val actionBar = (activity as AppCompatActivity).supportActionBar
                         val name = when {
-                            !followGroup?.name.isNullOrEmpty() -> followGroup?.name
                             followGroup?.id == FollowGroup.UNCATEGORISED -> getString(R.string.uncategorised)
+                            !followGroup?.name.isNullOrEmpty() -> followGroup?.name
                             else -> followGroup?.id
                         }?:""
                         actionBar?.title = name
@@ -97,7 +97,7 @@ class EditFollowFragment: Fragment(), OnItemDragListener {
         buttonContainer.visibility = View.VISIBLE
         val editButton = rootView.findViewById<MaterialButton>(R.id.edit_button)
         editButton.setOnClickListener { view ->
-            val followGroup = followDatabase.followGroupDao().get(groupId)
+            val followGroup = followDatabase.followGroupDao().get(groupId)?: return@setOnClickListener
             val builder = AlertDialog.Builder(view.context, R.style.AppTheme_Dialog)
             builder.setTitle(R.string.rename)
             val layout = LinearLayout(builder.context)
@@ -123,7 +123,7 @@ class EditFollowFragment: Fragment(), OnItemDragListener {
         }
         val colourButton = rootView.findViewById<MaterialButton>(R.id.colour_button)
         colourButton.setOnClickListener { view ->
-            val followGroup = followDatabase.followGroupDao().get(groupId)
+            val followGroup = followDatabase.followGroupDao().get(groupId)?: return@setOnClickListener
             val builder = AlertDialog.Builder(view.context, R.style.AppTheme_Dialog)
             builder.setTitle(R.string.colour)
             val layout = LinearLayout(builder.context)
@@ -145,7 +145,7 @@ class EditFollowFragment: Fragment(), OnItemDragListener {
                 override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
                 override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
                     try {
-                        colorPickerView.color = Color.parseColor("#" + s.toString())
+                        colorPickerView.color = Color.parseColor("#$s")
                     } catch (ignored: Throwable) {}
                 }
             })
@@ -172,7 +172,7 @@ class EditFollowFragment: Fragment(), OnItemDragListener {
         }
         val deleteButton = rootView.findViewById<MaterialButton>(R.id.delete_button)
         deleteButton.setOnClickListener { view ->
-            val followGroup = followDatabase.followGroupDao().get(groupId)
+            val followGroup = followDatabase.followGroupDao().get(groupId)?: return@setOnClickListener
             val builder = AlertDialog.Builder(view.context, R.style.AppTheme_Dialog)
             builder.setTitle(R.string.remove_group)
             builder.setMessage(followGroup.name)
@@ -191,7 +191,7 @@ class EditFollowFragment: Fragment(), OnItemDragListener {
             builder.create().show()
         }
         val group = followDatabase.followGroupDao().get(groupId)
-        if (group.id == FollowGroup.UNCATEGORISED) {
+        if (group?.id?:"" == FollowGroup.UNCATEGORISED) {
             editButton.visibility = View.INVISIBLE
             deleteButton.visibility = View.INVISIBLE
         }

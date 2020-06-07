@@ -49,8 +49,8 @@ class FollowWidgetConfigurationActivity : AppCompatActivity() {
             followGroupList = list?.toList()?: emptyList()
             list.forEach { followGroup ->
                 val name = when {
-                    followGroup.name.isNotEmpty() -> followGroup.name
                     followGroup.id == FollowGroup.UNCATEGORISED -> getString(R.string.uncategorised)
+                    followGroup.name.isNotEmpty() -> followGroup.name
                     else -> followGroup.id
                 }
                 followGroupAdapter.add(name)
