@@ -79,7 +79,7 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
                 val text = rt.replace("<br>", "").trim { it <= ' ' }
                 if (text.isEmpty()) continue
                 val nwstRoute = NwstRoute.fromString(text)
-                if (nwstRoute != null && nwstRoute.routeNo.isNotBlank()) {
+                if (nwstRoute != null && nwstRoute.routeNo.isNotBlank() && nwstRoute.routeNo == routeNo) {
                     val response2 = nwstService.variantList(nwstRoute.rdv,
                             NwstService.LANGUAGE_TC, nwstRoute.routeNo+"-"+nwstRoute.locationCode+"-1", nwstRoute.bound,
                             NwstRequestUtil.syscode(), NwstService.PLATFORM,
@@ -107,8 +107,8 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
                         route.sequence = nwstRoute.bound
                         if (variant != null) {
                             route.stopsStartSequence = variant.startSequence
-                            route.description = variant.remark
-                            route.isSpecial = variant.remark.isNotEmpty() && variant.remark != "正常路線"
+                            route.description = "(${variant.rank}) ${variant.remark}"
+                            route.isSpecial = variant.remark.isNotEmpty() && !variant.remark.contains("正常路線")
                             route.code = variant.routeInfo
                         }
                         route.lastUpdate = timeNow
@@ -124,25 +124,17 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
         val insertedList = routeDatabase?.routeDao()?.insert(routeList)
         if (insertedList?.size?:0 > 0) {
             if (routeNo.isNotEmpty()) {
-                routeDatabase?.routeDao()?.delete(C.PROVIDER.NWST, routeNo, timeNow)
-                routeDatabase?.routeDao()?.delete(C.PROVIDER.CTB, routeNo, timeNow)
-                routeDatabase?.routeDao()?.delete(C.PROVIDER.NWFB, routeNo, timeNow)
+                routeDatabase?.routeDao()?.deleteBySource("", companyCode, routeNo, timeNow)
             } else {
-                routeDatabase?.routeDao()?.delete(C.PROVIDER.NWST, timeNow)
-                routeDatabase?.routeDao()?.delete(C.PROVIDER.CTB, timeNow)
-                routeDatabase?.routeDao()?.delete(C.PROVIDER.NWFB, timeNow)
+                routeDatabase?.routeDao()?.deleteBySource("", companyCode, timeNow)
             }
         }
 
         if (loadStop) {
             if (routeNo.isNotEmpty()) {
-                routeDatabase?.routeStopDao()?.delete(C.PROVIDER.NWST, routeNo, timeNow)
-                routeDatabase?.routeStopDao()?.delete(C.PROVIDER.CTB, routeNo, timeNow)
-                routeDatabase?.routeStopDao()?.delete(C.PROVIDER.NWFB, routeNo, timeNow)
+                routeDatabase?.routeStopDao()?.deleteBySource("", companyCode, routeNo, timeNow)
             } else {
-                routeDatabase?.routeStopDao()?.delete(C.PROVIDER.NWST, timeNow)
-                routeDatabase?.routeStopDao()?.delete(C.PROVIDER.CTB, timeNow)
-                routeDatabase?.routeStopDao()?.delete(C.PROVIDER.NWFB, timeNow)
+                routeDatabase?.routeStopDao()?.deleteBySource("", companyCode, timeNow)
             }
             val requests = arrayListOf<OneTimeWorkRequest>()
             routeList.forEach { route ->

@@ -8,6 +8,7 @@ import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
 import com.alvinhkh.buseta.follow.model.Follow
 import com.alvinhkh.buseta.route.model.RouteStop.CREATOR.TABLE_NAME
 import com.alvinhkh.buseta.route.model.RouteStop.CREATOR.COLUMN_COMPANY_CODE
+import com.alvinhkh.buseta.route.model.RouteStop.CREATOR.COLUMN_DATA_SOURCE
 import com.alvinhkh.buseta.route.model.RouteStop.CREATOR.COLUMN_ROUTE_ID
 import com.alvinhkh.buseta.route.model.RouteStop.CREATOR.COLUMN_ROUTE_NO
 import com.alvinhkh.buseta.route.model.RouteStop.CREATOR.COLUMN_ROUTE_SEQUENCE
@@ -15,12 +16,14 @@ import com.alvinhkh.buseta.route.model.RouteStop.CREATOR.COLUMN_ROUTE_SERVICE_TY
 import com.alvinhkh.buseta.route.model.RouteStop.CREATOR.COLUMN_SEQUENCE
 import com.alvinhkh.buseta.route.model.RouteStop.CREATOR.COLUMN_STOP_ID
 
-@Entity(tableName = TABLE_NAME, indices = [(Index(value = arrayOf(COLUMN_COMPANY_CODE, COLUMN_ROUTE_NO,
+@Entity(tableName = TABLE_NAME, indices = [(Index(value = arrayOf(COLUMN_DATA_SOURCE, COLUMN_COMPANY_CODE, COLUMN_ROUTE_NO,
         COLUMN_ROUTE_ID, COLUMN_ROUTE_SEQUENCE, COLUMN_ROUTE_SERVICE_TYPE, COLUMN_STOP_ID, COLUMN_SEQUENCE), unique = true))])
 data class RouteStop(
         @PrimaryKey(autoGenerate = true)
         @ColumnInfo(name = COLUMN_ID, typeAffinity = ColumnInfo.INTEGER)
         var id: Long = 0,
+        @ColumnInfo(name = COLUMN_DATA_SOURCE, typeAffinity = ColumnInfo.TEXT)
+        var dataSource: String? = "",
         @ColumnInfo(name = COLUMN_COMPANY_CODE, typeAffinity = ColumnInfo.TEXT)
         var companyCode: String? = null,
         @ColumnInfo(name = COLUMN_DESCRIPTION, typeAffinity = ColumnInfo.TEXT)
@@ -69,7 +72,7 @@ data class RouteStop(
         var etas: List<ArrivalTime> = listOf()
 ) : Parcelable {
 
-    constructor() : this(0, "", "", "", "",
+    constructor() : this(0, "", "", "", "", "",
             "", "", "", "", 0,
             "", "", "", "", "",
             "", "", "", "", "",
@@ -77,6 +80,7 @@ data class RouteStop(
 
     constructor(parcel: Parcel) : this(
             parcel.readLong(),
+            parcel.readString(),
             parcel.readString(),
             parcel.readString(),
             parcel.readString(),
@@ -102,6 +106,7 @@ data class RouteStop(
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeLong(id)
+        parcel.writeString(dataSource)
         parcel.writeString(companyCode)
         parcel.writeString(description)
         parcel.writeString(etaGet)
@@ -141,6 +146,7 @@ data class RouteStop(
 
         const val TABLE_NAME = "route_stops"
         const val COLUMN_ID = "_id"
+        const val COLUMN_DATA_SOURCE = "data_source"
         const val COLUMN_COMPANY_CODE = "company_code"
         const val COLUMN_DESCRIPTION = "description"
         const val COLUMN_ETA_GET = "eta_get"

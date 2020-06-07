@@ -16,6 +16,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.ResultReceiver
 import androidx.constraintlayout.widget.Guideline
 import com.google.android.material.appbar.AppBarLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
@@ -63,6 +64,7 @@ import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.model.Suggestion
 import com.alvinhkh.buseta.service.EtaService
 import com.alvinhkh.buseta.ui.BaseActivity
+import com.alvinhkh.buseta.ui.setting.SettingActivity
 import com.alvinhkh.buseta.utils.AdViewUtil
 import com.alvinhkh.buseta.utils.ColorUtil
 import com.alvinhkh.buseta.utils.ConnectivityUtil
@@ -261,9 +263,38 @@ abstract class RouteActivityAbstract : BaseActivity(),
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
+            R.id.action_settings -> {
+                when (companyCode) {
+                    C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> {
+                        val closeIntent = Intent(this, SettingActivity::class.java)
+                        closeIntent.putExtra("close_RouteActivityAbstract", object : ResultReceiver(null) {
+                            override fun onReceiveResult(resultCode: Int, resultData: Bundle) {
+                                if (resultCode == RESULT_OK) {
+                                    val newIntent = intent
+                                    finish()
+                                    startActivity(newIntent)
+                                }
+                            }
+                        })
+                        startActivityForResult(closeIntent, 1)
+                        return true
+                    }
+                }
+            }
             R.id.action_refresh -> {
-                pagerAdapter.clear()
-                loadRoute(companyCode?:"", routeNo?:"")
+                val timeNow = System.currentTimeMillis() / 1000
+                val cCode = companyCode?:""
+                val rNo = routeNo?:""
+                val provider = if (PreferenceUtil.isUsingNwstDataGovHkApi(applicationContext)) {
+                    C.PROVIDER.DATAGOVHK_NWST
+                } else {
+                    ""
+                }
+                routeDatabase.routeDao().deleteBySource(provider, cCode, rNo, timeNow)
+                routeDatabase.routeStopDao().deleteBySource(provider, cCode, rNo, timeNow)
+                loadRoute(cCode, rNo)
+                // Returning true to avoid redundant action_refresh in RouteStopListFragmentAbstract.onOptionsItemSelected
+                return true
             }
             R.id.action_show_map -> {
                 isShowMap = !isShowMap
@@ -412,17 +443,25 @@ abstract class RouteActivityAbstract : BaseActivity(),
                 liveData.removeObservers(this)
             }
         })
+        var loadStop = true
         when (companyCode) {
             C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER, C.PROVIDER.MTR, C.PROVIDER.NLB, C.PROVIDER.GMB901 -> return
             C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> {
-                if (routeDatabase.routeDao().count(arrayListOf("", C.PROVIDER.DATAGOVHK_NWST), companyCode, routeNo) > 0) return
+                if (PreferenceUtil.isUsingNwstDataGovHkApi(applicationContext)) {
+                    if (routeDatabase.routeDao().count(arrayListOf(C.PROVIDER.DATAGOVHK_NWST), companyCode, routeNo) > 0) return
+                } else {
+                    if (routeDatabase.routeDao().count(arrayListOf(""), companyCode, routeNo) > 0) {
+                        loadStop = false
+                        routeDatabase.routeDao().deleteBySource("", companyCode, routeNo, System.currentTimeMillis() / 1000)
+                    }
+                }
             }
         }
 
         val data = Data.Builder()
                 .putString(C.EXTRA.COMPANY_CODE, companyCode)
                 .putString(C.EXTRA.ROUTE_NO, routeNo)
-                .putBoolean(C.EXTRA.LOAD_STOP, true)
+                .putBoolean(C.EXTRA.LOAD_STOP, loadStop)
                 .build()
         val request = when (companyCode) {
             C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> {

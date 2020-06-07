@@ -27,6 +27,12 @@ interface RouteDao {
     @Query("DELETE FROM routes WHERE data_source IN (:dataSources) AND last_update < :lastUpdate")
     fun deleteBySource(dataSources: List<String>, lastUpdate: Long): Int
 
+    @Query("DELETE FROM routes WHERE data_source = :dataSource AND company_code = :companyCode AND last_update < :lastUpdate")
+    fun deleteBySource(dataSource: String, companyCode: String, lastUpdate: Long): Int
+
+    @Query("DELETE FROM routes WHERE data_source = :dataSource AND company_code = :companyCode AND name = :routeNo AND last_update < :lastUpdate")
+    fun deleteBySource(dataSource: String, companyCode: String, routeNo: String, lastUpdate: Long): Int
+
     @Query("SELECT * FROM routes WHERE company_code = :companyCode AND code = :routeId AND name = :routeNo AND sequence = :sequence AND service_type = :serviceType AND data_source = ''")
     fun get(companyCode: String, routeId: String, routeNo: String, sequence: String, serviceType: String): Route?
 
@@ -45,7 +51,7 @@ interface RouteDao {
     @Query("SELECT * FROM routes WHERE data_source IN (:dataSources) AND company_code IN (:companyCodeList) ORDER BY company_code ASC, name ASC, is_special ASC, sequence + 0 ASC, service_type + 0 ASC")
     fun liveData(dataSources: List<String>, companyCodeList: List<String>): LiveData<MutableList<Route>>
 
-    @Query("SELECT * FROM routes WHERE data_source IN (:dataSources) AND name = :routeNo AND company_code IN (:companyCodeList) ORDER BY company_code ASC, name ASC, is_special ASC, sequence + 0 ASC, service_type + 0 ASC")
+    @Query("SELECT * FROM routes WHERE data_source IN (:dataSources) AND name = :routeNo AND company_code IN (:companyCodeList) ORDER BY company_code ASC, is_special ASC, CASE is_special WHEN 0 THEN sequence END DESC, substr(description, 1, 3) ASC, CASE is_special WHEN 1 THEN sequence END DESC")
     fun liveData(dataSources: List<String>, routeNo: String, companyCodeList: List<String>): LiveData<MutableList<Route>>
 
     @Query("SELECT * FROM routes WHERE data_source IN (:dataSources) AND name LIKE :routeNo ORDER BY company_code ASC, name ASC, is_special ASC, sequence + 0 ASC, service_type + 0 ASC")

@@ -12,7 +12,7 @@ import com.alvinhkh.buseta.route.model.Route
 import com.alvinhkh.buseta.route.model.RouteStop
 
 
-@Database(entities = [(Route::class), (RouteStop::class)], version = 3)
+@Database(entities = [(Route::class), (RouteStop::class)], version = 4)
 @TypeConverters(LatLngListConverter::class)
 abstract class RouteDatabase : RoomDatabase() {
 
@@ -28,7 +28,7 @@ abstract class RouteDatabase : RoomDatabase() {
                 synchronized(RouteDatabase::class.java) {
                     instance = Room.databaseBuilder(context.applicationContext,
                             RouteDatabase::class.java, "routes.db")
-                            .addMigrations(object: Migration(0, 3) {
+                            .addMigrations(object: Migration(0, 4) {
                                 override fun migrate(db: SupportSQLiteDatabase) {
                                     val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
                                     val editor = sharedPreferences.edit()

@@ -107,20 +107,25 @@ class RtNwstWorker(context : Context, params : WorkerParameters)
                     outboundData?.forEach { nwstRouteStop ->
                         val routeStop = RouteStop()
                         var nwstStop: NwstStop? = null
-                        val outboundStopId = route.sequence + nwstRouteStop.stopId
-                        if (stopMap.containsKey(outboundStopId)) {
-                            nwstStop = stopMap[outboundStopId]
+                        if (stopMap.containsKey(nwstRouteStop.stopId)) {
+                            nwstStop = stopMap[nwstRouteStop.stopId]
                         }
                         if (nwstStop == null) {
                             val stopResponse = dataGovHkService.nwstStop(nwstRouteStop.stopId).execute()
                             nwstStop = stopResponse.body()?.data
                             if (nwstStop != null) {
-                                stopMap[outboundStopId] = nwstStop!!
+                                stopMap[nwstRouteStop.stopId] = nwstStop!!
                             }
                         }
                         if (nwstStop != null) {
+                            routeStop.dataSource = C.PROVIDER.DATAGOVHK_NWST
                             routeStop.companyCode = nwstRouteStop.companyCode
                             routeStop.description = ""
+                            if (nwstRouteStop.sequence == 1) {
+                                routeStop.description = "FIRST_STOP"
+                            } else if (nwstRouteStop.sequence == 1 + outboundData.lastIndex) {
+                                routeStop.description = "LAST_STOP"
+                            }
                             routeStop.latitude = nwstStop.latitude.toString()
                             routeStop.longitude = nwstStop.longitude.toString()
                             routeStop.name = nwstStop.nameTc
@@ -134,7 +139,7 @@ class RtNwstWorker(context : Context, params : WorkerParameters)
                             routeStop.routeSequence = route.sequence
                             routeStop.routeServiceType = route.serviceType
                             routeStop.sequence = nwstRouteStop.sequence.toString()
-                            routeStop.stopId = route.sequence + nwstRouteStop.stopId
+                            routeStop.stopId = nwstRouteStop.stopId
                             routeStop.lastUpdate = timeNow
 //                        routeStop.lastUpdate = nwstRouteStop.dataTimestamp
                             stopList.add(routeStop)
@@ -143,20 +148,25 @@ class RtNwstWorker(context : Context, params : WorkerParameters)
                     inboundData?.forEach { nwstRouteStop ->
                         val routeStop = RouteStop()
                         var nwstStop: NwstStop? = null
-                        val inboundStopId = inboundRoute.sequence + nwstRouteStop.stopId
-                        if (stopMap.containsKey(inboundStopId)) {
-                            nwstStop = stopMap[inboundStopId]
+                        if (stopMap.containsKey(nwstRouteStop.stopId)) {
+                            nwstStop = stopMap[nwstRouteStop.stopId]
                         }
                         if (nwstStop == null) {
                             val stopResponse = dataGovHkService.nwstStop(nwstRouteStop.stopId).execute()
                             nwstStop = stopResponse.body()?.data
                             if (nwstStop != null) {
-                                stopMap[inboundStopId] = nwstStop!!
+                                stopMap[nwstRouteStop.stopId] = nwstStop!!
                             }
                         }
                         if (nwstStop != null) {
+                            routeStop.dataSource = C.PROVIDER.DATAGOVHK_NWST
                             routeStop.companyCode = nwstRouteStop.companyCode
                             routeStop.description = ""
+                            if (nwstRouteStop.sequence == 1) {
+                                routeStop.description = "FIRST_STOP"
+                            } else if (nwstRouteStop.sequence == 1 + inboundData.lastIndex) {
+                                routeStop.description = "LAST_STOP"
+                            }
                             routeStop.latitude = nwstStop?.latitude.toString()
                             routeStop.longitude = nwstStop?.longitude.toString()
                             routeStop.name = nwstStop?.nameTc
@@ -167,7 +177,7 @@ class RtNwstWorker(context : Context, params : WorkerParameters)
                             routeStop.routeSequence = inboundRoute.sequence
                             routeStop.routeServiceType = inboundRoute.serviceType
                             routeStop.sequence = nwstRouteStop.sequence.toString()
-                            routeStop.stopId = inboundRoute.sequence + nwstRouteStop.stopId
+                            routeStop.stopId = nwstRouteStop.stopId
                             routeStop.lastUpdate = timeNow
 //                        routeStop.lastUpdate = nwstRouteStop.dataTimestamp
                             stopList.add(routeStop)
@@ -184,13 +194,9 @@ class RtNwstWorker(context : Context, params : WorkerParameters)
         val c1 = insertedList?.size?:0
         if (c1 > 0) {
             if (routeNo.isNotEmpty()) {
-                routeDatabase?.routeDao()?.delete(C.PROVIDER.NWST, routeNo, timeNow)
-                routeDatabase?.routeDao()?.delete(C.PROVIDER.CTB, routeNo, timeNow)
-                routeDatabase?.routeDao()?.delete(C.PROVIDER.NWFB, routeNo, timeNow)
+                routeDatabase?.routeDao()?.deleteBySource(C.PROVIDER.DATAGOVHK_NWST, companyCode, routeNo, timeNow)
             } else {
-                routeDatabase?.routeDao()?.delete(C.PROVIDER.NWST, timeNow)
-                routeDatabase?.routeDao()?.delete(C.PROVIDER.CTB, timeNow)
-                routeDatabase?.routeDao()?.delete(C.PROVIDER.NWFB, timeNow)
+                routeDatabase?.routeDao()?.deleteBySource(C.PROVIDER.DATAGOVHK_NWST, companyCode, timeNow)
             }
         }
 
@@ -199,13 +205,9 @@ class RtNwstWorker(context : Context, params : WorkerParameters)
             val c2 = insertedStopList?.size ?: 0
             if (c2 > 0) {
                 if (routeNo.isNotEmpty()) {
-                    routeDatabase?.routeStopDao()?.delete(C.PROVIDER.NWST, routeNo, timeNow)
-                    routeDatabase?.routeStopDao()?.delete(C.PROVIDER.CTB, routeNo, timeNow)
-                    routeDatabase?.routeStopDao()?.delete(C.PROVIDER.NWFB, routeNo, timeNow)
+                    routeDatabase?.routeStopDao()?.deleteBySource(C.PROVIDER.DATAGOVHK_NWST, companyCode, routeNo, timeNow)
                 } else {
-                    routeDatabase?.routeStopDao()?.delete(C.PROVIDER.NWST, timeNow)
-                    routeDatabase?.routeStopDao()?.delete(C.PROVIDER.CTB, timeNow)
-                    routeDatabase?.routeStopDao()?.delete(C.PROVIDER.NWFB, timeNow)
+                    routeDatabase?.routeStopDao()?.deleteBySource(C.PROVIDER.DATAGOVHK_NWST, companyCode, timeNow)
                 }
             }
         }

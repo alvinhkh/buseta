@@ -52,7 +52,8 @@ class NwstEtaWorker(private val context : Context, params : WorkerParameters)
                 .putString(C.EXTRA.STOP_SEQUENCE, stopSequence)
                 .build()
 
-        val routeStop = routeDatabase.routeStopDao().get(companyCode, routeNo, routeSequence, routeServiceType, stopId, stopSequence)
+        // routeId should also be involved to get a correct variant route
+        val routeStop = routeDatabase.routeStopDao().get(companyCode, routeId, routeNo, routeSequence, routeServiceType, stopId, stopSequence)
                 ?: return Result.failure(outputData)
         
         try {
@@ -120,11 +121,13 @@ class NwstEtaWorker(private val context : Context, params : WorkerParameters)
                         arrivalTime.text += " ${context.getString(R.string.km_short, arrivalTime.distanceKM)}"
                     }
                 }
+                // If more than one variant routes in the same direction, boundText = route destination + "," + variant remark
                 val routeDestination = (routeStop.routeDestination?:"").trim { it <= ' ' }
-                        .replace("（", "(").replace("）", ")")
+                        .replace("（", "(").replace("）", ")").replace(" ", "")
                 arrivalTime.note = nwstEta.boundText.trim { it <= ' ' }
                         .replace("（", "(").replace("）", ")")
                         .replace(routeDestination, "").replace(", ", "")
+                        .replace(" ", "").replace(",", "")
                 arrivalTime.isoTime = nwstEta.etaIsoTime
                 arrivalTime.isSchedule = nwstEta.isSchedule
                 val data1 = nwstEta.serverTime.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()

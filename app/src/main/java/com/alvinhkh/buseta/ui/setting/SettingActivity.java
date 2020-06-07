@@ -13,6 +13,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.ResultReceiver;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -186,7 +187,15 @@ public class SettingActivity extends BasePreferenceActivity {
         public boolean onPreferenceChange(Preference preference, Object newValue) {
             switch (preference.getKey()) {
                 case "nwst_api": {
-                    clearCache();
+                    WorkManager.getInstance().cancelAllWork();
+                    if (arrivalTimeDatabase != null) {
+                        arrivalTimeDatabase.arrivalTimeDao().clear();
+                    }
+                    ResultReceiver resultReceiver = mActivity.getIntent().getParcelableExtra("close_RouteActivityAbstract");
+                    if (resultReceiver != null) {
+                        resultReceiver.send(RESULT_OK, new Bundle());
+                        mActivity.finish();
+                    }
                     return true;
                 }
             }
