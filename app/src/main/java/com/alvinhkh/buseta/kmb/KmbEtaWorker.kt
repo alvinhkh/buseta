@@ -10,6 +10,8 @@ import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import org.jsoup.Jsoup
+import timber.log.Timber
+import java.util.*
 
 class KmbEtaWorker(private val context : Context, params : WorkerParameters)
     : Worker(context, params) {
@@ -66,6 +68,7 @@ class KmbEtaWorker(private val context : Context, params : WorkerParameters)
 
             val res = response.body()
             if (res == null) {
+                Timber.d("%s", res)
                 if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
                         && !routeStop.sequence.isNullOrEmpty()) {
                     arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!, routeStop.routeNo!!,
@@ -76,19 +79,24 @@ class KmbEtaWorker(private val context : Context, params : WorkerParameters)
                 return Result.failure(outputData)
             }
 
-            if (res.etas != null && res.etas!!.size > 0) {
+            if (res.etas != null && res.etas?.size?:0 > 0) {
                 for (i in res.etas!!.indices) {
                     val kmbEta = res.etas!![i]
                     val arrivalTime = ArrivalTime.emptyInstance(context, routeStop)
                     arrivalTime.companyCode = C.PROVIDER.KMB
-                    arrivalTime.capacity = when(kmbEta.ol?.toLowerCase()) {
+                    arrivalTime.capacity = when(kmbEta.ol?.toLowerCase(Locale.ENGLISH)) {
                         "f" -> 10
                         "e" -> 0
                         "n" -> -1
                         else -> kmbEta.ol?.toLong()?:-1
                     }
                     arrivalTime.expire = kmbEta.expire?:""
-                    arrivalTime.isSchedule = !kmbEta.schedule.isNullOrEmpty() && kmbEta.schedule == "Y"
+                    if (!kmbEta.distanceM.isNullOrEmpty()) {
+                        arrivalTime.distanceKM = (kmbEta.distanceM?.toDoubleOrNull()?:-1.0) / 1000.0
+                        arrivalTime.isSchedule = arrivalTime.distanceKM < 0
+                    } else {
+                        arrivalTime.isSchedule = !kmbEta.eot.isNullOrEmpty() && kmbEta.eot == "T"
+                    }
 //                    arrivalTime.hasWheelchair = !kmbEta.wheelchair.isNullOrEmpty() && kmbEta.wheelchair == "Y"
 //                    arrivalTime.hasWifi = !kmbEta.wifi.isNullOrEmpty() && kmbEta.wifi == "Y"
                     arrivalTime.hasWheelchair = !kmbEta.wifi.isNullOrEmpty() && kmbEta.wifi == "Y"
@@ -114,8 +122,8 @@ class KmbEtaWorker(private val context : Context, params : WorkerParameters)
                 }
                 return Result.success(outputData)
             }
-        } catch (ignored: Throwable) {
-
+        } catch (e: Throwable) {
+            Timber.d(e)
         }
 
         return Result.failure(outputData)
