@@ -14,8 +14,7 @@ import retrofit2.Call
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.GET
-import retrofit2.http.Query
+import retrofit2.http.*
 
 interface KmbService {
     @GET("ajax/BBI/get_BBI2.php?&buscompany=null&jtSorting=sec_routeno%20ASC")
@@ -24,16 +23,16 @@ interface KmbService {
     @GET("ajax/BBI/get_BBI2.php?&buscompany=null&jtSorting=sec_routeno%20ASC")
     fun bbi(@Query("routeno") routeno: String?, @Query("bound") bound: String?, @Query("interchangeType") interchangeType: String?): Deferred<Response<KmbBBI2>>
 
-    @GET("FunctionRequest.ashx?action=getRouteBound")
+    @GET("Function/FunctionRequest.ashx?action=getRouteBound")
     fun routeBound(@Query("route") route: String?): Call<KmbRouteBoundRes>
 
-    @GET("FunctionRequest.ashx?action=getSpecialRoute")
+    @GET("Function/FunctionRequest.ashx?action=getSpecialRoute")
     fun specialRoute(@Query("route") route: String?, @Query("bound") bound: String?): Call<KmbSpecialRouteRes>
 
-    @GET("FunctionRequest.ashx?action=getStops")
+    @GET("Function/FunctionRequest.ashx?action=getStops")
     fun stops(@Query("route") route: String?, @Query("bound") bound: String?, @Query("serviceType") serviceType: String?): Call<KmbStopsRes>
 
-    @GET("FunctionRequest.ashx?action=getRoutesInStop")
+    @GET("Function/FunctionRequest.ashx?action=getRoutesInStop")
     fun routesInStop(@Query("bsiCode") bsiCode: String?): Call<KmbRoutesInStop>
 
     @GET("Function/FunctionRequest.ashx?action=getAnnounce")
@@ -45,10 +44,19 @@ interface KmbService {
     @GET("AnnouncementPicture.ashx")
     fun announcementPicture(@Query("url") url: String?): Deferred<Response<ResponseBody>>
 
-    @GET("?action=geteta")
-    fun eta(@Query("route") route: String?, @Query("bound") bound: String?,
-            @Query("stop") stop: String?, @Query("stop_seq") stop_seq: String?,
-            @Query("serviceType") serviceType: String?, @Query("lang") lang: String?,
+    @FormUrlEncoded
+    @POST("Function/FunctionRequest.ashx/?action=get_ETA")
+    fun eta(@Query("lang") lang: String?,
+            @Field("token") token: String?,
+            @Field("t") t: String?): Call<KmbWebEtaRes>
+
+    @POST("?action=geteta")
+    fun eta(@Query("route") route: String?,
+            @Query("bound") bound: String?,
+            @Query("stop") stop: String?,
+            @Query("stop_seq") stop_seq: String?,
+            @Query("serviceType") serviceType: String?,
+            @Query("lang") lang: String?,
             @Query("updated") updated: String?): Call<KmbEtaRes>
 
     @GET("GetData.ashx?type=ETA_R")
@@ -67,7 +75,7 @@ interface KmbService {
                 .build()
         val webSearch: Retrofit = Retrofit.Builder()
                 .client(httpClient)
-                .baseUrl("http://search.kmb.hk/KMBWebSite/Function/")
+                .baseUrl("http://search.kmb.hk/KMBWebSite/")
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build()
         val webSearchCoroutine: Retrofit = Retrofit.Builder()
@@ -83,7 +91,7 @@ interface KmbService {
                 .build()
         val etav3: Retrofit = Retrofit.Builder()
                 .client(httpClient)
-                .baseUrl("http://etav3.kmb.hk")
+                .baseUrl("https://etav3.kmb.hk")
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build()
         val etadatafeed: Retrofit = Retrofit.Builder()

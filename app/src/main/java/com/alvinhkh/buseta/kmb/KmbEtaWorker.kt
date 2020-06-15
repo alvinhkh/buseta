@@ -1,6 +1,7 @@
 package com.alvinhkh.buseta.kmb
 
 import android.content.Context
+import android.util.Base64
 import androidx.work.Data
 import androidx.work.Worker
 import androidx.work.WorkerParameters
@@ -11,12 +12,14 @@ import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import org.jsoup.Jsoup
 import timber.log.Timber
+import java.text.SimpleDateFormat
 import java.util.*
 
+@Suppress("DEPRECATION")
 class KmbEtaWorker(private val context : Context, params : WorkerParameters)
     : Worker(context, params) {
 
-    private val kmbService = KmbService.etav3.create(KmbService::class.java)
+    private val kmbService = KmbService.webSearch.create(KmbService::class.java)
 
     private val arrivalTimeDatabase = ArrivalTimeDatabase.getInstance(context)!!
 
@@ -52,9 +55,20 @@ class KmbEtaWorker(private val context : Context, params : WorkerParameters)
         val timeNow = System.currentTimeMillis()
 
         try {
-            val response = kmbService.eta(routeStop.routeNo, routeStop.routeSequence,
-                    routeStop.stopId, routeStop.sequence, routeStop.routeServiceType, "tc", "").execute()
+//            val response = kmbService.eta(routeStop.routeNo, routeStop.routeSequence,
+//                    routeStop.stopId, routeStop.sequence, routeStop.routeServiceType, "tc", "").execute()
+            val now = Calendar.getInstance()
+            val unixTime = now.timeInMillis.toString().dropLast(3) + "080"
+            val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.80.", Locale.ENGLISH)
+            sdf.timeZone = TimeZone.getTimeZone("UTC")
+            val t = sdf.format(now.time)
+            val key = "--31${t}13--"
+            val rawToken = routeStop.routeNo + key + routeStop.routeSequence + key + routeStop.routeServiceType + key + routeStop.stopId?.replace("-", "") + key + routeStop.sequence + key + unixTime;
+            val token = "EA${Base64.encodeToString(rawToken.toByteArray(), Base64.DEFAULT)}"
+            val response = kmbService.eta("1", token, t).execute()
+
             if (!response.isSuccessful) {
+                Timber.d("%s", response)
                 if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
                         && !routeStop.sequence.isNullOrEmpty()) {
                     arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!, routeStop.routeNo!!,
@@ -66,9 +80,9 @@ class KmbEtaWorker(private val context : Context, params : WorkerParameters)
                 return Result.failure(outputData)
             }
 
-            val res = response.body()
-            if (res == null) {
-                Timber.d("%s", res)
+            val kmbEtaRes = response.body()?.data
+            if (kmbEtaRes == null) {
+                Timber.d("%s", kmbEtaRes)
                 if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
                         && !routeStop.sequence.isNullOrEmpty()) {
                     arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!, routeStop.routeNo!!,
@@ -79,9 +93,9 @@ class KmbEtaWorker(private val context : Context, params : WorkerParameters)
                 return Result.failure(outputData)
             }
 
-            if (res.etas != null && res.etas?.size?:0 > 0) {
-                for (i in res.etas!!.indices) {
-                    val kmbEta = res.etas!![i]
+            if (kmbEtaRes.etas != null && kmbEtaRes.etas?.size?:0 > 0) {
+                for (i in kmbEtaRes.etas!!.indices) {
+                    val kmbEta = kmbEtaRes.etas!![i]
                     val arrivalTime = ArrivalTime.emptyInstance(context, routeStop)
                     arrivalTime.companyCode = C.PROVIDER.KMB
                     arrivalTime.capacity = when(kmbEta.ol?.toLowerCase(Locale.ENGLISH)) {
@@ -103,7 +117,7 @@ class KmbEtaWorker(private val context : Context, params : WorkerParameters)
                     arrivalTime.text = Jsoup.parse(kmbEta.time).text().replace("　".toRegex(), " ")
                             .replace(" ?預定班次".toRegex(), "").replace(" ?時段班次".toRegex(), "")
                             .replace(" ?Scheduled".toRegex(), "")
-                    arrivalTime.generatedAt = res.generated?:0
+                    arrivalTime.generatedAt = kmbEtaRes.generated?:0
                     arrivalTime.updatedAt = timeNow
                     // arrivalTime = ArrivalTime.estimate(applicationContext, arrivalTime)
 
