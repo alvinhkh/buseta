@@ -117,9 +117,6 @@ class NwstEtaWorker(private val context : Context, params : WorkerParameters)
                 arrivalTime.text += subtitle
                 if (nwstEta.distanceKM.isNotEmpty()) {
                     arrivalTime.distanceKM = nwstEta.distanceKM.toDoubleOrNull()?:0.0
-                    if (arrivalTime.distanceKM < 0.0) {
-                        arrivalTime.text += " ${context.getString(R.string.km_short, arrivalTime.distanceKM)}"
-                    }
                 }
                 // If more than one variant routes in the same direction, boundText = route destination + "," + variant remark
                 val routeDestination = (routeStop.routeDestination?:"").trim { it <= ' ' }

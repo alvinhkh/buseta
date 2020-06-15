@@ -42,6 +42,8 @@ data class Route(
         var hyperlink: String? = "",
         @ColumnInfo(name = "last_update", typeAffinity = ColumnInfo.INTEGER)
         var lastUpdate: Long? = 0,
+        @Ignore
+        var isActive: Boolean? = false,
         @ColumnInfo(name = "map_coordinates")
         var mapCoordinates: MutableList<LatLong> = arrayListOf()
 ) : Parcelable {
@@ -60,7 +62,8 @@ data class Route(
             parcel.readInt(),
             parcel.readString(),
             parcel.readString(),
-            parcel.readLong())
+            parcel.readLong(),
+            parcel.readValue(Boolean::class.java.classLoader) as? Boolean)
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeLong(id)
@@ -78,6 +81,7 @@ data class Route(
         parcel.writeString(hyperlink)
         parcel.writeString(dataSource)
         parcel.writeLong(lastUpdate?:0)
+        parcel.writeValue(isActive)
     }
 
     override fun describeContents(): Int {

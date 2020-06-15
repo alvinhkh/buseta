@@ -109,6 +109,7 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
                             route.stopsStartSequence = variant.startSequence
                             route.description = "(${variant.rank}) ${variant.remark}"
                             route.isSpecial = variant.remark.isNotEmpty() && !variant.remark.contains("正常路線")
+                            route.isActive = variant.ball.isNotEmpty() && variant.ball == "R"
                             route.code = variant.routeInfo
                         }
                         route.lastUpdate = timeNow
