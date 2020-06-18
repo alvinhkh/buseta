@@ -29,7 +29,7 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        val builder = unsafeOkHttpClient()
+        val builder = OkHttpClient.Builder()
         builder.addNetworkInterceptor(UserAgentInterceptor())
         httpClient = builder
                 .connectTimeout(20, TimeUnit.SECONDS)
@@ -39,6 +39,13 @@ class App : Application() {
         val builder2 = OkHttpClient.Builder()
         builder2.addNetworkInterceptor(UserAgentInterceptor())
         httpClient2 = builder2
+                .connectTimeout(20, TimeUnit.SECONDS)
+                .writeTimeout(20, TimeUnit.SECONDS)
+                .readTimeout(40, TimeUnit.SECONDS)
+                .build()
+        val builder3 = unsafeOkHttpClient()
+        builder3.addNetworkInterceptor(UserAgentInterceptor())
+        httpClientUnsafe = builder3
                 .connectTimeout(20, TimeUnit.SECONDS)
                 .writeTimeout(20, TimeUnit.SECONDS)
                 .readTimeout(40, TimeUnit.SECONDS)
@@ -119,7 +126,7 @@ class App : Application() {
             )
 
             // Install the all-trusting trust manager
-            val sslContext = SSLContext.getInstance("SSL")
+            val sslContext = SSLContext.getInstance("TLSv1.2")
             sslContext.init(null, trustAllCerts, SecureRandom())
 
             // Create an ssl socket factory with our all-trusting manager
@@ -138,5 +145,7 @@ class App : Application() {
         lateinit var httpClient: OkHttpClient
 
         lateinit var httpClient2: OkHttpClient
+
+        lateinit var httpClientUnsafe: OkHttpClient
     }
 }

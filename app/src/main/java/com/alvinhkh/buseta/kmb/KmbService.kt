@@ -1,6 +1,7 @@
 package com.alvinhkh.buseta.kmb
 
 import com.alvinhkh.buseta.App.Companion.httpClient
+import com.alvinhkh.buseta.App.Companion.httpClientUnsafe
 import com.alvinhkh.buseta.kmb.model.KmbBBI2
 import com.alvinhkh.buseta.kmb.model.KmbEtaRoutes
 import com.alvinhkh.buseta.kmb.model.KmbRoutesInStop
@@ -90,7 +91,7 @@ interface KmbService {
                 .addCallAdapterFactory(CoroutineCallAdapterFactory.invoke())
                 .build()
         val etav3: Retrofit = Retrofit.Builder()
-                .client(httpClient)
+                .client(httpClientUnsafe)
                 .baseUrl("https://etav3.kmb.hk")
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build()
