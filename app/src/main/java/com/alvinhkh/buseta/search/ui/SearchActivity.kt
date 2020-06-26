@@ -276,13 +276,13 @@ class SearchActivity : AppCompatActivity() {
             C.PROVIDER.NLB, C.PROVIDER.GMB901 -> intent = Intent(applicationContext, NlbActivity::class.java)
             C.PROVIDER.KMB, C.PROVIDER.LWB -> {
                 intent = Intent(applicationContext, LwbActivity::class.java)
-                if (PreferenceUtil.isUsingNewKmbApi(applicationContext)) {
+                if (PreferenceUtil.isUsingKmbWebApi(applicationContext)) {
                     intent = Intent(applicationContext, KmbActivity::class.java)
                 }
             }
             else -> {
                 intent = Intent(applicationContext, LwbActivity::class.java)
-                if (PreferenceUtil.isUsingNewKmbApi(applicationContext)) {
+                if (PreferenceUtil.isUsingKmbWebApi(applicationContext)) {
                     intent = Intent(applicationContext, KmbActivity::class.java)
                 }
             }

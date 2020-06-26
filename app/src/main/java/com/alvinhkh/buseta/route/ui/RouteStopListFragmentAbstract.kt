@@ -377,7 +377,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
         val request = when (companyCode) {
             C.PROVIDER.KMB, C.PROVIDER.LWB -> {
                 OneTimeWorkRequest.Builder(
-                        if (PreferenceUtil.isUsingNewKmbApi(context!!)) {
+                        if (PreferenceUtil.isUsingKmbWebApi(context!!)) {
                             KmbStopListWorker::class.java
                         } else {
                             LwbStopListWorker::class.java

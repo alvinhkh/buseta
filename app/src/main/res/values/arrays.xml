@@ -23,6 +23,16 @@
         <item>kmb_web</item>
     </string-array>
 
+    <string-array name="kmb_web_api_entries">
+        <item>官方WEB</item>
+        <item>官方APP</item>
+    </string-array>
+
+    <string-array name="kmb_web_api_values">
+        <item>kmb_web</item>
+        <item>kmb_app</item>
+    </string-array>
+
     <string-array name="nwst_api_entries">
         <item>官方APP</item>
         <item>資料一線通</item>

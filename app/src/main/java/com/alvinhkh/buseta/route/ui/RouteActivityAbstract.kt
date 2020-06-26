@@ -371,7 +371,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
                 val fragment: Fragment = when (company) {
                     C.PROVIDER.AESBUS -> AESBusStopListFragment.newInstance(route, navStop)
                     C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> NwstStopListFragment.newInstance(route, navStop)
-                    C.PROVIDER.KMB, C.PROVIDER.LWB -> if (PreferenceUtil.isUsingNewKmbApi(applicationContext)) {
+                    C.PROVIDER.KMB, C.PROVIDER.LWB -> if (PreferenceUtil.isUsingKmbWebApi(applicationContext)) {
                         KmbStopListFragment.newInstance(route, navStop)
                     } else {
                         LwbStopListFragment.newInstance(route, navStop)
@@ -477,7 +477,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
             }
             C.PROVIDER.KMB, C.PROVIDER.LWB -> {
                 OneTimeWorkRequest.Builder(
-                        if (PreferenceUtil.isUsingNewKmbApi(applicationContext)) {
+                        if (PreferenceUtil.isUsingKmbWebApi(applicationContext)) {
                             KmbRouteWorker::class.java
                         } else {
                             LwbRouteWorker::class.java

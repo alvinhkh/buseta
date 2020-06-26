@@ -22,7 +22,6 @@ import com.alvinhkh.buseta.kmb.KmbRouteWorker
 import com.alvinhkh.buseta.lwb.LwbRouteWorker
 import com.alvinhkh.buseta.mtr.AESBusWorker
 import com.alvinhkh.buseta.mtr.MtrBusWorker
-import com.alvinhkh.buseta.mtr.MtrResourceWorker
 import com.alvinhkh.buseta.nlb.NlbWorker
 import com.alvinhkh.buseta.nwst.NwstRouteWorker
 import com.alvinhkh.buseta.route.dao.RouteDatabase
@@ -236,7 +235,7 @@ class ProviderUpdateService: Service() {
                 }
                 C.PROVIDER.KMB, C.PROVIDER.LWB -> {
                     requests.add(OneTimeWorkRequest.Builder(
-                            if (PreferenceUtil.isUsingNewKmbApi(applicationContext)) {
+                            if (PreferenceUtil.isUsingKmbWebApi(applicationContext)) {
                                 KmbRouteWorker::class.java
                             } else {
                                 LwbRouteWorker::class.java

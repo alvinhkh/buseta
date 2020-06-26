@@ -19,9 +19,14 @@ object PreferenceUtil {
         return false
     }
 
-    fun isUsingNewKmbApi(context: Context): Boolean {
+    fun isUsingKmbWebApi(context: Context): Boolean {
         val mPrefs = PreferenceManager.getDefaultSharedPreferences(context)
         return null != mPrefs && mPrefs.getString("kmb_api", "kmb_web") == "kmb_web"
+    }
+
+    fun isUsingKmbWebEtaApi(context: Context): Boolean {
+        val mPrefs = PreferenceManager.getDefaultSharedPreferences(context)
+        return null != mPrefs && mPrefs.getString("kmb_eta_api", "kmb_app") == "kmb_web"
     }
 
     fun isUsingNwstDataGovHkApi(context: Context): Boolean {

@@ -51,14 +51,9 @@ interface KmbService {
             @Field("token") token: String?,
             @Field("t") t: String?): Call<KmbWebEtaRes>
 
+    @Headers("Content-Type: application/json")
     @POST("?action=geteta")
-    fun eta(@Query("route") route: String?,
-            @Query("bound") bound: String?,
-            @Query("stop") stop: String?,
-            @Query("stop_seq") stop_seq: String?,
-            @Query("serviceType") serviceType: String?,
-            @Query("lang") lang: String?,
-            @Query("updated") updated: String?): Call<KmbEtaRes>
+    fun eta(@Body body: KmbEtaRequest): Call<List<KmbEtaRes>>
 
     @GET("GetData.ashx?type=ETA_R")
     fun etaRoutes(): Call<List<KmbEtaRoutes>>
