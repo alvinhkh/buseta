@@ -23,8 +23,8 @@ apply plugin: 'kotlin-kapt'
 
 def versionMajor = 1
 def versionMinor = 4
-def versionPatch = 4
-def versionBuild = 1
+def versionPatch = 5
+def versionBuild = 0
 
 android {
     compileSdkVersion 29
@@ -110,19 +110,19 @@ dependencies {
     implementation 'androidx.annotation:annotation:1.1.0'
     implementation 'androidx.media:media:1.1.0'
     implementation 'androidx.multidex:multidex:2.0.1'
-    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.0.0'
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     implementation "androidx.preference:preference-ktx:$preference_version"
     implementation 'com.google.android.gms:play-services-location:17.0.0'
     implementation 'com.google.android.gms:play-services-maps:17.0.0'
     implementation 'com.google.android.gms:play-services-oss-licenses:17.0.0'
     implementation 'com.google.android.play:core:1.7.3'
     implementation 'com.google.code.gson:gson:2.8.6'
-    implementation 'com.google.firebase:firebase-ads:19.1.0'
+    implementation 'com.google.firebase:firebase-ads:19.2.0'
     implementation 'com.google.firebase:firebase-appindexing:19.1.0'
     implementation 'com.google.firebase:firebase-config:19.1.4'
     implementation 'com.google.firebase:firebase-core:17.4.3'
-    implementation 'com.google.firebase:firebase-messaging:20.2.0'
-    implementation 'com.google.maps.android:android-maps-utils:1.3.3'
+    implementation 'com.google.firebase:firebase-messaging:20.2.1'
+    implementation 'com.google.maps.android:android-maps-utils:2.0.0'
     implementation "android.arch.work:work-runtime:1.0.1"
     implementation (group: 'org.simpleframework', name: 'simple-xml', version: '2.7.1') {
         exclude group: 'stax', module: 'stax-api'
