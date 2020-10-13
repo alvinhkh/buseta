@@ -14,6 +14,7 @@ import androidx.fragment.app.FragmentTransaction
 import androidx.core.content.ContextCompat
 
 import com.alvinhkh.buseta.R
+import com.alvinhkh.buseta.datagovhk.ui.TdTrafficNewsFragment
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.follow.ui.FollowGroupFragment
 import com.alvinhkh.buseta.mtr.ui.MtrLineStatusFragment
@@ -90,11 +91,10 @@ class MainActivity : BaseActivity() {
                 }
                 R.id.action_traffic_news -> {
                     if (fm.findFragmentByTag("traffic_news") == null) {
-                        val newsUrl = "https://www.hkemobility.gov.hk/loadtrafficinfo.php?mode=0&lang=TC&color=null&sysid=54"
                         title = getString(R.string.traffic_news)
                         colorRes = Color.parseColor("#008000")
                         val ft = fm.beginTransaction()
-                        ft.replace(R.id.fragment_container, WebViewFragment.newInstance(getString(R.string.traffic_news), newsUrl))
+                        ft.replace(R.id.fragment_container, TdTrafficNewsFragment())
                         ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
                         ft.addToBackStack("traffic_news")
                         ft.commit()
@@ -135,7 +135,7 @@ class MainActivity : BaseActivity() {
                     "FollowFragment" -> bottomNavigationView.selectedItemId = R.id.action_follow
                     "HistoryFragment" -> bottomNavigationView.selectedItemId = R.id.action_search_history
                     "MtrLineStatusFragment" -> bottomNavigationView.selectedItemId = R.id.action_railway
-                    "WebViewFragment" -> bottomNavigationView.selectedItemId = R.id.action_traffic_news
+                    "TdTrafficNewsFragment" -> bottomNavigationView.selectedItemId = R.id.action_traffic_news
                 }
             }
         }

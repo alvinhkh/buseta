@@ -3,6 +3,8 @@ package com.alvinhkh.buseta.datagovhk
 import com.alvinhkh.buseta.App
 import com.alvinhkh.buseta.datagovhk.model.*
 import com.alvinhkh.buseta.mtr.model.MtrScheduleRes
+import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
+import kotlinx.coroutines.Deferred
 
 import okhttp3.ResponseBody
 import retrofit2.Call
@@ -49,13 +51,22 @@ interface DataGovHkService {
     @GET("citybus-nwfb/eta/{company_id}/{stop_id}/{route}")
     fun nwstETA(@Path("company_id") companyId: String, @Path("stop_id") stopId: String, @Path("route") route: String): Call<NwstResponseList<NwstEta>>
 
-    companion object {
+    @GET("td/en/specialtrafficnews.xml")
+    fun trafficnewsTcAsync(): Deferred<Response<TdTrafficNewsV1>>
 
+    companion object {
 
         val static: Retrofit = Retrofit.Builder()
                 .client(App.httpClient)
                 .baseUrl("http://static.data.gov.hk/")
                 .addConverterFactory(SimpleXmlConverterFactory.create())
+                .build()
+
+        val tdCoroutine: Retrofit = Retrofit.Builder()
+                .client(App.httpClient)
+                .baseUrl("https://resource.data.one.gov.hk/")
+                .addConverterFactory(SimpleXmlConverterFactory.create())
+                .addCallAdapterFactory(CoroutineCallAdapterFactory.invoke())
                 .build()
 
         val transport: Retrofit = Retrofit.Builder()

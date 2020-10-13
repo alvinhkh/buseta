@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tool="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="@dimen/card_section_horizontal_padding"
+    android:paddingEnd="@dimen/card_section_horizontal_padding"
+    android:paddingTop="@dimen/card_section_vertical_padding"
+    android:paddingBottom="@dimen/card_section_vertical_padding"
+    android:background="@color/background">
+
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+        android:textColor="@color/textPrimary"
+        android:paddingBottom="8dp"
+        tool:text="TEXT" />
+
+    <TextView
+        android:id="@+id/date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small"
+        android:textColor="@color/textPrimary"
+        android:paddingBottom="8dp"
+        tool:text="TEXT" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:background="@color/icons"
+        />
+
+</LinearLayout>
