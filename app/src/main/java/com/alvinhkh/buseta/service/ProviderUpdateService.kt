@@ -20,7 +20,6 @@ import com.alvinhkh.buseta.datagovhk.TdWorker
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.kmb.KmbRouteWorker
 import com.alvinhkh.buseta.lwb.LwbRouteWorker
-import com.alvinhkh.buseta.mtr.AESBusWorker
 import com.alvinhkh.buseta.mtr.MtrBusWorker
 import com.alvinhkh.buseta.nlb.NlbWorker
 import com.alvinhkh.buseta.nwst.NwstRouteWorker
@@ -160,15 +159,6 @@ class ProviderUpdateService: Service() {
             }
         } catch (ignored: Throwable) {
         }
-
-        val dataAesBus = Data.Builder()
-                .putBoolean(C.EXTRA.MANUAL, manualUpdate)
-                .putString(C.EXTRA.COMPANY_CODE, C.PROVIDER.AESBUS)
-                .build()
-        val aesBusRequest = OneTimeWorkRequest.Builder(AESBusWorker::class.java)
-                .addTag(TAG).setInputData(dataAesBus).build()
-        WorkManager.getInstance()
-                .enqueue(aesBusRequest)
 
         val dataMtrBus = Data.Builder()
                 .putBoolean(C.EXTRA.MANUAL, manualUpdate)

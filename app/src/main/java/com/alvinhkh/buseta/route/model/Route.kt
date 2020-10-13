@@ -113,7 +113,6 @@ data class Route(
         @JvmStatic
         fun companyName(context: Context, companyCode: String, routeNo: String?): String {
             return when (companyCode) {
-                C.PROVIDER.AESBUS -> context.getString(R.string.provider_short_aes_bus)
                 C.PROVIDER.CTB -> context.getString(R.string.provider_short_ctb)
                 C.PROVIDER.KMB -> {
                     val lwb = listOf("N30", "N30P", "N30S", "N31", "N42", "N42A", "N42P", "N64", "R8", "R33", "R42", "X1", "X33", "X34", "X41")
@@ -145,7 +144,6 @@ data class Route(
         @JvmStatic
         fun companyColour(context: Context, companyCode: String, routeNo: String?): Int? {
             return when (companyCode) {
-                C.PROVIDER.AESBUS -> ContextCompat.getColor(context, R.color.provider_aes_bus)
                 C.PROVIDER.CTB -> ContextCompat.getColor(context, R.color.provider_ctb)
                 C.PROVIDER.KMB -> {
                     val lwb = listOf("N30", "N30P", "N30S", "N31", "N42", "N42A", "N42P", "N64", "R8", "R33", "R42", "X1", "X33", "X34", "X41")

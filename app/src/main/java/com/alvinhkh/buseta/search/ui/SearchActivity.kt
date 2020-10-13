@@ -98,7 +98,7 @@ class SearchActivity : AppCompatActivity() {
         }
 
         with(provider_group) {
-            val companyCodes = arrayListOf(C.PROVIDER.KMB, C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NLB, C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER)
+            val companyCodes = arrayListOf(C.PROVIDER.KMB, C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NLB, C.PROVIDER.LRTFEEDER)
             val chipListener = CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
                 val companyCode = buttonView.tag as String
                 if (companyCode.isEmpty()) return@OnCheckedChangeListener
@@ -269,7 +269,6 @@ class SearchActivity : AppCompatActivity() {
     private fun providerIntent(companyCode: String): Intent {
         var intent: Intent
         when (companyCode) {
-            C.PROVIDER.AESBUS -> intent = Intent(applicationContext, AESBusActivity::class.java)
             C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> intent = Intent(applicationContext, NwstActivity::class.java)
             C.PROVIDER.LRTFEEDER -> intent = Intent(applicationContext, MtrBusActivity::class.java)
             C.PROVIDER.MTR -> intent = Intent(applicationContext, MtrStationActivity::class.java)

@@ -198,7 +198,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
 
                             val preferences = PreferenceManager.getDefaultSharedPreferences(context!!)
                             refreshInterval = preferences.getString("load_eta", "0")?.toInt()?:0
-                            if (!listOf(C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER).contains(route?.companyCode) && refreshInterval <= 0) {
+                            if (!listOf(C.PROVIDER.LRTFEEDER).contains(route?.companyCode) && refreshInterval <= 0) {
                                 activity?.findViewById<FloatingActionButton>(R.id.fab)?.show()
                             }
 
@@ -275,7 +275,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
         if (context != null) {
             val preferences = PreferenceManager.getDefaultSharedPreferences(context!!)
             refreshInterval = preferences.getString("load_eta", "0")?.toInt()?:0
-            if (!listOf(C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER).contains(route?.companyCode) && refreshInterval <= 0) {
+            if (!listOf(C.PROVIDER.LRTFEEDER).contains(route?.companyCode) && refreshInterval <= 0) {
                 activity?.findViewById<FloatingActionButton>(R.id.fab)?.show()
             }
         }
@@ -358,7 +358,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
     private fun loadStopList(route: Route): Boolean {
         val companyCode = route.companyCode?:""
         when (companyCode) {
-            C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER, C.PROVIDER.MTR, C.PROVIDER.NLB, C.PROVIDER.GMB901 -> {
+            C.PROVIDER.LRTFEEDER, C.PROVIDER.MTR, C.PROVIDER.NLB, C.PROVIDER.GMB901 -> {
                 viewAdapter?.notifyDataSetChanged()
                 return true
             }

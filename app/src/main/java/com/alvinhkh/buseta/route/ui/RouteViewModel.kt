@@ -10,8 +10,7 @@ import com.alvinhkh.buseta.utils.PreferenceUtil
 
 class RouteViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val searchableDataSource = arrayListOf("", C.PROVIDER.AESBUS,
-            C.PROVIDER.LRTFEEDER, C.PROVIDER.NLB, C.PROVIDER.GMB901)
+    private val searchableDataSource = arrayListOf("", C.PROVIDER.LRTFEEDER, C.PROVIDER.NLB, C.PROVIDER.GMB901)
 
     private val routeDatabase = RouteDatabase.getInstance(application)
 

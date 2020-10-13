@@ -43,7 +43,7 @@ class MtrBusWorker(context : Context, params : WorkerParameters)
         applicationContext.deleteDatabase("E_Bus.db")
         val database = Room.databaseBuilder(applicationContext, MtrBusDatabase::class.java, "E_Bus.db")
                 .allowMainThreadQueries()
-                .createFromAsset("database/E_Bus_20191209.db")
+                .createFromAsset("database/E_Bus_20200604.db")
                 .build()
 
         val mtrBusFareArray = SparseArray<MtrBusFare>()
@@ -152,6 +152,9 @@ class MtrBusWorker(context : Context, params : WorkerParameters)
         if (routeDatabase?.routeStopDao()?.insert(stopList)?.size?:0 > 0) {
             routeDatabase?.routeStopDao()?.delete(companyCode, timeNow)
         }
+
+        routeDatabase?.routeDao()?.delete(C.PROVIDER.AESBUS, timeNow)
+        routeDatabase?.routeStopDao()?.delete(C.PROVIDER.AESBUS, timeNow)
 
         return Result.success(outputData)
     }

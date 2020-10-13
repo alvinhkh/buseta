@@ -40,7 +40,7 @@ class AESBusWorker(context : Context, params : WorkerParameters)
         applicationContext.deleteDatabase("E_AES.db")
         val database = Room.databaseBuilder(applicationContext, AESBusDatabase::class.java, "E_AES.db")
                 .allowMainThreadQueries()
-                .createFromAsset("database/E_AES_20190328.db")
+                .createFromAsset("database/E_AES_20200408.db")
                 .build()
 
         val stopIds = HashMap<String, List<String>>()
