@@ -47,10 +47,6 @@ class FollowRouteWorker(context : Context, params : WorkerParameters)
                     .putBoolean(C.EXTRA.LOAD_STOP, true)
                     .build()
             when (item.first) {
-                C.PROVIDER.AESBUS -> {
-                    requests.add(OneTimeWorkRequest.Builder(AESBusWorker::class.java)
-                            .addTag(TAG).setInputData(data).build())
-                }
                 C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> {
                     requests.add(OneTimeWorkRequest.Builder(
                             if (PreferenceUtil.isUsingNwstDataGovHkApi(applicationContext)) {

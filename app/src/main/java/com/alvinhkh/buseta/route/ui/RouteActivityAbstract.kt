@@ -369,7 +369,6 @@ abstract class RouteActivityAbstract : BaseActivity(),
                     navStop.stopId = stopIdFromIntent
                 }
                 val fragment: Fragment = when (company) {
-                    C.PROVIDER.AESBUS -> AESBusStopListFragment.newInstance(route, navStop)
                     C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> NwstStopListFragment.newInstance(route, navStop)
                     C.PROVIDER.KMB, C.PROVIDER.LWB -> if (PreferenceUtil.isUsingKmbWebApi(applicationContext)) {
                         KmbStopListFragment.newInstance(route, navStop)
@@ -445,7 +444,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
         })
         var loadStop = true
         when (companyCode) {
-            C.PROVIDER.AESBUS, C.PROVIDER.LRTFEEDER, C.PROVIDER.MTR, C.PROVIDER.NLB, C.PROVIDER.GMB901 -> return
+            C.PROVIDER.LRTFEEDER, C.PROVIDER.MTR, C.PROVIDER.NLB, C.PROVIDER.GMB901 -> return
             C.PROVIDER.CTB, C.PROVIDER.NWFB, C.PROVIDER.NWST -> {
                 if (PreferenceUtil.isUsingNwstDataGovHkApi(applicationContext)) {
                     if (routeDatabase.routeDao().count(arrayListOf(C.PROVIDER.DATAGOVHK_NWST), companyCode, routeNo) > 0) return
