@@ -18,6 +18,7 @@ import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.route.model.RouteStop
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.model.Suggestion
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import timber.log.Timber
 import java.lang.Exception
 
@@ -27,6 +28,8 @@ class MtrBusWorker(context : Context, params : WorkerParameters)
     private val routeDatabase = RouteDatabase.getInstance(context)
 
     private val suggestionDatabase = SuggestionDatabase.getInstance(context)
+
+    private val firebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
 
     override fun doWork(): Result {
         val manualUpdate = inputData.getBoolean(C.EXTRA.MANUAL, false)
@@ -40,10 +43,15 @@ class MtrBusWorker(context : Context, params : WorkerParameters)
         val stopList = arrayListOf<RouteStop>()
         val timeNow = System.currentTimeMillis() / 1000
 
+        val busDatabaseFileName = firebaseRemoteConfig.getString("mtr_bus_database_file")
+        if (busDatabaseFileName.isEmpty()) {
+            return Result.failure(outputData)
+        }
+
         applicationContext.deleteDatabase("E_Bus.db")
         val database = Room.databaseBuilder(applicationContext, MtrBusDatabase::class.java, "E_Bus.db")
                 .allowMainThreadQueries()
-                .createFromAsset("database/E_Bus_20200604.db")
+                .createFromAsset("database/$busDatabaseFileName")
                 .build()
 
         val mtrBusFareArray = SparseArray<MtrBusFare>()

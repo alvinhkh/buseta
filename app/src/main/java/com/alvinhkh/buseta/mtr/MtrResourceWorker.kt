@@ -7,6 +7,7 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.utils.ZipUtil
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import okhttp3.ResponseBody
 import timber.log.Timber
 import java.io.BufferedInputStream
@@ -15,6 +16,8 @@ import java.io.FileOutputStream
 
 class MtrResourceWorker(context : Context, params : WorkerParameters)
     : Worker(context, params) {
+
+    private val firebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
 
     override fun doWork(): Result {
         val manualUpdate = inputData.getBoolean(C.EXTRA.MANUAL, false)
@@ -30,7 +33,10 @@ class MtrResourceWorker(context : Context, params : WorkerParameters)
 //            val response1 = mtrMobService.zipResources().execute()
 //            val mtrMobileVersionCheck = response1.body()?:return Result.failure(outputData)
 //            val busDatabaseFileUrl = mtrMobileVersionCheck.resources?.mtrBus?.url?:return Result.failure(outputData)
-                val busDatabaseFileUrl = "http://mavmapp1044.azurewebsites.net/sil_data/E_Bus_20200604.zip"
+                val busDatabaseFileUrl = firebaseRemoteConfig.getString("mtr_bus_database_url")
+                if (busDatabaseFileUrl.isEmpty()) {
+                    return Result.failure(outputData)
+                }
                 val uri = Uri.parse(busDatabaseFileUrl)
                 applicationContext.deleteDatabase("E_Bus.db")
                 val fileName = uri.lastPathSegment ?: return Result.failure(outputData)
