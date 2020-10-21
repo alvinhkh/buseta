@@ -3,7 +3,7 @@ package com.alvinhkh.buseta.search.ui
 
 import android.app.SearchManager
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
@@ -125,7 +125,7 @@ class SearchActivity : AppCompatActivity() {
             }
         }
 
-        viewModel = ViewModelProviders.of(this).get(RouteListViewModel::class.java)
+        viewModel = ViewModelProvider(this).get(RouteListViewModel::class.java)
         with(recycler_view) {
             addItemDecoration(PinnedHeaderItemDecoration())
             layoutManager = LinearLayoutManager(context)

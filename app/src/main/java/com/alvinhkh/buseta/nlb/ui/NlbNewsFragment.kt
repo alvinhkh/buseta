@@ -1,7 +1,7 @@
 package com.alvinhkh.buseta.nlb.ui
 
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
@@ -45,7 +45,7 @@ class NlbNewsFragment: Fragment() {
             adapter = viewAdapter
         }
         val snackbar = Snackbar.make(rootView.findViewById(R.id.coordinator_layout), R.string.message_no_notice, Snackbar.LENGTH_INDEFINITE)
-        val viewModel = ViewModelProviders.of(this@NlbNewsFragment).get(NlbNewsViewModel::class.java)
+        val viewModel = ViewModelProvider(this@NlbNewsFragment).get(NlbNewsViewModel::class.java)
         viewModel.liveData(companyCode).observe(this@NlbNewsFragment, Observer { items ->
             swipeRefreshLayout?.isRefreshing = true
             if (items.isNullOrEmpty()) {

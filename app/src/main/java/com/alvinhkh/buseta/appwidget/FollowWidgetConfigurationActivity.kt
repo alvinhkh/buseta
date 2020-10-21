@@ -10,7 +10,7 @@ import androidx.appcompat.widget.AppCompatSpinner
 import com.alvinhkh.buseta.R
 import android.widget.ArrayAdapter
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import com.alvinhkh.buseta.follow.model.FollowGroup
 import com.alvinhkh.buseta.follow.ui.FollowGroupViewModel
 
@@ -43,7 +43,7 @@ class FollowWidgetConfigurationActivity : AppCompatActivity() {
         val followGroupAdapter = ArrayAdapter<String>(this, R.layout.support_simple_spinner_dropdown_item)
         followGroupSpinner.adapter = followGroupAdapter
 
-        val viewModel = ViewModelProviders.of(this).get(FollowGroupViewModel::class.java)
+        val viewModel = ViewModelProvider(this).get(FollowGroupViewModel::class.java)
         viewModel.getAsLiveData().observe(this, Observer { list ->
             followGroupAdapter.clear()
             followGroupList = list?.toList()?: emptyList()

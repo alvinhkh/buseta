@@ -1,7 +1,7 @@
 package com.alvinhkh.buseta.kmb.ui
 
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -49,7 +49,7 @@ class KmbBBIFragment: Fragment() {
             viewAdapter = KmbBBIViewAdapter()
             adapter = viewAdapter
         }
-        val viewModel = ViewModelProviders.of(this@KmbBBIFragment).get(KmbBBIViewModel::class.java)
+        val viewModel = ViewModelProvider(this@KmbBBIFragment).get(KmbBBIViewModel::class.java)
         rootView.findViewById<TextInputLayout>(R.id.search_edittext_layout)?.visibility = View.VISIBLE
         with(rootView.findViewById<TextInputEditText>(R.id.search_edittext)) {
             addTextChangedListener(object : TextWatcher {

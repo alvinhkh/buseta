@@ -2,7 +2,7 @@ package com.alvinhkh.buseta.route.ui
 
 import android.Manifest
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
@@ -350,7 +350,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
         }
         showLoadingView()
         // load route from database
-        val viewModel = ViewModelProviders.of(this).get(RouteViewModel::class.java)
+        val viewModel = ViewModelProvider(this).get(RouteViewModel::class.java)
         val liveData = viewModel.getAsLiveData(companyCode, routeNo)
         liveData.observe(this, Observer<MutableList<Route>> { routes ->
             pagerAdapter.clear()

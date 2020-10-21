@@ -2,7 +2,7 @@ package com.alvinhkh.buseta.mtr.ui
 
 import android.content.Intent
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import android.view.*
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -50,7 +50,7 @@ class MtrLineStatusFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
             layoutManager = LinearLayoutManager(context)
             adapter = viewAdapter
         }
-        val lineStatusViewModel = ViewModelProviders.of(this).get(MtrLineStatusViewModel::class.java)
+        val lineStatusViewModel = ViewModelProvider(this).get(MtrLineStatusViewModel::class.java)
         lineStatusViewModel.getAsLiveData().observe(this, Observer { list ->
             if (ConnectivityUtil.isConnected(context)) {
                 snackbar.dismiss()
@@ -66,7 +66,7 @@ class MtrLineStatusFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
                 swipeRefreshLayout.isRefreshing = false
             }
         })
-        val latestAlertViewModel = ViewModelProviders.of(this).get(MtrLatestAlertViewModel::class.java)
+        val latestAlertViewModel = ViewModelProvider(this).get(MtrLatestAlertViewModel::class.java)
         latestAlertViewModel.getAsLiveData().observe(this, Observer { list ->
             viewAdapter.alert(list?: listOf())
         })

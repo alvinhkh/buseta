@@ -1,7 +1,7 @@
 package com.alvinhkh.buseta.follow.ui
 
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import com.google.android.material.snackbar.Snackbar
 import androidx.fragment.app.Fragment
@@ -54,7 +54,7 @@ class FollowFragment: Fragment() {
             layoutManager = LinearLayoutManager(context)
             adapter = viewAdapter
         }
-        viewModel = ViewModelProviders.of(this).get(FollowViewModel::class.java)
+        viewModel = ViewModelProvider(this).get(FollowViewModel::class.java)
         liveData = viewModel.liveData(groupId)
         liveData?.removeObservers(this)
         liveData?.observe(this, Observer<MutableList<Follow>> { list ->

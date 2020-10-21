@@ -1,7 +1,7 @@
 package com.alvinhkh.buseta.follow.ui
 
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -32,7 +32,7 @@ class FollowGroupDialogFragment : BottomSheetDialogFragment() {
             setHasFixedSize(true)
             adapter = viewAdapter
         }
-        val viewModel = ViewModelProviders.of(this).get(FollowGroupViewModel::class.java)
+        val viewModel = ViewModelProvider(this).get(FollowGroupViewModel::class.java)
         viewModel.getAsLiveData()
                 .observe(this, Observer<MutableList<FollowGroup>> { list ->
                     viewAdapter.replace(list?: mutableListOf())

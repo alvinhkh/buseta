@@ -1,7 +1,7 @@
 package com.alvinhkh.buseta.follow.ui
 
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
@@ -84,7 +84,7 @@ class FollowGroupFragment : Fragment() {
         fab.setOnClickListener {
             startActivity(Intent(context, SearchActivity::class.java))
         }
-        viewModel = ViewModelProviders.of(this).get(FollowGroupViewModel::class.java)
+        viewModel = ViewModelProvider(this).get(FollowGroupViewModel::class.java)
         liveData = viewModel.getAsLiveData()
         liveData?.observe(this, Observer<MutableList<FollowGroup>> { list ->
             val groupList = mutableListOf<FollowGroup>()

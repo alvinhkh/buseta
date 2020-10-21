@@ -1,7 +1,7 @@
 package com.alvinhkh.buseta.follow.ui
 
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
@@ -50,7 +50,7 @@ class EditFollowGroupFragment: Fragment(), OnItemDragListener {
             itemTouchHelper = ItemTouchHelper(SimpleItemTouchHelperCallback(viewAdapter, false))
             itemTouchHelper.attachToRecyclerView(this)
         }
-        val viewModel = ViewModelProviders.of(this).get(FollowGroupViewModel::class.java)
+        val viewModel = ViewModelProvider(this).get(FollowGroupViewModel::class.java)
         viewModel.getAsLiveData().observe(this, Observer { list ->
             viewAdapter.replaceItems(list?: mutableListOf())
             emptyView.visibility = if (viewAdapter.itemCount > 0) View.GONE else View.VISIBLE

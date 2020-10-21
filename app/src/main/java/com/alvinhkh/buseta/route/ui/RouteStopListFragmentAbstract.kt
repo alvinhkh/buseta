@@ -2,7 +2,7 @@ package com.alvinhkh.buseta.route.ui
 
 import android.Manifest
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -183,7 +183,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
             layoutManager = LinearLayoutManager(context)
             viewAdapter = RouteStopListViewAdapter(activity!!, route?:Route())
             adapter = viewAdapter
-            viewModel = ViewModelProviders.of(this@RouteStopListFragmentAbstract).get(RouteStopListViewModel::class.java)
+            viewModel = ViewModelProvider(this@RouteStopListFragmentAbstract).get(RouteStopListViewModel::class.java)
             viewModel.liveData(route?.companyCode?:"", route?.code?:"", route?.name?:"", route?.sequence?:"", route?.serviceType?:"")
                     .observe(this@RouteStopListFragmentAbstract, Observer<MutableList<RouteStop>> { stops ->
                         if (stops != null) {

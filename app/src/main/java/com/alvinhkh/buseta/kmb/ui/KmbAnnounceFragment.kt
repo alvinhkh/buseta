@@ -1,7 +1,7 @@
 package com.alvinhkh.buseta.kmb.ui
 
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
@@ -44,7 +44,7 @@ class KmbAnnounceFragment: Fragment() {
             adapter = viewAdapter
         }
         val snackbar = Snackbar.make(rootView.findViewById(R.id.coordinator_layout), R.string.message_no_notice, Snackbar.LENGTH_INDEFINITE)
-        val viewModel = ViewModelProviders.of(this@KmbAnnounceFragment).get(KmbAnnounceViewModel::class.java)
+        val viewModel = ViewModelProvider(this@KmbAnnounceFragment).get(KmbAnnounceViewModel::class.java)
         viewModel.getAsLiveData(context!!, routeNo, routeBound, routeServiceType).observe(this@KmbAnnounceFragment, Observer { items ->
             swipeRefreshLayout?.isRefreshing = true
             if (items.isNullOrEmpty()) {

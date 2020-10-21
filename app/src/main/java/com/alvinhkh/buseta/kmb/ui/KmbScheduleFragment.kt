@@ -1,7 +1,7 @@
 package com.alvinhkh.buseta.kmb.ui
 
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import androidx.fragment.app.Fragment
@@ -43,7 +43,7 @@ class KmbScheduleFragment: Fragment() {
             viewAdapter = KmbScheduleViewAdapter(routeBound)
             adapter = viewAdapter
         }
-        val viewModel = ViewModelProviders.of(this@KmbScheduleFragment).get(KmbScheduleViewModel::class.java)
+        val viewModel = ViewModelProvider(this@KmbScheduleFragment).get(KmbScheduleViewModel::class.java)
         viewModel.getAsLiveData(context!!, routeNo, routeBound, routeServiceType).observe(this@KmbScheduleFragment, Observer { items ->
             swipeRefreshLayout?.isRefreshing = true
             if (items.isNullOrEmpty()) {

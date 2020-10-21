@@ -1,7 +1,7 @@
 package com.alvinhkh.buseta.route.ui
 
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import androidx.viewpager.widget.ViewPager
@@ -33,7 +33,7 @@ class RouteSelectDialogFragment : BottomSheetDialogFragment() {
             setHasFixedSize(true)
             adapter = viewAdapter
         }
-        val viewModel = ViewModelProviders.of(this).get(RouteViewModel::class.java)
+        val viewModel = ViewModelProvider(this).get(RouteViewModel::class.java)
         viewModel.getAsLiveData(companyCode, routeNo)
                 .observe(this, Observer<MutableList<Route>> { routes ->
                     viewAdapter.replaceItems(routes?: mutableListOf())

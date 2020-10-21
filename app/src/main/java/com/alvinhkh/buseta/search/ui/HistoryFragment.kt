@@ -1,7 +1,7 @@
 package com.alvinhkh.buseta.search.ui
 
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import android.content.Intent
 import android.os.Bundle
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -50,7 +50,7 @@ class HistoryFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
             viewAdapter = HistoryViewAdapter(this)
             adapter = viewAdapter
         }
-        viewModel = ViewModelProviders.of(this@HistoryFragment).get(HistoryViewModel::class.java)
+        viewModel = ViewModelProvider(this@HistoryFragment).get(HistoryViewModel::class.java)
         viewModel.getAsLiveData().observe(this@HistoryFragment, Observer<MutableList<Suggestion>> { list ->
             if (list.isNullOrEmpty()) {
                 viewAdapter.clear()
