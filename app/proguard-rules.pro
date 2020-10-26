@@ -15,8 +15,10 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+# Add this global rule
+-keepattributes Signature
+
 -dontwarn java.lang.invoke.*
--dontwarn **$$Lambda$*
 
 -keep public class com.google.android.gms.common.internal.safeparcel.SafeParcelable {
     public static final *** NULL;
@@ -27,30 +29,29 @@
   public static final *** CREATOR;
 }
 
--keep @interface android.support.annotation.Keep
--keep @android.support.annotation.Keep class *
+-keep interface androidx.annotation.Keep
+-keep @androidx.annotation.Keep class *
 -keepclasseswithmembers class * {
-  @android.support.annotation.Keep <fields>;
+  @androidx.annotation.Keep <fields>;
 }
 -keepclasseswithmembers class * {
-  @android.support.annotation.Keep <methods>;
+  @androidx.annotation.Keep <methods>;
 }
 
--keep @interface com.google.android.gms.common.annotation.KeepName
+-keep interface com.google.android.gms.common.annotation.KeepName
 -keepnames @com.google.android.gms.common.annotation.KeepName class *
 -keepclassmembernames class * {
   @com.google.android.gms.common.annotation.KeepName *;
 }
 
--keep @interface com.google.android.gms.common.util.DynamiteApi
--keep public @com.google.android.gms.common.util.DynamiteApi class * {
+-keep interface com.google.android.gms.common.util.DynamiteApi
+-keep @com.google.android.gms.common.util.DynamiteApi class * {
   public <fields>;
   public <methods>;
 }
 
 -dontwarn android.security.NetworkSecurityPolicy
 
--keep class .R
 -keep class **.R$* {
     <fields>;
 }
@@ -60,20 +61,18 @@
 
 # Platform calls Class.forName on types which do not exist on Android to determine platform.
 -dontnote retrofit2.Platform
-# Platform used when running on Java 8 VMs. Will not be used at runtime.
--dontwarn retrofit2.Platform$Java8
 # Retain generic type information for use by reflection by converters and adapters.
 -keepattributes Signature
 # Retain declared checked exceptions for use by a Proxy instance.
 -keepattributes Exceptions
 
+# This rule will properly ProGuard all the model classes in
+# the package com.yourcompany.models. Modify to fit the structure
+# of your app.
 -keepclassmembers class com.alvinhkh.buseta.model.** {
   *;
 }
--keepclassmembers class com.alvinhkh.buseta.holder.** {
-  *;
-}
--keepclassmembers class com.alvinhkh.buseta.kmb.model.** {
+-keepclassmembers class com.alvinhkh.buseta.**.model.** {
   *;
 }
 
@@ -118,10 +117,6 @@
 	public <init>(android.content.Context, android.util.AttributeSet, int);
 	public void set*(...);
 }
-
--keep class microsoft.mappoint.** {*;}
--keep class org.osmdroid.** {*;}
--keep class org.metalev.multitouch.controller.** {*;}
 
 # https://github.com/osmdroid/osmdroid/issues/633 SDK version 26
 -dontwarn org.osmdroid.tileprovider.modules.NetworkAvailabliltyCheck
