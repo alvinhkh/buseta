@@ -143,7 +143,7 @@ public class C {
 
         String CHANNEL_FOREGROUND = "CHANNEL_ID_FOREGROUND";
 
-        String CHANNEL_UPDATE = "CHANNEL_ID_UPDATE";
+        String CHANNEL_UPDATE = "CHANNEL_ID_CHECK_UPDATE";
     }
 
     public interface GEOFENCE {

@@ -54,17 +54,18 @@ class ProviderUpdateService: Service() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager?
+            notificationManager?.deleteNotificationChannel("CHANNEL_ID_UPDATE")
             if (notificationManager?.getNotificationChannel(C.NOTIFICATION.CHANNEL_UPDATE) == null) {
                 val notificationChannel = NotificationChannel(C.NOTIFICATION.CHANNEL_UPDATE,
-                        getString(R.string.channel_name_update), NotificationManager.IMPORTANCE_DEFAULT)
+                        getString(R.string.channel_name_update), NotificationManager.IMPORTANCE_MIN)
                 notificationChannel.description = getString(R.string.channel_description_update)
                 notificationChannel.enableLights(false)
                 notificationChannel.enableVibration(false)
-                notificationChannel.importance = NotificationManager.IMPORTANCE_DEFAULT
+                notificationChannel.setSound(null, null)
+                notificationChannel.setShowBadge(false)
                 notificationManager?.createNotificationChannel(notificationChannel)
             }
         }
-        startForegroundNotification(100, 0)
     }
 
     private fun startForegroundNotification(max: Int, progress: Int) {
@@ -72,12 +73,16 @@ class ProviderUpdateService: Service() {
         val builder = NotificationCompat.Builder(this, C.NOTIFICATION.CHANNEL_UPDATE)
         builder.setOnlyAlertOnce(true)
                 .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_MIN)
                 .setSmallIcon(R.drawable.ic_outline_directions_bus_24dp)
-                .setCategory(NotificationCompat.CATEGORY_SYSTEM)
                 .setShowWhen(false)
+                .setSound(null)
                 .setProgress(max, progress, progress <= 0)
-                .setContentTitle(getString(R.string.channel_description_update))
+                .setContentTitle(getString(if (max == 100 && progress == 0) {
+                    R.string.channel_name_update
+                } else {
+                    R.string.channel_description_update
+                }))
                 .setContentText(if (progress <= 0) {
                     null
                 } else {
@@ -109,12 +114,14 @@ class ProviderUpdateService: Service() {
         val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
         val timeNow = System.currentTimeMillis() / 1000
         val savedTime = sharedPreferences.getLong("last_update_check", 0)
-        if (!manualUpdate && routeCount > 0 && timeNow < savedTime + 129600) {
+        if (!manualUpdate && routeCount > 0 && timeNow < savedTime + 259200) {
             Timber.d("recently updated and not manual update")
             stopSelf()
             return START_NOT_STICKY
         }
         sharedPreferences.edit().putLong("last_update_check", timeNow).apply()
+
+        startForegroundNotification(100, 0)
 
         workManager.cancelAllWorkByTag("RouteList")
         var workCount = 0
