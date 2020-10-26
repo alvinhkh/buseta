@@ -20,7 +20,6 @@ import com.alvinhkh.buseta.follow.ui.FollowGroupFragment
 import com.alvinhkh.buseta.mtr.ui.MtrLineStatusFragment
 import com.alvinhkh.buseta.search.ui.HistoryFragment
 import com.alvinhkh.buseta.service.ProviderUpdateService
-import com.alvinhkh.buseta.ui.webview.WebViewFragment
 import com.alvinhkh.buseta.utils.AdViewUtil
 import com.alvinhkh.buseta.utils.ColorUtil
 import com.google.android.material.snackbar.Snackbar

@@ -3,7 +3,6 @@ package com.alvinhkh.buseta.route.ui
 import android.Manifest
 import android.app.Dialog
 import android.app.PendingIntent
-import androidx.lifecycle.Observer
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -62,6 +61,7 @@ import com.google.android.gms.tasks.Task
 
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.CustomZoomButtonsController
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.compass.CompassOverlay
@@ -108,7 +108,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                 if (routeStop != null && context != null) {
                     val intent = Intent(context, EtaService::class.java)
                     intent.putExtra(C.EXTRA.STOP_OBJECT, routeStop)
-                    context!!.startService(intent)
+                    requireContext().startService(intent)
                 }
             } catch (ignored: IllegalStateException) {
             }
@@ -140,13 +140,13 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
      * Returns true if geofences were added, otherwise false.
      */
     private val isGeofencesAdded: Boolean
-        get() = if (context == null) false else !PreferenceManager.getDefaultSharedPreferences(context!!).getString(C.PREF.GEOFENCES_KEY, "").isNullOrEmpty()
+        get() = if (context == null) false else !PreferenceManager.getDefaultSharedPreferences(requireContext()).getString(C.PREF.GEOFENCES_KEY, "").isNullOrEmpty()
 
     /**
      * Returns true if this geofences were added, otherwise false.
      */
     private val isThisGeofencesAdded: Boolean
-        get() = if (context == null) false else PreferenceManager.getDefaultSharedPreferences(context!!)
+        get() = if (context == null) false else PreferenceManager.getDefaultSharedPreferences(requireContext())
                 .getString(C.PREF.GEOFENCES_KEY, "") == String.format(Locale.ENGLISH, "%s-%s-%s-%s", routeStop!!.companyCode,
                 routeStop!!.routeNo, routeStop!!.routeSequence, routeStop!!.stopId)
 
@@ -198,22 +198,22 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        arrivalTimeDatabase = ArrivalTimeDatabase.getInstance(context!!)!!
-        followDatabase = FollowDatabase.getInstance(context!!)!!
-        routeDatabase = RouteDatabase.getInstance(context!!)!!
+        arrivalTimeDatabase = ArrivalTimeDatabase.getInstance(requireContext())!!
+        followDatabase = FollowDatabase.getInstance(requireContext())!!
+        routeDatabase = RouteDatabase.getInstance(requireContext())!!
 
         mGeofenceList = ArrayList()
         mGeofencePendingIntent = null
-        mGeofencingClient = LocationServices.getGeofencingClient(context!!)
+        mGeofencingClient = LocationServices.getGeofencingClient(requireContext())
 
         if (activity != null &&
-                ActivityCompat.checkSelfPermission(activity!!,
+                ActivityCompat.checkSelfPermission(requireActivity(),
                         Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(activity!!,
+                ActivityCompat.checkSelfPermission(requireActivity(),
                         Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context!!)
+            val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireContext())
             fusedLocationProviderClient.lastLocation
-                    .addOnSuccessListener(activity!!) { location ->
+                    .addOnSuccessListener(requireActivity()) { location ->
                         if (location != null) {
                             currentLocation = location
                         }
@@ -224,7 +224,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
     override fun onResume() {
         super.onResume()
         if (context != null) {
-            val preferences = PreferenceManager.getDefaultSharedPreferences(context!!)
+            val preferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
             if (preferences != null) {
                 val i = preferences.getString("load_eta", "0")?.toInt()?:0
                 if (i > 0) {
@@ -296,7 +296,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
      */
     private fun updateGeofencesAdded(key: String) {
         if (context == null) return
-        PreferenceManager.getDefaultSharedPreferences(context!!)
+        PreferenceManager.getDefaultSharedPreferences(requireContext())
                 .edit()
                 .putString(C.PREF.GEOFENCES_KEY, key)
                 .apply()
@@ -318,7 +318,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
      */
     private fun checkPermissions(): Boolean {
         if (context == null) return false
-        val permissionState = ActivityCompat.checkSelfPermission(context!!, Manifest.permission.ACCESS_FINE_LOCATION)
+        val permissionState = ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
         return permissionState == PackageManager.PERMISSION_GRANTED
     }
 
@@ -341,7 +341,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
      * Adds geofences, which sets alerts to be notified when the device enters or exits one of the
      * specified geofences. Handles the success or failure results returned by addGeofences().
      */
-    fun addGeofencesButtonHandler() {
+    private fun addGeofencesButtonHandler() {
         mPendingGeofenceTask = PendingGeofenceTask.ADD
         if (!checkPermissions()) {
             requestPermissions()
@@ -368,7 +368,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
      * Removes geofences, which stops further notifications when the device enters or exits
      * previously registered geofences.
      */
-    fun removeGeofencesButtonHandler() {
+    private fun removeGeofencesButtonHandler() {
         mPendingGeofenceTask = PendingGeofenceTask.REMOVE
         if (!checkPermissions()) {
             requestPermissions()
@@ -430,7 +430,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
         val behavior = params.behavior
 
         if (behavior != null && behavior is BottomSheetBehavior<*>) {
-            behavior.setBottomSheetCallback(mBottomSheetBehaviorCallback)
+            behavior.addBottomSheetCallback(mBottomSheetBehaviorCallback)
         }
 
         val bundle = arguments
@@ -459,7 +459,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
         val companyColor: Int = if (!route?.colour.isNullOrBlank()) {
             Color.parseColor(route?.colour)
         } else {
-            Route.companyColour(context!!, routeStop?.companyCode?:"", routeStop?.routeNo?:"")?: ContextCompat.getColor(context!!, R.color.colorPrimary)
+            Route.companyColour(requireContext(), routeStop?.companyCode?:"", routeStop?.routeNo?:"")?: ContextCompat.getColor(requireContext(), R.color.colorPrimary)
         }
 
         vh.contentView = contentView
@@ -504,10 +504,10 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
 
         vh.mapView = contentView.findViewById(R.id.map)
 
-        if (context != null && ActivityCompat.checkSelfPermission(context!!,
-                        Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(context!!,
+        if (context != null && ActivityCompat.checkSelfPermission(requireContext(),
+                        Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || ActivityCompat.checkSelfPermission(requireContext(),
                         Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            LocationServices.getFusedLocationProviderClient(context!!)
+            LocationServices.getFusedLocationProviderClient(requireContext())
                     .lastLocation.addOnSuccessListener { location ->
                 this.currentLocation = location
                 updateDistanceDisplay()
@@ -532,7 +532,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
         }
 
 
-        val preferences = PreferenceManager.getDefaultSharedPreferences(context!!)
+        val preferences = PreferenceManager.getDefaultSharedPreferences(requireContext())
         vh.followButton?.setOnClickListener(null)
         vh.mapButton?.setOnClickListener(null)
         vh.notificationButton?.setOnClickListener(null)
@@ -546,7 +546,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
             if (!routeStop?.latitude.isNullOrEmpty() && !routeStop?.longitude.isNullOrEmpty()) {
                 vh.mapView?.visibility = View.VISIBLE
                 vh.mapView?.setTileSource(TileSourceFactory.MAPNIK)
-                vh.mapView?.setBuiltInZoomControls(false)
+                vh.mapView?.zoomController?.setVisibility(CustomZoomButtonsController.Visibility.NEVER)
                 vh.mapView?.setMultiTouchControls(false)
                 vh.mapView?.isTilesScaledToDpi = true
                 vh.mapView?.maxZoomLevel = 20.0
@@ -561,8 +561,8 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                 startMarker1.title = routeStop?.name
                 vh.mapView?.overlays?.add(startMarker1)
 
-                val mCompassOverlay = CompassOverlay(context!!,
-                        InternalCompassOrientationProvider(context!!),
+                val mCompassOverlay = CompassOverlay(requireContext(),
+                        InternalCompassOrientationProvider(requireContext()),
                         vh.mapView)
                 mCompassOverlay.enableCompass()
                 vh.mapView?.overlays?.add(mCompassOverlay)
@@ -576,7 +576,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                     routeStop?.routeSequence?:"", routeStop?.routeServiceType?:"",
                     routeStop?.stopId?:"", routeStop?.sequence?:"")
             followCount.removeObservers(this)
-            followCount.observe(this, Observer { count ->
+            followCount.observe(this, { count ->
                 vh.followButton?.removeCallbacks {  }
                 if (count != null) {
                     vh.followButton?.setIconResource(if (count > 0) R.drawable.ic_outline_bookmark_36dp else R.drawable.ic_outline_bookmark_border_36dp)
@@ -628,17 +628,21 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                 vh.arrivalAlertButton?.setIconResource(if (isThisGeofencesAdded) R.drawable.ic_outline_alarm_on_36dp else R.drawable.ic_outline_alarm_add_36dp)
                 vh.arrivalAlertButton?.setOnClickListener {
                     Timber.d("isThisGeofencesAdded: %s", isThisGeofencesAdded)
-                    if (isThisGeofencesAdded) {
-                        Timber.d("removeGeofencesButtonHandler")
-                        removeGeofencesButtonHandler()
-                    } else if (isGeofencesAdded) {
-                        showSnackbar(R.string.arrival_alert_existed, R.string.replace) {
+                    when {
+                        isThisGeofencesAdded -> {
+                            Timber.d("removeGeofencesButtonHandler")
+                            removeGeofencesButtonHandler()
+                        }
+                        isGeofencesAdded -> {
+                            showSnackbar(R.string.arrival_alert_existed, R.string.replace) {
+                                Timber.d("addGeofencesButtonHandler")
+                                addGeofencesButtonHandler()
+                            }
+                        }
+                        else -> {
                             Timber.d("addGeofencesButtonHandler")
                             addGeofencesButtonHandler()
                         }
-                    } else {
-                        Timber.d("addGeofencesButtonHandler")
-                        addGeofencesButtonHandler()
                     }
                 }
             }
@@ -680,20 +684,20 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
             vh.etaView?.visibility = View.INVISIBLE
             val intent = Intent(context, EtaService::class.java)
             intent.putExtra(C.EXTRA.STOP_OBJECT, routeStop)
-            context!!.startService(intent)
+            requireContext().startService(intent)
             val arrivalTimeLiveData = arrivalTimeDatabase.arrivalTimeDao().getLiveData(routeStop?.companyCode?:"", routeStop?.routeNo?:"", routeStop?.routeSequence?:"", routeStop?.stopId?:"", routeStop?.sequence?:"")
             arrivalTimeLiveData.removeObservers(this)
-            arrivalTimeLiveData.observe(this, Observer { list ->
+            arrivalTimeLiveData.observe(this, { list ->
                 vh.etaText?.text = ""
                 if (list?.size?:0 < 1) {
                     vh.etaView?.visibility = View.GONE
                 }
                 list?.forEach {
-                    val arrivalTime = ArrivalTime.estimate(context!!, it)
-                    if (arrivalTime.updatedAt > System.currentTimeMillis() - 600000 && !arrivalTime.order.isEmpty()) {
+                    val arrivalTime = ArrivalTime.estimate(requireContext(), it)
+                    if (arrivalTime.updatedAt > System.currentTimeMillis() - 600000 && arrivalTime.order.isNotEmpty()) {
                         val etaText = SpannableStringBuilder(arrivalTime.text)
                         val pos = Integer.parseInt(arrivalTime.order)
-                        val colorInt: Int = ContextCompat.getColor(context!!,
+                        val colorInt: Int = ContextCompat.getColor(requireContext(),
                                 if (arrivalTime.companyCode == C.PROVIDER.MTR) {
                                     if (arrivalTime.expired)
                                         R.color.textDiminish
@@ -706,19 +710,19 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                                         else -> R.color.textHighlighted
                                     }
                                 })
-                        if (!arrivalTime.platform.isEmpty()) {
+                        if (arrivalTime.platform.isNotEmpty()) {
                             etaText.insert(0, "[" + arrivalTime.platform + "] ")
                         }
                         if (arrivalTime.isSchedule) {
                             etaText.append(" ").append(getString(R.string.scheduled_bus))
                         }
-                        if (!arrivalTime.estimate.isEmpty()) {
+                        if (arrivalTime.estimate.isNotEmpty()) {
                             etaText.append(" (").append(arrivalTime.estimate).append(")")
                         }
                         if (arrivalTime.distanceKM >= 0) {
                             etaText.append(" ").append(getString(R.string.km, arrivalTime.distanceKM))
                         }
-                        if (!arrivalTime.plate.isEmpty()) {
+                        if (arrivalTime.plate.isNotEmpty()) {
                             etaText.append(" ").append(arrivalTime.plate)
                         }
                         if (arrivalTime.capacity >= 0) {
@@ -740,7 +744,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                                 }
                                 else -> 0
                             }
-                            var drawable: Drawable? = ContextCompat.getDrawable(context!!, drawableId)
+                            var drawable: Drawable? = ContextCompat.getDrawable(requireContext(), drawableId)
                             val capacity = when {
                                 arrivalTime.capacity == 0L -> {
                                     getString(R.string.capacity_empty)
@@ -769,12 +773,12 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                                     etaText.setSpan(imageSpan, etaText.length - 1, etaText.length, Spannable.SPAN_INCLUSIVE_EXCLUSIVE)
                                 }
                             }
-                            if (!capacity.isEmpty()) {
+                            if (capacity.isNotEmpty()) {
                                 etaText.append(capacity)
                             }
                         }
                         if (arrivalTime.hasWheelchair) {
-                            var drawable = ContextCompat.getDrawable(context!!, R.drawable.ic_outline_accessible_18dp)
+                            var drawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_outline_accessible_18dp)
                             drawable = DrawableCompat.wrap(drawable!!)
                             drawable?.setBounds(0, 0, vh.etaText?.lineHeight?:0, vh.etaText?.lineHeight?:0)
                             DrawableCompat.setTint(drawable.mutate(), colorInt)
@@ -785,7 +789,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                             }
                         }
                         if (arrivalTime.hasWifi) {
-                            var drawable = ContextCompat.getDrawable(context!!, R.drawable.ic_outline_wifi_18dp)
+                            var drawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_outline_wifi_18dp)
                             if (drawable != null) {
                                 drawable = DrawableCompat.wrap(drawable)
                                 drawable?.setBounds(0, 0, vh.etaText?.lineHeight?:0, vh.etaText?.lineHeight?:0)
@@ -797,7 +801,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                                 }
                             }
                         }
-                        if (!arrivalTime.note.isEmpty()) {
+                        if (arrivalTime.note.isNotEmpty()) {
                             etaText.append(" ").append(arrivalTime.note)
                         }
                         if (etaText.isNotEmpty()) {
@@ -848,7 +852,7 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                     }
                 }
                 WorkManager.getInstance().getWorkInfoByIdLiveData(request.id).observe(this,
-                        Observer { workInfo ->
+                        { workInfo ->
                             if (vh.stopImage != null) {
                                 if (workInfo?.state == WorkInfo.State.FAILED) {
                                     vh.stopImage?.visibility = View.GONE
@@ -882,36 +886,36 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
     }
 
     private class ViewHolder {
-        internal var contentView: View? = null
-        internal var headerLayout: RelativeLayout? = null
+        var contentView: View? = null
+        var headerLayout: RelativeLayout? = null
 
-        internal var stopImage: ImageView? = null
-        internal var stopImageButton: MaterialButton? = null
+        var stopImage: ImageView? = null
+        var stopImageButton: MaterialButton? = null
 
-        internal var coordinatorLayout: View? = null
-        internal var followButton: MaterialButton? = null
-        internal var mapButton: MaterialButton? = null
-        internal var notificationButton: MaterialButton? = null
-        internal var streetviewButton: MaterialButton? = null
-        internal var arrivalAlertButton: MaterialButton? = null
+        var coordinatorLayout: View? = null
+        var followButton: MaterialButton? = null
+        var mapButton: MaterialButton? = null
+        var notificationButton: MaterialButton? = null
+        var streetviewButton: MaterialButton? = null
+        var arrivalAlertButton: MaterialButton? = null
 
-        internal var nameText: TextView? = null
-        internal var routeNoText: TextView? = null
-        internal var routeLocationText: TextView? = null
-        internal var stopLocationText: TextView? = null
-        internal var fareText: TextView? = null
-        internal var distanceText: TextView? = null
-        internal var etaView: View? = null
-        internal var etaText: TextView? = null
-        internal var etaServerTimeText: TextView? = null
-        internal var etaLastUpdateText: TextView? = null
+        var nameText: TextView? = null
+        var routeNoText: TextView? = null
+        var routeLocationText: TextView? = null
+        var stopLocationText: TextView? = null
+        var fareText: TextView? = null
+        var distanceText: TextView? = null
+        var etaView: View? = null
+        var etaText: TextView? = null
+        var etaServerTimeText: TextView? = null
+        var etaLastUpdateText: TextView? = null
 
-        internal var mapView: MapView? = null
+        var mapView: MapView? = null
     }
 
     companion object {
 
-        private val REQUEST_PERMISSIONS_REQUEST_CODE = 34
+        private const val REQUEST_PERMISSIONS_REQUEST_CODE = 34
 
         /**
          * Returns a new instance of this fragment for the given section

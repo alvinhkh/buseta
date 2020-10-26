@@ -353,13 +353,13 @@ abstract class RouteActivityAbstract : BaseActivity(),
         // load route from database
         val viewModel = ViewModelProvider(this).get(RouteViewModel::class.java)
         val liveData = viewModel.getAsLiveData(companyCode, routeNo)
-        liveData.observe(this, Observer<MutableList<Route>> { routes ->
+        liveData.observe(this, { routes ->
             pagerAdapter.clear()
             var company = ""
             var isScrollToPage = false
             var hasDestination = false
             routes?.forEach { route ->
-                company = route.companyCode ?: companyCode ?: ""
+                company = route.companyCode ?: companyCode
                 var navStop = stopFromIntent
                 if (navStop == null && !stopIdFromIntent.isNullOrEmpty()) {
                     navStop = RouteStop()
@@ -640,7 +640,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
                 ?: "", route.code ?: "", route.name ?: "", route.sequence ?: "", route.serviceType
                 ?: "")
         routeStopLiveData.removeObservers(this)
-        routeStopLiveData.observe(this, Observer { list ->
+        routeStopLiveData.observe(this, { list ->
             map?.clear()
             val mapCoordinates: MutableList<LatLong> = route.mapCoordinates
             val hasMapCoordinates = mapCoordinates.size > 0
@@ -683,7 +683,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
         val liveData = arrivalTimeDatabase.arrivalTimeDao().getLiveData(route.companyCode
                 ?: "", route.name ?: "", route.sequence ?: "")
         liveData.removeObservers(this)
-        liveData.observe(this, Observer { list ->
+        liveData.observe(this, { list ->
             for (marker in markerMap.values.toTypedArray()) {
                 marker.remove()
             }
