@@ -181,6 +181,7 @@
     <string name="provider_nwfb">新世界第一巴士</string>
     <string name="provider_nwst">城巴/新世界第一巴士</string>
     <string name="provider_gmb">專線小巴</string>
+    <string name="provider_td">運輸署</string>
     <string name="provider_short_aes_bus">機場快綫</string>
     <string name="provider_short_ctb">城巴</string>
     <string name="provider_short_lwb">龍運</string>

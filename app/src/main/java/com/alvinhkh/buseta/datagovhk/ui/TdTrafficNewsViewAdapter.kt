@@ -1,5 +1,6 @@
 package com.alvinhkh.buseta.datagovhk.ui
 
+import android.annotation.SuppressLint
 import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -36,9 +37,11 @@ class TdTrafficNewsViewAdapter(
 
     class Holder(itemView: View?): RecyclerView.ViewHolder(itemView!!){
 
+        @SuppressLint("SetTextI18n")
         fun bindItems(message: TdTrafficNewsV1.Message) {
+            val source = itemView.context.getString(R.string.provider_td)
             itemView.text.text = message.ChinText
-            itemView.date.text = message.ReferenceDate
+            itemView.date.text = "$source ${message.ReferenceDate}"
         }
     }
 
