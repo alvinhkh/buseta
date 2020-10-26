@@ -10,7 +10,6 @@ import com.alvinhkh.buseta.nwst.model.NwstVariant
 import com.alvinhkh.buseta.nwst.util.NwstRequestUtil
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.utils.HashUtil
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import timber.log.Timber
 
 class NwstRouteWorker(context : Context, params : WorkerParameters)
@@ -19,8 +18,6 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
     private val nwstService = NwstService.api.create(NwstService::class.java)
 
     private val routeDatabase = RouteDatabase.getInstance(context)
-
-    private val firebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
 
     override fun doWork(): Result {
         val manualUpdate = inputData.getBoolean(C.EXTRA.MANUAL, false)
@@ -40,22 +37,24 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
         val timeNow = System.currentTimeMillis() / 1000
 
         try {
-            val sysCode5 = firebaseRemoteConfig.getString("nwst_syscode5")
-            val appId = firebaseRemoteConfig.getString("nwst_appid")
+            val sysCode5 = preferences.getString("nwst_syscode5", "")?:""
+            val appId = preferences.getString("nwst_appid", "")?:""
+            val version = preferences.getString("nwst_version", NwstService.APP_VERSION)?:NwstService.APP_VERSION
+            val version2 = preferences.getString("nwst_version2", NwstService.APP_VERSION2)?:NwstService.APP_VERSION2
             var tk = preferences.getString("nwst_tk", "")?:""
             val r0 = nwstService.pushTokenEnable(tk, tk, NwstService.LANGUAGE_TC, "", "Y", NwstService.DEVICETYPE,
-                    NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
+                    NwstRequestUtil.syscode(), NwstService.PLATFORM, version, version2,
                     NwstRequestUtil.syscode2()).execute()
             if (r0.body() != "Already Registered") {
                 tk = HashUtil.randomHexString(64)
                 nwstService.pushToken(tk, tk, NwstService.LANGUAGE_TC, "", "R", NwstService.DEVICETYPE,
-                        NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
+                        NwstRequestUtil.syscode(), NwstService.PLATFORM, version, version2,
                         NwstRequestUtil.syscode2()).execute()
                 nwstService.pushTokenEnable(tk, tk, NwstService.LANGUAGE_TC, "", "Y", NwstService.DEVICETYPE,
-                        NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
+                        NwstRequestUtil.syscode(), NwstService.PLATFORM, version, version2,
                         NwstRequestUtil.syscode2()).execute()
                 nwstService.adv(NwstService.LANGUAGE_TC, "640",
-                        NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
+                        NwstRequestUtil.syscode(), NwstService.PLATFORM, version, version2,
                         NwstRequestUtil.syscode2(), tk).execute()
                 val editor = preferences.edit()
                 editor.putString("nwst_tk", tk)
@@ -63,8 +62,7 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
             }
 
             val response = nwstService.routeList(routeNo, NwstService.LANGUAGE_TC,
-                    NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION,
-                    tk).execute()
+                    NwstRequestUtil.syscode(), NwstService.PLATFORM, version, tk).execute()
             if (!response.isSuccessful) {
                 Timber.d("%s", response.message())
                 return Result.failure(outputData)
@@ -82,8 +80,8 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
                 if (nwstRoute != null && nwstRoute.routeNo.isNotBlank() && nwstRoute.routeNo == routeNo) {
                     val response2 = nwstService.variantList(nwstRoute.rdv,
                             NwstService.LANGUAGE_TC, nwstRoute.routeNo+"-"+nwstRoute.locationCode+"-1", nwstRoute.bound,
-                            NwstRequestUtil.syscode(), NwstService.PLATFORM,
-                            NwstService.APP_VERSION, tk, sysCode5, appId).execute()
+                            NwstRequestUtil.syscode(), NwstService.PLATFORM, version, tk,
+                            sysCode5, appId).execute()
                     if (!response2.isSuccessful) {
                         Timber.d("%s", response2.message())
                         return Result.failure(outputData)

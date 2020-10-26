@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import android.content.Context
 import androidx.annotation.UiThread
+import androidx.preference.PreferenceManager
 import com.alvinhkh.buseta.nwst.NwstService
 import com.alvinhkh.buseta.nwst.model.NwstNotice
 import com.alvinhkh.buseta.nwst.util.NwstRequestUtil
@@ -17,6 +18,8 @@ class NwstNoticeViewModel(application: Application) : AndroidViewModel(applicati
 
     private val nwstService = NwstService.apiCoroutine.create(NwstService::class.java)
 
+    private val preferences = PreferenceManager.getDefaultSharedPreferences(application)
+
     @UiThread
     fun getAsLiveData(context: Context, routeNo: String, routeBound: String, routeServiceType: String): MutableLiveData<List<NwstNotice>>{
         val result = MutableLiveData<List<NwstNotice>>()
@@ -24,11 +27,12 @@ class NwstNoticeViewModel(application: Application) : AndroidViewModel(applicati
         CoroutineScope(Main).launch {
             val noticeList = arrayListOf<NwstNotice>()
             try {
+                val version = preferences.getString("nwst_version", NwstService.APP_VERSION)?:NwstService.APP_VERSION
                 val specialOptions = HashMap<String, String>()
                 specialOptions[NwstService.QUERY_R] = routeNo
                 specialOptions[NwstService.QUERY_LANGUAGE] = NwstService.LANGUAGE_TC
                 specialOptions[NwstService.QUERY_PLATFORM] = NwstService.PLATFORM
-                specialOptions[NwstService.QUERY_VERSION] = NwstService.APP_VERSION
+                specialOptions[NwstService.QUERY_VERSION] = version
                 specialOptions[NwstService.QUERY_SYSCODE] = NwstRequestUtil.syscode()
                 val specialResponse = nwstService.specialAsync(specialOptions).await()
                 if (specialResponse.isSuccessful) {

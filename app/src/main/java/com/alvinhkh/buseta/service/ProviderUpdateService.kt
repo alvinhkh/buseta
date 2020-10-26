@@ -50,7 +50,7 @@ class ProviderUpdateService: Service() {
         followDatabase = FollowDatabase.getInstance(this)!!
         routeDatabase = RouteDatabase.getInstance(this)!!
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
-        workManager = WorkManager.getInstance(this)
+        workManager = WorkManager.getInstance()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager?

@@ -12,6 +12,12 @@ import com.crashlytics.android.Crashlytics
 import com.crashlytics.android.answers.Answers
 import com.crashlytics.android.core.CrashlyticsCore
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.ktx.database
+import com.google.firebase.database.ktx.getValue
+import com.google.firebase.ktx.Firebase
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings
 import io.fabric.sdk.android.Fabric
@@ -68,8 +74,32 @@ class App : Application() {
         }
         NightModeUtil.update(this)
 
+        val preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
         // set user agent to prevent getting banned from the osm servers
         Configuration.getInstance().load(this, PreferenceManager.getDefaultSharedPreferences(this))
+
+        // Disk Persistence
+        Firebase.database.setPersistenceEnabled(true)
+        // Sync required settings
+        val database = Firebase.database
+        val nwstQueries = database.getReference("nwst_queries")
+        nwstQueries.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val data = dataSnapshot.getValue<NwstQueryData>()
+                Timber.d("$data")
+                val editor = preferences.edit()
+                editor.putString("nwst_syscode5", data?.syscode5)
+                editor.putString("nwst_appId", data?.appId)
+                editor.putString("nwst_version", data?.version)
+                editor.putString("nwst_version2", data?.version2)
+                editor.putLong("nwst_lastUpdated", data?.lastUpdated?:0)
+                editor.apply()
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Timber.w(error.toException(), "Failed to read value.")
+            }
+        })
 
         var cacheExpiration = 3600L
         if (BuildConfig.DEBUG) {

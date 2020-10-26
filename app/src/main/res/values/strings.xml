@@ -124,6 +124,7 @@
     <string name="removed_from_search_history">「%1$s」已從搜尋記錄中移除</string>
     <string name="swipe_to_remove_follow_stop">向左右掃即可移除追蹤車站</string>
     <string name="provider_no_eta">營運商尚未提供到站時間預報</string>
+    <string name="temporarily_no_eta">暫時未能提供到站時間預報</string>
 
     <string name="url_app" translatable="false">https://buseta.alvinhkh.com</string>
     <string name="url_developer" translatable="false">https://www.alvinhkh.com</string>

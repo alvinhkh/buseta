@@ -8,12 +8,4 @@
         <key>mtr_bus_database_url</key>
         <value>http://mavmapp1044.azurewebsites.net/sil_data/E_Bus_20200604.zip</value>
     </entry>
-    <entry>
-        <key>nwst_syscode5</key>
-        <value></value>
-    </entry>
-    <entry>
-        <key>nwst_appid</key>
-        <value></value>
-    </entry>
 </defaultsMap>

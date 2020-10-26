@@ -13,7 +13,6 @@ import com.alvinhkh.buseta.nwst.util.NwstRequestUtil
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.route.model.LatLong
 import com.alvinhkh.buseta.route.model.RouteStop
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import timber.log.Timber
 
 class NwstStopListWorker(context : Context, params : WorkerParameters)
@@ -22,8 +21,6 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
     private val nwstService = NwstService.api.create(NwstService::class.java)
 
     private val routeDatabase = RouteDatabase.getInstance(context)
-
-    private val firebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
 
     override fun doWork(): Result {
         val companyCode = inputData.getString(C.EXTRA.COMPANY_CODE)?:C.PROVIDER.NWST
@@ -38,16 +35,18 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
                 .putString(C.EXTRA.ROUTE_SEQUENCE, routeSequence)
                 .putString(C.EXTRA.ROUTE_SERVICE_TYPE, routeServiceType)
                 .build()
+        val preferences = PreferenceManager.getDefaultSharedPreferences(applicationContext)
 
         val qInfo = paramInfo(routeId)
         if (routeId.isEmpty() || qInfo.isNullOrEmpty()) {
             return Result.failure(outputData)
         }
         try {
-            val sysCode5 = firebaseRemoteConfig.getString("nwst_syscode5")
-            val appId = firebaseRemoteConfig.getString("nwst_appid")
+            val sysCode5 = preferences.getString("nwst_syscode5", "")?:""
+            val appId = preferences.getString("nwst_appid", "")?:""
+            val version = preferences.getString("nwst_version", NwstService.APP_VERSION)?:NwstService.APP_VERSION
             val response = nwstService.ppStopList(qInfo, NwstService.LANGUAGE_TC,
-                    NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, sysCode5, appId).execute()
+                    NwstRequestUtil.syscode(), NwstService.PLATFORM, version, sysCode5, appId).execute()
             if (!response.isSuccessful) {
                 Timber.d("%s", response.message())
                 return Result.failure(outputData)

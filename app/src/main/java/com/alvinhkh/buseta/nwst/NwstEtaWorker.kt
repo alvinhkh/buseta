@@ -8,13 +8,11 @@ import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
 import com.alvinhkh.buseta.arrivaltime.model.ArrivalTime
 import com.alvinhkh.buseta.nwst.model.NwstEta
-import com.alvinhkh.buseta.nwst.util.NwstRequestUtil
 import com.alvinhkh.buseta.route.dao.RouteDatabase
-import com.alvinhkh.buseta.utils.HashUtil
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import org.jsoup.Jsoup
 import timber.log.Timber
 import java.util.*
+import kotlin.math.abs
 
 class NwstEtaWorker(private val context : Context, params : WorkerParameters)
     : Worker(context, params) {
@@ -26,8 +24,6 @@ class NwstEtaWorker(private val context : Context, params : WorkerParameters)
     private val routeDatabase = RouteDatabase.getInstance(context)!!
 
     private val preferences = PreferenceManager.getDefaultSharedPreferences(context)
-
-    private val firebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
 
     override fun doWork(): Result {
         val widgetId = inputData.getInt(C.EXTRA.WIDGET_UPDATE, -1)
@@ -57,35 +53,28 @@ class NwstEtaWorker(private val context : Context, params : WorkerParameters)
                 ?: return Result.failure(outputData)
         
         try {
-            val sysCode5 = firebaseRemoteConfig.getString("nwst_syscode5")
-            val appId = firebaseRemoteConfig.getString("nwst_appid")
+            val sysCode5 = preferences.getString("nwst_syscode5", "")?:""
+            val appId = preferences.getString("nwst_appid", "")?:""
+            val version = preferences.getString("nwst_version", NwstService.APP_VERSION)?:NwstService.APP_VERSION
+            val version2 = preferences.getString("nwst_version2", NwstService.APP_VERSION2)?:NwstService.APP_VERSION2
+            val lastUpdated = preferences.getLong("nwst_lastUpdated", 0)
             var tk = preferences.getString("nwst_tk", "")?:""
-            val r0 = nwstService.pushTokenEnable(tk, tk, NwstService.LANGUAGE_TC, "", "Y", NwstService.DEVICETYPE,
-                    NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
-                    NwstRequestUtil.syscode2()).execute()
-            if (r0.body() != "Already Registered") {
-                tk = HashUtil.randomHexString(64)
-                nwstService.pushToken(tk, tk, NwstService.LANGUAGE_TC, "", "R", NwstService.DEVICETYPE,
-                        NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
-                        NwstRequestUtil.syscode2()).execute()
-                nwstService.pushTokenEnable(tk, tk, NwstService.LANGUAGE_TC, "", "Y", NwstService.DEVICETYPE,
-                        NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
-                        NwstRequestUtil.syscode2()).execute()
-                nwstService.adv(NwstService.LANGUAGE_TC, "640",
-                        NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2,
-                        NwstRequestUtil.syscode2(), tk).execute()
-                val editor = preferences.edit()
-                editor.putString("nwst_tk", tk)
-                editor.apply()
+            if (sysCode5.isEmpty()) {
+                val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
+                arrivalTime.text = context.getString(R.string.temporarily_no_eta)
+                arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
+                return Result.failure(outputData)
             }
-
             val response = nwstService.eta((routeStop.stopId?:"0").toInt().toString(),
                     routeStop.routeNo?:"", "Y", "60", NwstService.LANGUAGE_TC, routeStop.routeSequence?:"",
                     routeStop.sequence?:"", routeStop.routeId?:"", "Y", "Y",
-                    NwstRequestUtil.syscode(), NwstService.PLATFORM, NwstService.APP_VERSION, NwstService.APP_VERSION2, tk, sysCode5, appId).execute()
+                    sysCode5, "Y", NwstService.PLATFORM, version, version2, appId).execute()
             if (!response.isSuccessful) {
                 val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
                 arrivalTime.text = context.getString(R.string.message_fail_to_request)
+                if (abs(System.currentTimeMillis() - lastUpdated) > 30000) {
+                    arrivalTime.text = context.getString(R.string.temporarily_no_eta)
+                }
                 arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
                 return Result.failure(outputData)
             }
@@ -94,8 +83,11 @@ class NwstEtaWorker(private val context : Context, params : WorkerParameters)
             val timeNow = System.currentTimeMillis()
 
             val res = response.body()
-            if (res == null || res.isEmpty()) {
+            if (res == null || res.length < 5) {
                 val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
+                if (abs(System.currentTimeMillis() - lastUpdated) > 30000) {
+                    arrivalTime.text = context.getString(R.string.temporarily_no_eta)
+                }
                 arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
                 return Result.failure(outputData)
             }
