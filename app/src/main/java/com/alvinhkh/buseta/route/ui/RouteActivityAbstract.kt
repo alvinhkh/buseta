@@ -1,8 +1,6 @@
 package com.alvinhkh.buseta.route.ui
 
 import android.Manifest
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
@@ -17,17 +15,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.ResultReceiver
-import androidx.constraintlayout.widget.Guideline
-import com.google.android.material.appbar.AppBarLayout
-import androidx.coordinatorlayout.widget.CoordinatorLayout
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.tabs.TabLayout
-import androidx.core.app.ActivityCompat
-import androidx.fragment.app.Fragment
-import androidx.core.content.ContextCompat
-import androidx.viewpager.widget.ViewPager
-import androidx.preference.PreferenceManager
-import androidx.appcompat.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -36,23 +23,29 @@ import android.widget.FrameLayout
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.widget.Toolbar
+import androidx.constraintlayout.widget.Guideline
+import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.preference.PreferenceManager
+import androidx.viewpager.widget.ViewPager
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
 import com.alvinhkh.buseta.datagovhk.RtNwstWorker
-import com.alvinhkh.buseta.mtr.ui.MtrBusStopListFragment
 import com.alvinhkh.buseta.kmb.KmbRouteWorker
 import com.alvinhkh.buseta.kmb.ui.KmbStopListFragment
 import com.alvinhkh.buseta.lwb.LwbRouteWorker
 import com.alvinhkh.buseta.lwb.ui.LwbStopListFragment
-import com.alvinhkh.buseta.route.model.Route
-import com.alvinhkh.buseta.route.model.RouteStop
-import com.alvinhkh.buseta.mtr.ui.AESBusStopListFragment
+import com.alvinhkh.buseta.mtr.ui.MtrBusStopListFragment
 import com.alvinhkh.buseta.mtr.ui.MtrStationListFragment
 import com.alvinhkh.buseta.nlb.ui.NlbStopListFragment
 import com.alvinhkh.buseta.nwst.NwstRouteWorker
@@ -60,6 +53,8 @@ import com.alvinhkh.buseta.nwst.ui.NwstStopListFragment
 import com.alvinhkh.buseta.route.UpdateAppShortcutWorker
 import com.alvinhkh.buseta.route.dao.RouteDatabase
 import com.alvinhkh.buseta.route.model.LatLong
+import com.alvinhkh.buseta.route.model.Route
+import com.alvinhkh.buseta.route.model.RouteStop
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase
 import com.alvinhkh.buseta.search.model.Suggestion
 import com.alvinhkh.buseta.service.EtaService
@@ -69,18 +64,18 @@ import com.alvinhkh.buseta.utils.AdViewUtil
 import com.alvinhkh.buseta.utils.ColorUtil
 import com.alvinhkh.buseta.utils.ConnectivityUtil
 import com.alvinhkh.buseta.utils.PreferenceUtil
-import com.crashlytics.android.answers.Answers
-import com.crashlytics.android.answers.ContentViewEvent
 import com.google.android.gms.maps.*
 import com.google.android.gms.maps.model.*
+import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.tabs.TabLayout
+import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.appindexing.Action
 import com.google.firebase.appindexing.FirebaseUserActions
 import com.google.maps.android.ui.IconGenerator
-
 import timber.log.Timber
 import java.lang.ref.WeakReference
-import java.util.HashMap
-import java.util.UUID
+import java.util.*
 
 abstract class RouteActivityAbstract : BaseActivity(),
         OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
@@ -90,6 +85,8 @@ abstract class RouteActivityAbstract : BaseActivity(),
     lateinit var routeDatabase: RouteDatabase
 
     lateinit var suggestionDatabase: SuggestionDatabase
+
+    lateinit var firebaseAnalytics: FirebaseAnalytics
 
     /**
      * The [ViewPager] that will host the section contents.
@@ -158,6 +155,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
         arrivalTimeDatabase = ArrivalTimeDatabase.getInstance(this)!!
         routeDatabase = RouteDatabase.getInstance(this)!!
         suggestionDatabase = SuggestionDatabase.getInstance(this)!!
+        firebaseAnalytics = FirebaseAnalytics.getInstance(this)
 
         WorkManager.getInstance().cancelAllWorkByTag("RouteList")
 
@@ -205,7 +203,8 @@ abstract class RouteActivityAbstract : BaseActivity(),
         tabLayout.addOnTabSelectedListener(object : TabLayout.ViewPagerOnTabSelectedListener(viewPager) {
             override fun onTabReselected(tab: TabLayout.Tab?) {
                 if (!companyCode.isNullOrEmpty() && !routeNo.isNullOrEmpty()) {
-                    val fragment = RouteSelectDialogFragment.newInstance(companyCode?:"", routeNo?:"", WeakReference(viewPager))
+                    val fragment = RouteSelectDialogFragment.newInstance(companyCode ?: "", routeNo
+                            ?: "", WeakReference(viewPager))
                     fragment.show(supportFragmentManager, "route_select_dialog_fragment")
                 }
             }
@@ -213,8 +212,10 @@ abstract class RouteActivityAbstract : BaseActivity(),
         viewPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
             override fun onPageScrollStateChanged(state: Int) {
             }
+
             override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
             }
+
             override fun onPageSelected(position: Int) {
                 currentRoute = pagerAdapter.routeList[position]
                 if (isShowMap) {
@@ -241,7 +242,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
         })
 
         if (routeNo?.isNotBlank() == true) {
-            loadRoute(companyCode?:"", routeNo?:"")
+            loadRoute(companyCode ?: "", routeNo ?: "")
         } else {
             Toast.makeText(this, R.string.missing_input, Toast.LENGTH_SHORT).show()
             finish()
@@ -283,8 +284,8 @@ abstract class RouteActivityAbstract : BaseActivity(),
             }
             R.id.action_refresh -> {
                 val timeNow = System.currentTimeMillis() / 1000
-                val cCode = companyCode?:""
-                val rNo = routeNo?:""
+                val cCode = companyCode ?: ""
+                val rNo = routeNo ?: ""
                 val provider = if (PreferenceUtil.isUsingNwstDataGovHkApi(applicationContext)) {
                     C.PROVIDER.DATAGOVHK_NWST
                 } else {
@@ -358,7 +359,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
             var isScrollToPage = false
             var hasDestination = false
             routes?.forEach { route ->
-                company = route.companyCode?:companyCode?:""
+                company = route.companyCode ?: companyCode ?: ""
                 var navStop = stopFromIntent
                 if (navStop == null && !stopIdFromIntent.isNullOrEmpty()) {
                     navStop = RouteStop()
@@ -385,7 +386,7 @@ abstract class RouteActivityAbstract : BaseActivity(),
                             + (if (!route.destination.isNullOrEmpty()) getString(R.string.destination, route.destination) else "")
                             + if (route.isSpecial!!) "#" else "")
                 } else {
-                    route.name?:getString(R.string.route)
+                    route.name ?: getString(R.string.route)
                 }
                 if (pageTitle != route.name && pageTitle != getString(R.string.route)) {
                     hasDestination = true
@@ -635,7 +636,9 @@ abstract class RouteActivityAbstract : BaseActivity(),
     }
 
     private fun loadMapMarkers(route: Route) {
-        val routeStopLiveData = routeDatabase.routeStopDao().liveData(route.companyCode?:"", route.code?:"", route.name?:"", route.sequence?:"", route.serviceType?:"")
+        val routeStopLiveData = routeDatabase.routeStopDao().liveData(route.companyCode
+                ?: "", route.code ?: "", route.name ?: "", route.sequence ?: "", route.serviceType
+                ?: "")
         routeStopLiveData.removeObservers(this)
         routeStopLiveData.observe(this, Observer { list ->
             map?.clear()
@@ -646,8 +649,8 @@ abstract class RouteActivityAbstract : BaseActivity(),
             }
             list?.forEachIndexed { index, routeStop ->
                 if (!routeStop.latitude.isNullOrEmpty() && !routeStop.longitude.isNullOrEmpty()) {
-                    val lat = routeStop.latitude?.toDouble()?:0.0
-                    val lng = routeStop.longitude?.toDouble()?:0.0
+                    val lat = routeStop.latitude?.toDouble() ?: 0.0
+                    val lng = routeStop.longitude?.toDouble() ?: 0.0
                     if (lat != 0.0 && lng != 0.0) {
                         if (!hasMapCoordinates) {
                             mapCoordinates.add(LatLong(lat, lng))
@@ -677,7 +680,8 @@ abstract class RouteActivityAbstract : BaseActivity(),
             }
         })
 
-        val liveData = arrivalTimeDatabase.arrivalTimeDao().getLiveData(route.companyCode?:"", route.name?:"", route.sequence?:"")
+        val liveData = arrivalTimeDatabase.arrivalTimeDao().getLiveData(route.companyCode
+                ?: "", route.name ?: "", route.sequence ?: "")
         liveData.removeObservers(this)
         liveData.observe(this, Observer { list ->
             for (marker in markerMap.values.toTypedArray()) {
@@ -725,12 +729,11 @@ abstract class RouteActivityAbstract : BaseActivity(),
                         Timber.d("App Indexing: fail")
                     }
                 }
-        Answers.getInstance().logContentView(ContentViewEvent()
-                .putContentName("search")
-                .putContentType("route")
-                .putCustomAttribute("route no", suggestion.route)
-                .putCustomAttribute("company", suggestion.companyCode)
-        )
+        val bundle = Bundle()
+        bundle.putString(FirebaseAnalytics.Param.METHOD, "search")
+        bundle.putString(FirebaseAnalytics.Param.CONTENT, "${suggestion.companyCode} ${suggestion.route}")
+        bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "route")
+        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SEARCH, bundle)
     }
 
     private fun appIndexStop(suggestion: Suggestion) {
