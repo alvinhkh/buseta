@@ -61,14 +61,12 @@ class KmbEtaWorker(private val context : Context, params : WorkerParameters)
 
         try {
             if (PreferenceUtil.isUsingKmbWebEtaApi(context)) {
-                val now = Calendar.getInstance()
-                val unixTime = now.timeInMillis.toString().dropLast(3) + "080"
-                val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.80.", Locale.ENGLISH)
+                val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS.", Locale.ENGLISH)
                 sdf.timeZone = TimeZone.getTimeZone("UTC")
-                val t = sdf.format(now.time)
+                val t = sdf.format(timeNow)
                 val key = "--31${t}13--"
-                val rawToken = routeStop.routeNo + key + routeStop.routeSequence + key + routeStop.routeServiceType + key + routeStop.stopId?.replace("-", "") + key + routeStop.sequence + key + unixTime;
-                val token = "EA${Base64.encodeToString(rawToken.toByteArray(), Base64.DEFAULT)}"
+                val rawToken = routeStop.routeNo + key + routeStop.routeSequence + key + Integer.parseInt(routeStop.routeServiceType!!) + key + routeStop.stopId?.replace("-", "") + key + routeStop.sequence + key + timeNow
+                val token = "E${Base64.encodeToString(rawToken.toByteArray(), Base64.NO_WRAP)}"
                 val response = kmbService.eta("1", token, t).execute()
 
                 if (!response.isSuccessful) {

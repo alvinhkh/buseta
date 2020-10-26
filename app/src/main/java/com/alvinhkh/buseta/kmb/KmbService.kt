@@ -71,7 +71,7 @@ interface KmbService {
                 .build()
         val webSearch: Retrofit = Retrofit.Builder()
                 .client(httpClient)
-                .baseUrl("http://search.kmb.hk/KMBWebSite/")
+                .baseUrl("https://search.kmb.hk/KMBWebSite/")
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build()
         val webSearchCoroutine: Retrofit = Retrofit.Builder()
