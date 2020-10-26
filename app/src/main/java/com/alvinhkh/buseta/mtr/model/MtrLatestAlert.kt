@@ -21,5 +21,11 @@ data class MtrLatestAlert (
         var urlTc: String = "",
         @field:Element(name = "url_en", required = false)
         @field:Convert(value = EmptyElementConverter::class)
-        var urlEn: String = ""
+        var urlEn: String = "",
+        @field:Element(name = "banner_title_tc", required = false)
+        @field:Convert(value = EmptyElementConverter::class)
+        var bannerTitleTc: String = "",
+        @field:Element(name = "banner_title_en", required = false)
+        @field:Convert(value = EmptyElementConverter::class)
+        var bannerTitleEn: String = ""
 )

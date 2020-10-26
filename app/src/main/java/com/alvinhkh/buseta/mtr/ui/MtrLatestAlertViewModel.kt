@@ -22,17 +22,15 @@ class MtrLatestAlertViewModel(application: Application) : AndroidViewModel(appli
         CoroutineScope(Main).launch {
             try {
                 val response = mtrService.latestAlert().await()
+                val latestAlert = mutableListOf<MtrLatestAlert>()
                 if (response.isSuccessful) {
-                    val latestAlert = mutableListOf<MtrLatestAlert>()
                     response.body()?.items?.forEach { item ->
                         if (item.type in 0..98) {
                             latestAlert.add(item)
                         }
                     }
-                    result.value = latestAlert
-                } else {
-                    result.value = null
                 }
+                    result.value = latestAlert
             }
             catch (e: Exception) {
                 Timber.e(e)
