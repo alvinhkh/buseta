@@ -22,6 +22,7 @@ public class ZipUtil {
                     }
                 } else {
                     if (ze.getName().startsWith(".")) continue;
+                    Timber.d("ZIP: %s", zipFile.getParent() + File.separator + ze.getName());
                     FileOutputStream fout = new FileOutputStream(zipFile.getParent() + File.separator + ze.getName());
                     final int BUFFER = 2048;
                     byte data[] = new byte[BUFFER];
