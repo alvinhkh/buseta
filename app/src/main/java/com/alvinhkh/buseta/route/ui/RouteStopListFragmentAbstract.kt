@@ -1,7 +1,6 @@
 package com.alvinhkh.buseta.route.ui
 
 import android.Manifest
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import android.content.Intent
 import android.content.SharedPreferences
@@ -46,6 +45,7 @@ import com.google.android.gms.location.LocationServices
 import com.alvinhkh.buseta.utils.ConnectivityUtil
 import com.alvinhkh.buseta.utils.PreferenceUtil
 import com.google.android.gms.maps.model.Marker
+import timber.log.Timber
 import java.util.UUID
 
 
@@ -83,6 +83,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
 
     private val initLoadRunnable = object : Runnable {
         override fun run() {
+            Timber.d("initLoadRunnable")
             if (view != null) {
                 if (userVisibleHint) {
                     refreshHandler.post(refreshRunnable)
@@ -106,6 +107,7 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
 
     protected val adapterUpdateRunnable: Runnable = object : Runnable {
         override fun run() {
+            Timber.d("adapterUpdateRunnable")
             viewAdapter?.notifyDataSetChanged()
             adapterUpdateHandler.postDelayed(this, 30000)  // refresh every 30 sec
         }
@@ -117,10 +119,13 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
 
     protected val refreshRunnable: Runnable = object : Runnable {
         override fun run() {
+            Timber.d("refreshRunnable: %s", refreshInterval)
             if (refreshInterval > 0) {
                 onRefresh()
                 viewAdapter?.notifyDataSetChanged()
                 refreshHandler.postDelayed(this, (refreshInterval * 1000).toLong())
+            } else {
+                refreshHandler.removeCallbacksAndMessages(null)
             }
         }
     }
@@ -207,7 +212,6 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
 
                                 var isScrollToPosition: Boolean? = false
                                 var scrollToPosition: Int? = 0
-                                refreshHandler.post(refreshRunnable)
                                 if (viewAdapter?.itemCount?:0 > 0) {
                                     if ((route != null
                                                     && route?.companyCode != null && route?.companyCode == navToStop?.companyCode
@@ -257,10 +261,10 @@ abstract class RouteStopListFragmentAbstract : Fragment(),  SwipeRefreshLayout.O
                         }
                         if (swipeRefreshLayout.isRefreshing) {
                             swipeRefreshLayout.isRefreshing = false
-                            initLoadHandler.post(initLoadRunnable)
                         }
                     })
         }
+        initLoadHandler.post(initLoadRunnable)
 
         return rootView
     }
