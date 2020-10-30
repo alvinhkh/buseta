@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta.search.ui
 
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import android.content.Intent
 import android.os.Bundle
@@ -14,7 +13,6 @@ import android.view.*
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.arrivaltime.dao.ArrivalTimeDatabase
 import com.alvinhkh.buseta.search.dao.SuggestionDatabase
-import com.alvinhkh.buseta.search.model.Suggestion
 
 
 class HistoryFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
@@ -51,7 +49,7 @@ class HistoryFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
             adapter = viewAdapter
         }
         viewModel = ViewModelProvider(this@HistoryFragment).get(HistoryViewModel::class.java)
-        viewModel.getAsLiveData().observe(this@HistoryFragment, Observer<MutableList<Suggestion>> { list ->
+        viewModel.getAsLiveData().observe(viewLifecycleOwner, { list ->
             if (list.isNullOrEmpty()) {
                 viewAdapter.clear()
             } else {

@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta.nwst.ui
 
-import androidx.lifecycle.Observer
 import android.content.Intent
 import android.os.Bundle
 import android.view.Menu
@@ -48,7 +47,7 @@ class NwstStopListFragment : RouteStopListFragmentAbstract() {
                 var title = getString(R.string.bus_to_bus_interchange_scheme)
                 if (route != null && !route?.name.isNullOrEmpty()) {
                     title = route?.name + " " + title
-                    intent.putExtra(WebViewActivity.COLOUR, Route.companyColour(context!!, route?.companyCode?: C.PROVIDER.NWST, route?.name?: ""))
+                    intent.putExtra(WebViewActivity.COLOUR, Route.companyColour(requireContext(), route?.companyCode?: C.PROVIDER.NWST, route?.name?: ""))
                 }
                 intent.putExtra(WebViewActivity.TITLE, title)
                 intent.putExtra(WebViewActivity.HTML, remarkHtml)
@@ -60,7 +59,7 @@ class NwstStopListFragment : RouteStopListFragmentAbstract() {
                 var title = getString(R.string.timetable)
                 if (route != null && !route?.name.isNullOrEmpty()) {
                     title = route?.name + " " + title
-                    intent.putExtra(WebViewActivity.COLOUR, Route.companyColour(context!!, route?.companyCode?: C.PROVIDER.NWST, route?.name?: ""))
+                    intent.putExtra(WebViewActivity.COLOUR, Route.companyColour(requireContext(), route?.companyCode?: C.PROVIDER.NWST, route?.name?: ""))
                 }
                 intent.putExtra(WebViewActivity.TITLE, title)
                 intent.putExtra(WebViewActivity.HTML, timetableHtml)
@@ -90,7 +89,7 @@ class NwstStopListFragment : RouteStopListFragmentAbstract() {
                 .then(request)
                 .enqueue()
         WorkManager.getInstance().getWorkInfoByIdLiveData(request.id)
-                .observe(this, Observer { workInfo ->
+                .observe(this, { workInfo ->
                     if (workInfo?.state == WorkInfo.State.FAILED) {
                         timetableItem?.isVisible = false
                         bbiItem?.isVisible = false

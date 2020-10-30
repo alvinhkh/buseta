@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta.route.ui
 
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -13,7 +12,6 @@ import android.view.ViewGroup
 
 import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.R
-import com.alvinhkh.buseta.route.model.Route
 import java.lang.ref.WeakReference
 
 class RouteSelectDialogFragment : BottomSheetDialogFragment() {
@@ -35,7 +33,7 @@ class RouteSelectDialogFragment : BottomSheetDialogFragment() {
         }
         val viewModel = ViewModelProvider(this).get(RouteViewModel::class.java)
         viewModel.getAsLiveData(companyCode, routeNo)
-                .observe(this, Observer<MutableList<Route>> { routes ->
+                .observe(this, { routes ->
                     viewAdapter.replaceItems(routes?: mutableListOf())
                 })
         return itemView

@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta.follow.ui
 
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import com.google.android.material.snackbar.Snackbar
@@ -36,8 +35,8 @@ class FollowFragment: Fragment() {
         val rootView = inflater.inflate(R.layout.fragment_follow, container, false)
 
         groupId = arguments?.getString(C.EXTRA.GROUP_ID)?:FollowGroup.UNCATEGORISED
-        arrivalTimeDatabase = ArrivalTimeDatabase.getInstance(context!!)!!
-        followDatabase = FollowDatabase.getInstance(context!!)!!
+        arrivalTimeDatabase = ArrivalTimeDatabase.getInstance(requireContext())!!
+        followDatabase = FollowDatabase.getInstance(requireContext())!!
 
         snackbar = Snackbar.make(rootView?.findViewById(R.id.coordinator_layout)?:rootView, R.string.message_no_internet_connection, Snackbar.LENGTH_INDEFINITE)
         if (ConnectivityUtil.isConnected(context)) {
@@ -48,7 +47,7 @@ class FollowFragment: Fragment() {
         emptyView = rootView.findViewById(R.id.empty_view)
         emptyView.visibility = View.GONE
         recyclerView = rootView.findViewById(R.id.recycler_view)
-        viewAdapter = FollowViewAdapter(WeakReference(activity!!))
+        viewAdapter = FollowViewAdapter(WeakReference(requireActivity()))
         with(recyclerView) {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
@@ -57,7 +56,7 @@ class FollowFragment: Fragment() {
         viewModel = ViewModelProvider(this).get(FollowViewModel::class.java)
         liveData = viewModel.liveData(groupId)
         liveData?.removeObservers(this)
-        liveData?.observe(this, Observer<MutableList<Follow>> { list ->
+        liveData?.observe(viewLifecycleOwner, { list ->
             viewAdapter?.replaceItems(list?: mutableListOf())
             emptyView.visibility = if (list?.size?:0 > 0) View.GONE else View.VISIBLE
         })

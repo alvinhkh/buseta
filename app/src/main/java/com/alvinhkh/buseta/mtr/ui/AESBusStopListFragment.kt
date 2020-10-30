@@ -30,7 +30,7 @@ class AESBusStopListFragment : RouteStopListFragmentAbstract() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.action_timetable -> {
-                openLink(context!!, WEB_PAGE_URL, R.color.provider_aes_bus)
+                openLink(requireContext(), WEB_PAGE_URL, R.color.provider_aes_bus)
                 return true
             }
         }

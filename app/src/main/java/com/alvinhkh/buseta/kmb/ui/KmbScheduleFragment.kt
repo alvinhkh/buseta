@@ -23,7 +23,7 @@ class KmbScheduleFragment: Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_list, container, false)
-        route = arguments!!.getParcelable(C.EXTRA.ROUTE_OBJECT)?:Route()
+        route = requireArguments().getParcelable(C.EXTRA.ROUTE_OBJECT)?:Route()
         val routeNo: String = route.name?:""
         val routeBound: String = route.sequence?:""
         val routeServiceType: String = route.serviceType?:""
@@ -44,7 +44,7 @@ class KmbScheduleFragment: Fragment() {
             adapter = viewAdapter
         }
         val viewModel = ViewModelProvider(this@KmbScheduleFragment).get(KmbScheduleViewModel::class.java)
-        viewModel.getAsLiveData(context!!, routeNo, routeBound, routeServiceType).observe(this@KmbScheduleFragment, Observer { items ->
+        viewModel.getAsLiveData(requireContext(), routeNo, routeBound, routeServiceType).observe(viewLifecycleOwner, Observer { items ->
             swipeRefreshLayout?.isRefreshing = true
             if (items.isNullOrEmpty()) {
                 viewAdapter?.clear()

@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatSpinner
 import com.alvinhkh.buseta.R
 import android.widget.ArrayAdapter
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.alvinhkh.buseta.follow.model.FollowGroup
 import com.alvinhkh.buseta.follow.ui.FollowGroupViewModel
@@ -44,7 +43,7 @@ class FollowWidgetConfigurationActivity : AppCompatActivity() {
         followGroupSpinner.adapter = followGroupAdapter
 
         val viewModel = ViewModelProvider(this).get(FollowGroupViewModel::class.java)
-        viewModel.getAsLiveData().observe(this, Observer { list ->
+        viewModel.getAsLiveData().observe(this, { list ->
             followGroupAdapter.clear()
             followGroupList = list?.toList()?: emptyList()
             list.forEach { followGroup ->

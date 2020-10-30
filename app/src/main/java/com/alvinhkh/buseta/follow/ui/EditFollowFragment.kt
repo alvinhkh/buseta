@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta.follow.ui
 
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -66,12 +65,12 @@ class EditFollowFragment: Fragment(), OnItemDragListener {
             itemTouchHelper.attachToRecyclerView(this)
         }
         val viewModel = ViewModelProvider(this).get(FollowViewModel::class.java)
-        viewModel.liveData(groupId).observe(this, Observer { list ->
+        viewModel.liveData(groupId).observe(viewLifecycleOwner, { list ->
             viewAdapter.replaceItems(list?: mutableListOf())
             emptyView.visibility = if (viewAdapter.itemCount > 0) View.GONE else View.VISIBLE
         })
         followDatabase.followGroupDao().liveData(groupId)
-                .observe(this, Observer { followGroup ->
+                .observe(viewLifecycleOwner, { followGroup ->
                     if (activity != null) {
                         val actionBar = (activity as AppCompatActivity).supportActionBar
                         val name = when {
@@ -81,11 +80,11 @@ class EditFollowFragment: Fragment(), OnItemDragListener {
                         }?:""
                         actionBar?.title = name
                         actionBar?.subtitle = getString(R.string.edit_follow_group)
-                        val color = if (!followGroup?.colour.isNullOrEmpty()) Color.parseColor(followGroup?.colour) else ContextCompat.getColor(context!!, R.color.colorPrimary)
+                        val color = if (!followGroup?.colour.isNullOrEmpty()) Color.parseColor(followGroup?.colour) else ContextCompat.getColor(requireContext(), R.color.colorPrimary)
                         (activity as AppCompatActivity).supportActionBar?.setBackgroundDrawable(ColorDrawable(color))
                         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
                             activity?.window?.statusBarColor = color
-                            activity?.window?.navigationBarColor = ContextCompat.getColor(context!!, R.color.transparent)
+                            activity?.window?.navigationBarColor = ContextCompat.getColor(requireContext(), R.color.transparent)
                         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                             activity?.window?.statusBarColor = ColorUtil.darkenColor(color)
                             activity?.window?.navigationBarColor = ColorUtil.darkenColor(color)
@@ -201,11 +200,11 @@ class EditFollowFragment: Fragment(), OnItemDragListener {
     override fun onResume() {
         super.onResume()
         if (activity != null) {
-            val fab = activity!!.findViewById<FloatingActionButton>(R.id.fab)
+            val fab = requireActivity().findViewById<FloatingActionButton>(R.id.fab)
             fab?.hide()
         }
         if (view != null) {
-            Snackbar.make(view!!, R.string.swipe_to_remove_follow_stop, Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(requireView(), R.string.swipe_to_remove_follow_stop, Snackbar.LENGTH_SHORT).show()
         }
         viewAdapter.notifyDataSetChanged()
     }

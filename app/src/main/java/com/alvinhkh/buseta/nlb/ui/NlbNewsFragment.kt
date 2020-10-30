@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta.nlb.ui
 
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -22,7 +21,7 @@ class NlbNewsFragment: Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        val route = arguments!!.getParcelable(C.EXTRA.ROUTE_OBJECT)?: Route()
+        val route = requireArguments().getParcelable(C.EXTRA.ROUTE_OBJECT)?: Route()
         val companyCode = route.companyCode?: C.PROVIDER.NLB
         (activity as AppCompatActivity).supportActionBar?.setTitle(R.string.latest_news)
         (activity as AppCompatActivity).supportActionBar?.subtitle = if (companyCode == C.PROVIDER.GMB901) {
@@ -46,7 +45,7 @@ class NlbNewsFragment: Fragment() {
         }
         val snackbar = Snackbar.make(rootView.findViewById(R.id.coordinator_layout), R.string.message_no_notice, Snackbar.LENGTH_INDEFINITE)
         val viewModel = ViewModelProvider(this@NlbNewsFragment).get(NlbNewsViewModel::class.java)
-        viewModel.liveData(companyCode).observe(this@NlbNewsFragment, Observer { items ->
+        viewModel.liveData(companyCode).observe(viewLifecycleOwner, { items ->
             swipeRefreshLayout?.isRefreshing = true
             if (items.isNullOrEmpty()) {
                 snackbar.show()

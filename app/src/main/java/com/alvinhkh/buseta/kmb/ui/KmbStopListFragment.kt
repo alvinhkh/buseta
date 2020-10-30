@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
-import androidx.lifecycle.Observer
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkInfo
@@ -53,7 +52,7 @@ class KmbStopListFragment : RouteStopListFragmentAbstract() {
                 var title = getString(R.string.special_info)
                 if (route != null && !route?.name.isNullOrEmpty()) {
                     title = route?.name + " " + title
-                    intent.putExtra(WebViewActivity.COLOUR, Route.companyColour(context!!, route?.companyCode?: C.PROVIDER.NWST, route?.name?: ""))
+                    intent.putExtra(WebViewActivity.COLOUR, Route.companyColour(requireContext(), route?.companyCode?: C.PROVIDER.NWST, route?.name?: ""))
                 }
                 intent.putExtra(WebViewActivity.TITLE, title)
                 intent.putExtra(WebViewActivity.HTML, infoHtml)
@@ -82,7 +81,7 @@ class KmbStopListFragment : RouteStopListFragmentAbstract() {
                 .build()
         WorkManager.getInstance().enqueue(request)
         WorkManager.getInstance().getWorkInfoByIdLiveData(request.id)
-                .observe(this, Observer { workInfo ->
+                .observe(this, { workInfo ->
                     if (workInfo?.state == WorkInfo.State.FAILED) {
                         infoItem?.isVisible = false
                     }

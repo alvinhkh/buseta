@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta.follow.ui
 
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import android.content.Intent
 import android.content.res.ColorStateList
@@ -57,7 +56,7 @@ class FollowGroupFragment : Fragment() {
                               savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_follow_group, container, false)
         setHasOptionsMenu(true)
-        followDatabase = FollowDatabase.getInstance(context!!)!!
+        followDatabase = FollowDatabase.getInstance(requireContext())!!
         viewPager = rootView.findViewById(R.id.viewPager)
         viewPager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {
             override fun onPageScrollStateChanged(state: Int) {
@@ -68,7 +67,7 @@ class FollowGroupFragment : Fragment() {
                 if (pagerAdapter.groupList.size > position) {
                     val liveData = followDatabase.followGroupDao().liveData(pagerAdapter.groupList[position].id)
                     liveData.removeObservers(this@FollowGroupFragment)
-                    liveData.observe(this@FollowGroupFragment, Observer { group ->
+                    liveData.observe(viewLifecycleOwner, { group ->
                         setPageColor(group)
                     })
                 }
@@ -86,7 +85,7 @@ class FollowGroupFragment : Fragment() {
         }
         viewModel = ViewModelProvider(this).get(FollowGroupViewModel::class.java)
         liveData = viewModel.getAsLiveData()
-        liveData?.observe(this, Observer<MutableList<FollowGroup>> { list ->
+        liveData?.observe(viewLifecycleOwner, { list ->
             val groupList = mutableListOf<FollowGroup>()
             list?.forEach { item ->
                 val count = followDatabase.followDao().count(item.id)
@@ -97,7 +96,7 @@ class FollowGroupFragment : Fragment() {
             if (pagerAdapter.groupList.size < 1 && groupList.size > 0) {
                 val liveData = followDatabase.followGroupDao().liveData(groupList[0].id)
                 liveData.removeObservers(this@FollowGroupFragment)
-                liveData.observe(this@FollowGroupFragment, Observer { group ->
+                liveData.observe(viewLifecycleOwner, { group ->
                     setPageColor(group)
                 })
             }
@@ -151,11 +150,11 @@ class FollowGroupFragment : Fragment() {
         val color = if (!group?.colour.isNullOrEmpty())
             Color.parseColor(group?.colour)
         else
-            ContextCompat.getColor(context!!, R.color.colorPrimary)
+            ContextCompat.getColor(requireContext(), R.color.colorPrimary)
         (activity as AppCompatActivity).supportActionBar?.setBackgroundDrawable(ColorDrawable(color))
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
             activity?.window?.statusBarColor = color
-            activity?.window?.navigationBarColor = ContextCompat.getColor(context!!, R.color.bottomNavigationBackground)
+            activity?.window?.navigationBarColor = ContextCompat.getColor(requireContext(), R.color.bottomNavigationBackground)
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             activity?.window?.statusBarColor = ColorUtil.darkenColor(color)
             activity?.window?.navigationBarColor = ColorUtil.darkenColor(color)

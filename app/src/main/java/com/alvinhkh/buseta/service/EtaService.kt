@@ -7,7 +7,6 @@ import android.app.Service
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import androidx.lifecycle.LifecycleService
-import androidx.lifecycle.Observer
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
@@ -156,7 +155,7 @@ class EtaService : LifecycleService() {
                 if (workerRequest != null) {
                     workerRequestList.add(workerRequest)
                     WorkManager.getInstance().getWorkInfoByIdLiveData(workerRequest.id)
-                            .observe(this, Observer { workInfo ->
+                            .observe(this, { workInfo ->
                                 if (workInfo.state.isFinished) isFinishedCount += 1
                                 if (workInfo?.state == WorkInfo.State.FAILED) {
                                     notifyUpdate(routeStop, C.EXTRA.FAIL, widgetId, notificationId)

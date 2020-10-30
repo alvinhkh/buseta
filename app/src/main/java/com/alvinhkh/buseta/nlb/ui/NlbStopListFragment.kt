@@ -24,7 +24,7 @@ class NlbStopListFragment : RouteStopListFragmentAbstract() {
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        val timetableItem = menu!!.findItem(R.id.action_timetable)
+        val timetableItem = menu.findItem(R.id.action_timetable)
         timetableItem.isVisible = true
     }
 
@@ -37,8 +37,8 @@ class NlbStopListFragment : RouteStopListFragmentAbstract() {
                 } else {
                     NLB
                 }
-                openLink(context!!, prefix + TIMETABLE_URL + route?.code,
-                        route?.companyColour(context!!)?: ContextCompat.getColor(context!!, R.color.provider_nlb))
+                openLink(requireContext(), prefix + TIMETABLE_URL + route?.code,
+                        route?.companyColour(requireContext())?: ContextCompat.getColor(requireContext(), R.color.provider_nlb))
                 return true
             }
         }

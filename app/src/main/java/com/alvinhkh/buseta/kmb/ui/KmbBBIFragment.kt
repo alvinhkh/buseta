@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta.kmb.ui
 
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import android.text.Editable
@@ -29,7 +28,7 @@ class KmbBBIFragment: Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_list, container, false)
-        route = arguments!!.getParcelable(C.EXTRA.ROUTE_OBJECT)?:Route()
+        route = requireArguments().getParcelable(C.EXTRA.ROUTE_OBJECT)?:Route()
         val routeNo: String = route.name?:""
         val routeBound: String = route.sequence?:""
         if (routeNo.isEmpty() || routeBound.isEmpty()) {
@@ -56,7 +55,7 @@ class KmbBBIFragment: Fragment() {
                 override fun afterTextChanged(p0: Editable?) {
                     val t = p0?.replace("[^a-zA-Z0-9]*".toRegex(), "")?.toUpperCase(Locale.ENGLISH)
                     val liveData = viewModel.liveData(routeNo, routeBound, t ?: "")
-                    liveData.observe(this@KmbBBIFragment, Observer { items ->
+                    liveData.observe(viewLifecycleOwner, { items ->
                         swipeRefreshLayout?.isRefreshing = true
                         if (items.isNullOrEmpty()) {
                             viewAdapter?.clear()
@@ -78,7 +77,7 @@ class KmbBBIFragment: Fragment() {
             })
         }
         val liveData = viewModel.liveData(routeNo, routeBound, "")
-        liveData.observe(this@KmbBBIFragment, Observer { items ->
+        liveData.observe(viewLifecycleOwner, { items ->
             swipeRefreshLayout?.isRefreshing = true
             if (items.isNullOrEmpty()) {
                 viewAdapter?.clear()

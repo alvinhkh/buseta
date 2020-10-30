@@ -2,7 +2,6 @@ package com.alvinhkh.buseta.search.ui
 
 
 import android.app.SearchManager
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -30,7 +29,6 @@ import com.alvinhkh.buseta.mtr.ui.MtrBusActivity
 import com.alvinhkh.buseta.kmb.ui.KmbActivity
 import com.alvinhkh.buseta.lwb.ui.LwbActivity
 import com.alvinhkh.buseta.route.model.RouteStop
-import com.alvinhkh.buseta.mtr.ui.AESBusActivity
 import com.alvinhkh.buseta.mtr.ui.MtrStationActivity
 import com.alvinhkh.buseta.nlb.ui.NlbActivity
 import com.alvinhkh.buseta.nwst.ui.NwstActivity
@@ -206,7 +204,7 @@ class SearchActivity : AppCompatActivity() {
         queryLiveData?.removeObservers(this@SearchActivity)
         searchQueryText = route
         queryLiveData = viewModel.liveData(route, companyCodes)
-        queryLiveData?.observe(this@SearchActivity, Observer { list ->
+        queryLiveData?.observe(this@SearchActivity, { list ->
             viewAdapter.clear()
             val providerSearchList = arrayListOf<String>()
             listOf(C.PROVIDER.CTB, C.PROVIDER.KMB, C.PROVIDER.LWB, C.PROVIDER.NLB, C.PROVIDER.NWFB).forEach {

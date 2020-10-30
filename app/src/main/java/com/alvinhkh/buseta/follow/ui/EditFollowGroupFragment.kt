@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta.follow.ui
 
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
@@ -45,13 +44,13 @@ class EditFollowGroupFragment: Fragment(), OnItemDragListener {
         with(recyclerView) {
             setHasFixedSize(true)
             layoutManager = LinearLayoutManager(context)
-            viewAdapter = EditFollowGroupViewAdapter(WeakReference(activity!!.supportFragmentManager), this@EditFollowGroupFragment)
+            viewAdapter = EditFollowGroupViewAdapter(WeakReference(requireActivity().supportFragmentManager), this@EditFollowGroupFragment)
             adapter = viewAdapter
             itemTouchHelper = ItemTouchHelper(SimpleItemTouchHelperCallback(viewAdapter, false))
             itemTouchHelper.attachToRecyclerView(this)
         }
         val viewModel = ViewModelProvider(this).get(FollowGroupViewModel::class.java)
-        viewModel.getAsLiveData().observe(this, Observer { list ->
+        viewModel.getAsLiveData().observe(viewLifecycleOwner, { list ->
             viewAdapter.replaceItems(list?: mutableListOf())
             emptyView.visibility = if (viewAdapter.itemCount > 0) View.GONE else View.VISIBLE
         })
@@ -64,17 +63,17 @@ class EditFollowGroupFragment: Fragment(), OnItemDragListener {
             val actionBar = (activity as AppCompatActivity).supportActionBar
             actionBar?.title = getString(R.string.edit_follow_group)
             actionBar?.subtitle = null
-            val color = ContextCompat.getColor(context!!, R.color.colorPrimary)
+            val color = ContextCompat.getColor(requireContext(), R.color.colorPrimary)
             (activity as AppCompatActivity).supportActionBar?.setBackgroundDrawable(ColorDrawable(color))
             if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
                 activity?.window?.statusBarColor = color
-                activity?.window?.navigationBarColor = ContextCompat.getColor(context!!, R.color.transparent)
+                activity?.window?.navigationBarColor = ContextCompat.getColor(requireContext(), R.color.transparent)
             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 activity?.window?.statusBarColor = ColorUtil.darkenColor(color)
                 activity?.window?.navigationBarColor = ColorUtil.darkenColor(color)
             }
             activity?.findViewById<FrameLayout>(R.id.adView_container)?.setBackgroundColor(color)
-            val fab = activity!!.findViewById<FloatingActionButton>(R.id.fab)
+            val fab = requireActivity().findViewById<FloatingActionButton>(R.id.fab)
             fab?.hide()
         }
         viewAdapter.notifyDataSetChanged()

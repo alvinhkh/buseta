@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta.nwst.ui
 
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -23,7 +22,7 @@ class NwstNoticeFragment: Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         val rootView = inflater.inflate(R.layout.fragment_list, container, false)
-        route = arguments!!.getParcelable(C.EXTRA.ROUTE_OBJECT)?:Route()
+        route = requireArguments().getParcelable(C.EXTRA.ROUTE_OBJECT)?:Route()
         val routeNo: String = route.name?:""
         val routeBound: String = route.sequence?:""
         val routeServiceType: String = route.serviceType?:""
@@ -45,7 +44,7 @@ class NwstNoticeFragment: Fragment() {
         }
         val snackbar = Snackbar.make(rootView.findViewById(R.id.coordinator_layout), R.string.message_no_notice, Snackbar.LENGTH_INDEFINITE)
         val viewModel = ViewModelProvider(this@NwstNoticeFragment).get(NwstNoticeViewModel::class.java)
-        viewModel.getAsLiveData(context!!, routeNo, routeBound, routeServiceType).observe(this@NwstNoticeFragment, Observer { items ->
+        viewModel.getAsLiveData(requireContext(), routeNo, routeBound, routeServiceType).observe(viewLifecycleOwner, { items ->
             swipeRefreshLayout?.isRefreshing = true
             if (items.isNullOrEmpty()) {
                 snackbar.show()

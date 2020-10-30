@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta.follow.ui
 
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -25,7 +24,7 @@ class FollowGroupDialogFragment : BottomSheetDialogFragment() {
         val follow: Follow = arguments?.getParcelable(C.EXTRA.STOP_OBJECT)?:Follow()
         val itemView = inflater.inflate(R.layout.bottom_sheet_route_select, container, false)
         val recyclerView = itemView.findViewById<RecyclerView>(R.id.recycler_view)
-        val followDatabase = FollowDatabase.getInstance(context!!)!!
+        val followDatabase = FollowDatabase.getInstance(requireContext())!!
         val viewAdapter = FollowGroupViewAdapter(follow, followDatabase, WeakReference(this))
         with(recyclerView) {
             layoutManager = LinearLayoutManager(context)
@@ -34,7 +33,7 @@ class FollowGroupDialogFragment : BottomSheetDialogFragment() {
         }
         val viewModel = ViewModelProvider(this).get(FollowGroupViewModel::class.java)
         viewModel.getAsLiveData()
-                .observe(this, Observer<MutableList<FollowGroup>> { list ->
+                .observe(this, { list ->
                     viewAdapter.replace(list?: mutableListOf())
 //                    if (list?.size?:0 > 0) {
 //                         viewAdapter.add(0, FollowGroup("____clear", getString(R.string.unfollow)))

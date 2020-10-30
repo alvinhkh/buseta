@@ -1,7 +1,6 @@
 package com.alvinhkh.buseta.ui.image
 
 import android.app.ActivityManager
-import androidx.lifecycle.Observer
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
@@ -118,12 +117,12 @@ class ImageFragment : Fragment() {
         // overview task
         if (Build.VERSION.SDK_INT >= 28) {
             activity?.setTaskDescription(ActivityManager.TaskDescription(title, R.mipmap.ic_launcher,
-                    ContextCompat.getColor(context!!, R.color.black)))
+                    ContextCompat.getColor(requireContext(), R.color.black)))
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             val bm = BitmapFactory.decodeResource(resources, R.mipmap.ic_launcher)
             @Suppress("DEPRECATION")
             activity?.setTaskDescription(ActivityManager.TaskDescription(title, bm,
-                    ContextCompat.getColor(context!!, R.color.black)))
+                    ContextCompat.getColor(requireContext(), R.color.black)))
         }
     }
 
@@ -136,7 +135,7 @@ class ImageFragment : Fragment() {
         // Check internet connection
         if (!ConnectivityUtil.isConnected(context)) {
             if (activity != null) {
-                Snackbar.make(activity!!.findViewById(android.R.id.content),
+                Snackbar.make(requireActivity().findViewById(android.R.id.content),
                         R.string.message_no_internet_connection, Snackbar.LENGTH_LONG).show()
             }
             progressBar.visibility = View.GONE
@@ -151,12 +150,12 @@ class ImageFragment : Fragment() {
                 .addTag(TAG)
                 .build()
         WorkManager.getInstance().enqueue(request)
-        WorkManager.getInstance().getWorkInfoByIdLiveData(request.id).observe(this,
-                Observer { workInfo ->
+        WorkManager.getInstance().getWorkInfoByIdLiveData(request.id).observe(viewLifecycleOwner,
+                { workInfo ->
                     if (workInfo?.state == WorkInfo.State.FAILED) {
                         progressBar.visibility = View.GONE
                         if (activity != null) {
-                            Snackbar.make(activity!!.findViewById(android.R.id.content),
+                            Snackbar.make(requireActivity().findViewById(android.R.id.content),
                                     R.string.message_fail_to_request, Snackbar.LENGTH_LONG).show()
                         }
                     }
