@@ -1,6 +1,5 @@
 package com.alvinhkh.buseta.datagovhk.ui
 
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -33,12 +32,13 @@ class TdTrafficNewsFragment: Fragment() {
             viewAdapter = TdTrafficNewsViewAdapter()
             adapter = viewAdapter
         }
-        val snackbar = Snackbar.make(rootView.findViewById(R.id.coordinator_layout), R.string.message_no_notice, Snackbar.LENGTH_INDEFINITE)
+        val snackbar = Snackbar.make(rootView.findViewById(R.id.coordinator_layout), R.string.updating, Snackbar.LENGTH_INDEFINITE)
+        snackbar.show()
         val viewModel = ViewModelProvider(this@TdTrafficNewsFragment).get(TdTrafficNewsViewModel::class.java)
-        viewModel.getAsLiveData().observe(viewLifecycleOwner, Observer { items ->
+        viewModel.getAsLiveData().observe(viewLifecycleOwner, { items ->
             swipeRefreshLayout?.isRefreshing = true
             if (items.isNullOrEmpty()) {
-                snackbar.show()
+                snackbar.setText(R.string.message_no_data)
                 viewAdapter?.clear()
             } else {
                 snackbar.dismiss()

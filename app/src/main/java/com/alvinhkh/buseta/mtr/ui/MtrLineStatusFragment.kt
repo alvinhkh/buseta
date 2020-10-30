@@ -1,7 +1,6 @@
 package com.alvinhkh.buseta.mtr.ui
 
 import android.content.Intent
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
 import android.view.*
@@ -51,23 +50,25 @@ class MtrLineStatusFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
             adapter = viewAdapter
         }
         val lineStatusViewModel = ViewModelProvider(this).get(MtrLineStatusViewModel::class.java)
-        lineStatusViewModel.getAsLiveData().observe(this, Observer { list ->
+        lineStatusViewModel.getAsLiveData().observe(viewLifecycleOwner, { list ->
             if (ConnectivityUtil.isConnected(context)) {
                 snackbar.dismiss()
             } else {
                 snackbar.show()
             }
+            emptyTextView.text = getString(R.string.updating)
             if (!swipeRefreshLayout.isRefreshing) {
                 swipeRefreshLayout.isRefreshing = true
             }
             viewAdapter.replace(list?: listOf())
             emptyView.visibility = if (viewAdapter.itemCount > 0) View.GONE else View.VISIBLE
+            emptyTextView.text = getString(R.string.message_no_data)
             if (swipeRefreshLayout.isRefreshing) {
                 swipeRefreshLayout.isRefreshing = false
             }
         })
         val latestAlertViewModel = ViewModelProvider(this).get(MtrLatestAlertViewModel::class.java)
-        latestAlertViewModel.getAsLiveData().observe(this, Observer { list ->
+        latestAlertViewModel.getAsLiveData().observe(viewLifecycleOwner, { list ->
             viewAdapter.alert(list?: listOf())
         })
         onRefresh()
@@ -96,7 +97,7 @@ class MtrLineStatusFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
                 val intent = Intent(context, ImageActivity::class.java)
                 intent.putExtra(ImageActivity.IMAGE_TITLE, "港鐵車務狀況 (運輸署)")
                 intent.putExtra(ImageActivity.IMAGE_URL, "http://210.3.170.180/mtr_status/MTR.jpg")
-                intent.putExtra(ImageActivity.COLOUR, ContextCompat.getColor(context!!, R.color.black))
+                intent.putExtra(ImageActivity.COLOUR, ContextCompat.getColor(requireContext(), R.color.black))
                 startActivity(intent)
                 return true
             }
