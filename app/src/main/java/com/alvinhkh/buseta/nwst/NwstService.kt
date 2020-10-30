@@ -58,7 +58,7 @@ interface NwstService {
             @Query(value = QUERY_SYSCODE2, encoded = true) sysCode2: String
     ): Call<String>
 
-    @GET("api6/getroutelist2.php?ui_v2=Y")
+    @GET("api6/getroutelist2.php")
     fun routeList(
             @Query(QUERY_ROUTE_NO) routeNo: String,
             @Query(QUERY_LANGUAGE) language: String,
@@ -68,28 +68,29 @@ interface NwstService {
             @Query(QUERY_TK) tk: String
     ): Call<String>
 
-    @GET("api6/getvariantlist.php?ui_v2=Y")
+    @GET("api6/getvariantlist.php")
     fun variantList(
             @Query(QUERY_ID) id: String,
             @Query(QUERY_LANGUAGE) language: String,
             @Query(QUERY_RDV) rdv: String,
             @Query(QUERY_BOUND) bound: String,
-            @Query(QUERY_SYSCODE) sysCode: String,
+            @Query("syscode5") sysCode5: String,
+            @Query("ui_v2") ui_v2: String,
             @Query(QUERY_PLATFORM) platform: String,
             @Query(QUERY_VERSION) version: String,
-            @Query(QUERY_TK) tk: String,
-            @Query("syscode5") sysCode5: String,
+            @Query(QUERY_VERSION2) version2: String,
             @Query("appid") appId: String
     ): Call<String>
 
-    @GET("api6/ppstoplist.php?ui_v2=Y")
+    @GET("api6/ppstoplist.php")
     fun ppStopList(
             @Query(QUERY_INFO) info: String,
             @Query(QUERY_LANGUAGE) language: String,
-            @Query(QUERY_SYSCODE) sysCode: String,
+            @Query("syscode5") sysCode5: String,
+            @Query("ui_v2") ui_v2: String,
             @Query(QUERY_PLATFORM) platform: String,
             @Query(QUERY_VERSION) version: String,
-            @Query("syscode5") sysCode5: String,
+            @Query(QUERY_VERSION2) version2: String,
             @Query("appid") appId: String
     ): Call<String>
 

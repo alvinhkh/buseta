@@ -38,7 +38,7 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
 
         try {
             val sysCode5 = preferences.getString("nwst_syscode5", "")?:""
-            val appId = preferences.getString("nwst_appid", "")?:""
+            val appId = preferences.getString("nwst_appId", "")?:""
             val version = preferences.getString("nwst_version", NwstService.APP_VERSION)?:NwstService.APP_VERSION
             val version2 = preferences.getString("nwst_version2", NwstService.APP_VERSION2)?:NwstService.APP_VERSION2
             var tk = preferences.getString("nwst_tk", "")?:""
@@ -68,7 +68,7 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
                 return Result.failure(outputData)
             }
             val res = response.body()
-            if (res == null || res.isNullOrEmpty()) {
+            if (res == null || res.isNullOrEmpty() || res.length < 10) {
                 return Result.failure(outputData)
             }
 
@@ -80,20 +80,19 @@ class NwstRouteWorker(context : Context, params : WorkerParameters)
                 if (nwstRoute != null && nwstRoute.routeNo.isNotBlank() && nwstRoute.routeNo == routeNo) {
                     val response2 = nwstService.variantList(nwstRoute.rdv,
                             NwstService.LANGUAGE_TC, nwstRoute.routeNo+"-"+nwstRoute.locationCode+"-1", nwstRoute.bound,
-                            NwstRequestUtil.syscode(), NwstService.PLATFORM, version, tk,
-                            sysCode5, appId).execute()
+                            sysCode5, "Y", NwstService.PLATFORM, version, version2, appId).execute()
                     if (!response2.isSuccessful) {
                         Timber.d("%s", response2.message())
                         return Result.failure(outputData)
                     }
                     val res2 = response2.body()
-                    if (res2 == null || res2.isEmpty()) {
+                    if (res2 == null || res2.length < 10) {
                         return Result.failure(outputData)
                     }
                     val datas = res2.split("<br>".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
                     for (data in datas) {
                         val text2 = data.trim { it <= ' ' }
-                        if (text2.isEmpty()) continue
+                        if (text2.length < 10) continue
                         val variant = NwstVariant.fromString(text2)
                         val route = Route()
                         route.companyCode = nwstRoute.companyCode

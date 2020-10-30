@@ -54,7 +54,7 @@ class NwstEtaWorker(private val context : Context, params : WorkerParameters)
         
         try {
             val sysCode5 = preferences.getString("nwst_syscode5", "")?:""
-            val appId = preferences.getString("nwst_appid", "")?:""
+            val appId = preferences.getString("nwst_appId", "")?:""
             val version = preferences.getString("nwst_version", NwstService.APP_VERSION)?:NwstService.APP_VERSION
             val version2 = preferences.getString("nwst_version2", NwstService.APP_VERSION2)?:NwstService.APP_VERSION2
             val lastUpdated = preferences.getLong("nwst_lastUpdated", 0)

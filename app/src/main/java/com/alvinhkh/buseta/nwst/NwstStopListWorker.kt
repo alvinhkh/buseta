@@ -43,10 +43,11 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
         }
         try {
             val sysCode5 = preferences.getString("nwst_syscode5", "")?:""
-            val appId = preferences.getString("nwst_appid", "")?:""
+            val appId = preferences.getString("nwst_appId", "")?:""
             val version = preferences.getString("nwst_version", NwstService.APP_VERSION)?:NwstService.APP_VERSION
+            val version2 = preferences.getString("nwst_version2", NwstService.APP_VERSION2)?:NwstService.APP_VERSION2
             val response = nwstService.ppStopList(qInfo, NwstService.LANGUAGE_TC,
-                    NwstRequestUtil.syscode(), NwstService.PLATFORM, version, sysCode5, appId).execute()
+                    sysCode5, "Y", NwstService.PLATFORM, version, version2, appId).execute()
             if (!response.isSuccessful) {
                 Timber.d("%s", response.message())
                 return Result.failure(outputData)
@@ -56,7 +57,7 @@ class NwstStopListWorker(context : Context, params : WorkerParameters)
             val timeNow = System.currentTimeMillis() / 1000
 
             val res = response.body()
-            if (res.isNullOrEmpty()) {
+            if (res.isNullOrEmpty() || res.length < 10) {
                 return Result.failure(outputData)
             }
 
