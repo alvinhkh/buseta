@@ -130,8 +130,11 @@ class AESBusEtaWorker(private val context : Context, params : WorkerParameters)
                                 if (aesEtaBus.arrivalTimeInSecond.orEmpty().toInt() < 108000) {
                                     calendar.add(Calendar.SECOND, aesEtaBus.arrivalTimeInSecond.orEmpty().toInt())
                                     arrivalTime.text = SimpleDateFormat("HH:mm", Locale.ENGLISH).format(calendar.time)
+                                } else if (aesEtaBus.departureTimeInSecond.orEmpty().toInt() < 108000) {
+                                    calendar.add(Calendar.SECOND, aesEtaBus.departureTimeInSecond.orEmpty().toInt())
+                                    arrivalTime.text = SimpleDateFormat("HH:mm", Locale.ENGLISH).format(calendar.time)
                                 } else {
-                                    arrivalTime.text = aesEtaBus.arrivalTimeText.orEmpty()
+                                    arrivalTime.text = aesEtaBus.arrivalTimeText?:aesEtaBus.departureTimeInText.orEmpty()
                                 }
                                 if (!aesEtaBus.busRemark.isNullOrEmpty()) {
                                     arrivalTime.text += " " + aesEtaBus.busRemark
