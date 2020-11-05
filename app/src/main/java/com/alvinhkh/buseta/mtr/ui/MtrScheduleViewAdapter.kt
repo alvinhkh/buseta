@@ -61,7 +61,7 @@ class MtrScheduleViewAdapter(
     fun addAll(list: List<ArrivalTime>) {
         var direction = ""
         list.forEach {
-            if (!direction.isEmpty() && list.size > 1 && direction != it.direction) {
+            if (direction.isNotEmpty() && list.size > 1 && direction != it.direction) {
                 data.add(Data(Data.TYPE_SECTION, ""))
             }
             data.add(Data(Data.TYPE_ARRIVAL_TIME, it))

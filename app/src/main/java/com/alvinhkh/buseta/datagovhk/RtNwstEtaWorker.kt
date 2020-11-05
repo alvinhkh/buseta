@@ -30,7 +30,7 @@ class RtNwstEtaWorker(private val context : Context, params : WorkerParameters)
     override fun doWork(): Result {
         val widgetId = inputData.getInt(C.EXTRA.WIDGET_UPDATE, -1)
         val notificationId = inputData.getInt(C.EXTRA.NOTIFICATION_ID, -1)
-        val companyCode = inputData.getString(C.EXTRA.COMPANY_CODE)?:C.PROVIDER.MTR
+        val companyCode = inputData.getString(C.EXTRA.COMPANY_CODE)?:C.PROVIDER.NWST
         val routeNo = inputData.getString(C.EXTRA.ROUTE_NO)?:return Result.failure()
         val routeSequence = inputData.getString(C.EXTRA.ROUTE_SEQUENCE)?:return Result.failure()
         val routeServiceType = inputData.getString(C.EXTRA.ROUTE_SERVICE_TYPE)?:return Result.failure()

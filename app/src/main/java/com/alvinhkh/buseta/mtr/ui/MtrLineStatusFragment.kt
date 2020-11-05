@@ -12,10 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
-import androidx.work.OneTimeWorkRequest
-import androidx.work.WorkManager
 import com.alvinhkh.buseta.R
-import com.alvinhkh.buseta.mtr.MtrLineWorker
 import com.alvinhkh.buseta.ui.image.ImageActivity
 import com.alvinhkh.buseta.utils.ConnectivityUtil
 
@@ -40,7 +37,7 @@ class MtrLineStatusFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
         emptyView = rootView.findViewById(R.id.empty_view)
         emptyView.visibility = View.VISIBLE
         val emptyTextView = rootView.findViewById<TextView>(R.id.empty_text)
-        emptyTextView.text = getString(R.string.message_no_data)
+        emptyTextView.text = getString(R.string.updating)
         recyclerView = rootView.findViewById(R.id.recycler_view)
         viewAdapter = MtrLineStatusViewAdapter()
         swipeRefreshLayout.isRefreshing = true
@@ -54,15 +51,14 @@ class MtrLineStatusFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
             if (ConnectivityUtil.isConnected(context)) {
                 snackbar.dismiss()
             } else {
+                emptyTextView.text = getString(R.string.message_no_data)
                 snackbar.show()
             }
-            emptyTextView.text = getString(R.string.updating)
             if (!swipeRefreshLayout.isRefreshing) {
                 swipeRefreshLayout.isRefreshing = true
             }
             viewAdapter.replace(list?: listOf())
             emptyView.visibility = if (viewAdapter.itemCount > 0) View.GONE else View.VISIBLE
-            emptyTextView.text = getString(R.string.message_no_data)
             if (swipeRefreshLayout.isRefreshing) {
                 swipeRefreshLayout.isRefreshing = false
             }
@@ -112,6 +108,9 @@ class MtrLineStatusFragment: Fragment(), SwipeRefreshLayout.OnRefreshListener {
         } else {
             snackbar.show()
         }
-        WorkManager.getInstance().enqueue(OneTimeWorkRequest.Builder(MtrLineWorker::class.java).addTag("RouteList").build())
+//        WorkManager.getInstance().enqueue(
+//                OneTimeWorkRequest.Builder(MtrTrainSpecialNewsWorker::class.java)
+//                        .addTag("MtrTrainSpecialNews").build())
+//        WorkManager.getInstance().enqueue(OneTimeWorkRequest.Builder(MtrLineWorker::class.java).addTag("RouteList").build())
     }
 }

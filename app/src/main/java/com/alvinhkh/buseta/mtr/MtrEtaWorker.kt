@@ -57,27 +57,13 @@ class MtrEtaWorker(private val context : Context, params : WorkerParameters)
         if (routeStopList.size < 1) {
             return Result.failure(outputData)
         }
-        val routeStop = routeStopList[0]
 
         val arrivalTimeList = arrayListOf<ArrivalTime>()
         val timeNow = System.currentTimeMillis()
         
         val response1 = openDataService.linesAndStations().execute()
         if (!response1.isSuccessful) {
-            if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
-                    && !routeStop.sequence.isNullOrEmpty()) {
-                arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!, routeStop.routeNo!!,
-                        routeStop.routeSequence!!, routeStop.stopId!!, routeStop.sequence!!, timeNow)
-            }
-            val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
-            arrivalTime.text = context.getString(R.string.message_fail_to_request)
-            arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
-            return Result.failure(outputData)
-        }
-
-        try {
-            val body = response1.body()
-            if (body == null) {
+            for (routeStop in routeStopList) {
                 if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
                         && !routeStop.sequence.isNullOrEmpty()) {
                     arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!, routeStop.routeNo!!,
@@ -86,10 +72,27 @@ class MtrEtaWorker(private val context : Context, params : WorkerParameters)
                 val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
                 arrivalTime.text = context.getString(R.string.message_fail_to_request)
                 arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
+            }
+            return Result.failure(outputData)
+        }
+
+        try {
+            val body = response1.body()
+            if (body == null) {
+                for (routeStop in routeStopList) {
+                    if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
+                            && !routeStop.sequence.isNullOrEmpty()) {
+                        arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!, routeStop.routeNo!!,
+                                routeStop.routeSequence!!, routeStop.stopId!!, routeStop.sequence!!, timeNow)
+                    }
+                    val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
+                    arrivalTime.text = context.getString(R.string.message_fail_to_request)
+                    arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
+                }
                 return Result.failure(outputData)
             }
             val codeMap = HashMap<String, String>()
-            val stations = MtrLineStation.fromCSV(body.string(), routeStop.routeId!!)
+            val stations = MtrLineStation.fromCSV(body.string(), routeId)
             for ((_, _, stationCode, _, chineseName) in stations) {
                 if (!codeMap.containsKey(stationCode?:"")) {
                     codeMap[stationCode?:""] = chineseName?:""
@@ -97,59 +100,75 @@ class MtrEtaWorker(private val context : Context, params : WorkerParameters)
             }
 
             val lang = "en"
-            val response = dataGovHkService.getSchedule(routeStop.routeId!!, routeStop.stopId!!, lang).execute()
+            val response = dataGovHkService.getSchedule(routeId, stopId, lang).execute()
             val res = response.body() ?: return Result.failure(outputData)
             if (res.status == 0) {
-                if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
-                        && !routeStop.sequence.isNullOrEmpty()) {
-                    arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!, routeStop.routeNo!!,
-                            routeStop.routeSequence!!, routeStop.stopId!!, routeStop.sequence!!, timeNow)
+                for (routeStop in routeStopList) {
+                    if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
+                            && !routeStop.sequence.isNullOrEmpty()) {
+                        arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!, routeStop.routeNo!!,
+                                routeStop.routeSequence!!, routeStop.stopId!!, routeStop.sequence!!, timeNow)
+                    }
+                    val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
+                    arrivalTime.text = context.getString(R.string.provider_no_eta)
+                    arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
                 }
-                val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
-                arrivalTime.text = context.getString(R.string.provider_no_eta)
-                arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
                 return Result.success(outputData)
             } else if (res.data != null && res.data!!.isNotEmpty()) {
                 var hasData = false
                 for ((_, value) in res.data!!) {
                     val (currentTime, _, up, down) = value
                     var i = 0
-                    if (up != null && up.isNotEmpty()) {
-                        hasData = true
-                        for (schedule in up) {
-                            val arrivalTime = MtrSchedule.toArrivalTime(applicationContext, "UT", schedule, currentTime, codeMap)
-                            arrivalTime.routeNo = routeStop.routeNo?:""
-                            arrivalTime.routeSeq = routeStop.routeSequence?:""
-                            arrivalTime.stopId = routeStop.stopId?:""
-                            arrivalTime.stopSeq = routeStop.sequence?:""
-                            arrivalTime.order = i.toString()
+                    for (routeStop in routeStopList) {
+                        if (up != null && up.isNotEmpty() && routeStop.routeSequence.equals("UT")) {
+                            hasData = true
+                            for (schedule in up) {
+                                val arrivalTime = MtrSchedule.toArrivalTime(applicationContext, schedule, currentTime, codeMap)
+                                arrivalTime.direction = "UT"
+                                arrivalTime.routeNo = routeStop.routeNo ?: ""
+                                arrivalTime.routeSeq = routeStop.routeSequence ?: ""
+                                arrivalTime.stopId = routeStop.stopId ?: ""
+                                arrivalTime.stopSeq = routeStop.sequence ?: ""
+                                if (arrivalTime.order.toInt() > 0) {
+                                    arrivalTime.order = (arrivalTime.order.toInt() - 1).toString()
+                                } else {
+                                    arrivalTime.order = i.toString()
+                                }
 
-                            arrivalTime.updatedAt = timeNow
-                            arrivalTimeList.add(arrivalTime)
-                            i++
+                                arrivalTime.updatedAt = timeNow
+                                arrivalTimeList.add(arrivalTime)
+                                i++
+                            }
                         }
-                    }
-                    if (down != null && down.isNotEmpty()) {
-                        hasData = true
-                        for (schedule in down) {
-                            val arrivalTime = MtrSchedule.toArrivalTime(applicationContext, "DT", schedule, currentTime, codeMap)
-                            arrivalTime.routeNo = routeStop.routeNo?:""
-                            arrivalTime.routeSeq = routeStop.routeSequence?:""
-                            arrivalTime.stopId = routeStop.stopId?:""
-                            arrivalTime.stopSeq = routeStop.sequence?:""
-                            arrivalTime.order = i.toString()
+                        if (down != null && down.isNotEmpty() && routeStop.routeSequence.equals("DT")) {
+                            hasData = true
+                            for (schedule in down) {
+                                val arrivalTime = MtrSchedule.toArrivalTime(applicationContext, schedule, currentTime, codeMap)
+                                arrivalTime.direction = "DT"
+                                arrivalTime.routeNo = routeStop.routeNo ?: ""
+                                arrivalTime.routeSeq = routeStop?.routeSequence ?: ""
+                                arrivalTime.stopId = routeStop.stopId ?: ""
+                                arrivalTime.stopSeq = routeStop.sequence ?: ""
+                                if (arrivalTime.order.toInt() > 0) {
+                                    arrivalTime.order = (arrivalTime.order.toInt() - 1).toString()
+                                } else {
+                                    arrivalTime.order = i.toString()
+                                }
 
-                            arrivalTime.updatedAt = timeNow
-                            arrivalTimeList.add(arrivalTime)
-                            i++
+                                arrivalTime.updatedAt = timeNow
+                                arrivalTimeList.add(arrivalTime)
+                                i++
+                            }
                         }
                     }
                     arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTimeList)
                 }
-                if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
-                        && !routeStop.sequence.isNullOrEmpty()) {
-                    arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!, routeStop.routeNo!!,
-                            routeStop.routeSequence!!, routeStop.stopId!!, routeStop.sequence!!, timeNow)
+                for (routeStop in routeStopList) {
+                    if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
+                            && !routeStop.sequence.isNullOrEmpty()) {
+                        arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!, routeStop.routeNo!!,
+                                routeStop.routeSequence!!, routeStop.stopId!!, routeStop.sequence!!, timeNow)
+                    }
                 }
                 if (hasData) {
                     return Result.success(outputData)
@@ -159,19 +178,21 @@ class MtrEtaWorker(private val context : Context, params : WorkerParameters)
             Timber.d(e)
         }
 
-        if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
-                && !routeStop.sequence.isNullOrEmpty()) {
-            arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!, routeStop.routeNo!!,
-                    routeStop.routeSequence!!, routeStop.stopId!!, routeStop.sequence!!, timeNow)
+        for (routeStop in routeStopList) {
+            if (!routeStop.routeNo.isNullOrEmpty() && !routeStop.stopId.isNullOrEmpty()
+                    && !routeStop.sequence.isNullOrEmpty()) {
+                arrivalTimeDatabase.arrivalTimeDao().clear(routeStop.companyCode!!, routeStop.routeNo!!,
+                        routeStop.routeSequence!!, routeStop.stopId!!, routeStop.sequence!!, timeNow)
+            }
+            val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
+            arrivalTime.routeNo = routeStop.routeNo ?: ""
+            arrivalTime.routeSeq = routeStop.routeSequence ?: ""
+            arrivalTime.stopId = routeStop.stopId ?: ""
+            arrivalTime.stopSeq = routeStop.sequence ?: ""
+            arrivalTime.order = "0"
+            arrivalTime.text = context.getString(R.string.message_no_data)
+            arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
         }
-        val arrivalTime = ArrivalTime.emptyInstance(applicationContext, routeStop)
-        arrivalTime.routeNo = routeStop.routeNo?:""
-        arrivalTime.routeSeq = routeStop.routeSequence?:""
-        arrivalTime.stopId = routeStop.stopId?:""
-        arrivalTime.stopSeq = routeStop.sequence?:""
-        arrivalTime.order = "0"
-        arrivalTime.text = context.getString(R.string.message_no_data)
-        arrivalTimeDatabase.arrivalTimeDao().insert(arrivalTime)
         return Result.failure(outputData)
     }
 }

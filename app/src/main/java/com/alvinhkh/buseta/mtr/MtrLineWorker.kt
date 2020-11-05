@@ -50,9 +50,7 @@ class MtrLineWorker(context : Context, params : WorkerParameters)
                 route.code = mtrLineName.lineCode
                 route.name = mtrLineName.nameTc
                 route.colour = mtrLineName.colour
-
                 route.lastUpdate = timeNow
-                routeList.add(route)
 
                 codeMap[route.code?:""] = route
             }
@@ -66,24 +64,29 @@ class MtrLineWorker(context : Context, params : WorkerParameters)
             val res = response.body()
             val mtrStations = MtrLineStation.fromCSV(res?.string()?:"")
             mtrStations.forEach { mtrLineStation ->
+                val route = codeMap[mtrLineStation.lineCode]?.copy()?: return@forEach
                 val routeStop = RouteStop()
                 routeStop.stopId = mtrLineStation.stationCode
                 routeStop.companyCode = C.PROVIDER.MTR
-                // routeStop.routeDestination = "";
+//                routeStop.routeDestination = ""
                 routeStop.routeSequence = mtrLineStation.direction
-                // routeStop.fareFull = "0";
-                // routeStop.latitude = "";
-                // routeStop.longitude = "";
+//                routeStop.fareFull = "0"
+//                routeStop.latitude = ""
+//                routeStop.longitude = ""
                 routeStop.name = mtrLineStation.chineseName
-                // routeStop.routeOrigin = "";
-                routeStop.routeNo = codeMap[mtrLineStation.lineCode]?.name?:mtrLineStation.lineCode
+//                routeStop.routeOrigin = ""
+                routeStop.routeNo = route.name?:mtrLineStation.lineCode
                 routeStop.routeId = mtrLineStation.lineCode
-                routeStop.sequence = mtrLineStation.stationID
-                routeStop.etaGet = ""
-                routeStop.imageUrl = ""
+                routeStop.sequence = mtrLineStation.sequence
+//                routeStop.etaGet = ""
+//                routeStop.imageUrl = ""
 
                 routeStop.lastUpdate = timeNow
                 stopList.add(routeStop)
+
+                route.sequence = mtrLineStation.direction
+                route.origin = mtrLineStation.direction
+                routeList.add(route)
             }
         } catch (e: Exception) {
             Timber.d(e)

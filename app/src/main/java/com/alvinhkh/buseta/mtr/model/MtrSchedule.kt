@@ -121,7 +121,6 @@ data class MtrSchedule(
         }
 
         fun toArrivalTime(context: Context,
-                          direction: String,
                           schedule: MtrSchedule, serverTime: String?,
                           codeMap: Map<String, String>?): ArrivalTime {
             var arrivalTime = ArrivalTime.emptyInstance(context, routeStop = null)
@@ -134,7 +133,7 @@ data class MtrSchedule(
             arrivalTime.destination = codeMap?.get(destination)?:destination
             arrivalTime.platform = schedule.platform!!
             arrivalTime.estimate = schedule.ttnt!!
-            arrivalTime.direction = direction
+            arrivalTime.order = schedule.sequence?:""
             if (!serverTime.isNullOrEmpty()) {
                 val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH)
                 try {

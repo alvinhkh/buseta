@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tool="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -17,8 +18,8 @@
         android:layout_marginLeft="@dimen/card_horizontal_margin"
         android:layout_marginRight="@dimen/card_horizontal_margin"
         android:contentDescription="@string/content_description_icon"
-        android:src="@drawable/ic_outline_directions_railway_24dp"
-        android:tint="@color/icons" />
+        app:srcCompat="@drawable/ic_outline_directions_railway_24dp"
+        app:tint="@color/icons" />
 
     <TextView
         android:id="@+id/name"
@@ -27,11 +28,24 @@
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
         android:layout_toEndOf="@+id/icon"
-        android:layout_toLeftOf="@+id/open_url"
+        android:layout_toLeftOf="@+id/status"
         android:layout_toRightOf="@+id/icon"
-        android:layout_toStartOf="@+id/open_url"
+        android:layout_toStartOf="@+id/status"
         android:textColor="@color/textPrimary"
         tool:text="..." />
+
+    <TextView
+        android:id="@+id/status"
+        style="@style/TextAppearance.AppCompat.Medium"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_toLeftOf="@id/open_url"
+        android:layout_toStartOf="@id/open_url"
+        android:layout_marginLeft="@dimen/card_horizontal_margin"
+        android:layout_marginRight="@dimen/card_horizontal_margin"
+        android:textColor="@color/textSecondary"
+        tool:text="TEXT" />
 
     <ImageView
         android:visibility="gone"
@@ -43,9 +57,9 @@
         android:layout_toLeftOf="@id/circle"
         android:layout_toStartOf="@id/circle"
         android:contentDescription="@string/content_description_icon"
-        android:src="@drawable/ic_outline_open_in_new_24dp"
-        android:tint="@color/icons"
-        tool:visibility="visible" />
+        app:srcCompat="@drawable/ic_outline_open_in_new_24dp"
+        tool:visibility="visible"
+        app:tint="@color/icons" />
 
     <ImageView
         android:id="@+id/circle"
@@ -58,6 +72,6 @@
         android:layout_marginRight="@dimen/card_horizontal_margin"
         android:contentDescription="@string/content_description_icon"
         android:src="@drawable/circle_48dp"
-        android:tint="@color/icons" />
+        app:tint="@color/icons" />
 
 </RelativeLayout>

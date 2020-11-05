@@ -17,6 +17,7 @@ import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.mtr.model.MtrLatestAlert
 import com.alvinhkh.buseta.mtr.model.MtrLineStatus
 import com.alvinhkh.buseta.search.ui.SearchActivity
+import java.util.*
 
 class MtrLineStatusViewAdapter(
         private var data: MutableList<MtrLineStatus> = mutableListOf(),
@@ -74,10 +75,10 @@ class MtrLineStatusViewAdapter(
                     itemView.findViewById<ImageView>(R.id.icon).setColorFilter(Color.parseColor(status.lineColour))
                 }
                 if (status.status.isNotEmpty()) {
-                    when (status.status.toLowerCase()) {
+                    when (status.status.toLowerCase(Locale.ROOT)) {
                         "green", "yellow", "pink", "red", "grey", "typhoon" -> {
                             val packageName = itemView.context.packageName
-                            val resId = itemView.context.resources.getIdentifier("mtr_status_" + status.status.toLowerCase(), "color", packageName)
+                            val resId = itemView.context.resources.getIdentifier("mtr_status_" + status.status.toLowerCase(Locale.ROOT), "color", packageName)
                             val color = if (resId == 0) {
                                 R.color.grey
                             } else {

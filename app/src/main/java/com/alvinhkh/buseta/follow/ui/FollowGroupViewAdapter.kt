@@ -13,6 +13,7 @@ import android.widget.*
 import com.alvinhkh.buseta.R
 import com.alvinhkh.buseta.follow.model.FollowGroup
 import android.widget.LinearLayout
+import com.alvinhkh.buseta.C
 import com.alvinhkh.buseta.follow.dao.FollowDatabase
 import com.alvinhkh.buseta.follow.model.Follow
 import java.lang.ref.WeakReference
@@ -109,8 +110,8 @@ class FollowGroupViewAdapter(
                     val count = followDatabase.followDao().count(followGroup.id, follow.companyCode,
                             follow.routeNo, follow.routeSeq, follow.routeServiceType, follow.stopId, follow.stopSeq)
                     if (count > 0) {
-                        val rowDeleted = followDatabase.followDao().delete(followGroup.id, follow.companyCode, follow.routeNo,
-                                follow.routeSeq, follow.routeServiceType, follow.stopId, follow.stopSeq)
+                        val rowDeleted = followDatabase.followDao().delete(follow.companyCode,
+                                follow.routeNo, follow.routeSeq, follow.routeServiceType, follow.stopId, follow.stopSeq)
                         if (rowDeleted > 0) {
                             itemView.findViewById<ImageView>(R.id.icon).setImageResource(R.drawable.ic_outline_check_box_outline_blank_24dp)
                         }

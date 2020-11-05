@@ -98,7 +98,6 @@ class FollowViewAdapter(
                 true
             }
 
-            var direction = ""
             if (follow.etas.isEmpty()) {
                 itemView.findViewById<TextView>(R.id.eta).text = ""
                 itemView.findViewById<TextView>(R.id.eta2).text = ""
@@ -107,7 +106,7 @@ class FollowViewAdapter(
                 val arrivalTime = ArrivalTime.estimate(itemView.context, obj)
                 if (arrivalTime.order.isNotEmpty()) {
                     val etaText = SpannableStringBuilder(arrivalTime.text)
-                    val pos = Integer.parseInt(arrivalTime.order)
+                    val pos = arrivalTime.order.toInt()
                     var colorInt: Int? = ContextCompat.getColor(itemView.context,
                             when {
                                 arrivalTime.expired -> R.color.textDiminish
@@ -205,32 +204,22 @@ class FollowViewAdapter(
                     if (etaText.isNotEmpty()) {
                         etaText.setSpan(ForegroundColorSpan(colorInt!!), 0, etaText.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                     }
-                    if (arrivalTime.companyCode == C.PROVIDER.MTR) {
-                        if (direction != arrivalTime.direction) {
-                            itemView.findViewById<TextView>(when (pos) {
-                                0 -> R.id.eta
-                                else -> R.id.eta2
-                            }).text = etaText
+                    when (pos) {
+                        0 -> {
+                            itemView.findViewById<TextView>(R.id.eta).text = etaText
+                            itemView.findViewById<TextView>(R.id.eta2).text = null
                         }
-                    } else {
-                        when (pos) {
-                            0 -> {
-                                itemView.findViewById<TextView>(R.id.eta).text = etaText
-                                itemView.findViewById<TextView>(R.id.eta2).text = null
-                            }
-                            1 -> {
-                                etaText.insert(0, itemView.findViewById<TextView>(R.id.eta2).text)
-                                itemView.findViewById<TextView>(R.id.eta2).text = etaText
-                            }
-                            else -> {
-                                etaText.insert(0, "  ")
-                                etaText.insert(0, itemView.findViewById<TextView>(R.id.eta2).text)
-                                itemView.findViewById<TextView>(R.id.eta2).text = etaText
-                            }
+                        1 -> {
+                            etaText.insert(0, itemView.findViewById<TextView>(R.id.eta2).text)
+                            itemView.findViewById<TextView>(R.id.eta2).text = etaText
+                        }
+                        else -> {
+                            etaText.insert(0, "  ")
+                            etaText.insert(0, itemView.findViewById<TextView>(R.id.eta2).text)
+                            itemView.findViewById<TextView>(R.id.eta2).text = etaText
                         }
                     }
                 }
-                direction = arrivalTime.direction
             }
         }
     }

@@ -179,66 +179,33 @@ class FollowWidgetService : RemoteViewsService() {
                                 etaText.setSpan(ForegroundColorSpan(colorInt!!), 0, etaText.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                             }
                             if (itemNoOfLines == 1) {
-                                if (arrivalTime.companyCode == C.PROVIDER.MTR) {
-                                    if (direction != arrivalTime.direction) {
-                                        if (pos == 0) {
-                                            etaTexts.append(etaText)
-                                        } else {
-                                            etaText.insert(0, "  ")
-                                            etaTexts.append(etaText)
-                                        }
-                                    }
-                                } else {
-                                    when (pos) {
-                                        0 -> etaTexts.append(etaText)
-                                        else -> {
-                                            etaText.insert(0, "  ")
-                                            etaTexts.append(etaText)
-                                        }
+                                when (pos) {
+                                    0 -> etaTexts.append(etaText)
+                                    else -> {
+                                        etaText.insert(0, "  ")
+                                        etaTexts.append(etaText)
                                     }
                                 }
                                 remoteViews.setTextViewText(R.id.eta, etaTexts)
                             } else if (itemNoOfLines == 2) {
-                                if (arrivalTime.companyCode == C.PROVIDER.MTR) {
-                                    if (direction != arrivalTime.direction) {
-                                        if (pos == 0) {
-                                            remoteViews.setTextViewText(R.id.eta, etaText)
-                                        } else {
-                                            etaText.insert(0, "  ")
-                                            remoteViews.setTextViewText(R.id.eta2, etaText)
-                                        }
+                                when (pos) {
+                                    0 -> remoteViews.setTextViewText(R.id.eta, etaText)
+                                    1 -> {
+                                        remoteViews.setTextViewText(R.id.eta2, etaText)
+                                        etaTexts.append(etaText)
+                                        etaText.insert(0, "  ")
+                                        remoteViews.setTextViewText(R.id.eta2, etaTexts)
                                     }
-                                } else {
-                                    when (pos) {
-                                        0 -> remoteViews.setTextViewText(R.id.eta, etaText)
-                                        1 -> {
-                                            remoteViews.setTextViewText(R.id.eta2, etaText)
-                                            etaTexts.append(etaText)
-                                            etaText.insert(0, "  ")
-                                            remoteViews.setTextViewText(R.id.eta2, etaTexts)
-                                        }
-                                        2 -> {
-                                            etaText.insert(0, "  ")
-                                            remoteViews.setTextViewText(R.id.eta2, etaTexts)
-                                        }
+                                    2 -> {
+                                        etaText.insert(0, "  ")
+                                        remoteViews.setTextViewText(R.id.eta2, etaTexts)
                                     }
                                 }
                             } else {
-                                if (arrivalTime.companyCode == C.PROVIDER.MTR) {
-                                    if (direction != arrivalTime.direction) {
-                                        if (pos == 0) {
-                                            remoteViews.setTextViewText(R.id.eta, etaText)
-                                        } else {
-                                            etaText.insert(0, "  ")
-                                            remoteViews.setTextViewText(R.id.eta2, etaText)
-                                        }
-                                    }
-                                } else {
-                                    when (pos) {
-                                        0 -> remoteViews.setTextViewText(R.id.eta, etaText)
-                                        1 -> remoteViews.setTextViewText(R.id.eta2, etaText)
-                                        2 -> remoteViews.setTextViewText(R.id.eta3, etaText)
-                                    }
+                                when (pos) {
+                                    0 -> remoteViews.setTextViewText(R.id.eta, etaText)
+                                    1 -> remoteViews.setTextViewText(R.id.eta2, etaText)
+                                    2 -> remoteViews.setTextViewText(R.id.eta3, etaText)
                                 }
                             }
                         }

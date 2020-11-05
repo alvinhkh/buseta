@@ -44,8 +44,7 @@ data class MtrLineStation(
                 if (line.size <= 6 || line[0].isBlank()) continue
                 val station = MtrLineStation()
                 station.lineCode = line[0]
-                station.direction = "";
-                // station.direction = line[1]
+                station.direction = if (line[1]?.contains("UT") == true) "UT" else "DT"
                 station.stationCode = line[2]
                 station.stationID = line[3]
                 station.chineseName = line[4]
