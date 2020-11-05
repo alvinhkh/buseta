@@ -89,14 +89,14 @@
             android:negativeButtonText="@string/action_cancel"
             android:positiveButtonText="@string/action_confirm" />
 
-        <ListPreference
-            android:key="kmb_eta_api"
-            android:title="@string/kmb_eta"
-            android:defaultValue="kmb_app"
-            android:entries="@array/kmb_web_api_entries"
-            android:entryValues="@array/kmb_web_api_values"
-            android:negativeButtonText="@string/action_cancel"
-            android:positiveButtonText="@string/action_confirm" />
+<!--        <ListPreference-->
+<!--            android:key="kmb_eta_api"-->
+<!--            android:title="@string/kmb_eta"-->
+<!--            android:defaultValue="kmb_app"-->
+<!--            android:entries="@array/kmb_web_api_entries"-->
+<!--            android:entryValues="@array/kmb_web_api_values"-->
+<!--            android:negativeButtonText="@string/action_cancel"-->
+<!--            android:positiveButtonText="@string/action_confirm" />-->
 
         <ListPreference
             android:key="nwst_api"

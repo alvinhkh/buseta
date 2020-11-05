@@ -60,7 +60,7 @@ class KmbEtaWorker(private val context : Context, params : WorkerParameters)
         val timeNow = System.currentTimeMillis()
 
         try {
-            if (PreferenceUtil.isUsingKmbWebEtaApi(context)) {
+            if (false && PreferenceUtil.isUsingKmbWebEtaApi(context)) {
                 val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS.", Locale.ENGLISH)
                 sdf.timeZone = TimeZone.getTimeZone("UTC")
                 val t = sdf.format(timeNow)
