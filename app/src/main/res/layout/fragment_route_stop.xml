@@ -124,8 +124,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/follow"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-                        app:icon="@drawable/ic_outline_bookmark_border_36dp"
-                        app:iconTint="@color/colorAccent" />
+                        app:icon="@drawable/ic_outline_bookmark_border_36dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/notification_button"
@@ -134,8 +133,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/action_notification"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-                        app:icon="@drawable/ic_outline_notifications_none_36dp"
-                        app:iconTint="@color/colorAccent" />
+                        app:icon="@drawable/ic_outline_notifications_none_36dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/open_map_button"
@@ -144,8 +142,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/map"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-                        app:icon="@drawable/ic_outline_map_36dp"
-                        app:iconTint="@color/colorAccent" />
+                        app:icon="@drawable/ic_outline_map_36dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/open_streetview_button"
@@ -154,8 +151,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/streetview"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-                        app:icon="@drawable/ic_outline_streetview_36dp"
-                        app:iconTint="@color/colorAccent" />
+                        app:icon="@drawable/ic_outline_streetview_36dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/arrival_alert_button"
@@ -164,8 +160,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/arrival_alert"
                         android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-                        app:icon="@drawable/ic_outline_alarm_add_36dp"
-                        app:iconTint="@color/colorAccent" />
+                        app:icon="@drawable/ic_outline_alarm_add_36dp" />
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
 

@@ -139,8 +139,10 @@
     <string name="display">顯示</string>
     <string name="edit_follow_group">編輯追蹤組合</string>
     <string name="hide">隱藏</string>
+    <string name="location_map">街道圖</string>
     <string name="missing_input">Missing Input</string>
     <string name="map">地圖</string>
+    <string name="station_layout">位置圖</string>
     <string name="streetview">街景</string>
     <string name="route">路線</string>
     <string name="route_path">%1$s 往%2$s</string>

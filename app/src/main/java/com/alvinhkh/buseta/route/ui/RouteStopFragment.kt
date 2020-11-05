@@ -3,6 +3,7 @@ package com.alvinhkh.buseta.route.ui
 import android.Manifest
 import android.app.Dialog
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -34,6 +35,8 @@ import android.view.View
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.annotation.ColorInt
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.work.Data
 import androidx.work.OneTimeWorkRequest
 import androidx.work.WorkInfo
@@ -570,7 +573,6 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                 vh.mapView?.visibility = View.GONE
             }
 
-
             val followCount = followDatabase.followDao().liveCount(
                     routeStop?.companyCode?:"", routeStop?.routeNo?:"",
                     routeStop?.routeSequence?:"", routeStop?.routeServiceType?:"",
@@ -578,23 +580,24 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
             followCount.removeObservers(this)
             followCount.observe(this, { count ->
                 vh.followButton?.removeCallbacks {  }
-                if (count != null) {
-                    vh.followButton?.setIconResource(if (count > 0) R.drawable.ic_outline_bookmark_36dp else R.drawable.ic_outline_bookmark_border_36dp)
-                    vh.followButton?.setOnClickListener {
-                        if (count > 0) {
-                            val fragment = FollowGroupDialogFragment.newInstance(follow)
-                            fragment.show(childFragmentManager, "follow_group_dialog_fragment")
-                        } else {
-                            val noGroup = followDatabase.followGroupDao().get(FollowGroup.UNCATEGORISED)
-                            if (noGroup == null) {
-                                followDatabase.followGroupDao().insert(FollowGroup(FollowGroup.UNCATEGORISED, "", ""))
-                            }
-                            val f = follow.copy()
-                            f._id = 0
-                            f.groupId = FollowGroup.UNCATEGORISED
-                            f.updatedAt = System.currentTimeMillis()
-                            followDatabase.followDao().insert(f)
+                if (count == null) {
+                    return@observe
+                }
+                vh.followButton?.setIconResource(if (count > 0) R.drawable.ic_outline_bookmark_36dp else R.drawable.ic_outline_bookmark_border_36dp)
+                vh.followButton?.setOnClickListener {
+                    if (count > 0) {
+                        val fragment = FollowGroupDialogFragment.newInstance(follow)
+                        fragment.show(childFragmentManager, "follow_group_dialog_fragment")
+                    } else {
+                        val noGroup = followDatabase.followGroupDao().get(FollowGroup.UNCATEGORISED)
+                        if (noGroup == null) {
+                            followDatabase.followGroupDao().insert(FollowGroup(FollowGroup.UNCATEGORISED, "", ""))
                         }
+                        val f = follow.copy()
+                        f._id = 0
+                        f.groupId = FollowGroup.UNCATEGORISED
+                        f.updatedAt = System.currentTimeMillis()
+                        followDatabase.followDao().insert(f)
                     }
                 }
             })
@@ -643,6 +646,23 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
                             Timber.d("addGeofencesButtonHandler")
                             addGeofencesButtonHandler()
                         }
+                    }
+                }
+            } else {
+                if (routeStop?.companyCode?:"" == C.PROVIDER.MTR) {
+                    vh.mapButton?.visibility = View.VISIBLE
+                    vh.mapButton?.setText(R.string.location_map)
+                    vh.mapButton?.setOnClickListener { v ->
+                        openLink(v.context,
+                                "https://www.mtr.com.hk/archive/en/services/maps/${routeStop?.stopId?.toLowerCase(Locale.ROOT)}.pdf",
+                                companyColor)
+                    }
+                    vh.streetviewButton?.visibility = View.VISIBLE
+                    vh.streetviewButton?.setText(R.string.station_layout)
+                    vh.streetviewButton?.setOnClickListener { v ->
+                        openLink(v.context,
+                                "https://www.mtr.com.hk/archive/en/services/layouts/${routeStop?.stopId?.toLowerCase(Locale.ROOT)}.pdf",
+                                companyColor)
                     }
                 }
             }
@@ -882,6 +902,21 @@ class RouteStopFragment : BottomSheetDialogFragment(), OnCompleteListener<Void> 
         if (currentLocation != null) {
             val distance = currentLocation!!.distanceTo(location)
             vh.distanceText?.text = DecimalFormat("~#.##km").format((distance / 1000).toDouble())
+        }
+    }
+
+    private fun openLink(context: Context, url: String, @ColorInt colorInt: Int) {
+        val link = Uri.parse(url)
+        try {
+            val builder = CustomTabsIntent.Builder()
+            builder.setToolbarColor(colorInt)
+            val customTabsIntent = builder.build()
+            customTabsIntent.launchUrl(context, link)
+        } catch (ignored: Throwable) {
+            val intent = Intent(Intent.ACTION_VIEW, link)
+            if (intent.resolveActivity(context.packageManager) != null) {
+                context.startActivity(intent)
+            }
         }
     }
 
